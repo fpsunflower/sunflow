@@ -1,0 +1,2 @@
+Main-Class: SunflowGUI
+Class-Path: janino.jar
