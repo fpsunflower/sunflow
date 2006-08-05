@@ -185,7 +185,7 @@ public class BoundingIntervalHierarchy implements IntersectionAccelerator {
             for (int i = 0; i < 3; i++) {
                 if (nodeBox[2 * i + 1] < gridBox[2 * i] || nodeBox[2 * i] > gridBox[2 * i + 1]) {
                     UI.printError("[BIH] Reached tree area in error - discarding node with: %d objects", right - left + 1);
-                    return;
+                    throw new IllegalStateException("node overlap changed");
                 }
             }
             float d[] = { gridBox[1] - gridBox[0], gridBox[3] - gridBox[2], gridBox[5] - gridBox[4] };
@@ -232,10 +232,11 @@ public class BoundingIntervalHierarchy implements IntersectionAccelerator {
                     stats.updateInner();
                     tempTree.set(nodeIndex + 0, (prevAxis << 30) | (nextIndex - 3));
                     tempTree.set(nodeIndex + 1, Float.floatToRawIntBits(Float.NEGATIVE_INFINITY));
-                    tempTree.set(nodeIndex + 2, Float.floatToRawIntBits(nodeBox[2 * prevAxis + 1]));
+                    tempTree.set(nodeIndex + 2, Float.floatToRawIntBits(nodeBox[2 * prevAxis + 0]));
                 }
                 // count stats for the unused leaf
-                stats.updateLeaf(depth + 1, 0);
+                depth++;
+                stats.updateLeaf(depth, 0);
                 // now we keep going as we are, with a new nodeIndex:
                 nodeIndex = nextIndex;
             }
