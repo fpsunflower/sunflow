@@ -718,16 +718,14 @@ public class KDTree implements IntersectionAccelerator {
                 intervalMin = t1;
             if (t2 < intervalMax)
                 intervalMax = t2;
-            if (intervalMin > intervalMax)
-                return;
         } else {
             if (t2 > intervalMin)
                 intervalMin = t2;
             if (t1 < intervalMax)
                 intervalMax = t1;
-            if (intervalMin > intervalMax)
-                return;
         }
+        if (intervalMin > intervalMax)
+            return;
         float orgY = r.oy;
         float dirY = r.dy, invDirY = 1 / dirY;
         t1 = (bounds.getMinimum().y - orgY) * invDirY;
@@ -737,16 +735,14 @@ public class KDTree implements IntersectionAccelerator {
                 intervalMin = t1;
             if (t2 < intervalMax)
                 intervalMax = t2;
-            if (intervalMin > intervalMax)
-                return;
         } else {
             if (t2 > intervalMin)
                 intervalMin = t2;
             if (t1 < intervalMax)
                 intervalMax = t1;
-            if (intervalMin > intervalMax)
-                return;
         }
+        if (intervalMin > intervalMax)
+            return;
         float orgZ = r.oz;
         float dirZ = r.dz, invDirZ = 1 / dirZ;
         t1 = (bounds.getMinimum().z - orgZ) * invDirZ;
@@ -756,16 +752,14 @@ public class KDTree implements IntersectionAccelerator {
                 intervalMin = t1;
             if (t2 < intervalMax)
                 intervalMax = t2;
-            if (intervalMin > intervalMax)
-                return;
         } else {
             if (t2 > intervalMin)
                 intervalMin = t2;
             if (t1 < intervalMax)
                 intervalMax = t1;
-            if (intervalMin > intervalMax)
-                return;
         }
+        if (intervalMin > intervalMax)
+            return;
 
         // compute custom offsets from direction sign bit
         int offsetXFront = (Float.floatToRawIntBits(dirX) & (1 << 31)) >>> 30;

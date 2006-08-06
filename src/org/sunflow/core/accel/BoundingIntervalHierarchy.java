@@ -182,15 +182,16 @@ public class BoundingIntervalHierarchy implements IntersectionAccelerator {
         while (true) {
             prevAxis = axis;
             prevSplit = split;
+            // perform quick consistency checks
+            float d[] = { gridBox[1] - gridBox[0], gridBox[3] - gridBox[2], gridBox[5] - gridBox[4] };
+            if (d[0] < 0 || d[1] < 0 || d[2] < 0)
+                throw new IllegalStateException("negative node extents");
             for (int i = 0; i < 3; i++) {
                 if (nodeBox[2 * i + 1] < gridBox[2 * i] || nodeBox[2 * i] > gridBox[2 * i + 1]) {
                     UI.printError("[BIH] Reached tree area in error - discarding node with: %d objects", right - left + 1);
-                    throw new IllegalStateException("node overlap changed");
+                    throw new IllegalStateException("invalid node overlap");
                 }
             }
-            float d[] = { gridBox[1] - gridBox[0], gridBox[3] - gridBox[2], gridBox[5] - gridBox[4] };
-            if (d[0] < 0 || d[1] < 0 || d[2] < 0)
-                throw new IllegalStateException("node extents less than 0");
             // find longest axis
             if (d[0] > d[1] && d[0] > d[2])
                 axis = 0;
@@ -268,7 +269,6 @@ public class BoundingIntervalHierarchy implements IntersectionAccelerator {
             if (right == rightOrig) {
                 // all left
                 if (prevAxis == axis && prevSplit == split) {
-                    UI.printWarning("[BIH] Stuck left with %d", right - left + 1);
                     // we are stuck here - create a leaf
                     stats.updateLeaf(depth, right - left + 1);
                     createNode(tempTree, nodeIndex, left, right);
@@ -279,7 +279,6 @@ public class BoundingIntervalHierarchy implements IntersectionAccelerator {
                 // all right
                 right = rightOrig;
                 if (prevAxis == axis && prevSplit == split) {
-                    UI.printWarning("[BIH] Stuck right with %d", right - left + 1);
                     // we are stuck here - create a leaf
                     stats.updateLeaf(depth, right - left + 1);
                     createNode(tempTree, nodeIndex, left, right);
@@ -355,16 +354,14 @@ public class BoundingIntervalHierarchy implements IntersectionAccelerator {
                 intervalMin = t1;
             if (t2 < intervalMax)
                 intervalMax = t2;
-            if (intervalMin > intervalMax)
-                return;
         } else {
             if (t2 > intervalMin)
                 intervalMin = t2;
             if (t1 < intervalMax)
                 intervalMax = t1;
-            if (intervalMin > intervalMax)
-                return;
         }
+        if (intervalMin > intervalMax)
+            return;
         float orgY = r.oy;
         float dirY = r.dy, invDirY = 1 / dirY;
         t1 = (bounds.getMinimum().y - orgY) * invDirY;
@@ -374,16 +371,14 @@ public class BoundingIntervalHierarchy implements IntersectionAccelerator {
                 intervalMin = t1;
             if (t2 < intervalMax)
                 intervalMax = t2;
-            if (intervalMin > intervalMax)
-                return;
         } else {
             if (t2 > intervalMin)
                 intervalMin = t2;
             if (t1 < intervalMax)
                 intervalMax = t1;
-            if (intervalMin > intervalMax)
-                return;
         }
+        if (intervalMin > intervalMax)
+            return;
         float orgZ = r.oz;
         float dirZ = r.dz, invDirZ = 1 / dirZ;
         t1 = (bounds.getMinimum().z - orgZ) * invDirZ;
@@ -393,16 +388,14 @@ public class BoundingIntervalHierarchy implements IntersectionAccelerator {
                 intervalMin = t1;
             if (t2 < intervalMax)
                 intervalMax = t2;
-            if (intervalMin > intervalMax)
-                return;
         } else {
             if (t2 > intervalMin)
                 intervalMin = t2;
             if (t1 < intervalMax)
                 intervalMax = t1;
-            if (intervalMin > intervalMax)
-                return;
         }
+        if (intervalMin > intervalMax)
+            return;
 
         // compute custom offsets from direction sign bit
 
