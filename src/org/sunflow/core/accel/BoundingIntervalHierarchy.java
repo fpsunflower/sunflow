@@ -76,6 +76,7 @@ public class BoundingIntervalHierarchy implements IntersectionAccelerator {
         private int numLeaves3;
         private int numLeaves4;
         private int numLeaves4p;
+        private int numBVH2;
 
         BuildStats() {
             numNodes = numLeaves = 0;
@@ -91,10 +92,15 @@ public class BoundingIntervalHierarchy implements IntersectionAccelerator {
             numLeaves3 = 0;
             numLeaves4 = 0;
             numLeaves4p = 0;
+            numBVH2 = 0;
         }
 
         void updateInner() {
             numNodes++;
+        }
+        
+        void updateBVH2() {
+            numBVH2++;
         }
 
         void updateLeaf(int depth, int n) {
@@ -144,6 +150,7 @@ public class BoundingIntervalHierarchy implements IntersectionAccelerator {
             UI.printInfo("[BIH]                N=3  %3d%%", 100 * numLeaves3 / numLeaves);
             UI.printInfo("[BIH]                N=4  %3d%%", 100 * numLeaves4 / numLeaves);
             UI.printInfo("[BIH]                N>4  %3d%%", 100 * numLeaves4p / numLeaves);
+            UI.printInfo("[BIH]   * BVH2 nodes:     %d (%3d%%)", numBVH2, 100 * numBVH2 / (numNodes + numLeaves - 2 * numBVH2));
         }
     }
 
@@ -176,7 +183,7 @@ public class BoundingIntervalHierarchy implements IntersectionAccelerator {
         }
         // calculate extents
         int axis = -1, prevAxis, rightOrig;
-        float clipL = Float.NaN, clipR = Float.NaN;
+        float clipL = Float.NaN, clipR = Float.NaN, prevClip = Float.NaN;
         float split = Float.NaN, prevSplit;
         boolean wasLeft = true;
         while (true) {
@@ -200,51 +207,12 @@ public class BoundingIntervalHierarchy implements IntersectionAccelerator {
             else
                 axis = 2;
             split = 0.5f * (gridBox[2 * axis] + gridBox[2 * axis + 1]);
-            if (nodeBox[2 * axis + 1] < split) {
-                // node is completely on the left - keep looping on that half
-                gridBox[2 * axis + 1] = split;
-                wasLeft = true;
-                continue;
-            }
-            if (nodeBox[2 * axis + 0] > split) {
-                // node is completely on the right - keep looping on that half
-                gridBox[2 * axis + 0] = split;
-                wasLeft = false;
-                continue;
-            }
-            if (prevAxis != -1) {
-                // second time through - lets create the previous split
-                // since it produced empty space
-                int nextIndex = tempTree.getSize();
-                // allocate child node
-                tempTree.add(0);
-                tempTree.add(0);
-                tempTree.add(0);
-                if (wasLeft) {
-                    // create a node with a left child
-                    // write leaf node
-                    stats.updateInner();
-                    tempTree.set(nodeIndex + 0, (prevAxis << 30) | nextIndex);
-                    tempTree.set(nodeIndex + 1, Float.floatToRawIntBits(nodeBox[2 * prevAxis + 1]));
-                    tempTree.set(nodeIndex + 2, Float.floatToRawIntBits(Float.POSITIVE_INFINITY));
-                } else {
-                    // create a node with a right child
-                    // write leaf node
-                    stats.updateInner();
-                    tempTree.set(nodeIndex + 0, (prevAxis << 30) | (nextIndex - 3));
-                    tempTree.set(nodeIndex + 1, Float.floatToRawIntBits(Float.NEGATIVE_INFINITY));
-                    tempTree.set(nodeIndex + 2, Float.floatToRawIntBits(nodeBox[2 * prevAxis + 0]));
-                }
-                // count stats for the unused leaf
-                depth++;
-                stats.updateLeaf(depth, 0);
-                // now we keep going as we are, with a new nodeIndex:
-                nodeIndex = nextIndex;
-            }
             // partition L/R subsets
             clipL = Float.NEGATIVE_INFINITY;
             clipR = Float.POSITIVE_INFINITY;
             rightOrig = right; // save this for later
+            float nodeL = Float.POSITIVE_INFINITY;
+            float nodeR = Float.NEGATIVE_INFINITY;
             for (int i = left; i <= right;) {
                 int obj = indices[i];
                 float minb = objects[obj].getBound(2 * axis + 0);
@@ -264,10 +232,58 @@ public class BoundingIntervalHierarchy implements IntersectionAccelerator {
                     if (clipR > minb)
                         clipR = minb;
                 }
+                if (nodeL > minb) 
+                    nodeL = minb;
+                if (nodeR < maxb)
+                    nodeR = maxb;
+            }
+            // check for empty space
+            if (nodeL > nodeBox[2 * axis + 0] && nodeR < nodeBox[2 * axis + 1]) {
+                float nodeBoxW = nodeBox[2 * axis + 1] - nodeBox[2 * axis + 0];
+                float nodeNewW = nodeR - nodeL;
+                if (1.3f * nodeNewW < nodeBoxW) {
+                    stats.updateBVH2();
+                    // create clips to create empty space
+                    // node box is too big compare to space occupied by primitives
+                    // create leaves, update and recurse
+                    int nextIndex = tempTree.getSize();
+                    // allocate child - for right clip
+                    tempTree.add(0);
+                    tempTree.add(0);
+                    tempTree.add(0);
+                    // allocate child - for future nodes
+                    tempTree.add(0);
+                    tempTree.add(0);
+                    tempTree.add(0);
+                    // write left clip
+                    stats.updateInner();
+                    stats.updateLeaf(depth, 0);
+                    tempTree.set(nodeIndex + 0, (axis << 30) | nextIndex);
+                    tempTree.set(nodeIndex + 1, Float.floatToRawIntBits(nodeR));
+                    tempTree.set(nodeIndex + 2, Float.floatToRawIntBits(Float.POSITIVE_INFINITY));
+                    // write right clip
+                    stats.updateInner();
+                    stats.updateLeaf(depth + 1, 0);
+                    tempTree.set(nextIndex + 0, (axis << 30) | ((nextIndex - 3) + 3));
+                    tempTree.set(nextIndex + 1, Float.floatToRawIntBits(Float.NEGATIVE_INFINITY));
+                    tempTree.set(nextIndex + 2, Float.floatToRawIntBits(nodeL));
+                    // update nodebox and recurse
+                    nodeBox[2 * axis + 0] = nodeL;
+                    nodeBox[2 * axis + 1] = nodeR;
+                    subdivide(left, rightOrig, tempTree, indices, gridBox, nodeBox, nextIndex + 3, depth + 2, stats);
+                    return;
+                }
             }
             // ensure we are making progress in the subdivision
             if (right == rightOrig) {
                 // all left
+                if (clipL <= split) {
+                    // keep looping on left half
+                    gridBox[2 * axis + 1] = split;
+                    prevClip = clipL;
+                    wasLeft = true;
+                    continue;
+                }
                 if (prevAxis == axis && prevSplit == split) {
                     // we are stuck here - create a leaf
                     stats.updateLeaf(depth, right - left + 1);
@@ -275,9 +291,17 @@ public class BoundingIntervalHierarchy implements IntersectionAccelerator {
                     return;
                 }
                 gridBox[2 * axis + 1] = split;
+                prevClip = Float.NaN;
             } else if (left > right) {
                 // all right
                 right = rightOrig;
+                if (clipR >= split) {
+                    // keep looping on right half
+                    gridBox[2 * axis + 0] = split;
+                    prevClip = clipR;
+                    wasLeft = false;
+                    continue;
+                }
                 if (prevAxis == axis && prevSplit == split) {
                     // we are stuck here - create a leaf
                     stats.updateLeaf(depth, right - left + 1);
@@ -285,8 +309,38 @@ public class BoundingIntervalHierarchy implements IntersectionAccelerator {
                     return;
                 }
                 gridBox[2 * axis + 0] = split;
+                prevClip = Float.NaN;
             } else {
                 // we are actually splitting stuff
+                if (prevAxis != -1 && !Float.isNaN(prevClip)) {
+                    // second time through - lets create the previous split
+                    // since it produced empty space
+                    int nextIndex = tempTree.getSize();
+                    // allocate child node
+                    tempTree.add(0);
+                    tempTree.add(0);
+                    tempTree.add(0);
+                    if (wasLeft) {
+                        // create a node with a left child
+                        // write leaf node
+                        stats.updateInner();
+                        tempTree.set(nodeIndex + 0, (prevAxis << 30) | nextIndex);
+                        tempTree.set(nodeIndex + 1, Float.floatToRawIntBits(prevClip));
+                        tempTree.set(nodeIndex + 2, Float.floatToRawIntBits(Float.POSITIVE_INFINITY));
+                    } else {
+                        // create a node with a right child
+                        // write leaf node
+                        stats.updateInner();
+                        tempTree.set(nodeIndex + 0, (prevAxis << 30) | (nextIndex - 3));
+                        tempTree.set(nodeIndex + 1, Float.floatToRawIntBits(Float.NEGATIVE_INFINITY));
+                        tempTree.set(nodeIndex + 2, Float.floatToRawIntBits(prevClip));
+                    }
+                    // count stats for the unused leaf
+                    depth++;
+                    stats.updateLeaf(depth, 0);
+                    // now we keep going as we are, with a new nodeIndex:
+                    nodeIndex = nextIndex;
+                }
                 break;
             }
         }
