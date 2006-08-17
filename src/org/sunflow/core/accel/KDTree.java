@@ -22,10 +22,6 @@ public class KDTree implements IntersectionAccelerator {
     private BoundingBox bounds;
 
     private int maxPrims;
-    private long costingNanos;
-    private long pickingNanos;
-    private long splitedNanos;
-    private long nodeingNanos;
 
     private static final float INTERSECT_COST = 0.5f;
     private static final float TRAVERSAL_COST = 1;
@@ -35,6 +31,92 @@ public class KDTree implements IntersectionAccelerator {
     private static boolean dump = false;
     private static String dumpPrefix = "kdtree";
 
+    private static class BuildStats {
+        private int numNodes;
+        private int numLeaves;
+        private int sumObjects;
+        private int minObjects;
+        private int maxObjects;
+        private int sumDepth;
+        private int minDepth;
+        private int maxDepth;
+        private int numLeaves0;
+        private int numLeaves1;
+        private int numLeaves2;
+        private int numLeaves3;
+        private int numLeaves4;
+        private int numLeaves4p;
+
+        BuildStats() {
+            numNodes = numLeaves = 0;
+            sumObjects = 0;
+            minObjects = Integer.MAX_VALUE;
+            maxObjects = Integer.MIN_VALUE;
+            sumDepth = 0;
+            minDepth = Integer.MAX_VALUE;
+            maxDepth = Integer.MIN_VALUE;
+            numLeaves0 = 0;
+            numLeaves1 = 0;
+            numLeaves2 = 0;
+            numLeaves3 = 0;
+            numLeaves4 = 0;
+            numLeaves4p = 0;
+        }
+
+        void updateInner() {
+            numNodes++;
+        }
+        
+        void updateLeaf(int depth, int n) {
+            numLeaves++;
+            minDepth = Math.min(depth, minDepth);
+            maxDepth = Math.max(depth, maxDepth);
+            sumDepth += depth;
+            minObjects = Math.min(n, minObjects);
+            maxObjects = Math.max(n, maxObjects);
+            sumObjects += n;
+            switch (n) {
+                case 0:
+                    numLeaves0++;
+                    break;
+                case 1:
+                    numLeaves1++;
+                    break;
+                case 2:
+                    numLeaves2++;
+                    break;
+                case 3:
+                    numLeaves3++;
+                    break;
+                case 4:
+                    numLeaves4++;
+                    break;
+                default:
+                    numLeaves4p++;
+                    break;
+            }
+        }
+
+        void printStats() {
+            UI.printInfo("[KDT] KDTree stats:");
+            UI.printInfo("[KDT]   * Nodes:          %d", numNodes);
+            UI.printInfo("[KDT]   * Leaves:         %d", numLeaves);
+            UI.printInfo("[KDT]   * Objects: min    %d", minObjects);
+            UI.printInfo("[KDT]              avg    %.2f", (float) sumObjects / numLeaves);
+            UI.printInfo("[KDT]            avg(n>0) %.2f", (float) sumObjects / (numLeaves - numLeaves0));
+            UI.printInfo("[KDT]              max    %d", maxObjects);
+            UI.printInfo("[KDT]   * Depth:   min    %d", minDepth);
+            UI.printInfo("[KDT]              avg    %.2f", (float) sumDepth / numLeaves);
+            UI.printInfo("[KDT]              max    %d", maxDepth);
+            UI.printInfo("[KDT]   * Leaves w/: N=0  %3d%%", 100 * numLeaves0 / numLeaves);
+            UI.printInfo("[KDT]                N=1  %3d%%", 100 * numLeaves1 / numLeaves);
+            UI.printInfo("[KDT]                N=2  %3d%%", 100 * numLeaves2 / numLeaves);
+            UI.printInfo("[KDT]                N=3  %3d%%", 100 * numLeaves3 / numLeaves);
+            UI.printInfo("[KDT]                N=4  %3d%%", 100 * numLeaves4 / numLeaves);
+            UI.printInfo("[KDT]                N>4  %3d%%", 100 * numLeaves4p / numLeaves);
+        }
+    }
+    
     public static void setDumpMode(boolean dump, String prefix) {
         KDTree.dump = dump;
         KDTree.dumpPrefix = prefix;
@@ -97,10 +179,6 @@ public class KDTree implements IntersectionAccelerator {
         ArrayList<BoundedPrimitive> tempList = new ArrayList<BoundedPrimitive>();
         tempTree.add(0);
         tempTree.add(1);
-        costingNanos = 0;
-        pickingNanos = 0;
-        splitedNanos = 0;
-        nodeingNanos = 0;
         t.start();
         // sort it
         UI.taskUpdate(0);
@@ -110,7 +188,8 @@ public class KDTree implements IntersectionAccelerator {
         sorting.end();
         // build the actual tree
         UI.taskUpdate(1);
-        buildTree(bounds.getMinimum().x, bounds.getMaximum().x, bounds.getMinimum().y, bounds.getMaximum().y, bounds.getMinimum().z, bounds.getMaximum().z, task, 1, tempTree, 0, tempList);
+        BuildStats stats = new BuildStats();
+        buildTree(bounds.getMinimum().x, bounds.getMaximum().x, bounds.getMinimum().y, bounds.getMaximum().y, bounds.getMinimum().z, bounds.getMaximum().z, task, 1, tempTree, 0, tempList, stats);
         t.end();
         // write out final arrays
         UI.taskUpdate(2);
@@ -123,43 +202,19 @@ public class KDTree implements IntersectionAccelerator {
         UI.taskUpdate(3);
         UI.taskStop();
         total.end();
-        // gather stats
-        int numNodes = numNodes(0);
-        int numLeaves = numLeaves(0);
-        int numObjects = numObjects(0);
-        UI.printInfo("[KDT] KDTree stats:");
-        UI.printInfo("[KDT]   * Nodes:          %d", numNodes);
-        UI.printInfo("[KDT]   * Leaves:         %d", numLeaves);
-        UI.printInfo("[KDT]   * Objects: min    %d", minObjects(0));
-        UI.printInfo("[KDT]              avg    %.2f", (float) numObjects / numLeaves);
-        UI.printInfo("[KDT]            avg(n>0) %.2f", (float) numObjects / numNLeaves(0, 1, Integer.MAX_VALUE));
-        UI.printInfo("[KDT]              max    %d", maxObjects(0));
-        UI.printInfo("[KDT]   * Depth:   min    %d", minDepth(0, 1));
-        UI.printInfo("[KDT]              avg    %.2f", (float) sumDepth(0, 1) / numLeaves);
-        UI.printInfo("[KDT]              max    %d", maxDepth(0, 1));
-        UI.printInfo("[KDT]   * Leaves w/: N=0  %3d%%", 100 * numNLeaves(0, 0, 0) / numLeaves);
-        UI.printInfo("[KDT]                N=1  %3d%%", 100 * numNLeaves(0, 1, 1) / numLeaves);
-        UI.printInfo("[KDT]                N=2  %3d%%", 100 * numNLeaves(0, 2, 2) / numLeaves);
-        UI.printInfo("[KDT]                N=3  %3d%%", 100 * numNLeaves(0, 3, 3) / numLeaves);
-        UI.printInfo("[KDT]                N=4  %3d%%", 100 * numNLeaves(0, 4, 4) / numLeaves);
-        UI.printInfo("[KDT]                N>4  %3d%%", 100 * numNLeaves(0, 5, Integer.MAX_VALUE) / numLeaves);
+        // display some extra info
+        stats.printStats();
         UI.printInfo("[KDT]   * Node memory:    %s", Memory.sizeof(tree));
         UI.printInfo("[KDT]   * Object array:   %d", this.objects.length);
         UI.printInfo("[KDT]   * Prepare time:   %s", prepare);
         UI.printInfo("[KDT]   * Sorting time:   %s", sorting);
         UI.printInfo("[KDT]   * Tree creation:  %s", t);
-        UI.printInfo("[KDT]       Cost time:    (%3d%%) %s", 100 * costingNanos / t.nanos(), Timer.toString(costingNanos));
-        UI.printInfo("[KDT]       Pick time:    (%3d%%) %s", 100 * pickingNanos / t.nanos(), Timer.toString(pickingNanos));
-        UI.printInfo("[KDT]       Split time:   (%3d%%) %s", 100 * splitedNanos / t.nanos(), Timer.toString(splitedNanos));
-        UI.printInfo("[KDT]       Node time:    (%3d%%) %s", 100 * nodeingNanos / t.nanos(), Timer.toString(nodeingNanos));
-        long unaccounted = (t.nanos() - costingNanos - pickingNanos - splitedNanos - nodeingNanos);
-        UI.printInfo("[KDT]       Unaccounted : (%3d%%) %s", 100 * unaccounted / t.nanos(), Timer.toString(unaccounted));
         UI.printInfo("[KDT]   * Build time:     %s", total);
         if (dump) {
             try {
                 UI.printInfo("[KDT] Dumping mtls to %s.mtl ...", dumpPrefix);
                 FileWriter mtlFile = new FileWriter(dumpPrefix + ".mtl");
-                int maxN = maxObjects(0);
+                int maxN = stats.maxObjects;
                 for (int n = 0; n <= maxN; n++) {
                     float blend = (float) n / (float) maxN;
                     Color nc;
@@ -266,99 +321,6 @@ public class KDTree implements IntersectionAccelerator {
                     break;
             }
             return v0;
-        }
-    }
-
-    private int numNodes(int offset) {
-        int nextOffset = tree[offset];
-        if ((nextOffset & (3 << 30)) == (3 << 30))
-            return 0;
-        else {
-            nextOffset &= ~(3 << 30);
-            return 1 + numNodes(nextOffset) + numNodes(nextOffset + 2);
-        }
-    }
-
-    private int numLeaves(int offset) {
-        int nextOffset = tree[offset];
-        if ((nextOffset & (3 << 30)) == (3 << 30))
-            return 1;
-        else {
-            nextOffset &= ~(3 << 30);
-            return numLeaves(nextOffset) + numLeaves(nextOffset + 2);
-        }
-    }
-
-    private int numNLeaves(int offset, int min, int max) {
-        int nextOffset = tree[offset];
-        if ((nextOffset & (3 << 30)) == (3 << 30)) {
-            if (tree[offset + 1] >= min && tree[offset + 1] <= max)
-                return 1;
-            else
-                return 0;
-        } else {
-            nextOffset &= ~(3 << 30);
-            return numNLeaves(nextOffset, min, max) + numNLeaves(nextOffset + 2, min, max);
-        }
-    }
-
-    private int numObjects(int offset) {
-        int nextOffset = tree[offset];
-        if ((nextOffset & (3 << 30)) == (3 << 30))
-            return tree[offset + 1];
-        else {
-            nextOffset &= ~(3 << 30);
-            return numObjects(nextOffset) + numObjects(nextOffset + 2);
-        }
-    }
-
-    private int minObjects(int offset) {
-        int nextOffset = tree[offset];
-        if ((nextOffset & (3 << 30)) == (3 << 30))
-            return tree[offset + 1];
-        else {
-            nextOffset &= ~(3 << 30);
-            return Math.min(minObjects(nextOffset), minObjects(nextOffset + 2));
-        }
-    }
-
-    private int maxObjects(int offset) {
-        int nextOffset = tree[offset];
-        if ((nextOffset & (3 << 30)) == (3 << 30))
-            return tree[offset + 1];
-        else {
-            nextOffset &= ~(3 << 30);
-            return Math.max(maxObjects(nextOffset), maxObjects(nextOffset + 2));
-        }
-    }
-
-    private int minDepth(int offset, int depth) {
-        int nextOffset = tree[offset];
-        if ((nextOffset & (3 << 30)) == (3 << 30))
-            return depth;
-        else {
-            nextOffset &= ~(3 << 30);
-            return Math.min(minDepth(nextOffset, depth + 1), minDepth(nextOffset + 2, depth + 1));
-        }
-    }
-
-    private int maxDepth(int offset, int depth) {
-        int nextOffset = tree[offset];
-        if ((nextOffset & (3 << 30)) == (3 << 30))
-            return depth;
-        else {
-            nextOffset &= ~(3 << 30);
-            return Math.max(maxDepth(nextOffset, depth + 1), maxDepth(nextOffset + 2, depth + 1));
-        }
-    }
-
-    private int sumDepth(int offset, int depth) {
-        int nextOffset = tree[offset];
-        if ((nextOffset & (3 << 30)) == (3 << 30))
-            return depth;
-        else {
-            nextOffset &= ~(3 << 30);
-            return sumDepth(nextOffset, depth + 1) + sumDepth(nextOffset + 2, depth + 1);
         }
     }
 
@@ -478,7 +440,7 @@ public class KDTree implements IntersectionAccelerator {
         }
     }
 
-    private void buildTree(float minx, float maxx, float miny, float maxy, float minz, float maxz, BuildTask task, int depth, IntArray tempTree, int offset, ArrayList<BoundedPrimitive> tempList) {
+    private void buildTree(float minx, float maxx, float miny, float maxy, float minz, float maxz, BuildTask task, int depth, IntArray tempTree, int offset, ArrayList<BoundedPrimitive> tempList, BuildStats stats) {
         // get node bounding box extents
         if (task.numObjects > maxPrims && depth < MAX_DEPTH) {
             float dx = maxx - minx;
@@ -504,7 +466,6 @@ public class KDTree implements IntersectionAccelerator {
             float[] nodeMin = { minx, miny, minz };
             float[] nodeMax = { maxx, maxy, maxz };
             // search for best cost
-            costingNanos -= System.nanoTime();
             int nSplits = task.n;
             long[] splits = task.splits;
             byte[] lrtable = task.leftRightTable;
@@ -569,7 +530,6 @@ public class KDTree implements IntersectionAccelerator {
                 // move objects left
                 nl[axis] += pOpened + pPlanar;
             }
-            costingNanos += System.nanoTime();
             // debug check for correctness of the scan
             for (int axis = 0; axis < 3; axis++) {
                 int numLeft = nl[axis];
@@ -579,7 +539,6 @@ public class KDTree implements IntersectionAccelerator {
             }
             // found best split?
             if (bestAxis != -1) {
-                pickingNanos -= System.nanoTime();
                 // allocate space for child nodes
                 BuildTask taskL = new BuildTask(bnl, task);
                 BuildTask taskR = new BuildTask(bnr, task);
@@ -619,8 +578,6 @@ public class KDTree implements IntersectionAccelerator {
                         }
                     }
                 }
-                pickingNanos += System.nanoTime();
-                splitedNanos -= System.nanoTime();
                 // output new splits while maintaining order
                 long[] splitsL = taskL.splits;
                 long[] splitsR = taskR.splits;
@@ -644,9 +601,7 @@ public class KDTree implements IntersectionAccelerator {
                 // free more memory
                 task.splits = splits = splitsL = splitsR = null;
                 task = null;
-                splitedNanos += System.nanoTime();
                 // allocate child nodes
-                nodeingNanos -= System.nanoTime();
                 int nextOffset = tempTree.getSize();
                 tempTree.add(0);
                 tempTree.add(0);
@@ -655,25 +610,25 @@ public class KDTree implements IntersectionAccelerator {
                 // create current node
                 tempTree.set(offset + 0, (bestAxis << 30) | nextOffset);
                 tempTree.set(offset + 1, Float.floatToRawIntBits(bestSplit));
-                nodeingNanos += System.nanoTime();
                 // recurse for child nodes - free object arrays after each step
+                stats.updateInner();
                 switch (bestAxis) {
                     case 0:
-                        buildTree(minx, bestSplit, miny, maxy, minz, maxz, taskL, depth + 1, tempTree, nextOffset, tempList);
+                        buildTree(minx, bestSplit, miny, maxy, minz, maxz, taskL, depth + 1, tempTree, nextOffset, tempList, stats);
                         taskL = null;
-                        buildTree(bestSplit, maxx, miny, maxy, minz, maxz, taskR, depth + 1, tempTree, nextOffset + 2, tempList);
+                        buildTree(bestSplit, maxx, miny, maxy, minz, maxz, taskR, depth + 1, tempTree, nextOffset + 2, tempList, stats);
                         taskR = null;
                         return;
                     case 1:
-                        buildTree(minx, maxx, miny, bestSplit, minz, maxz, taskL, depth + 1, tempTree, nextOffset, tempList);
+                        buildTree(minx, maxx, miny, bestSplit, minz, maxz, taskL, depth + 1, tempTree, nextOffset, tempList, stats);
                         taskL = null;
-                        buildTree(minx, maxx, bestSplit, maxy, minz, maxz, taskR, depth + 1, tempTree, nextOffset + 2, tempList);
+                        buildTree(minx, maxx, bestSplit, maxy, minz, maxz, taskR, depth + 1, tempTree, nextOffset + 2, tempList, stats);
                         taskR = null;
                         return;
                     case 2:
-                        buildTree(minx, maxx, miny, maxy, minz, bestSplit, taskL, depth + 1, tempTree, nextOffset, tempList);
+                        buildTree(minx, maxx, miny, maxy, minz, bestSplit, taskL, depth + 1, tempTree, nextOffset, tempList, stats);
                         taskL = null;
-                        buildTree(minx, maxx, miny, maxy, bestSplit, maxz, taskR, depth + 1, tempTree, nextOffset + 2, tempList);
+                        buildTree(minx, maxx, miny, maxy, bestSplit, maxz, taskR, depth + 1, tempTree, nextOffset + 2, tempList, stats);
                         taskR = null;
                         return;
                     default:
@@ -681,7 +636,6 @@ public class KDTree implements IntersectionAccelerator {
                 }
             }
         }
-        nodeingNanos -= System.nanoTime();
         // create leaf node
         int listOffset = tempList.size();
         int n = 0;
@@ -692,11 +646,11 @@ public class KDTree implements IntersectionAccelerator {
                 n++;
             }
         }
+        stats.updateLeaf(depth, n);
         if (n != task.numObjects)
             UI.printError("[KDT] Error creating leaf node - expecting %d found %d", task.numObjects, n);
         tempTree.set(offset + 0, (3 << 30) | listOffset);
         tempTree.set(offset + 1, task.numObjects);
-        nodeingNanos += System.nanoTime();
         // free some memory
         task.splits = null;
     }

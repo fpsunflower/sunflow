@@ -29,6 +29,12 @@ public class Timer {
         return t.toString();
     }
     
+    public static String toString(double seconds) {
+        Timer t = new Timer();
+        t.endTime = (long) (seconds * 1e9);
+        return t.toString();
+    }
+    
     @Override
     public String toString() {
         long millis = nanos() / (1000 * 1000);

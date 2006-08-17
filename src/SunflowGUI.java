@@ -248,9 +248,11 @@ public class SunflowGUI extends javax.swing.JFrame implements UserInterface {
             }
             if (input == null && !runBenchmark)
                 usage(false);
-            SunflowAPI api = runBenchmark ? new Benchmark() : SunflowAPI.create(input);
-            if (runBenchmark)
-                api.build();
+            if (runBenchmark) {
+                new Benchmark(showFrame).execute();
+                System.exit(0);
+            }
+            SunflowAPI api = SunflowAPI.create(input);
             if (api == null)
                 System.exit(1);
             if (noRender)

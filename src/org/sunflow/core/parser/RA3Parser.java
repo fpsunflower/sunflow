@@ -42,7 +42,8 @@ public class RA3Parser implements SceneParser {
             Mesh mesh = new Mesh();
             mesh.points(verts);
             mesh.triangles(tris);
-            mesh.shader(new SimpleShader());
+            Shader s = api.shader("ra3shader");
+            mesh.shader(s == null ? new SimpleShader() : s);
             api.mesh(mesh);
             stream.close();
         } catch (FileNotFoundException e) {

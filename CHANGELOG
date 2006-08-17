@@ -1,4 +1,7 @@
 v0.06.4
+* Upgraded to Janino 2.4.5
+* Improved the built-in benchmark mode
+* Minor optimizations
 * Optimized the traversal for KDTree and BoudingIntervalHierarchy a little
 * Upgraded to Janino 2.4.4
 * Initial implementation of the Bounding Interval Hierarchy paper
