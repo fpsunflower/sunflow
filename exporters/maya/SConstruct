@@ -1,46 +1,41 @@
 import os, sys
 
-my_build_dir="build/"+sys.platform+"/"
-my_build_dir_dbg=my_build_dir+"/debug"
-my_build_dir_rel=my_build_dir+"/release"
-my_build_dir_prf=my_build_dir+"/profile"
-
-
-
-
 
 # Compiler system environment paths.
-# Note that Platform SDK paths come first, then come the Visual Studio 8 paths.
 sdk_base="C:\\Program Files\\Microsoft Platform SDK\\"
-vs8_base="C:\Program Files (x86)\Microsoft Visual Studio 8"
-c_path="%s\\Bin;%s\\Common7\\IDE;%s\\VC\\BIN;%s\\Common7\\Tools;%s\\SDK\\v2.0\\bin;C:\\WINNT\\Microsoft.NET\\Framework\\v2.0.50727;%s\\VC\\VCPackages" % (sdk_base, vs8_base, vs8_base, vs8_base, vs8_base, vs8_base)
-c_incl="%s\\Include;%s\\VC\\INCLUDE" % (sdk_base, vs8_base)
-c_lib ="%s\\Lib;%s\\VC\\LIB;%s\\SDK\\v2.0\\lib" % (sdk_base, vs8_base, vs8_base)
+
+c_path ="%s\\Bin\\win64\\x86\\AMD64;"  % (sdk_base)
+c_incl ="%s\\Include;%s\\INCLUDE\\crt" % (sdk_base, sdk_base)
+c_lib  ="%s\\Lib\\AMD64;"              % (sdk_base)
 
 # Common compiler switches for debug, release and profile environments:
 # /nologo   No version and name banner.
-# /J        Treat char as unsigned char.
-# /TP       Treat all input files (also .c) as C++ files.
 # /W3       Warning level.
 # /WX       Treat warnings as errors.
 # /GR       Enable RTTI.
 # /EHsc     Enable exception handling.
-common_CXXFLAGS = '/nologo /J /TP /W3 /WX /GR /EHsc'
-
-# Common link switches for both debug and release builds:
-common_LINKFLAGS = Split("/nologo /incremental:no")
-
-# Compiler switches for release builds:
 # /MT       Use multi-threaded run-time libraries (statically linked into the exe). Defines _MT.
 # /O2       Fastest possible code.
-# /Ob2      Inline expansion at compilers discretion.
-envRelease = Environment(CCFLAGS = common_CXXFLAGS+' /MT /O2 /Ob2',     # CCFLAGS is also taken as the default value for CXXFLAGS.
-                         CPPDEFINES = ['_CRT_SECURE_NO_DEPRECATE', '_CRT_NONSTDC_NO_DEPRECATE', ('SCONS_BUILD_DIR', my_build_dir_rel)],
-                         CPPPATH = ['#/Libs'],
-                         LINKFLAGS = common_LINKFLAGS)
+# /Ox       Maximum optimizations
+common_CXXFLAGS = '/nologo /W3 /WX /GR /EHsc /MT /O2 /Ox'
+
+# Common link switches for both debug and release builds:
+common_LINKFLAGS = '/nologo /incremental:no /MACHINE:AMD64'
+
+# Compiler switches for release builds:
+envRelease = Environment(CCFLAGS    = common_CXXFLAGS,
+                         CPPDEFINES = Split('_CRT_SECURE_NO_DEPRECATE _CRT_NONSTDC_NO_DEPRECATE'),
+                         LINKFLAGS  = common_LINKFLAGS)
 
 envRelease['ENV']['PATH'] = c_path
 envRelease['ENV']['INCLUDE'] = c_incl
 envRelease['ENV']['LIB'] = c_lib
 
-envRelease.SharedLibrary('sunflow'    , 'main.cpp'            , SHLIBSUFFIX='.mll', LIBS=Split("Foundation OpenMaya"), LIBPATH=["C:\\Program Files (x86)\\Alias\\Maya7.0\\lib"], CPPPATH=["C:\\Program Files (x86)\\Alias\\Maya7.0\\include"], CPPDEFINES=Split('NDEBUG WIN32 _WINDOWS NT_PLUGIN REQUIRE_IOSTREAM'), LINKFLAGS=Split('/export:initializePlugin /export:uninitializePlugin'))
+envRelease.SharedLibrary('sunflow',
+                         'main.cpp',
+                         SHLIBSUFFIX='.mll',
+                         LIBS=Split("Foundation OpenMaya bufferoverflowU"),
+                         LIBPATH=["C:\\Program Files\\Alias\\Maya8.0\\lib"],
+                         CPPPATH=["C:\\Program Files\\Alias\\Maya8.0\\include"],
+                         CPPDEFINES=Split('NDEBUG WIN32 _WINDOWS NT_PLUGIN REQUIRE_IOSTREAM Bits64_'),
+                         LINKFLAGS=Split('/export:initializePlugin /export:uninitializePlugin'))
