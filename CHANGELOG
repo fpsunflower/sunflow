@@ -1,4 +1,6 @@
 v0.06.4
+* Upgraded to Janino 2.4.6
+* Minor tweaks to the benchmark mode
 * Upgraded to Janino 2.4.5
 * Improved the built-in benchmark mode
 * Minor optimizations
