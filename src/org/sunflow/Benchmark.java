@@ -1,6 +1,11 @@
 package org.sunflow;
 
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
 import java.io.PrintStream;
+
+import javax.imageio.ImageIO;
 
 import org.sunflow.core.Display;
 import org.sunflow.core.Shader;
@@ -24,19 +29,24 @@ public class Benchmark extends SunflowAPI implements BenchmarkTest, UserInterfac
     private String resourcePath;
     private PrintStream stream;
     private boolean showGUI;
+    private boolean showOutput;
+    private boolean showBenchmarkOutput;
     private int errorThreshold;
 
     public Benchmark(boolean showGUI) {
-        this("resources/", System.out, 0, 512, showGUI, 4);
+        this("resources/", System.out, 0, 512, showGUI, false, true, 4, false);
     }
 
-    public Benchmark(String resourcePath, PrintStream stream, int threads, int resolution, boolean showGUI, int errorThreshold) {
+    public Benchmark(String resourcePath, PrintStream stream, int threads, int resolution, boolean showGUI, boolean showOutput, boolean showBenchmarkOutput, int errorThreshold, boolean generateMissingReference) {
         this.resourcePath = resourcePath;
         this.stream = stream;
         this.showGUI = showGUI;
+        this.showOutput = showOutput;
+        this.showBenchmarkOutput = showBenchmarkOutput;
         this.errorThreshold = errorThreshold;
         // forward all output through this class (uses the specified stream)
         UI.set(this);
+        UI.printInfo("[BCH] Preparing benchmarking scene ...");
         threads(threads, true); // spawn regular priority threads
         resolution(resolution, resolution);
         // settings
@@ -47,10 +57,47 @@ public class Benchmark extends SunflowAPI implements BenchmarkTest, UserInterfac
         accel("kdtree");
         // geometry
         buildCornellBox();
+        String referenceImageFilename = String.format("%sgolden_%04X.png", resourcePath, resolution);
+        boolean generatingReference = false;
+        if (new File(referenceImageFilename).exists()) {
+            // load the reference image
+            UI.printInfo("[BCH] Loading reference image: %s", referenceImageFilename);
+            try {
+                BufferedImage bi = ImageIO.read(new File(referenceImageFilename));
+                if (bi.getWidth() != resolution || bi.getHeight() != resolution)
+                    UI.printError("[BCH] Reference image has invalid resolution! Expected %dx%d found %dx%d", resolution, resolution, bi.getWidth(), bi.getHeight());
+                ValidatingDisplay.reference = new int[resolution * resolution];
+                for (int y = 0, i = 0; y < resolution; y++)
+                    for (int x = 0; x < resolution; x++, i++)
+                        ValidatingDisplay.reference[i] = bi.getRGB(x, resolution - 1 - y); // flip
+            } catch (IOException e) {
+                UI.printError("[BCH] Reference image could not be opened");
+            }
+        } else if (generateMissingReference) {
+            UI.printWarning("[BCH] Reference image was not found - it will be generated to: %s", referenceImageFilename);
+            generatingReference = true;
+        } else {
+            UI.printError("[BCH] Reference image %s was not found - cannot continue benchmarking", referenceImageFilename);
+        }
         // this first render generates the reference frame - it is not timed
         // this also caches the acceleration data structures so it won't be
         // included in the kernel timing
-        render(new ValidatingDisplay(true, errorThreshold));
+        UI.printInfo("[BCH] Rendering warmup frame ...");
+        render(new ValidatingDisplay(generatingReference, errorThreshold));
+        // if the data has been just generated - write it to file for future
+        // runs
+        if (generatingReference) {
+            UI.printInfo("[BCH] Saving reference image to: %s", referenceImageFilename);
+            BufferedImage bi = new BufferedImage(resolution, resolution, BufferedImage.TYPE_INT_RGB);
+            for (int y = 0, i = 0; y < resolution; y++)
+                for (int x = 0; x < resolution; x++, i++)
+                    bi.setRGB(x, resolution - 1 - y, ValidatingDisplay.reference[i]);
+            try {
+                ImageIO.write(bi, "png", new File(referenceImageFilename));
+            } catch (IOException e) {
+                UI.printError("[BCH] Unabled to save reference image: %s", e.getMessage());
+            }
+        }
     }
 
     private void buildCornellBox() {
@@ -109,7 +156,7 @@ public class Benchmark extends SunflowAPI implements BenchmarkTest, UserInterfac
     }
 
     public void kernelBegin() {
-    // no per loop setup
+        // no per loop setup
     }
 
     public void kernelMain() {
@@ -117,7 +164,7 @@ public class Benchmark extends SunflowAPI implements BenchmarkTest, UserInterfac
     }
 
     public void kernelEnd() {
-    // no per loop cleanup
+        // no per loop cleanup
     }
 
     private static class ValidatingDisplay implements Display {
@@ -138,7 +185,8 @@ public class Benchmark extends SunflowAPI implements BenchmarkTest, UserInterfac
             ih = h;
         }
 
-        public void imagePrepare(int x, int y, int w, int h, int id) {}
+        public void imagePrepare(int x, int y, int w, int h, int id) {
+        }
 
         public void imageUpdate(int x, int y, int w, int h, Color[] data) {
             for (int j = 0, index = 0; j < h; j++) {
@@ -149,12 +197,13 @@ public class Benchmark extends SunflowAPI implements BenchmarkTest, UserInterfac
             }
         }
 
-        public void imageFill(int x, int y, int w, int h, Color c) {}
+        public void imageFill(int x, int y, int w, int h, Color c) {
+        }
 
         public void imageEnd() {
-            if (generateReference)
+            if (generateReference) {
                 reference = pixels;
-            else {
+            } else {
                 int diff = 0;
                 if (reference != null && pixels.length == reference.length) {
                     for (int i = 0; i < pixels.length; i++) {
@@ -174,21 +223,30 @@ public class Benchmark extends SunflowAPI implements BenchmarkTest, UserInterfac
     }
 
     public void printInfo(String s) {
-        // print all messages by default
-        stream.println(s);
+        if (stream != null)
+            if (showOutput || (showBenchmarkOutput && s.startsWith("[BCH]")))
+                stream.println(s);
     }
 
     public void printWarning(String s) {
-        stream.println("Warning: " + s);
+        if (stream != null)
+            if (showOutput || (showBenchmarkOutput && s.startsWith("[BCH]")))
+                stream.println("Warning: " + s);
     }
 
     public void printError(String s) {
-        stream.println("Error: " + s);
+        if (stream != null)
+            if (showOutput || (showBenchmarkOutput && s.startsWith("[BCH]")))
+                stream.println("Error: " + s);
+        throw new RuntimeException(s);
     }
 
-    public void taskStart(String s, int min, int max) {}
+    public void taskStart(String s, int min, int max) {
+    }
 
-    public void taskUpdate(int current) {}
+    public void taskUpdate(int current) {
+    }
 
-    public void taskStop() {}
+    public void taskStop() {
+    }
 }
