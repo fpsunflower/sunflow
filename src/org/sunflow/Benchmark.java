@@ -142,7 +142,9 @@ public class Benchmark extends SunflowAPI implements BenchmarkTest, UserInterfac
         sphere(100, minY + 60, -50, 50);
         // scanned model
         shader("ra3shader", shaders[0]);
-        parse(resourcePath + "maxplanck.ra3");
+        String ra3file = resourcePath + "maxplanck.ra3";
+        if (!parse(ra3file))
+            UI.printError("[BCH] Unable to load %s", ra3file);
         giEngine(new InstantGI(90, 1, 0.00002f, 0));
     }
 
