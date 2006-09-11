@@ -588,8 +588,10 @@ public class KDTreeOld implements IntersectionAccelerator {
                 int axis = axisOrder[r];
                 for (int i = 0, i2 = 0; i < objects.length; i++) {
                     int idx = 6 * objects[i] + axis * 2;
-                    splits[i2++] = pack(objectBounds[idx + 0], true, i);// + Long.MIN_VALUE;
-                    splits[i2++] = pack(objectBounds[idx + 1], false, i);// + Long.MIN_VALUE;
+                    splits[i2++] = pack(objectBounds[idx + 0], true, i);// +
+                    // Long.MIN_VALUE;
+                    splits[i2++] = pack(objectBounds[idx + 1], false, i);// +
+                    // Long.MIN_VALUE;
                 }
                 // sort splits
                 if (sorted != null) {
@@ -602,7 +604,7 @@ public class KDTreeOld implements IntersectionAccelerator {
                     // use a plain old quick sort for small arrays
                     qsort(splits, 0, 2 * objects.length);
                 }
-//                Arrays.sort(splits);
+                // Arrays.sort(splits);
                 if (!unpackIsLeft(splits[0]))
                     System.out.println("sort warning start @ D=" + depth);
                 if (unpackIsLeft(splits[2 * objects.length - 1]))
@@ -636,7 +638,7 @@ public class KDTreeOld implements IntersectionAccelerator {
                 }
                 for (int i = 0; i < 2 * objects.length; i++) {
                     long ptr = splits[i];// + Long.MIN_VALUE;
-                    //splits[i] = ptr;
+                    // splits[i] = ptr;
                     float s = unpackSplit(ptr);
                     boolean isLeft = unpackIsLeft(ptr);
                     if (!isLeft)
@@ -682,7 +684,7 @@ public class KDTreeOld implements IntersectionAccelerator {
                 // free up some memory
                 objects = null;
                 splits = null;
-                //sorted = null;
+                // sorted = null;
                 // allocate child nodes
                 int nextOffset = tempTree.getSize();
                 tempTree.add(0);
@@ -796,11 +798,8 @@ public class KDTreeOld implements IntersectionAccelerator {
         int offsetYBack = offsetYFront ^ 2;
         int offsetZBack = offsetZFront ^ 2;
 
-        int[] nodeStack = state.iscratch;
-        float[] tStack = state.fscratch;
-
-        int nstackPos = 0;
-        int tstackPos = 0;
+        IntersectionState.StackNode[] stack = state.stack;
+        int stackPos = 0;
         int node = 0;
 
         while (true) {
@@ -822,11 +821,10 @@ public class KDTreeOld implements IntersectionAccelerator {
                         if (d > intervalMax)
                             continue;
                         // push back node
-                        nodeStack[nstackPos] = back;
-                        tStack[tstackPos + 0] = Math.max(d, intervalMin);
-                        tStack[tstackPos + 1] = intervalMax;
-                        nstackPos++;
-                        tstackPos += 2;
+                        stack[stackPos].node = back;
+                        stack[stackPos].near = (d >= intervalMin) ? d : intervalMin;
+                        stack[stackPos].far = intervalMax;
+                        stackPos++;
                         // update ray interval for front node
                         intervalMax = Math.min(d, intervalMax);
                         continue;
@@ -843,11 +841,10 @@ public class KDTreeOld implements IntersectionAccelerator {
                         if (d > intervalMax)
                             continue;
                         // push back node
-                        nodeStack[nstackPos] = back;
-                        tStack[tstackPos + 0] = Math.max(d, intervalMin);
-                        tStack[tstackPos + 1] = intervalMax;
-                        nstackPos++;
-                        tstackPos += 2;
+                        stack[stackPos].node = back;
+                        stack[stackPos].near = (d >= intervalMin) ? d : intervalMin;
+                        stack[stackPos].far = intervalMax;
+                        stackPos++;
                         // update ray interval for front node
                         intervalMax = Math.min(d, intervalMax);
                         continue;
@@ -864,11 +861,10 @@ public class KDTreeOld implements IntersectionAccelerator {
                         if (d > intervalMax)
                             continue;
                         // push back node
-                        nodeStack[nstackPos] = back;
-                        tStack[tstackPos + 0] = Math.max(d, intervalMin);
-                        tStack[tstackPos + 1] = intervalMax;
-                        nstackPos++;
-                        tstackPos += 2;
+                        stack[stackPos].node = back;
+                        stack[stackPos].near = (d >= intervalMin) ? d : intervalMin;
+                        stack[stackPos].far = intervalMax;
+                        stackPos++;
                         // update ray interval for front node
                         intervalMax = Math.min(d, intervalMax);
                         continue;
@@ -887,14 +883,13 @@ public class KDTreeOld implements IntersectionAccelerator {
                     return;
             }
             // stack is empty?
-            if (nstackPos == 0)
+            if (stackPos == 0)
                 return;
             // move back up the stack
-            nstackPos--;
-            tstackPos -= 2;
-            node = nodeStack[nstackPos];
-            intervalMin = tStack[tstackPos + 0];
-            intervalMax = tStack[tstackPos + 1];
+            stackPos--;
+            node = stack[stackPos].node;
+            intervalMin = stack[stackPos].near;
+            intervalMax = stack[stackPos].far;
         }
     }
 }

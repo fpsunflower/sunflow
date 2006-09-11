@@ -57,6 +57,7 @@ import org.sunflow.core.shader.ViewCausticsShader;
 import org.sunflow.core.shader.ViewGlobalPhotonsShader;
 import org.sunflow.core.shader.ViewIrradianceShader;
 import org.sunflow.image.Color;
+import org.sunflow.math.Matrix4;
 import org.sunflow.math.Point3;
 import org.sunflow.math.Vector3;
 import org.sunflow.system.Parser;
@@ -73,7 +74,8 @@ public class SCParser implements SceneParser {
     private int numLightSamples;
     private int numGlossySamples;
 
-    public SCParser() {}
+    public SCParser() {
+    }
 
     public boolean parse(String filename, SunflowAPI api) {
         String localDir = new File(filename).getAbsoluteFile().getParentFile().getAbsolutePath();
@@ -586,7 +588,7 @@ public class SCParser implements SceneParser {
         } else if (p.peekNextToken("id")) {
             api.shader(name, new IDShader());
         } else if (p.peekNextToken("uber")) {
-            
+
             p.checkNextToken("diff");
             Color d = parseColor();
             p.checkNextToken("refl");
@@ -689,13 +691,17 @@ public class SCParser implements SceneParser {
             api.mesh(mesh);
         } else if (p.peekNextToken("sphere")) {
             UI.printInfo("[API] Reading sphere ...");
-            p.checkNextToken("c");
-            float cx = p.getNextFloat();
-            float cy = p.getNextFloat();
-            float cz = p.getNextFloat();
-            p.checkNextToken("r");
-            float r = p.getNextFloat();
-            api.sphere(cx, cy, cz, r);
+            if (p.peekNextToken("c")) {
+                float cx = p.getNextFloat();
+                float cy = p.getNextFloat();
+                float cz = p.getNextFloat();
+                p.checkNextToken("r");
+                float r = p.getNextFloat();
+                api.sphere(cx, cy, cz, r);
+            } else {
+                Matrix4 m = parseMatrix();
+                api.sphere(m);
+            }
         } else if (p.peekNextToken("plane")) {
             UI.printInfo("[API] Reading plane ...");
             p.checkNextToken("p");
@@ -968,5 +974,47 @@ public class SCParser implements SceneParser {
         float y = p.getNextFloat();
         float z = p.getNextFloat();
         return new Vector3(x, y, z);
+    }
+
+    private Matrix4 parseMatrix() throws IOException, ParserException {
+        p.checkNextToken("matrix");
+        Matrix4 m = Matrix4.IDENTITY;
+        p.checkNextToken("{");
+        while (!p.peekNextToken("}")) {
+            Matrix4 t = null;
+            if (p.peekNextToken("translate")) {
+                float x = p.getNextFloat();
+                float y = p.getNextFloat();
+                float z = p.getNextFloat();
+                t = Matrix4.translation(x, y, z);
+            } else if (p.peekNextToken("scaleu")) {
+                float s = p.getNextFloat();
+                t = Matrix4.scale(s);
+            } else if (p.peekNextToken("scale")) {
+                float x = p.getNextFloat();
+                float y = p.getNextFloat();
+                float z = p.getNextFloat();
+                t = Matrix4.scale(x, y, z);
+            } else if (p.peekNextToken("rotatex")) {
+                float angle = p.getNextFloat();
+                t = Matrix4.rotateX((float) Math.toRadians(angle));
+            } else if (p.peekNextToken("rotatey")) {
+                float angle = p.getNextFloat();
+                t = Matrix4.rotateY((float) Math.toRadians(angle));
+            } else if (p.peekNextToken("rotatez")) {
+                float angle = p.getNextFloat();
+                t = Matrix4.rotateZ((float) Math.toRadians(angle));
+            } else if (p.peekNextToken("rotate")) {
+                float x = p.getNextFloat();
+                float y = p.getNextFloat();
+                float z = p.getNextFloat();
+                float angle = p.getNextFloat();
+                t = Matrix4.rotate(x, y, z, (float) Math.toRadians(angle));
+            } else
+                UI.printWarning("[API] Unrecognized transformation type: %s", p.getNextToken());
+            if (t != null)
+                m = t.multiply(m);
+        }
+        return m;
     }
 }

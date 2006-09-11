@@ -98,7 +98,7 @@ public class BoundingIntervalHierarchy implements IntersectionAccelerator {
         void updateInner() {
             numNodes++;
         }
-        
+
         void updateBVH2() {
             numBVH2++;
         }
@@ -232,7 +232,7 @@ public class BoundingIntervalHierarchy implements IntersectionAccelerator {
                     if (clipR > minb)
                         clipR = minb;
                 }
-                if (nodeL > minb) 
+                if (nodeL > minb)
                     nodeL = minb;
                 if (nodeR < maxb)
                     nodeR = maxb;
@@ -244,7 +244,8 @@ public class BoundingIntervalHierarchy implements IntersectionAccelerator {
                 if (1.3f * nodeNewW < nodeBoxW) {
                     stats.updateBVH2();
                     // create clips to create empty space
-                    // node box is too big compare to space occupied by primitives
+                    // node box is too big compare to space occupied by
+                    // primitives
                     // create leaves, update and recurse
                     int nextIndex = tempTree.getSize();
                     // allocate child - for right clip
@@ -477,11 +478,8 @@ public class BoundingIntervalHierarchy implements IntersectionAccelerator {
         offsetYBack++;
         offsetZBack++;
 
-        int[] nodeStack = state.iscratch;
-        float[] tStack = state.fscratch;
-
-        int nstackPos = 0;
-        int tstackPos = 0;
+        IntersectionState.StackNode[] stack = state.stack;
+        int stackPos = 0;
         int node = 0;
 
         while (true) {
@@ -512,11 +510,10 @@ public class BoundingIntervalHierarchy implements IntersectionAccelerator {
                         }
                         // ray passes through both nodes
                         // push back node
-                        nodeStack[nstackPos] = back;
-                        tStack[tstackPos + 0] = (tb >= intervalMin) ? tb : intervalMin;
-                        tStack[tstackPos + 1] = intervalMax;
-                        nstackPos++;
-                        tstackPos += 2;
+                        stack[stackPos].node = back;
+                        stack[stackPos].near = (tb >= intervalMin) ? tb : intervalMin;
+                        stack[stackPos].far = intervalMax;
+                        stackPos++;
                         // update ray interval for front node
                         intervalMax = (tf <= intervalMax) ? tf : intervalMax;
                         continue;
@@ -542,11 +539,10 @@ public class BoundingIntervalHierarchy implements IntersectionAccelerator {
                         }
                         // ray passes through both nodes
                         // push back node
-                        nodeStack[nstackPos] = back;
-                        tStack[tstackPos + 0] = (tb >= intervalMin) ? tb : intervalMin;
-                        tStack[tstackPos + 1] = intervalMax;
-                        nstackPos++;
-                        tstackPos += 2;
+                        stack[stackPos].node = back;
+                        stack[stackPos].near = (tb >= intervalMin) ? tb : intervalMin;
+                        stack[stackPos].far = intervalMax;
+                        stackPos++;
                         // update ray interval for front node
                         intervalMax = (tf <= intervalMax) ? tf : intervalMax;
                         continue;
@@ -573,11 +569,10 @@ public class BoundingIntervalHierarchy implements IntersectionAccelerator {
                         }
                         // ray passes through both nodes
                         // push back node
-                        nodeStack[nstackPos] = back;
-                        tStack[tstackPos + 0] = (tb >= intervalMin) ? tb : intervalMin;
-                        tStack[tstackPos + 1] = intervalMax;
-                        nstackPos++;
-                        tstackPos += 2;
+                        stack[stackPos].node = back;
+                        stack[stackPos].near = (tb >= intervalMin) ? tb : intervalMin;
+                        stack[stackPos].far = intervalMax;
+                        stackPos++;
                         // update ray interval for front node
                         intervalMax = (tf <= intervalMax) ? tf : intervalMax;
                         continue;
@@ -596,16 +591,17 @@ public class BoundingIntervalHierarchy implements IntersectionAccelerator {
             } // traversal loop
             do {
                 // stack is empty?
-                if (nstackPos == 0)
+                if (stackPos == 0)
                     return;
                 // move back up the stack
-                nstackPos--;
-                tstackPos -= 2;
-                node = nodeStack[nstackPos];
-                intervalMin = tStack[tstackPos + 0];
-                intervalMax = tStack[tstackPos + 1];
-                // early termination
-            } while (r.getMax() < intervalMin);
+                stackPos--;
+                intervalMin = stack[stackPos].near;
+                if (r.getMax() < intervalMin)
+                    continue;
+                node = stack[stackPos].node;
+                intervalMax = stack[stackPos].far;
+                break;
+            } while (true);
         }
     }
 }

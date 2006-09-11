@@ -66,7 +66,7 @@ public class KDTree implements IntersectionAccelerator {
         void updateInner() {
             numNodes++;
         }
-        
+
         void updateLeaf(int depth, int n) {
             numLeaves++;
             minDepth = Math.min(depth, minDepth);
@@ -116,7 +116,7 @@ public class KDTree implements IntersectionAccelerator {
             UI.printInfo("[KDT]                N>4  %3d%%", 100 * numLeaves4p / numLeaves);
         }
     }
-    
+
     public static void setDumpMode(boolean dump, String prefix) {
         KDTree.dump = dump;
         KDTree.dumpPrefix = prefix;
@@ -724,11 +724,8 @@ public class KDTree implements IntersectionAccelerator {
         int offsetYBack = offsetYFront ^ 2;
         int offsetZBack = offsetZFront ^ 2;
 
-        int[] nodeStack = state.iscratch;
-        float[] tStack = state.fscratch;
-
-        int nstackPos = 0;
-        int tstackPos = 0;
+        IntersectionState.StackNode[] stack = state.stack;
+        int stackPos = 0;
         int node = 0;
 
         while (true) {
@@ -747,11 +744,10 @@ public class KDTree implements IntersectionAccelerator {
                         if (d > intervalMax)
                             continue;
                         // push back node
-                        nodeStack[nstackPos] = back;
-                        tStack[tstackPos + 0] = (d >= intervalMin) ? d : intervalMin;
-                        tStack[tstackPos + 1] = intervalMax;
-                        nstackPos++;
-                        tstackPos += 2;
+                        stack[stackPos].node = back;
+                        stack[stackPos].near = (d >= intervalMin) ? d : intervalMin;
+                        stack[stackPos].far = intervalMax;
+                        stackPos++;
                         // update ray interval for front node
                         intervalMax = (d <= intervalMax) ? d : intervalMax;
                         continue;
@@ -767,11 +763,10 @@ public class KDTree implements IntersectionAccelerator {
                         if (d > intervalMax)
                             continue;
                         // push back node
-                        nodeStack[nstackPos] = back;
-                        tStack[tstackPos + 0] = (d >= intervalMin) ? d : intervalMin;
-                        tStack[tstackPos + 1] = intervalMax;
-                        nstackPos++;
-                        tstackPos += 2;
+                        stack[stackPos].node = back;
+                        stack[stackPos].near = (d >= intervalMin) ? d : intervalMin;
+                        stack[stackPos].far = intervalMax;
+                        stackPos++;
                         // update ray interval for front node
                         intervalMax = (d <= intervalMax) ? d : intervalMax;
                         continue;
@@ -787,11 +782,10 @@ public class KDTree implements IntersectionAccelerator {
                         if (d > intervalMax)
                             continue;
                         // push back node
-                        nodeStack[nstackPos] = back;
-                        tStack[tstackPos + 0] = (d >= intervalMin) ? d : intervalMin;
-                        tStack[tstackPos + 1] = intervalMax;
-                        nstackPos++;
-                        tstackPos += 2;
+                        stack[stackPos].node = back;
+                        stack[stackPos].near = (d >= intervalMin) ? d : intervalMin;
+                        stack[stackPos].far = intervalMax;
+                        stackPos++;
                         // update ray interval for front node
                         intervalMax = (d <= intervalMax) ? d : intervalMax;
                         continue;
@@ -810,17 +804,19 @@ public class KDTree implements IntersectionAccelerator {
                     }
                 } // switch
             } // traversal loop
-            // stack is empty?
             do {
-                if (nstackPos == 0)
+                // stack is empty?
+                if (stackPos == 0)
                     return;
                 // move back up the stack
-                nstackPos--;
-                tstackPos -= 2;
-                node = nodeStack[nstackPos];
-                intervalMin = tStack[tstackPos + 0];
-                intervalMax = tStack[tstackPos + 1];
-            } while (r.getMax() < intervalMin);
+                stackPos--;
+                intervalMin = stack[stackPos].near;
+                if (r.getMax() < intervalMin)
+                    continue;
+                node = stack[stackPos].node;
+                intervalMax = stack[stackPos].far;
+                break;
+            } while (true);
         }
     }
 }

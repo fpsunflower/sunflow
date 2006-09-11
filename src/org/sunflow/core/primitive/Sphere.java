@@ -6,112 +6,109 @@ import org.sunflow.core.Ray;
 import org.sunflow.core.Shader;
 import org.sunflow.core.ShadingState;
 import org.sunflow.math.BoundingBox;
+import org.sunflow.math.Matrix4;
 import org.sunflow.math.OrthoNormalBasis;
 import org.sunflow.math.Point3;
 import org.sunflow.math.Vector3;
 
 public class Sphere implements BoundedPrimitive {
-    private Point3 center;
-    private float r, r2;
+    private Matrix4 o2w;
+    private Matrix4 w2o;
+    private BoundingBox bounds;
     private Shader shader;
 
-    public Sphere(Shader shader, Point3 center, float radius) {
-        this.center = center;
-        r = radius;
-        r2 = r * r;
+    public Sphere(Shader shader, Matrix4 o2w) {
+        this.o2w = o2w;
+        w2o = o2w.inverse();
+        if (w2o == null)
+            throw new RuntimeException("Unable to inverse scale/translate matrix!");
         this.shader = shader;
+        bounds = new BoundingBox(-1, -1, -1);
+        bounds.include(1, 1, 1);
+        bounds = o2w.transform(bounds);
+    }
+    
+    public Sphere(Shader shader, Point3 center, float radius) {
+        this(shader, Matrix4.translation(center.x, center.y, center.z).multiply(Matrix4.scale(radius)));
     }
 
     public BoundingBox getBounds() {
-        BoundingBox bounds = new BoundingBox();
-        bounds.include(new Point3(center.x - r, center.y - r, center.z - r));
-        bounds.include(new Point3(center.x + r, center.y + r, center.z + r));
         return bounds;
     }
 
     public float getBound(int i) {
         switch (i) {
             case 0:
-                return center.x - r;
+                return bounds.getMinimum().x;
             case 1:
-                return center.x + r;
+                return bounds.getMaximum().x;
             case 2:
-                return center.y - r;
+                return bounds.getMinimum().y;
             case 3:
-                return center.y + r;
+                return bounds.getMaximum().y;
             case 4:
-                return center.z - r;
+                return bounds.getMinimum().z;
             case 5:
-                return center.z + r;
+                return bounds.getMaximum().z;
             default:
                 return 0;
         }
     }
-    
+
     public boolean intersects(BoundingBox box) {
-        float a, b;
-        float dmax = 0;
-        float dmin = 0;
-        a = (center.x - box.getMinimum().x) * (center.x - box.getMinimum().x);
-        b = (center.x - box.getMaximum().x) * (center.x - box.getMaximum().x);
-        dmax += Math.max(a, b);
-        if (center.x < box.getMinimum().x)
-            dmin += a;
-        else if (center.x > box.getMaximum().x)
-            dmin += b;
-        a = (center.y - box.getMinimum().y) * (center.y - box.getMinimum().y);
-        b = (center.y - box.getMaximum().y) * (center.y - box.getMaximum().y);
-        dmax += Math.max(a, b);
-        if (center.y < box.getMinimum().y)
-            dmin += a;
-        else if (center.y > box.getMaximum().y)
-            dmin += b;
-        a = (center.z - box.getMinimum().z) * (center.z - box.getMinimum().z);
-        b = (center.z - box.getMaximum().z) * (center.z - box.getMaximum().z);
-        dmax += Math.max(a, b);
-        if (center.z < box.getMinimum().z)
-            dmin += a;
-        else if (center.z > box.getMaximum().z)
-            dmin += b;
-        return ((dmin <= r2) && (r2 <= dmax));
+        return box.intersects(bounds);
     }
 
     public void prepareShadingState(ShadingState state) {
         state.init();
         state.getRay().getPoint(state.getPoint());
-        Point3.sub(state.getPoint(), center, state.getNormal());
+        Point3 localPoint = w2o.transformP(state.getPoint());
+        state.getNormal().set(localPoint.x, localPoint.y, localPoint.z);
         state.getNormal().normalize();
-        state.getUV().y = (float) (Math.acos(state.getNormal().z) / Math.PI);
-        if (state.getNormal().y >= 0.0)
-            state.getUV().x = (float) (Math.acos(state.getNormal().x / Math.sin(Math.PI * state.getUV().y)) / (2 * Math.PI));
-        else
-            state.getUV().x = (float) ((Math.PI + Math.acos(state.getNormal().x / Math.sin(Math.PI * state.getUV().y))) / (2 * Math.PI));
-        state.getGeoNormal().set(state.getNormal());
 
+        float phi = (float) Math.atan2(state.getNormal().y, state.getNormal().x);
+        if (phi < 0)
+            phi += 2 * Math.PI;
+        float theta = (float) Math.acos(state.getNormal().z);
+        state.getUV().y = theta / (float) Math.PI;
+        state.getUV().x = phi / (float) (2 * Math.PI);
         Vector3 v = new Vector3();
         v.x = -2 * (float) Math.PI * state.getNormal().y;
         v.y = 2 * (float) Math.PI * state.getNormal().x;
         v.z = 0;
-
-        state.setBasis(OrthoNormalBasis.makeFromWV(state.getNormal(), v));
         state.setShader(shader);
+        // into object space
+        Vector3 worldNormal = w2o.transformTransposeV(state.getNormal());
+        v = o2w.transformV(v);
+        state.getNormal().set(worldNormal);
+        state.getNormal().normalize();
+        state.getGeoNormal().set(state.getNormal());
+        state.setBasis(OrthoNormalBasis.makeFromWV(state.getNormal(), v));
+
     }
 
     public void intersect(Ray r, IntersectionState state) {
-        float ocx = r.ox - center.x;
-        float ocy = r.oy - center.y;
-        float ocz = r.oz - center.z;
-        float qb = (r.dx * ocx) + (r.dy * ocy) + (r.dz * ocz);
-        float qc = ((ocx * ocx) + (ocy * ocy) + (ocz * ocz)) - r2;
-        float det = (qb * qb) - qc;
-        if (det >= 0.0) {
+        // transform ray into local space
+        float rox = w2o.transformPX(r.ox, r.oy, r.oz);
+        float roy = w2o.transformPY(r.ox, r.oy, r.oz);
+        float roz = w2o.transformPZ(r.ox, r.oy, r.oz);
+        float rdx = w2o.transformVX(r.dx, r.dy, r.dz);
+        float rdy = w2o.transformVY(r.dx, r.dy, r.dz);
+        float rdz = w2o.transformVZ(r.dx, r.dy, r.dz);
+        // intersect in local space
+        float qa = rdx * rdx + rdy * rdy + rdz * rdz;
+        float qb = ((rdx * rox) + (rdy * roy) + (rdz * roz));
+        float qc = ((rox * rox) + (roy * roy) + (roz * roz)) - 1;
+        float det = (qb * qb) - qc * qa;
+        if (det > 0.0) {
             det = (float) Math.sqrt(det);
-            float t = -det - qb;
+            qa = 1 / qa;
+            float t = (-qb - det) * qa;
             if (r.isInside(t)) {
                 r.setMax(t);
                 state.setIntersection(this, 0, 0);
             } else {
-                t = det - qb;
+                t = (-qb + det) * qa;
                 if (r.isInside(t)) {
                     r.setMax(t);
                     state.setIntersection(this, 0, 0);

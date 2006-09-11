@@ -56,6 +56,7 @@ import org.sunflow.core.renderer.ProgressiveRenderer;
 import org.sunflow.core.renderer.SimpleRenderer;
 import org.sunflow.image.Color;
 import org.sunflow.math.BoundingBox;
+import org.sunflow.math.Matrix4;
 import org.sunflow.math.Point3;
 import org.sunflow.system.SearchPath;
 import org.sunflow.system.Timer;
@@ -422,6 +423,18 @@ public class SunflowAPI {
     }
 
     /**
+     * Create a sphere with the specified transform. The transform is applied to
+     * a unit-radius sphere centered at the origin. The currently active shader
+     * is used.
+     * 
+     * @param m
+     *            object to world transformation matrix
+     */
+    public final void sphere(Matrix4 m) {
+        primitive(new Sphere(currentShader, m));
+    }
+
+    /**
      * Adds the specified mesh to the scene.
      * 
      * @param mesh
@@ -586,7 +599,8 @@ public class SunflowAPI {
      * This method does nothing, but may be overriden to create scenes
      * procedurally.
      */
-    public void build() {}
+    public void build() {
+    }
 
     /**
      * Create an API object from the specified file. Java files are read by

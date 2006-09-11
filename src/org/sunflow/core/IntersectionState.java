@@ -3,8 +3,19 @@ package org.sunflow.core;
 public final class IntersectionState {
     public float u, v;
     public Primitive object;
-    public int[] iscratch = new int[64]; // scratch space for intersection accelerators
-    public float[] fscratch = new float[128]; // scratch space for intersection accelerators
+    public StackNode[] stack;
+
+    public static final class StackNode {
+        public int node;
+        public float near;
+        public float far;
+    }
+
+    public IntersectionState() {
+        stack = new StackNode[64];
+        for (int i = 0; i < stack.length; i++)
+            stack[i] = new StackNode();
+    }
 
     /**
      * Checks to see if a hit has been recorded.

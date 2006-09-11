@@ -30,11 +30,24 @@ public class BoundingBox {
     }
 
     /**
-     * Creates a bounding box containing only the specified point
+     * Creates a bounding box containing only the specified point.
+     * 
+     * @param p
+     *            point to include
+     */
+    public BoundingBox(Point3 p) {
+        this(p.x, p.y, p.z);
+    }
+
+    /**
+     * Creates a bounding box containing only the specified point.
      * 
      * @param x
+     *            x coordinate of the point to include
      * @param y
+     *            y coordinate of the point to include
      * @param z
+     *            z coordinate of the point to include
      */
     public BoundingBox(float x, float y, float z) {
         minimum = new Point3(x, y, z);
@@ -72,6 +85,22 @@ public class BoundingBox {
      */
     public final Point3 getCenter() {
         return Point3.mid(minimum, maximum, new Point3());
+    }
+
+    /**
+     * Gets a corner of the bounding box. The index scheme uses the binary
+     * representation of the index to decide which corner to return. Corner 0 is
+     * equivalent to the minimum and corner 7 is equivalent to the maximum.
+     * 
+     * @param i
+     *            a corner index, from 0 to 7
+     * @return the corresponding corner
+     */
+    public final Point3 getCorner(int i) {
+        float x = (i & 1) == 0 ? minimum.x : maximum.x;
+        float y = (i & 2) == 0 ? minimum.y : maximum.y;
+        float z = (i & 4) == 0 ? minimum.z : maximum.z;
+        return new Point3(x, y, z);
     }
 
     /**
