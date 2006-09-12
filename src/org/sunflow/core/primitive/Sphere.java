@@ -9,6 +9,7 @@ import org.sunflow.math.BoundingBox;
 import org.sunflow.math.Matrix4;
 import org.sunflow.math.OrthoNormalBasis;
 import org.sunflow.math.Point3;
+import org.sunflow.math.Solvers;
 import org.sunflow.math.Vector3;
 
 public class Sphere implements BoundedPrimitive {
@@ -97,23 +98,18 @@ public class Sphere implements BoundedPrimitive {
         float rdz = w2o.transformVZ(r.dx, r.dy, r.dz);
         // intersect in local space
         float qa = rdx * rdx + rdy * rdy + rdz * rdz;
-        float qb = ((rdx * rox) + (rdy * roy) + (rdz * roz));
+        float qb = 2 * ((rdx * rox) + (rdy * roy) + (rdz * roz));
         float qc = ((rox * rox) + (roy * roy) + (roz * roz)) - 1;
-        float det = (qb * qb) - qc * qa;
-        if (det > 0.0) {
-            det = (float) Math.sqrt(det);
-            qa = 1 / qa;
-            float t = (-qb - det) * qa;
-            if (r.isInside(t)) {
-                r.setMax(t);
-                state.setIntersection(this, 0, 0);
-            } else {
-                t = (-qb + det) * qa;
-                if (r.isInside(t)) {
-                    r.setMax(t);
-                    state.setIntersection(this, 0, 0);
-                }
-            }
+        float[] t = Solvers.solveQuadric(qa, qb, qc);
+        if (t != null) {
+            // early rejection
+            if (t[0] >= r.getMax() || t[1] <= r.getMin())
+                return;
+            if (t[0] > r.getMin())
+                r.setMax(t[0]);
+            else
+                r.setMax(t[1]);
+            state.setIntersection(this, 0, 0);
         }
     }
 }
