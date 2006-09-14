@@ -1,4 +1,9 @@
 v0.06.4
+* Upgraded to Janino 2.4.7
+* Regenerated golden benchmark files
+* Implemented BanchoffSurface primitive (from RJii's submission)
+* Implemented Torus primitive (from RJii's submission)
+* Added robust quadratic and quartic solvers
 * Improved uv calculations on Sphere
 * Added Matrix parsing to SCParser
 * Rewrote Sphere to use a Matrix4 transformation instead of center/radius positioning

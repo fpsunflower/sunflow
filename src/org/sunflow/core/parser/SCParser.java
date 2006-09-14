@@ -35,9 +35,11 @@ import org.sunflow.core.photonmap.CausticPhotonMap;
 import org.sunflow.core.photonmap.GlobalPhotonMap;
 import org.sunflow.core.photonmap.GridPhotonMap;
 import org.sunflow.core.primitive.Background;
+import org.sunflow.core.primitive.BanchoffSurface;
 import org.sunflow.core.primitive.CornellBox;
 import org.sunflow.core.primitive.Mesh;
 import org.sunflow.core.primitive.Plane;
+import org.sunflow.core.primitive.Torus;
 import org.sunflow.core.shader.AmbientOcclusionShader;
 import org.sunflow.core.shader.AnisotropicWardShader;
 import org.sunflow.core.shader.ConstantShader;
@@ -702,6 +704,17 @@ public class SCParser implements SceneParser {
                 Matrix4 m = parseMatrix();
                 api.sphere(m);
             }
+        } else if (p.peekNextToken("banchoff")) {
+            UI.printInfo("[API] Reading banchoff ...");
+            Matrix4 m = parseMatrix();
+            api.primitive(new BanchoffSurface(shaders[0], m));
+        } else if (p.peekNextToken("torus")) {
+            UI.printInfo("[API] Reading banchoff ...");
+            Matrix4 m = parseMatrix();
+            p.checkNextToken("r");
+            float ri = p.getNextFloat();
+            float ro = p.getNextFloat();
+            api.primitive(new Torus(shaders[0], m, ri, ro));
         } else if (p.peekNextToken("plane")) {
             UI.printInfo("[API] Reading plane ...");
             p.checkNextToken("p");

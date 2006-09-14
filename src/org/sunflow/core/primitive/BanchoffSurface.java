@@ -12,24 +12,24 @@ import org.sunflow.math.Point3;
 import org.sunflow.math.Solvers;
 import org.sunflow.math.Vector3;
 
-public class Sphere implements BoundedPrimitive {
+public class BanchoffSurface implements BoundedPrimitive {
     private Matrix4 o2w;
     private Matrix4 w2o;
     private BoundingBox bounds;
     private Shader shader;
 
-    public Sphere(Shader shader, Matrix4 o2w) {
+    public BanchoffSurface(Shader shader, Matrix4 o2w) {
         this.o2w = o2w;
-        w2o = o2w.inverse();
+        w2o = this.o2w.inverse();
         if (w2o == null)
             throw new RuntimeException("Unable to inverse scale/translate matrix!");
         this.shader = shader;
-        bounds = new BoundingBox(-1, -1, -1);
-        bounds.include(1, 1, 1);
+        bounds = new BoundingBox(-1.5f, -1.5f, -1.5f);
+        bounds.include(1.5f, 1.5f, 1.5f);
         bounds = o2w.transform(bounds);
     }
-    
-    public Sphere(Shader shader, Point3 center, float radius) {
+
+    public BanchoffSurface(Shader shader, Point3 center, float radius) {
         this(shader, Matrix4.translation(center.x, center.y, center.z).multiply(Matrix4.scale(radius)));
     }
 
@@ -63,29 +63,16 @@ public class Sphere implements BoundedPrimitive {
     public void prepareShadingState(ShadingState state) {
         state.init();
         state.getRay().getPoint(state.getPoint());
-        Point3 localPoint = w2o.transformP(state.getPoint());
-        state.getNormal().set(localPoint.x, localPoint.y, localPoint.z);
+        Point3 n = w2o.transformP(state.getPoint());
+        state.getNormal().set(n.x * (2 * n.x * n.x - 1), n.y * (2 * n.y * n.y - 1), n.z * (2 * n.z * n.z - 1));
         state.getNormal().normalize();
-
-        float phi = (float) Math.atan2(state.getNormal().y, state.getNormal().x);
-        if (phi < 0)
-            phi += 2 * Math.PI;
-        float theta = (float) Math.acos(state.getNormal().z);
-        state.getUV().y = theta / (float) Math.PI;
-        state.getUV().x = phi / (float) (2 * Math.PI);
-        Vector3 v = new Vector3();
-        v.x = -2 * (float) Math.PI * state.getNormal().y;
-        v.y = 2 * (float) Math.PI * state.getNormal().x;
-        v.z = 0;
         state.setShader(shader);
         // into object space
         Vector3 worldNormal = w2o.transformTransposeV(state.getNormal());
-        v = o2w.transformV(v);
         state.getNormal().set(worldNormal);
         state.getNormal().normalize();
         state.getGeoNormal().set(state.getNormal());
-        state.setBasis(OrthoNormalBasis.makeFromWV(state.getNormal(), v));
-
+        state.setBasis(OrthoNormalBasis.makeFromW(state.getNormal()));
     }
 
     public void intersect(Ray r, IntersectionState state) {
@@ -97,19 +84,33 @@ public class Sphere implements BoundedPrimitive {
         float rdy = w2o.transformVY(r.dx, r.dy, r.dz);
         float rdz = w2o.transformVZ(r.dx, r.dy, r.dz);
         // intersect in local space
-        float qa = rdx * rdx + rdy * rdy + rdz * rdz;
-        float qb = 2 * ((rdx * rox) + (rdy * roy) + (rdz * roz));
-        float qc = ((rox * rox) + (roy * roy) + (roz * roz)) - 1;
-        double[] t = Solvers.solveQuadric(qa, qb, qc);
+        float rd2x = rdx * rdx;
+        float rd2y = rdy * rdy;
+        float rd2z = rdz * rdz;
+        float ro2x = rox * rox;
+        float ro2y = roy * roy;
+        float ro2z = roz * roz;
+        // setup the quartic coefficients
+        // some common terms could probably be shared across these
+        double A = (rd2y * rd2y + rd2z * rd2z + rd2x * rd2x);
+        double B = 4 * (roy * rd2y * rdy + roz * rdz * rd2z + rox * rdx * rd2x);
+        double C = (-rd2x - rd2y - rd2z + 6 * (ro2y * rd2y + ro2z * rd2z + ro2x * rd2x));
+        double D = 2 * (2 * ro2z * roz * rdz - roz * rdz + 2 * ro2x * rox * rdx + 2 * ro2y * roy * rdy - rox * rdx - roy * rdy);
+        double E = 3.0f / 8.0f + (-ro2z + ro2z * ro2z - ro2y + ro2y * ro2y - ro2x + ro2x * ro2x);
+        // solve equation
+        double[] t = Solvers.solveQuartic(A, B, C, D, E);
         if (t != null) {
             // early rejection
-            if (t[0] >= r.getMax() || t[1] <= r.getMin())
+            if (t[0] >= r.getMax() || t[t.length - 1] <= r.getMin())
                 return;
-            if (t[0] > r.getMin())
-                r.setMax((float) t[0]);
-            else
-                r.setMax((float) t[1]);
-            state.setIntersection(this, 0, 0);
+            // find first intersection in front of the ray
+            for (int i = 0; i < t.length; i++) {
+                if (t[i] > r.getMin()) {
+                    r.setMax((float) t[i]);
+                    state.setIntersection(this, 0, 0);
+                    return;
+                }
+            }
         }
     }
 }
