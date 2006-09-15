@@ -104,6 +104,32 @@ public class BoundingBox {
     }
 
     /**
+     * Gets a specific coordinate of the surface's bounding box.
+     * 
+     * @param i
+     *            index of a side from 0 to 5
+     * @return value of the request bounding box side
+     */
+    public final float getBound(int i) {
+        switch (i) {
+            case 0:
+                return minimum.x;
+            case 1:
+                return maximum.x;
+            case 2:
+                return minimum.y;
+            case 3:
+                return maximum.y;
+            case 4:
+                return minimum.z;
+            case 5:
+                return maximum.z;
+            default:
+                return 0;
+        }
+    }
+
+    /**
      * Gets the extents vector for the box. This vector is computed as (max -
      * min). Its coordinates are always positive and represent the dimensions of
      * the box along the three axes.

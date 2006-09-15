@@ -1,5 +1,6 @@
 package org.sunflow.core;
 
+import org.sunflow.math.Matrix4;
 import org.sunflow.math.Point3;
 import org.sunflow.math.Vector3;
 
@@ -14,6 +15,9 @@ public final class Ray {
     private float tMin;
     private float tMax;
     private static final float EPSILON = 0.01f;
+
+    private Ray() {
+    }
 
     /**
      * Creates a new ray that points from the given origin to the given
@@ -65,6 +69,27 @@ public final class Ray {
         dy *= in;
         dz *= in;
         tMax = n - EPSILON;
+    }
+
+    /**
+     * Create a new ray by transforming the supplied one by the given matrix. If
+     * the matrix is <code>null</code>, the original ray is returned.
+     * 
+     * @param w2o
+     */
+    public Ray transform(Matrix4 w2o) {
+        if (w2o == null)
+            return this;
+        Ray r = new Ray();
+        r.ox = w2o.transformPX(ox, oy, oz);
+        r.oy = w2o.transformPY(ox, oy, oz);
+        r.oz = w2o.transformPZ(ox, oy, oz);
+        r.dx = w2o.transformVX(dx, dy, dz);
+        r.dy = w2o.transformVY(dx, dy, dz);
+        r.dz = w2o.transformVZ(dx, dy, dz);
+        r.tMin = tMin;
+        r.tMax = tMax;
+        return r;
     }
 
     /**

@@ -1,4 +1,7 @@
 v0.06.4
+* Added checks for black diffuse/specular components
+* Added PerlinVector which produce vector valued noise
+* Renamed ImprovedNoise to PerlinScalar and added renderman-like calls
 * Upgraded to Janino 2.4.7
 * Regenerated golden benchmark files
 * Implemented BanchoffSurface primitive (from RJii's submission)

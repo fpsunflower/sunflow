@@ -498,6 +498,8 @@ public final class ShadingState implements Iterable<LightSample> {
     public final Color diffuse(Color diff) {
         // integrate a diffuse function
         Color lr = Color.black();
+        if (diff.isBlack())
+            return lr;
         for (LightSample sample : this)
             lr.madd(sample.dot(n), sample.getDiffuseRadiance());
         lr.add(getIrradiance(diff));
@@ -507,7 +509,7 @@ public final class ShadingState implements Iterable<LightSample> {
     public final Color specularPhong(Color spec, float power, int numRays) {
         // integrate a phong specular function
         Color lr = Color.black();
-        if (!includeSpecular)
+        if (!includeSpecular || spec.isBlack())
             return lr;
         // reflected direction
         float dn = 2 * cosND;

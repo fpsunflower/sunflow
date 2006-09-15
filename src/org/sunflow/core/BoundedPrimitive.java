@@ -15,12 +15,13 @@ public interface BoundedPrimitive extends Primitive {
     BoundingBox getBounds();
 
     /**
-     * Gets a specific coordinate of the surface's bounding box
+     * Gets a specific coordinate of the surface's bounding box.
+     * 
      * @param i
      * @return
      */
     float getBound(int i);
-    
+
     /**
      * Checks to see if the box intersects the surface. The test must treat the
      * box as a solid. May return a conservative result by using
