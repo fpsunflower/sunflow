@@ -13,7 +13,7 @@ public class DiffuseShader implements Shader {
     protected DiffuseShader() {
         diff = null;
     }
-    
+
     public DiffuseShader(Color d) {
         diff = d.copy();
     }

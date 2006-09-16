@@ -99,15 +99,19 @@ public abstract class CubeGrid implements BoundedPrimitive {
                 intervalMin = t1;
                 curr = 0;
             }
-            if (t2 < intervalMax) intervalMax = t2;
-            if (intervalMin > intervalMax) return;
+            if (t2 < intervalMax)
+                intervalMax = t2;
+            if (intervalMin > intervalMax)
+                return;
         } else {
             if (t2 > intervalMin) {
                 intervalMin = t2;
                 curr = 1;
             }
-            if (t1 < intervalMax) intervalMax = t1;
-            if (intervalMin > intervalMax) return;
+            if (t1 < intervalMax)
+                intervalMax = t1;
+            if (intervalMin > intervalMax)
+                return;
         }
         t1 = (bounds.getMinimum().y - orgY) * invDirY;
         t2 = (bounds.getMaximum().y - orgY) * invDirY;
@@ -116,15 +120,19 @@ public abstract class CubeGrid implements BoundedPrimitive {
                 intervalMin = t1;
                 curr = 2;
             }
-            if (t2 < intervalMax) intervalMax = t2;
-            if (intervalMin > intervalMax) return;
+            if (t2 < intervalMax)
+                intervalMax = t2;
+            if (intervalMin > intervalMax)
+                return;
         } else {
             if (t2 > intervalMin) {
                 intervalMin = t2;
                 curr = 3;
             }
-            if (t1 < intervalMax) intervalMax = t1;
-            if (intervalMin > intervalMax) return;
+            if (t1 < intervalMax)
+                intervalMax = t1;
+            if (intervalMin > intervalMax)
+                return;
         }
         t1 = (bounds.getMinimum().z - orgZ) * invDirZ;
         t2 = (bounds.getMaximum().z - orgZ) * invDirZ;
@@ -133,15 +141,19 @@ public abstract class CubeGrid implements BoundedPrimitive {
                 intervalMin = t1;
                 curr = 4;
             }
-            if (t2 < intervalMax) intervalMax = t2;
-            if (intervalMin > intervalMax) return;
+            if (t2 < intervalMax)
+                intervalMax = t2;
+            if (intervalMin > intervalMax)
+                return;
         } else {
             if (t2 > intervalMin) {
                 intervalMin = t2;
                 curr = 5;
             }
-            if (t1 < intervalMax) intervalMax = t1;
-            if (intervalMin > intervalMax) return;
+            if (t1 < intervalMax)
+                intervalMax = t1;
+            if (intervalMin > intervalMax)
+                return;
         }
         // box is hit at [intervalMin, intervalMax]
         orgX += intervalMin * dirX;
@@ -158,7 +170,8 @@ public abstract class CubeGrid implements BoundedPrimitive {
         indxX = (int) ((orgX - bounds.getMinimum().x) * invVoxelwx);
         if (indxX < 0)
             indxX = 0;
-        else if (indxX >= nx) indxX = nx - 1;
+        else if (indxX >= nx)
+            indxX = nx - 1;
         if (Math.abs(dirX) < 1e-6f) {
             stepX = 0;
             stopX = indxX;
@@ -179,7 +192,8 @@ public abstract class CubeGrid implements BoundedPrimitive {
         indxY = (int) ((orgY - bounds.getMinimum().y) * invVoxelwy);
         if (indxY < 0)
             indxY = 0;
-        else if (indxY >= ny) indxY = ny - 1;
+        else if (indxY >= ny)
+            indxY = ny - 1;
         if (Math.abs(dirY) < 1e-6f) {
             stepY = 0;
             stopY = indxY;
@@ -200,7 +214,8 @@ public abstract class CubeGrid implements BoundedPrimitive {
         indxZ = (int) ((orgZ - bounds.getMinimum().z) * invVoxelwz);
         if (indxZ < 0)
             indxZ = 0;
-        else if (indxZ >= nz) indxZ = nz - 1;
+        else if (indxZ >= nz)
+            indxZ = nz - 1;
         if (Math.abs(dirZ) < 1e-6f) {
             stepZ = 0;
             stopZ = indxZ;
@@ -225,30 +240,37 @@ public abstract class CubeGrid implements BoundedPrimitive {
                 // we hit a boundary
                 r.setMax(intervalMin);
                 // if we are inside, the last bit needs to be flipped
-                if (isInside) curr ^= 1;
-                state.setIntersection(this, curr, 0);
+                if (isInside)
+                    curr ^= 1;
+                state.setIntersection(this, 0, curr, 0);
                 return;
             }
             if (tnextX < tnextY && tnextX < tnextZ) {
                 curr = dirX > 0 ? 0 : 1;
                 intervalMin = tnextX;
-                if (intervalMin > intervalMax) return;
+                if (intervalMin > intervalMax)
+                    return;
                 indxX += stepX;
-                if (indxX == stopX) return;
+                if (indxX == stopX)
+                    return;
                 tnextX += deltaX;
             } else if (tnextY < tnextZ) {
                 curr = dirY > 0 ? 2 : 3;
                 intervalMin = tnextY;
-                if (intervalMin > intervalMax) return;
+                if (intervalMin > intervalMax)
+                    return;
                 indxY += stepY;
-                if (indxY == stopY) return;
+                if (indxY == stopY)
+                    return;
                 tnextY += deltaY;
             } else {
                 curr = dirZ > 0 ? 4 : 5;
                 intervalMin = tnextZ;
-                if (intervalMin > intervalMax) return;
+                if (intervalMin > intervalMax)
+                    return;
                 indxZ += stepZ;
-                if (indxZ == stopZ) return;
+                if (indxZ == stopZ)
+                    return;
                 tnextZ += deltaZ;
             }
         }

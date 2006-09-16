@@ -153,7 +153,7 @@ public class BucketRenderer implements ImageSampler {
         BucketThread(int threadID) {
             this.threadID = threadID;
             AtomicInteger ai = new AtomicInteger(0);
-            
+
             ai.addAndGet(1);
         }
 

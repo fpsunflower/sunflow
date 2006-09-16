@@ -14,7 +14,7 @@ public class FileDisplay implements Display {
         bitmap = null;
         filename = saveImage ? "output.png" : null;
     }
-    
+
     public FileDisplay(String filename) {
         bitmap = null;
         this.filename = filename == null ? "output.png" : filename;
@@ -25,7 +25,8 @@ public class FileDisplay implements Display {
             bitmap = new Bitmap(w, h, filename == null || filename.endsWith(".hdr"));
     }
 
-    public void imagePrepare(int x, int y, int w, int h, int id) {}
+    public void imagePrepare(int x, int y, int w, int h, int id) {
+    }
 
     public void imageUpdate(int x, int y, int w, int h, Color[] data) {
         for (int j = 0, index = 0; j < h; j++)

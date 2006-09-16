@@ -724,7 +724,7 @@ public class KDTree implements IntersectionAccelerator {
         int offsetYBack = offsetYFront ^ 2;
         int offsetZBack = offsetZFront ^ 2;
 
-        IntersectionState.StackNode[] stack = state.stack;
+        IntersectionState.StackNode[] stack = state.getStack();
         int stackPos = 0;
         int node = 0;
 

@@ -1,7 +1,8 @@
 package org.sunflow.math;
 
 public final class MathUtils {
-    private MathUtils() {}
+    private MathUtils() {
+    }
 
     public static final int clamp(int x, int min, int max) {
         if (x < min)

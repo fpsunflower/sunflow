@@ -4,8 +4,6 @@ import org.sunflow.system.UserInterface;
 
 /**
  * Basic console implementation of a user interface.
- * 
- *
  */
 public class ConsoleInterface implements UserInterface {
     private int min;
@@ -14,7 +12,8 @@ public class ConsoleInterface implements UserInterface {
     private String task;
     private int lastP;
 
-    public ConsoleInterface() {}
+    public ConsoleInterface() {
+    }
 
     public void printInfo(String s) {
         System.out.println(s);

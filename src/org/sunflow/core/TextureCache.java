@@ -11,7 +11,8 @@ import org.sunflow.system.UI;
 public final class TextureCache {
     private static HashMap<String, Texture> textures = new HashMap<String, Texture>();
 
-    private TextureCache() {}
+    private TextureCache() {
+    }
 
     /**
      * Gets a reference to the texture specified by the given filename. If the

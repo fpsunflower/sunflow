@@ -56,7 +56,7 @@ public class CornellBox implements BoundedPrimitive, Shader, LightSource {
     public BoundingBox getBounds() {
         return lightBounds;
     }
-    
+
     public float getBound(int i) {
         switch (i) {
             case 0:
@@ -222,10 +222,10 @@ public class CornellBox implements BoundedPrimitive, Shader, LightSource {
         // can't hit minY wall, there is none
         if (sideIn != 2 && r.isInside(intervalMin)) {
             r.setMax(intervalMin);
-            state.setIntersection(this, sideIn, 0);
+            state.setIntersection(this, 0, sideIn, 0);
         } else if (sideOut != 2 && r.isInside(intervalMax)) {
             r.setMax(intervalMax);
-            state.setIntersection(this, sideOut, 0);
+            state.setIntersection(this, 0, sideOut, 0);
         }
     }
 

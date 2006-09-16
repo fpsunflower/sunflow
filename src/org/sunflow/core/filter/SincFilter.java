@@ -19,7 +19,8 @@ public class SincFilter implements Filter {
 
     private float sinc1d(float x) {
         x = Math.abs(x);
-        if (x < 0.0001f)return 1.0f;
+        if (x < 0.0001f)
+            return 1.0f;
         x *= Math.PI;
         return (float) Math.sin(x) / x;
     }

@@ -69,26 +69,29 @@ public class Parser {
         while (true) {
             if (index < lineTokens.length)
                 return lineTokens[index++];
-            else if (!getNextLine()) return null;
+            else if (!getNextLine())
+                return null;
         }
     }
-    
+
     private boolean getNextLine() throws IOException {
         String line = bf.readLine();
 
-        if (line == null) return false;
-            
+        if (line == null)
+            return false;
+
         ArrayList<String> tokenList = new ArrayList<String>();
         String current = new String();
         boolean inQuotes = false;
-        
+
         for (int i = 0; i < line.length(); i++) {
             char c = line.charAt(i);
-            if (current.length() == 0 && (c == '%' || c == '#')) break;
-                    
+            if (current.length() == 0 && (c == '%' || c == '#'))
+                break;
+
             boolean quote = c == '\"';
             inQuotes = inQuotes ^ quote;
-                    
+
             if (!quote && (inQuotes || !Character.isWhitespace(c)))
                 current += c;
             else if (current.length() > 0) {
@@ -96,7 +99,7 @@ public class Parser {
                 current = new String();
             }
         }
-            
+
         if (current.length() > 0)
             tokenList.add(current);
         lineTokens = tokenList.toArray(new String[0]);

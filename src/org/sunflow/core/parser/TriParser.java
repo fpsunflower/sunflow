@@ -71,6 +71,7 @@ public class TriParser implements SceneParser {
             return new Color(Math.abs(state.getRay().dot(state.getNormal())));
         }
 
-        public void scatterPhoton(ShadingState state, Color power) {}
+        public void scatterPhoton(ShadingState state, Color power) {
+        }
     }
 }

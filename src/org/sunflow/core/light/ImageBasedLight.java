@@ -109,7 +109,7 @@ public class ImageBasedLight implements Primitive, LightSource, Shader {
 
     public void intersect(Ray r, IntersectionState state) {
         if (r.getMax() == Float.POSITIVE_INFINITY)
-            state.setIntersection(this, 0, 0);
+            state.setIntersection(this, 0, 0, 0);
     }
 
     public int getNumSamples() {
@@ -165,7 +165,8 @@ public class ImageBasedLight implements Primitive, LightSource, Shader {
         }
     }
 
-    public void getPhoton(double randX1, double randY1, double randX2, double randY2, Point3 p, Vector3 dir, Color power) {}
+    public void getPhoton(double randX1, double randY1, double randX2, double randY2, Point3 p, Vector3 dir, Color power) {
+    }
 
     public Color getRadiance(ShadingState state) {
         // lookup texture based on ray direction
@@ -195,7 +196,8 @@ public class ImageBasedLight implements Primitive, LightSource, Shader {
         return dest;
     }
 
-    public void scatterPhoton(ShadingState state, Color power) {}
+    public void scatterPhoton(ShadingState state, Color power) {
+    }
 
     public boolean isAdaptive() {
         return samples == null;

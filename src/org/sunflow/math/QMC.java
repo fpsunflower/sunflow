@@ -51,7 +51,8 @@ public final class QMC {
                 isPrime = ((p % div) != 0);
                 div += 2;
             }
-            if (isPrime) return p;
+            if (isPrime)
+                return p;
             p += 2;
         }
     }
@@ -71,13 +72,15 @@ public final class QMC {
 
     public static double riS(int i, int r) {
         for (int v = 1 << 31; i != 0; i >>>= 1, v ^= v >>> 1)
-            if ((i & 1) != 0) r ^= v;
+            if ((i & 1) != 0)
+                r ^= v;
         return (double) r / (double) 0x100000000L;
     }
 
     public static double riLP(int i, int r) {
         for (int v = 1 << 31; i != 0; i >>>= 1, v |= v >>> 1)
-            if ((i & 1) != 0) r ^= v;
+            if ((i & 1) != 0)
+                r ^= v;
         return (double) r / (double) 0x100000000L;
     }
 
@@ -127,7 +130,8 @@ public final class QMC {
             sigma[i] = 0;
             for (int bits = i; bits != 0; bits >>= 1) {
                 digit >>= 1;
-                if ((bits & 1) != 0) sigma[i] += digit;
+                if ((bits & 1) != 0)
+                    sigma[i] += digit;
             }
         }
         return sigma;

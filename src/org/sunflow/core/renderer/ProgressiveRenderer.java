@@ -53,7 +53,7 @@ public class ProgressiveRenderer implements ImageSampler {
         t.start();
         counter = 0;
         counterMax = imageWidth * imageHeight;
-        
+
         Thread[] renderThreads = new Thread[scene.getThreads()];
         for (int i = 0; i < renderThreads.length; i++) {
             renderThreads[i] = new SmallBucketThread();
@@ -71,7 +71,7 @@ public class ProgressiveRenderer implements ImageSampler {
         UI.printInfo("[IPR] Rendering time: %s", t.toString());
         display.imageEnd();
     }
-    
+
     private class SmallBucketThread extends Thread {
         public void run() {
             IntersectionState istate = new IntersectionState();

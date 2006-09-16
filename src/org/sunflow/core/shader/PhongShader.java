@@ -19,7 +19,7 @@ public class PhongShader implements Shader {
         this.power = power;
         this.numRays = numRays;
     }
-    
+
     protected Color getDiffuse(ShadingState state) {
         return diff;
     }

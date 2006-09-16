@@ -26,7 +26,7 @@ public class AnisotropicWardShader implements Shader {
     protected Color getDiffuse(ShadingState state) {
         return rhoD;
     }
-    
+
     private float brdf(Vector3 i, Vector3 o, OrthoNormalBasis basis) {
         float fr = 4 * (float) Math.PI * alphaX * alphaY;
         fr *= (float) Math.sqrt(basis.untransformZ(i) * basis.untransformZ(o));

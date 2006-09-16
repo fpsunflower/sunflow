@@ -122,7 +122,8 @@ public class GridPhotonMap implements GlobalPhotonMapInterface {
         UI.printInfo("[GPM]   * Num photon cells: %d", cells);
     }
 
-    public void precomputeRadiance(boolean includeDirect, boolean includeCaustics) {}
+    public void precomputeRadiance(boolean includeDirect, boolean includeCaustics) {
+    }
 
     private void growPhotonHash() {
         // enlarge the hash size:
@@ -267,7 +268,7 @@ public class GridPhotonMap implements GlobalPhotonMapInterface {
     public boolean allowRefractionBounced() {
         return true;
     }
-    
+
     public int numEmit() {
         return numEmit;
     }

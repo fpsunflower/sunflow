@@ -145,7 +145,8 @@ public class InstantGI implements GIEngine {
             return numPhotons;
         }
 
-        public void prepare(BoundingBox sceneBounds) {}
+        public void prepare(BoundingBox sceneBounds) {
+        }
 
         public void store(ShadingState state, Vector3 dir, Color power, Color diffuse) {
             PointLight vpl = new PointLight();
@@ -157,7 +158,8 @@ public class InstantGI implements GIEngine {
             }
         }
 
-        public void init() {}
+        public void init() {
+        }
 
         public boolean allowDiffuseBounced() {
             return true;

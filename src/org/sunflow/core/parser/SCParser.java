@@ -13,6 +13,7 @@ import org.codehaus.janino.Scanner.ScanException;
 import org.sunflow.SunflowAPI;
 import org.sunflow.core.CausticPhotonMapInterface;
 import org.sunflow.core.GlobalPhotonMapInterface;
+import org.sunflow.core.Instance;
 import org.sunflow.core.SceneParser;
 import org.sunflow.core.Shader;
 import org.sunflow.core.camera.PinholeCamera;
@@ -707,14 +708,16 @@ public class SCParser implements SceneParser {
         } else if (p.peekNextToken("banchoff")) {
             UI.printInfo("[API] Reading banchoff ...");
             Matrix4 m = parseMatrix();
-            api.primitive(new BanchoffSurface(shaders[0], m));
+            BanchoffSurface surf = new BanchoffSurface();
+            api.primitive(new Instance(shaders, m, surf));
         } else if (p.peekNextToken("torus")) {
             UI.printInfo("[API] Reading banchoff ...");
             Matrix4 m = parseMatrix();
             p.checkNextToken("r");
             float ri = p.getNextFloat();
             float ro = p.getNextFloat();
-            api.primitive(new Torus(shaders[0], m, ri, ro));
+            Torus torus = new Torus(ri, ro);
+            api.primitive(new Instance(shaders, m, torus));
         } else if (p.peekNextToken("plane")) {
             UI.printInfo("[API] Reading plane ...");
             p.checkNextToken("p");

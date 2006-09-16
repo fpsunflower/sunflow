@@ -8,7 +8,8 @@ public class ColumnBucketOrder implements BucketOrder {
         for (int i = 0; i < nbw * nbh; i++) {
             int bx = i / nbh;
             int by = i % nbh;
-            if ((bx & 1) == 1) by = nbh - 1 - by;
+            if ((bx & 1) == 1)
+                by = nbh - 1 - by;
             coords[2 * i + 0] = bx;
             coords[2 * i + 1] = by;
         }

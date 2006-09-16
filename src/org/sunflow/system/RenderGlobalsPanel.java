@@ -1,4 +1,5 @@
 package org.sunflow.system;
+
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.GridLayout;
@@ -51,12 +52,12 @@ public class RenderGlobalsPanel extends JTabbedPane {
     private JTextField resolutionYTextField;
     private JTextField resolutionXTextField;
     private JCheckBox resolutionCheckBox;
+
     /**
      * This method initializes this
-     * 
      */
     private void initialize() {
-    		
+
     }
 
     /**
@@ -72,7 +73,7 @@ public class RenderGlobalsPanel extends JTabbedPane {
 
     public RenderGlobalsPanel() {
         super();
-		initialize();
+        initialize();
         initGUI();
     }
 
@@ -154,9 +155,7 @@ public class RenderGlobalsPanel extends JTabbedPane {
                 }
                 {
                     bucketRendererPanel = new JPanel();
-                    BoxLayout bucketRendererPanelLayout = new BoxLayout(
-                        bucketRendererPanel,
-                        javax.swing.BoxLayout.Y_AXIS);
+                    BoxLayout bucketRendererPanelLayout = new BoxLayout(bucketRendererPanel, javax.swing.BoxLayout.Y_AXIS);
                     bucketRendererPanel.setLayout(bucketRendererPanelLayout);
                     rendererPanel.add(bucketRendererPanel);
                     bucketRendererPanel.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(BevelBorder.LOWERED), "Bucket Renderer", TitledBorder.LEADING, TitledBorder.TOP));
@@ -173,18 +172,17 @@ public class RenderGlobalsPanel extends JTabbedPane {
                         samplingPanelLayout.setVgap(5);
                         samplingPanelLayout.setRows(2);
                         samplingPanel.setLayout(samplingPanelLayout);
-                        bucketRendererPanel.add(samplingPanel);                        {
+                        bucketRendererPanel.add(samplingPanel);
+                        {
                             jLabel5 = new JLabel();
                             samplingPanel.add(jLabel5);
                             jLabel5.setText("Min:");
                         }
                         {
-                            ComboBoxModel minSamplingComboBoxModel = new DefaultComboBoxModel(
-                                new String[] { "Item One", "Item Two" });
+                            ComboBoxModel minSamplingComboBoxModel = new DefaultComboBoxModel(new String[] { "Item One", "Item Two" });
                             minSamplingComboBox = new JComboBox();
                             samplingPanel.add(minSamplingComboBox);
-                            minSamplingComboBox
-                                .setModel(minSamplingComboBoxModel);
+                            minSamplingComboBox.setModel(minSamplingComboBoxModel);
                         }
                         {
                             jLabel6 = new JLabel();
@@ -192,12 +190,10 @@ public class RenderGlobalsPanel extends JTabbedPane {
                             jLabel6.setText("Max:");
                         }
                         {
-                            ComboBoxModel maxSamplingComboxBoxModel = new DefaultComboBoxModel(
-                                new String[] { "Item One", "Item Two" });
+                            ComboBoxModel maxSamplingComboxBoxModel = new DefaultComboBoxModel(new String[] { "Item One", "Item Two" });
                             maxSamplingComboxBox = new JComboBox();
                             samplingPanel.add(maxSamplingComboxBox);
-                            maxSamplingComboxBox
-                                .setModel(maxSamplingComboxBoxModel);
+                            maxSamplingComboxBox.setModel(maxSamplingComboxBoxModel);
                         }
                     }
                 }

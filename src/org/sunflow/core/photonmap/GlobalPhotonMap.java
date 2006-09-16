@@ -114,8 +114,10 @@ public final class GlobalPhotonMap implements GlobalPhotonMapInterface {
             int i = left - 1;
             int j = right;
             while (true) {
-                while (photons[++i].getCoord(axis) < v) {}
-                while ((photons[--j].getCoord(axis) > v) && (j > left)) {}
+                while (photons[++i].getCoord(axis) < v) {
+                }
+                while ((photons[--j].getCoord(axis) > v) && (j > left)) {
+                }
                 if (i >= j)
                     break;
                 swap(i, j);

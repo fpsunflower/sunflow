@@ -155,6 +155,6 @@ public class MeshLight extends Mesh implements Shader {
     }
 
     public void scatterPhoton(ShadingState state, Color power) {
-    // do not scatter photons
+        // do not scatter photons
     }
 }

@@ -8,7 +8,7 @@ public final class IntArray {
         array = new int[10];
         size = 0;
     }
-    
+
     public IntArray(int capacity) {
         array = new int[capacity];
         size = 0;

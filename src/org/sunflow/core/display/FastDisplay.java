@@ -60,7 +60,8 @@ public class FastDisplay extends JPanel implements Display {
         t.start();
     }
 
-    public void imagePrepare(int x, int y, int w, int h, int id) {}
+    public void imagePrepare(int x, int y, int w, int h, int id) {
+    }
 
     public void imageUpdate(int x, int y, int w, int h, Color[] data) {
         int iw = image.getWidth();
@@ -91,7 +92,7 @@ public class FastDisplay extends JPanel implements Display {
         frames++;
         if (seconds > 1) {
             // display average fps every second
-            frame.setTitle(String.format("Sunflow v%s - %.2f fps", SunflowAPI.VERSION, frames/ seconds));
+            frame.setTitle(String.format("Sunflow v%s - %.2f fps", SunflowAPI.VERSION, frames / seconds));
             frames = 0;
             seconds = 0;
         }

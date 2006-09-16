@@ -16,9 +16,12 @@ public class Instance implements BoundedPrimitive {
         this.shaders = shaders;
         this.o2w = o2w;
         this.traceable = traceable;
-        w2o = o2w.inverse();
-        if (w2o == null)
-            throw new RuntimeException("Unable to inverse scale/translate matrix!");
+        if (o2w != null) {
+            w2o = o2w.inverse();
+            if (w2o == null)
+                throw new RuntimeException("Unable to inverse scale/translate matrix!");
+        } else
+            o2w = w2o = null;
         bounds = traceable.getWorldBounds(o2w);
     }
 
@@ -36,7 +39,7 @@ public class Instance implements BoundedPrimitive {
 
     public void intersect(Ray r, IntersectionState istate) {
         Ray localRay = r.transform(w2o);
-        traceable.intersect(localRay, istate);
+        traceable.intersect(localRay, this, istate);
         // FIXME: transfer max distance to current ray
         r.setMax(localRay.getMax());
     }
@@ -52,26 +55,26 @@ public class Instance implements BoundedPrimitive {
     }
 
     public Point3 transformObjectToWorld(Point3 p) {
-        return o2w.transformP(p);
+        return o2w == null ? new Point3(p) : o2w.transformP(p);
     }
 
     public Point3 transformWorldToObject(Point3 p) {
-        return w2o.transformP(p);
+        return o2w == null ? new Point3(p) : w2o.transformP(p);
     }
 
     public Vector3 transformNormalObjectToWorld(Vector3 n) {
-        return w2o.transformTransposeV(n);
+        return o2w == null ? new Vector3(n) : w2o.transformTransposeV(n);
     }
 
     public Vector3 transformNormalWorldToObject(Vector3 n) {
-        return o2w.transformTransposeV(n);
+        return o2w == null ? new Vector3(n) : o2w.transformTransposeV(n);
     }
 
     public Vector3 transformVectorObjectToWorld(Vector3 v) {
-        return o2w.transformV(v);
+        return o2w == null ? new Vector3(v) : o2w.transformV(v);
     }
 
     public Vector3 transformVectorWorldToObject(Vector3 v) {
-        return w2o.transformV(v);
+        return o2w == null ? new Vector3(v) : w2o.transformV(v);
     }
 }

@@ -70,7 +70,7 @@ public class OpenExrDisplay implements Display {
             this.channelSize = FLOAT_SIZE;
         }
     }
-    
+
     public void setGamma(float gamma) {
         UI.printWarning("[EXR] Gamma correction unsupported - ignoring");
     }
@@ -88,7 +88,8 @@ public class OpenExrDisplay implements Display {
         }
     }
 
-    public void imagePrepare(int x, int y, int w, int h, int id) {}
+    public void imagePrepare(int x, int y, int w, int h, int id) {
+    }
 
     public synchronized void imageUpdate(int x, int y, int w, int h, Color[] data) {
         try {
@@ -102,7 +103,8 @@ public class OpenExrDisplay implements Display {
         }
     }
 
-    public void imageFill(int x, int y, int w, int h, Color c) {}
+    public void imageFill(int x, int y, int w, int h, Color c) {
+    }
 
     public void imageEnd() {
         try {

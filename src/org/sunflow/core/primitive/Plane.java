@@ -114,11 +114,12 @@ public class Plane implements Primitive {
 
     public void intersect(Ray r, IntersectionState state) {
         float dn = normal.x * r.dx + normal.y * r.dy + normal.z * r.dz;
-        if (dn == 0.0) return;
+        if (dn == 0.0)
+            return;
         float t = (((center.x - r.ox) * normal.x) + ((center.y - r.oy) * normal.y) + ((center.z - r.oz) * normal.z)) / dn;
         if (r.isInside(t)) {
             r.setMax(t);
-            state.setIntersection(this, 0, 0);
+            state.setIntersection(this, 0, 0, 0);
         }
     }
 }

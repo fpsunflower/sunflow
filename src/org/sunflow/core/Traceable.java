@@ -16,6 +16,7 @@ public interface Traceable {
      * <code>null</code> no transformation is needed.
      * 
      * @param o2w
+     *            object to world transformation matrix
      * @return object bounding box in world space
      */
     public BoundingBox getWorldBounds(Matrix4 o2w);
@@ -29,7 +30,7 @@ public interface Traceable {
      * @param istate
      *            state to store the intersection into
      */
-    public void intersect(Ray r, IntersectionState istate);
+    public void intersect(Ray r, Instance parent, IntersectionState istate);
 
     /**
      * Prepare the specified {@link ShadingState} by setting all of its internal

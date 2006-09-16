@@ -21,7 +21,8 @@ public interface ImageSampler {
      * display has been opened and that it will be closed after the method
      * returns.
      * 
-     * @param display Display driver to send image data to
+     * @param display
+     *            Display driver to send image data to
      */
     public void render(Display display);
 }

@@ -64,7 +64,8 @@ public final class Color {
             return (float) Math.pow((c + 0.055) / 1.055, 2.4);
     }
 
-    public Color() {}
+    public Color() {
+    }
 
     public Color(float grey) {
         r = g = b = grey;

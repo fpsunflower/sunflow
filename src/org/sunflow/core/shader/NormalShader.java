@@ -16,5 +16,6 @@ public class NormalShader implements Shader {
         return new Color(r, g, b);
     }
 
-    public void scatterPhoton(ShadingState state, Color power) {}
+    public void scatterPhoton(ShadingState state, Color power) {
+    }
 }

@@ -12,7 +12,7 @@ public class TexturedShinyDiffuseShader extends ShinyDiffuseShader {
         super(null, r);
         texture = TextureCache.getTexture(filename);
     }
-    
+
     public Color getDiffuse(ShadingState state) {
         return texture.getPixel(state.getUV().x, state.getUV().y);
     }

@@ -22,6 +22,6 @@ public class Background implements Primitive {
 
     public void intersect(Ray r, IntersectionState state) {
         if (r.getMax() == Float.POSITIVE_INFINITY)
-            state.setIntersection(this, 0, 0);
+            state.setIntersection(this, 0, 0, 0);
     }
 }

@@ -15,5 +15,6 @@ public class ConstantShader implements Shader {
         return c;
     }
 
-    public void scatterPhoton(ShadingState state, Color power) {}
+    public void scatterPhoton(ShadingState state, Color power) {
+    }
 }

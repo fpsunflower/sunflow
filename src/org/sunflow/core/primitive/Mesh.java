@@ -1,19 +1,22 @@
 package org.sunflow.core.primitive;
 
 import org.sunflow.SunflowAPI;
+import org.sunflow.core.AggregateTraceable;
 import org.sunflow.core.BoundedPrimitive;
+import org.sunflow.core.Instance;
 import org.sunflow.core.IntersectionState;
 import org.sunflow.core.Ray;
 import org.sunflow.core.Shader;
 import org.sunflow.core.ShadingState;
 import org.sunflow.math.BoundingBox;
 import org.sunflow.math.MathUtils;
+import org.sunflow.math.Matrix4;
 import org.sunflow.math.OrthoNormalBasis;
 import org.sunflow.math.Point3;
 import org.sunflow.math.Vector3;
 import org.sunflow.system.UI;
 
-public class Mesh {
+public class Mesh implements AggregateTraceable {
     private static boolean smallTriangles = false;
     protected float[] points;
     protected int[] triangles;
@@ -45,11 +48,234 @@ public class Mesh {
         normalInterp = uvInterp = InterpType.NONE;
     }
 
+    public float getBound(int primID, int i) {
+        int a, b, c, t = 3 * primID;
+        if (triangles == null) {
+            // implicit indexing
+            a = 3 * (t + 0);
+            b = 3 * (t + 1);
+            c = 3 * (t + 2);
+        } else {
+            // explicit indexing
+            a = 3 * triangles[t + 0];
+            b = 3 * triangles[t + 1];
+            c = 3 * triangles[t + 2];
+        }
+        int axis = i >>> 1;
+        if ((i & 1) == 0)
+            return MathUtils.min(points[a + axis], points[b + axis], points[c + axis]);
+        else
+            return MathUtils.max(points[a + axis], points[b + axis], points[c + axis]);
+    }
+
+    public BoundingBox getWorldBounds(Matrix4 o2w) {
+        BoundingBox bounds = new BoundingBox();
+        if (o2w == null) {
+            for (int i = 0; i < points.length; i += 3)
+                bounds.include(points[i], points[i + 1], points[i + 2]);
+        } else {
+            // transform vertices first
+            for (int i = 0; i < points.length; i += 3) {
+                float x = points[i];
+                float y = points[i + 1];
+                float z = points[i + 2];
+                float wx = o2w.transformPX(x, y, z);
+                float wy = o2w.transformPY(x, y, z);
+                float wz = o2w.transformPZ(x, y, z);
+                bounds.include(wx, wy, wz);
+            }
+        }
+        return bounds;
+    }
+
+    public void intersectPrimitive(Ray r, Instance parent, int primID, IntersectionState state) {
+        // ray-triangle intersection here
+        int a, b, c, tri = primID * 3;
+        if (triangles == null) {
+            a = 3 * (tri + 0);
+            b = 3 * (tri + 1);
+            c = 3 * (tri + 2);
+        } else {
+            a = 3 * triangles[tri + 0];
+            b = 3 * triangles[tri + 1];
+            c = 3 * triangles[tri + 2];
+        }
+        double edge1x = points[b + 0] - points[a + 0];
+        double edge1y = points[b + 1] - points[a + 1];
+        double edge1z = points[b + 2] - points[a + 2];
+        double edge2x = points[c + 0] - points[a + 0];
+        double edge2y = points[c + 1] - points[a + 1];
+        double edge2z = points[c + 2] - points[a + 2];
+        double pvecx = r.dy * edge2z - r.dz * edge2y;
+        double pvecy = r.dz * edge2x - r.dx * edge2z;
+        double pvecz = r.dx * edge2y - r.dy * edge2x;
+        double qvecx, qvecy, qvecz;
+        double u, v;
+        double det = edge1x * pvecx + edge1y * pvecy + edge1z * pvecz;
+        if (det > 0) {
+            double tvecx = r.ox - points[a + 0];
+            double tvecy = r.oy - points[a + 1];
+            double tvecz = r.oz - points[a + 2];
+            u = (tvecx * pvecx + tvecy * pvecy + tvecz * pvecz);
+            if (u < 0.0 || u > det)
+                return;
+            qvecx = tvecy * edge1z - tvecz * edge1y;
+            qvecy = tvecz * edge1x - tvecx * edge1z;
+            qvecz = tvecx * edge1y - tvecy * edge1x;
+            v = (r.dx * qvecx + r.dy * qvecy + r.dz * qvecz);
+            if (v < 0.0 || u + v > det)
+                return;
+        } else if (det < 0) {
+            double tvecx = r.ox - points[a + 0];
+            double tvecy = r.oy - points[a + 1];
+            double tvecz = r.oz - points[a + 2];
+            u = (tvecx * pvecx + tvecy * pvecy + tvecz * pvecz);
+            if (u > 0.0 || u < det)
+                return;
+            qvecx = tvecy * edge1z - tvecz * edge1y;
+            qvecy = tvecz * edge1x - tvecx * edge1z;
+            qvecz = tvecx * edge1y - tvecy * edge1x;
+            v = (r.dx * qvecx + r.dy * qvecy + r.dz * qvecz);
+            if (v > 0.0 || u + v < det)
+                return;
+        } else
+            return;
+        double inv_det = 1.0 / det;
+        float t = (float) ((edge2x * qvecx + edge2y * qvecy + edge2z * qvecz) * inv_det);
+        if (r.isInside(t)) {
+            r.setMax(t);
+            state.setIntersection(parent, primID, (float) (u * inv_det), (float) (v * inv_det));
+        }
+    }
+
+    public int numPrimitives() {
+        if (triangles == null)
+            return points.length / 9;
+        else
+            return triangles.length / 3;
+    }
+
+    public void prepareShadingState(Instance parent, int primID, ShadingState state) {
+        state.init();
+        float u = state.getU();
+        float v = state.getV();
+        float w = 1 - u - v;
+        state.getRay().getPoint(state.getPoint());
+        int tri = 3 * primID;
+        int index0 = tri + 0, index1 = tri + 1, index2 = tri + 2;
+        if (triangles != null) {
+            index0 = triangles[index0];
+            index1 = triangles[index1];
+            index2 = triangles[index2];
+        }
+        Point3 v0p = getPoint(index0);
+        Point3 v1p = getPoint(index1);
+        Point3 v2p = getPoint(index2);
+        Vector3 ng = Vector3.cross(Point3.sub(v1p, v0p, new Vector3()), Point3.sub(v2p, v0p, new Vector3()), new Vector3());
+        if (parent != null)
+            ng = parent.transformNormalObjectToWorld(ng);
+        ng.normalize();
+        state.getGeoNormal().set(ng);
+        switch (normalInterp) {
+            case NONE: {
+                state.getNormal().set(ng);
+                break;
+            }
+            case VERTEX: {
+                int i30 = 3 * index0;
+                int i31 = 3 * index1;
+                int i32 = 3 * index2;
+                state.getNormal().x = w * normals[i30 + 0] + u * normals[i31 + 0] + v * normals[i32 + 0];
+                state.getNormal().y = w * normals[i30 + 1] + u * normals[i31 + 1] + v * normals[i32 + 1];
+                state.getNormal().z = w * normals[i30 + 2] + u * normals[i31 + 2] + v * normals[i32 + 2];
+                if (parent != null)
+                    state.getNormal().set(parent.transformNormalObjectToWorld(state.getNormal()));
+                state.getNormal().normalize();
+                break;
+            }
+            case FACEVARYING: {
+                int idx = 3 * tri;
+                state.getNormal().x = w * normals[idx + 0] + u * normals[idx + 3] + v * normals[idx + 6];
+                state.getNormal().y = w * normals[idx + 1] + u * normals[idx + 4] + v * normals[idx + 7];
+                state.getNormal().z = w * normals[idx + 2] + u * normals[idx + 5] + v * normals[idx + 8];
+                if (parent != null)
+                    state.getNormal().set(parent.transformNormalObjectToWorld(state.getNormal()));
+                state.getNormal().normalize();
+                break;
+            }
+        }
+        float uv00 = 0, uv01 = 0, uv10 = 0, uv11 = 0, uv20 = 0, uv21 = 0;
+        switch (uvInterp) {
+            case NONE: {
+                state.getUV().x = 0;
+                state.getUV().y = 0;
+                break;
+            }
+            case VERTEX: {
+                int i20 = 2 * index0;
+                int i21 = 2 * index1;
+                int i22 = 2 * index2;
+                uv00 = uvs[i20 + 0];
+                uv01 = uvs[i20 + 1];
+                uv10 = uvs[i21 + 0];
+                uv11 = uvs[i21 + 1];
+                uv20 = uvs[i22 + 0];
+                uv21 = uvs[i22 + 1];
+                break;
+            }
+            case FACEVARYING: {
+                int idx = tri << 1;
+                uv00 = uvs[idx + 0];
+                uv01 = uvs[idx + 1];
+                uv10 = uvs[idx + 2];
+                uv11 = uvs[idx + 3];
+                uv20 = uvs[idx + 4];
+                uv21 = uvs[idx + 5];
+                break;
+            }
+        }
+        if (uvInterp != InterpType.NONE) {
+            // get exact uv coords and compute tangent vectors
+            state.getUV().x = w * uv00 + u * uv10 + v * uv20;
+            state.getUV().y = w * uv01 + u * uv11 + v * uv21;
+            float du1 = uv00 - uv20;
+            float du2 = uv10 - uv20;
+            float dv1 = uv01 - uv21;
+            float dv2 = uv11 - uv21;
+            Vector3 dp1 = Point3.sub(v0p, v2p, new Vector3()), dp2 = Point3.sub(v1p, v2p, new Vector3());
+            float determinant = du1 * dv2 - dv1 * du2;
+            if (determinant == 0.0f) {
+                // create basis in world space
+                state.setBasis(OrthoNormalBasis.makeFromW(state.getNormal()));
+            } else {
+                float invdet = 1.f / determinant;
+                // Vector3 dpdu = new Vector3();
+                // dpdu.x = (dv2 * dp1.x - dv1 * dp2.x) * invdet;
+                // dpdu.y = (dv2 * dp1.y - dv1 * dp2.y) * invdet;
+                // dpdu.z = (dv2 * dp1.z - dv1 * dp2.z) * invdet;
+                Vector3 dpdv = new Vector3();
+                dpdv.x = (-du2 * dp1.x + du1 * dp2.x) * invdet;
+                dpdv.y = (-du2 * dp1.y + du1 * dp2.y) * invdet;
+                dpdv.z = (-du2 * dp1.z + du1 * dp2.z) * invdet;
+                if (parent != null)
+                    dpdv = parent.transformVectorObjectToWorld(dpdv);
+                // create basis in world space
+                state.setBasis(OrthoNormalBasis.makeFromWV(state.getNormal(), dpdv));
+            }
+        } else
+            state.setBasis(OrthoNormalBasis.makeFromW(state.getNormal()));
+        int shaderIndex = faceShaders == null ? 0 : (faceShaders[primID] & 0xFF);
+        if (parent == null)
+            state.setShader(shaders[shaderIndex]);
+        else
+            state.setShader(parent.getShader(shaderIndex));
+    }
+
     public void init(SunflowAPI api) {
         if (points == null)
             UI.printWarning("[TRI] Incomplete mesh, cannot initialize");
         else {
-            int nTriangles = triangles == null ? points.length / 9 : triangles.length / 3;
+            int nTriangles = numPrimitives();
             if (smallTriangles) {
                 for (int i = 0; i < nTriangles; i++)
                     api.primitive(new SmallTriangle(this, i));
@@ -162,110 +388,6 @@ public class Mesh {
         return box;
     }
 
-    private void prepareShadingState(ShadingState state, int t) {
-        state.init();
-        float u = state.getU();
-        float v = state.getV();
-        float w = 1 - u - v;
-        state.getRay().getPoint(state.getPoint());
-        int tri = 3 * t;
-        int index0 = tri + 0, index1 = tri + 1, index2 = tri + 2;
-        if (triangles != null) {
-            index0 = triangles[index0];
-            index1 = triangles[index1];
-            index2 = triangles[index2];
-        }
-        Point3 v0p = getPoint(index0);
-        Point3 v1p = getPoint(index1);
-        Point3 v2p = getPoint(index2);
-        Vector3 ng = Vector3.cross(Point3.sub(v1p, v0p, new Vector3()), Point3.sub(v2p, v0p, new Vector3()), new Vector3());
-        ng.normalize();
-        state.getGeoNormal().set(ng);
-        switch (normalInterp) {
-            case NONE: {
-                state.getNormal().set(ng);
-                break;
-            }
-            case VERTEX: {
-                int i30 = 3 * index0;
-                int i31 = 3 * index1;
-                int i32 = 3 * index2;
-                state.getNormal().x = w * normals[i30 + 0] + u * normals[i31 + 0] + v * normals[i32 + 0];
-                state.getNormal().y = w * normals[i30 + 1] + u * normals[i31 + 1] + v * normals[i32 + 1];
-                state.getNormal().z = w * normals[i30 + 2] + u * normals[i31 + 2] + v * normals[i32 + 2];
-                state.getNormal().normalize();
-                break;
-            }
-            case FACEVARYING: {
-                int idx = 3 * tri;
-                state.getNormal().x = w * normals[idx + 0] + u * normals[idx + 3] + v * normals[idx + 6];
-                state.getNormal().y = w * normals[idx + 1] + u * normals[idx + 4] + v * normals[idx + 7];
-                state.getNormal().z = w * normals[idx + 2] + u * normals[idx + 5] + v * normals[idx + 8];
-                state.getNormal().normalize();
-                break;
-            }
-        }
-        float uv00 = 0, uv01 = 0, uv10 = 0, uv11 = 0, uv20 = 0, uv21 = 0;
-        switch (uvInterp) {
-            case NONE: {
-                state.getUV().x = 0;
-                state.getUV().y = 0;
-                break;
-            }
-            case VERTEX: {
-                int i20 = 2 * index0;
-                int i21 = 2 * index1;
-                int i22 = 2 * index2;
-                uv00 = uvs[i20 + 0];
-                uv01 = uvs[i20 + 1];
-                uv10 = uvs[i21 + 0];
-                uv11 = uvs[i21 + 1];
-                uv20 = uvs[i22 + 0];
-                uv21 = uvs[i22 + 1];
-                break;
-            }
-            case FACEVARYING: {
-                int idx = tri << 1;
-                uv00 = uvs[idx + 0];
-                uv01 = uvs[idx + 1];
-                uv10 = uvs[idx + 2];
-                uv11 = uvs[idx + 3];
-                uv20 = uvs[idx + 4];
-                uv21 = uvs[idx + 5];
-                break;
-            }
-        }
-        if (uvInterp != InterpType.NONE) {
-            // get exact uv coords and compute tangent vectors
-            state.getUV().x = w * uv00 + u * uv10 + v * uv20;
-            state.getUV().y = w * uv01 + u * uv11 + v * uv21;
-            float du1 = uv00 - uv20;
-            float du2 = uv10 - uv20;
-            float dv1 = uv01 - uv21;
-            float dv2 = uv11 - uv21;
-            Vector3 dp1 = Point3.sub(v0p, v2p, new Vector3()), dp2 = Point3.sub(v1p, v2p, new Vector3());
-            float determinant = du1 * dv2 - dv1 * du2;
-            if (determinant == 0.0f) {
-                state.setBasis(OrthoNormalBasis.makeFromW(state.getNormal()));
-            } else {
-                float invdet = 1.f / determinant;
-                Vector3 dpdu = new Vector3();
-                dpdu.x = (dv2 * dp1.x - dv1 * dp2.x) * invdet;
-                dpdu.y = (dv2 * dp1.y - dv1 * dp2.y) * invdet;
-                dpdu.z = (dv2 * dp1.z - dv1 * dp2.z) * invdet;
-                Vector3 dpdv = new Vector3();
-                dpdv.x = (-du2 * dp1.x + du1 * dp2.x) * invdet;
-                dpdv.y = (-du2 * dp1.y + du1 * dp2.y) * invdet;
-                dpdv.z = (-du2 * dp1.z + du1 * dp2.z) * invdet;
-
-                state.setBasis(OrthoNormalBasis.makeFromWV(state.getNormal(), dpdv));
-            }
-        } else
-            state.setBasis(OrthoNormalBasis.makeFromW(state.getNormal()));
-        int shaderIndex = faceShaders == null ? 0 : (faceShaders[t] & 0xFF);
-        state.setShader(shaders[shaderIndex]);
-    }
-
     protected class Triangle implements BoundedPrimitive {
         // private data for fast triangle intersection testing
         private int flags;
@@ -370,7 +492,7 @@ public class Mesh {
         }
 
         public void prepareShadingState(ShadingState state) {
-            Mesh.this.prepareShadingState(state, flags >>> 2);
+            Mesh.this.prepareShadingState(null, flags >>> 2, state);
         }
 
         public void intersect(Ray r, IntersectionState state) {
@@ -391,7 +513,7 @@ public class Mesh {
                     if (u + v > 1.0f)
                         return;
                     r.setMax(t);
-                    state.setIntersection(this, u, v);
+                    state.setIntersection(this, 0, u, v);
                     return;
                 }
                 case 1: {
@@ -410,7 +532,7 @@ public class Mesh {
                     if (u + v > 1.0f)
                         return;
                     r.setMax(t);
-                    state.setIntersection(this, u, v);
+                    state.setIntersection(this, 0, u, v);
                     return;
                 }
                 case 2: {
@@ -429,7 +551,7 @@ public class Mesh {
                     if (u + v > 1.0f)
                         return;
                     r.setMax(t);
-                    state.setIntersection(this, u, v);
+                    state.setIntersection(this, 0, u, v);
                     return;
                 }
             }
@@ -472,7 +594,7 @@ public class Mesh {
         }
 
         public void prepareShadingState(ShadingState state) {
-            mesh.prepareShadingState(state, t / 3);
+            mesh.prepareShadingState(null, t / 3, state);
         }
 
         public void intersect(Ray r, IntersectionState state) {
@@ -530,7 +652,7 @@ public class Mesh {
             float t = (float) ((edge2x * qvecx + edge2y * qvecy + edge2z * qvecz) * inv_det);
             if (r.isInside(t)) {
                 r.setMax(t);
-                state.setIntersection(this, (float) (u * inv_det), (float) (v * inv_det));
+                state.setIntersection(this, 0, (float) (u * inv_det), (float) (v * inv_det));
             }
         }
     }

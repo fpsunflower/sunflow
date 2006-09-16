@@ -11,12 +11,14 @@ public final class UI {
     private static UserInterface ui = new ConsoleInterface();
     private static boolean canceled = false;
 
-    private UI() {}
+    private UI() {
+    }
 
     /**
      * Sets the active user interface implementation. Passing <code>null</code>
-     * silences printing completely (by using the @see SilentInterface).
+     * silences printing completely (by using the
      * 
+     * @see SilentInterface).
      * @param ui
      */
     public final static void set(UserInterface ui) {
@@ -47,14 +49,14 @@ public final class UI {
 
     public final static synchronized void taskStop() {
         ui.taskStop();
-        // reset canceled status ~ assume the parent application will deal with it immediately
+        // reset canceled status ~ assume the parent application will deal with
+        // it immediately
         canceled = false;
     }
 
     /**
-     * Cancel the currently active task. This forces the application to abort as soon as
-     * possible.
-     *
+     * Cancel the currently active task. This forces the application to abort as
+     * soon as possible.
      */
     public final static synchronized void taskCancel() {
         printInfo("[GUI] Abort requested by the user ...");
@@ -63,7 +65,9 @@ public final class UI {
 
     /**
      * Check to see if the current task should be aborted.
-     * @return <code>true</code> if the current task should be stopped, <code>false</code> otherwise
+     * 
+     * @return <code>true</code> if the current task should be stopped,
+     *         <code>false</code> otherwise
      */
     public final static synchronized boolean taskCanceled() {
         if (canceled)

@@ -568,6 +568,7 @@ public final class ShadingState implements Iterable<LightSample> {
             return c;
         }
 
-        public void remove() {}
+        public void remove() {
+        }
     }
 }

@@ -19,7 +19,8 @@ public class BlackmanHarrisFilter implements Filter {
     }
 
     private float bh1d(float x) {
-        if (x < -1.0f || x > 1.0f) return 0.0f;
+        if (x < -1.0f || x > 1.0f)
+            return 0.0f;
         x = (x + 1) * 0.5f;
         final double A0 = 0.35875;
         final double A1 = -0.48829;

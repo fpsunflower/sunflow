@@ -14,7 +14,7 @@ public class Timer {
     public void end() {
         endTime = System.nanoTime();
     }
-    
+
     public long nanos() {
         return endTime - startTime;
     }
@@ -22,19 +22,19 @@ public class Timer {
     public double seconds() {
         return (endTime - startTime) * 1e-9;
     }
-    
+
     public static String toString(long nanos) {
         Timer t = new Timer();
         t.endTime = nanos;
         return t.toString();
     }
-    
+
     public static String toString(double seconds) {
         Timer t = new Timer();
         t.endTime = (long) (seconds * 1e9);
         return t.toString();
     }
-    
+
     @Override
     public String toString() {
         long millis = nanos() / (1000 * 1000);

@@ -82,7 +82,7 @@ public class Disk implements BoundedPrimitive {
             float opz = center.z - r.oz - t * r.dz;
             if (opx * opx + opy * opy + opz * opz < radius * radius) {
                 r.setMax(t);
-                state.setIntersection(this, 0, 0);
+                state.setIntersection(this, 0, 0, 0);
             }
         }
     }

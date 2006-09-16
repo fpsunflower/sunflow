@@ -1,4 +1,7 @@
 v0.06.4
+* Modified Mesh class to implement the AggregateTraceable interface
+* Added AggregateTraceable interface
+* Implemented Instance/Traceable combination
 * Added checks for black diffuse/specular components
 * Added PerlinVector which produce vector valued noise
 * Renamed ImprovedNoise to PerlinScalar and added renderman-like calls

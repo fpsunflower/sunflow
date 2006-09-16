@@ -14,7 +14,8 @@ public class MirrorShader implements Shader {
     }
 
     public Color getRadiance(ShadingState state) {
-        if (!state.includeSpecular()) return Color.BLACK;
+        if (!state.includeSpecular())
+            return Color.BLACK;
         state.faceforward();
         float cos = state.getCosND();
         float dn = 2 * cos;
@@ -38,7 +39,8 @@ public class MirrorShader implements Shader {
     public void scatterPhoton(ShadingState state, Color power) {
         float avg = reflect.getAverage();
         double rnd = state.getRandom(0, 0, 1);
-        if (rnd >= avg) return;
+        if (rnd >= avg)
+            return;
         state.faceforward();
         float cos = state.getCosND();
         power.mul(reflect).mul(1.0f / avg);

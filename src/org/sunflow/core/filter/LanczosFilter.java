@@ -13,8 +13,10 @@ public class LanczosFilter implements Filter {
 
     private float sinc1d(float x) {
         x = Math.abs(x);
-        if (x < 1e-5f) return 1;
-        if (x > 1.0f) return 0;
+        if (x < 1e-5f)
+            return 1;
+        if (x > 1.0f)
+            return 0;
         x *= Math.PI;
         float sinc = (float) Math.sin(3 * x) / (3 * x);
         float lanczos = (float) Math.sin(x) / x;

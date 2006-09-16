@@ -19,6 +19,7 @@ import org.sunflow.core.Display;
 import org.sunflow.core.Filter;
 import org.sunflow.core.GIEngine;
 import org.sunflow.core.ImageSampler;
+import org.sunflow.core.Instance;
 import org.sunflow.core.IntersectionAccelerator;
 import org.sunflow.core.LightSource;
 import org.sunflow.core.Primitive;
@@ -419,7 +420,9 @@ public class SunflowAPI {
      *            sphere radius
      */
     public final void sphere(float x, float y, float z, float radius) {
-        primitive(new Sphere(currentShader, new Point3(x, y, z), radius));
+        Sphere sphere = new Sphere();
+        Matrix4 transform = Matrix4.translation(x, y, z).multiply(Matrix4.scale(radius));
+        primitive(new Instance(new Shader[] { currentShader }, transform, sphere));
     }
 
     /**
@@ -431,7 +434,8 @@ public class SunflowAPI {
      *            object to world transformation matrix
      */
     public final void sphere(Matrix4 m) {
-        primitive(new Sphere(currentShader, m));
+        Sphere sphere = new Sphere();
+        primitive(new Instance(new Shader[] { currentShader }, m, sphere));
     }
 
     /**

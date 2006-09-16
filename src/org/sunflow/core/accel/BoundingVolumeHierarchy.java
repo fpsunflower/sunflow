@@ -25,7 +25,7 @@ public class BoundingVolumeHierarchy implements IntersectionAccelerator {
         Timer t = new Timer();
         t.start();
         bounds = new BoundingBox();
-        
+
         for (BoundedPrimitive p : objects)
             bounds.include(p.getBounds());
         BuildNode root = new BuildNode();

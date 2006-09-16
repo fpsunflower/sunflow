@@ -1,9 +1,10 @@
 package org.sunflow.core;
 
 public final class IntersectionState {
-    public float u, v;
-    public Primitive object;
-    public StackNode[] stack;
+    float u, v;
+    Primitive object;
+    int id;
+    StackNode[] stack;
 
     public static final class StackNode {
         public int node;
@@ -15,6 +16,10 @@ public final class IntersectionState {
         stack = new StackNode[64];
         for (int i = 0; i < stack.length; i++)
             stack[i] = new StackNode();
+    }
+
+    public StackNode[] getStack() {
+        return stack;
     }
 
     /**
@@ -34,15 +39,18 @@ public final class IntersectionState {
      * 
      * @param object
      *            reference to the object beeing intersected
-     * @param hitU
+     * @param id
+     *            element id of the intersected object
+     * @param u
      *            u surface parameter of the intersection point
-     * @param hitV
+     * @param v
      *            v surface parameter of the intersection point
      * @see Primitive#intersect(Ray, IntersectionState)
      */
-    public final void setIntersection(Primitive object, float hitU, float hitV) {
+    public final void setIntersection(Primitive object, int id, float u, float v) {
         this.object = object;
-        u = hitU;
-        v = hitV;
+        this.id = id;
+        this.u = u;
+        this.v = v;
     }
 }

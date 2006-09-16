@@ -46,10 +46,11 @@ public class BenchmarkFramework {
             return;
         avg /= n;
         double stdDev = 0;
-        for (Timer t: timers) {
-            if (t == null) break;
+        for (Timer t : timers) {
+            if (t == null)
+                break;
             double s = t.seconds();
-            stdDev += (s - avg) * (s - avg); 
+            stdDev += (s - avg) * (s - avg);
         }
         stdDev = Math.sqrt(stdDev / n);
         UI.printInfo("[BCH] Benchmark results:");
