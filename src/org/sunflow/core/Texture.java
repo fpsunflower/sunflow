@@ -17,8 +17,7 @@ public class Texture {
     /**
      * Creates a new texture from the specfied file.
      * 
-     * @param filename
-     *            image file to load
+     * @param filename image file to load
      */
     Texture(String filename) {
         try {
@@ -41,10 +40,8 @@ public class Texture {
      * as a unit square tiled in both directions. Bicubic filtering is performed
      * on the four nearest pixels to the lookup point.
      * 
-     * @param x
-     *            x coordinate into the texture
-     * @param y
-     *            y coordinate into the texture
+     * @param x x coordinate into the texture
+     * @param y y coordinate into the texture
      * @return filtered color at location (x,y)
      */
     public Color getPixel(float x, float y) {

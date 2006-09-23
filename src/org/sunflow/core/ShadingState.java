@@ -230,8 +230,8 @@ public final class ShadingState implements Iterable<LightSample> {
     /**
      * Record which shader should be executed for the intersected surface.
      * 
-     * @param shader
-     *            surface shader to use to shade the current intersection point
+     * @param shader surface shader to use to shade the current intersection
+     *            point
      */
     public final void setShader(Shader shader) {
         this.shader = shader;
@@ -361,8 +361,7 @@ public final class ShadingState implements Iterable<LightSample> {
      * Returns the color obtained by recursively tracing the specified ray. The
      * reflection is assumed to be glossy.
      * 
-     * @param r
-     *            ray to trace
+     * @param r ray to trace
      * @return color observed along specified ray.
      */
     public final Color traceGlossy(Ray r, int i) {
@@ -373,8 +372,7 @@ public final class ShadingState implements Iterable<LightSample> {
      * Returns the color obtained by recursively tracing the specified ray. The
      * reflection is assumed to be specular.
      * 
-     * @param r
-     *            ray to trace
+     * @param r ray to trace
      * @return color observed along specified ray.
      */
     public final Color traceReflection(Ray r, int i) {
@@ -384,8 +382,7 @@ public final class ShadingState implements Iterable<LightSample> {
     /**
      * Returns the color obtained by recursively tracing the specified ray.
      * 
-     * @param r
-     *            ray to trace
+     * @param r ray to trace
      * @return color observed along specified ray.
      */
     public final Color traceRefraction(Ray r, int i) {
@@ -396,8 +393,7 @@ public final class ShadingState implements Iterable<LightSample> {
      * Trace a shadow ray against the scene, determine if the ray interestected
      * anything.
      * 
-     * @param r
-     *            ray to trace
+     * @param r ray to trace
      * @return <code>true</code> if the ray interesected anything,
      *         <code>false</code> otherwise
      */
@@ -408,12 +404,9 @@ public final class ShadingState implements Iterable<LightSample> {
     /**
      * Records a photon at the specified location.
      * 
-     * @param dir
-     *            incoming direction of the photon
-     * @param power
-     *            photon power
-     * @param diffuse
-     *            diffuse reflectance at the given point
+     * @param dir incoming direction of the photon
+     * @param power photon power
+     * @param diffuse diffuse reflectance at the given point
      */
     public final void storePhoton(Vector3 dir, Color power, Color diffuse) {
         map.store(this, dir, power, diffuse);
@@ -423,10 +416,8 @@ public final class ShadingState implements Iterable<LightSample> {
      * Trace a new photon from the current location. This assumes that the
      * photon was reflected by a specular surface.
      * 
-     * @param r
-     *            ray to trace photon along
-     * @param power
-     *            power of the new photon
+     * @param r ray to trace photon along
+     * @param power power of the new photon
      */
     public final void traceReflectionPhoton(Ray r, Color power) {
         if (map.allowReflectionBounced())
@@ -437,10 +428,8 @@ public final class ShadingState implements Iterable<LightSample> {
      * Trace a new photon from the current location. This assumes that the
      * photon was refracted by a specular surface.
      * 
-     * @param r
-     *            ray to trace photon along
-     * @param power
-     *            power of the new photon
+     * @param r ray to trace photon along
+     * @param power power of the new photon
      */
     public final void traceRefractionPhoton(Ray r, Color power) {
         if (map.allowRefractionBounced())
@@ -451,10 +440,8 @@ public final class ShadingState implements Iterable<LightSample> {
      * Trace a new photon from the current location. This assumes that the
      * photon was reflected by a diffuse surface.
      * 
-     * @param r
-     *            ray to trace photon along
-     * @param power
-     *            power of the new photon
+     * @param r ray to trace photon along
+     * @param power power of the new photon
      */
     public final void traceDiffusePhoton(Ray r, Color power) {
         if (map.allowDiffuseBounced())
@@ -485,10 +472,8 @@ public final class ShadingState implements Iterable<LightSample> {
      * Trace a final gather ray and return the intersection result as a new
      * render state
      * 
-     * @param r
-     *            ray to shoot
-     * @param i
-     *            instance of the ray
+     * @param r ray to shoot
+     * @param i instance of the ray
      * @return new render state object corresponding to the intersection result
      */
     public final ShadingState traceFinalGather(Ray r, int i) {

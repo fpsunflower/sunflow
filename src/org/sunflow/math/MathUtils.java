@@ -95,10 +95,8 @@ public final class MathUtils {
      * Computes a fast approximation to <code>Math.pow(a, b)</code>. Adapted
      * from <url>http://www.dctsystems.co.uk/Software/power.html</url>.
      * 
-     * @param a
-     *            a positive number
-     * @param b
-     *            a number
+     * @param a a positive number
+     * @param b a number
      * @return a^b
      */
     public static final float fastPow(float a, float b) {

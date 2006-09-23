@@ -28,8 +28,7 @@ public interface LightSource {
      * Checks to see if the light is trivally visible from the current render
      * state.
      * 
-     * @param state
-     *            currente render state
+     * @param state currente render state
      * @return <code>true</code> if the light source is visible,
      *         <code>false</code> otherwise
      */
@@ -42,12 +41,9 @@ public interface LightSource {
      * radiance it will be treated as invisible. A null shadow ray simply
      * indicates the sample should not cast shadows.
      * 
-     * @param i
-     *            current sample number
-     * @param state
-     *            current state, including point to be
-     * @param dest
-     *            light sample to be filled in
+     * @param i current sample number
+     * @param state current state, including point to be
+     * @param dest light sample to be filled in
      * @see LightSample
      */
     void getSample(int i, ShadingState state, LightSample dest);
@@ -57,20 +53,13 @@ public interface LightSource {
      * arguments. The two sampling parameters are points on the unit square that
      * can be used to sample a position and/or direction for the emitted photon.
      * 
-     * @param randX1
-     *            sampling parameter
-     * @param randY1
-     *            sampling parameter
-     * @param randX2
-     *            sampling parameter
-     * @param randY2
-     *            sampling parameter
-     * @param p
-     *            position to shoot the photon from
-     * @param dir
-     *            direction to shoot the photon in
-     * @param power
-     *            power of the photon
+     * @param randX1 sampling parameter
+     * @param randY1 sampling parameter
+     * @param randX2 sampling parameter
+     * @param randY2 sampling parameter
+     * @param p position to shoot the photon from
+     * @param dir direction to shoot the photon in
+     * @param power power of the photon
      */
     void getPhoton(double randX1, double randY1, double randX2, double randY2, Point3 p, Vector3 dir, Color power);
 

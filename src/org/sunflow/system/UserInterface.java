@@ -5,8 +5,7 @@ public interface UserInterface {
      * Displays an informative string to the user. It is assumed the string
      * corresponds to one line only.
      * 
-     * @param s
-     *            string to display
+     * @param s string to display
      */
     void printInfo(String s);
 
@@ -14,8 +13,7 @@ public interface UserInterface {
      * Displays a warning to the user. It is assumed the string corresponds to
      * one line only.
      * 
-     * @param s
-     *            string to display
+     * @param s string to display
      */
 
     void printWarning(String s);
@@ -24,8 +22,7 @@ public interface UserInterface {
      * Displays an error message to the user. It is assumed the string
      * corresponds to one line only.
      * 
-     * @param s
-     *            string to display
+     * @param s string to display
      */
     void printError(String s);
 
@@ -35,12 +32,9 @@ public interface UserInterface {
      * with the max value. It is currently not possible to nest calls to
      * setTask, so only one task needs to be tracked at a time.
      * 
-     * @param s
-     *            desriptive string
-     * @param min
-     *            minimum value of the task
-     * @param max
-     *            maximum value of the task
+     * @param s desriptive string
+     * @param min minimum value of the task
+     * @param max maximum value of the task
      */
     void taskStart(String s, int min, int max);
 
@@ -49,8 +43,7 @@ public interface UserInterface {
      * max. When min or max are passed the progressed bar is shown or hidden
      * respectively.
      * 
-     * @param current
-     *            current value of the task in progress.
+     * @param current current value of the task in progress.
      */
     void taskUpdate(int current);
 

@@ -12,12 +12,9 @@ public interface Display {
      * headers or allocate surfaces. Bucket size will be 0 when called from a
      * non-bucket based source.
      * 
-     * @param w
-     *            width of the rendered image in pixels
-     * @param h
-     *            height of the rendered image in pixels
-     * @param bucketSize
-     *            size of the buckets in pixels
+     * @param w width of the rendered image in pixels
+     * @param h height of the rendered image in pixels
+     * @param bucketSize size of the buckets in pixels
      */
     void imageBegin(int w, int h, int bucketSize);
 
@@ -26,16 +23,11 @@ public interface Display {
      * the work in progress area or simply to setup the display driver to
      * recieve the specified portion of the image
      * 
-     * @param x
-     *            x coordinate of the bucket within the image
-     * @param y
-     *            y coordinate of the bucket within the image
-     * @param w
-     *            width of the bucket in pixels
-     * @param h
-     *            height of the bucket in pixels
-     * @param id
-     *            unique identifier corresponding to the thread which invoked
+     * @param x x coordinate of the bucket within the image
+     * @param y y coordinate of the bucket within the image
+     * @param w width of the bucket in pixels
+     * @param h height of the bucket in pixels
+     * @param id unique identifier corresponding to the thread which invoked
      *            this call
      */
     void imagePrepare(int x, int y, int w, int h, int id);
@@ -47,16 +39,11 @@ public interface Display {
      * to do any type of quantization needed. The array of colors will be
      * exactly <code>w * h</code> long and in row major order.
      * 
-     * @param x
-     *            x coordinate of the bucket within the image
-     * @param y
-     *            y coordinate of the bucket within the image
-     * @param w
-     *            width of the bucket in pixels
-     * @param h
-     *            height of the bucket in pixels
-     * @param data
-     *            bucket data, this array will be exactly <code>w * h</code>
+     * @param x x coordinate of the bucket within the image
+     * @param y y coordinate of the bucket within the image
+     * @param w width of the bucket in pixels
+     * @param h height of the bucket in pixels
+     * @param data bucket data, this array will be exactly <code>w * h</code>
      *            long
      */
     void imageUpdate(int x, int y, int w, int h, Color[] data);
@@ -69,16 +56,11 @@ public interface Display {
      * Colors are passed in unprocessed. It is up the display driver to do any
      * type of quantization needed.
      * 
-     * @param x
-     *            x coordinate of the region within the image
-     * @param y
-     *            y coordinate of the region within the image
-     * @param w
-     *            with of the region in pixels
-     * @param h
-     *            height of the region in pixels
-     * @param c
-     *            color to fill the region with
+     * @param x x coordinate of the region within the image
+     * @param y y coordinate of the region within the image
+     * @param w with of the region in pixels
+     * @param h height of the region in pixels
+     * @param c color to fill the region with
      */
     void imageFill(int x, int y, int w, int h, Color c);
 

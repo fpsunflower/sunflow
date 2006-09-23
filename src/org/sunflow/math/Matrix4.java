@@ -36,38 +36,22 @@ public final class Matrix4 {
     /**
      * Creates a matrix with the specified elements
      * 
-     * @param m00
-     *            value at row 0, col 0
-     * @param m01
-     *            value at row 0, col 1
-     * @param m02
-     *            value at row 0, col 2
-     * @param m03
-     *            value at row 0, col 3
-     * @param m10
-     *            value at row 1, col 0
-     * @param m11
-     *            value at row 1, col 1
-     * @param m12
-     *            value at row 1, col 2
-     * @param m13
-     *            value at row 1, col 3
-     * @param m20
-     *            value at row 2, col 0
-     * @param m21
-     *            value at row 2, col 1
-     * @param m22
-     *            value at row 2, col 2
-     * @param m23
-     *            value at row 2, col 3
-     * @param m30
-     *            value at row 3, col 0
-     * @param m31
-     *            value at row 3, col 1
-     * @param m32
-     *            value at row 3, col 2
-     * @param m33
-     *            value at row 3, col 3
+     * @param m00 value at row 0, col 0
+     * @param m01 value at row 0, col 1
+     * @param m02 value at row 0, col 2
+     * @param m03 value at row 0, col 3
+     * @param m10 value at row 1, col 0
+     * @param m11 value at row 1, col 1
+     * @param m12 value at row 1, col 2
+     * @param m13 value at row 1, col 3
+     * @param m20 value at row 2, col 0
+     * @param m21 value at row 2, col 1
+     * @param m22 value at row 2, col 2
+     * @param m23 value at row 2, col 3
+     * @param m30 value at row 3, col 0
+     * @param m31 value at row 3, col 1
+     * @param m32 value at row 3, col 2
+     * @param m33 value at row 3, col 3
      */
     public Matrix4(float m00, float m01, float m02, float m03, float m10, float m11, float m12, float m13, float m20, float m21, float m22, float m23, float m30, float m31, float m32, float m33) {
         this.m00 = m00;
@@ -92,10 +76,8 @@ public final class Matrix4 {
      * Initialize a matrix from the specified 16 element array. The matrix may
      * be given in row or column major form.
      * 
-     * @param m
-     *            a 16 element array in row or column major form
-     * @param rowMajor
-     *            <code>true</code> if the array is in row major form,
+     * @param m a 16 element array in row or column major form
+     * @param rowMajor <code>true</code> if the array is in row major form,
      *            <code>false</code>if it is in column major form
      */
     public Matrix4(float[] m, boolean rowMajor) {
@@ -208,8 +190,7 @@ public final class Matrix4 {
     /**
      * Computes this*m and return the result as a new Matrix4
      * 
-     * @param m
-     *            right hand side of the multiplication
+     * @param m right hand side of the multiplication
      * @return a new Matrix4 object equal to <code>this*m</code>
      */
     public final Matrix4 multiply(Matrix4 m) {
@@ -241,8 +222,7 @@ public final class Matrix4 {
      * Transforms each corner of the specified axis-aligned bounding box and
      * returns a new bounding box which incloses the transformed corners.
      * 
-     * @param b
-     *            original bounding box
+     * @param b original bounding box
      * @return a new BoundingBox object which encloses the transform version of
      *         b
      */
@@ -260,8 +240,7 @@ public final class Matrix4 {
      * Computes this*v and returns the result as a new Vector3 object. This
      * method assumes the bottom row of the matrix is <code>[0,0,0,1]</code>.
      * 
-     * @param v
-     *            vector to multiply
+     * @param v vector to multiply
      * @return a new Vector3 object equal to <code>this*v</code>
      */
     public final Vector3 transformV(Vector3 v) {
@@ -276,8 +255,7 @@ public final class Matrix4 {
      * Computes (this^T)*v and returns the result as a new Vector3 object. This
      * method assumes the bottom row of the matrix is <code>[0,0,0,1]</code>.
      * 
-     * @param v
-     *            vector to multiply
+     * @param v vector to multiply
      * @return a new Vector3 object equal to <code>(this^T)*v</code>
      */
     public final Vector3 transformTransposeV(Vector3 v) {
@@ -292,8 +270,7 @@ public final class Matrix4 {
      * Computes this*p and returns the result as a new Point3 object. This
      * method assumes the bottom row of the matrix is <code>[0,0,0,1]</code>.
      * 
-     * @param p
-     *            point to multiply
+     * @param p point to multiply
      * @return a new Point3 object equal to <code>this*v</code>
      */
     public final Point3 transformP(Point3 p) {
@@ -307,12 +284,9 @@ public final class Matrix4 {
     /**
      * Computes the x component of this*(x,y,z,0).
      * 
-     * @param x
-     *            x coordinate of the vector to multiply
-     * @param y
-     *            y coordinate of the vector to multiply
-     * @param z
-     *            z coordinate of the vector to multiply
+     * @param x x coordinate of the vector to multiply
+     * @param y y coordinate of the vector to multiply
+     * @param z z coordinate of the vector to multiply
      * @return
      */
     public final float transformVX(float x, float y, float z) {
@@ -322,12 +296,9 @@ public final class Matrix4 {
     /**
      * Computes the y component of this*(x,y,z,0).
      * 
-     * @param x
-     *            x coordinate of the vector to multiply
-     * @param y
-     *            y coordinate of the vector to multiply
-     * @param z
-     *            z coordinate of the vector to multiply
+     * @param x x coordinate of the vector to multiply
+     * @param y y coordinate of the vector to multiply
+     * @param z z coordinate of the vector to multiply
      * @return
      */
     public final float transformVY(float x, float y, float z) {
@@ -337,12 +308,9 @@ public final class Matrix4 {
     /**
      * Computes the z component of this*(x,y,z,0).
      * 
-     * @param x
-     *            x coordinate of the vector to multiply
-     * @param y
-     *            y coordinate of the vector to multiply
-     * @param z
-     *            z coordinate of the vector to multiply
+     * @param x x coordinate of the vector to multiply
+     * @param y y coordinate of the vector to multiply
+     * @param z z coordinate of the vector to multiply
      * @return
      */
     public final float transformVZ(float x, float y, float z) {
@@ -352,12 +320,9 @@ public final class Matrix4 {
     /**
      * Computes the x component of (this^T)*(x,y,z,0).
      * 
-     * @param x
-     *            x coordinate of the vector to multiply
-     * @param y
-     *            y coordinate of the vector to multiply
-     * @param z
-     *            z coordinate of the vector to multiply
+     * @param x x coordinate of the vector to multiply
+     * @param y y coordinate of the vector to multiply
+     * @param z z coordinate of the vector to multiply
      * @return
      */
     public final float transformTransposeVX(float x, float y, float z) {
@@ -367,12 +332,9 @@ public final class Matrix4 {
     /**
      * Computes the y component of (this^T)*(x,y,z,0).
      * 
-     * @param x
-     *            x coordinate of the vector to multiply
-     * @param y
-     *            y coordinate of the vector to multiply
-     * @param z
-     *            z coordinate of the vector to multiply
+     * @param x x coordinate of the vector to multiply
+     * @param y y coordinate of the vector to multiply
+     * @param z z coordinate of the vector to multiply
      * @return
      */
     public final float transformTransposeVY(float x, float y, float z) {
@@ -382,12 +344,9 @@ public final class Matrix4 {
     /**
      * Computes the z component of (this^T)*(x,y,z,0).
      * 
-     * @param x
-     *            x coordinate of the vector to multiply
-     * @param y
-     *            y coordinate of the vector to multiply
-     * @param z
-     *            z coordinate of the vector to multiply
+     * @param x x coordinate of the vector to multiply
+     * @param y y coordinate of the vector to multiply
+     * @param z z coordinate of the vector to multiply
      * @return
      */
     public final float transformTransposeVZ(float x, float y, float z) {
@@ -397,12 +356,9 @@ public final class Matrix4 {
     /**
      * Computes the x component of this*(x,y,z,1).
      * 
-     * @param x
-     *            x coordinate of the vector to multiply
-     * @param y
-     *            y coordinate of the vector to multiply
-     * @param z
-     *            z coordinate of the vector to multiply
+     * @param x x coordinate of the vector to multiply
+     * @param y y coordinate of the vector to multiply
+     * @param z z coordinate of the vector to multiply
      * @return
      */
     public final float transformPX(float x, float y, float z) {
@@ -412,12 +368,9 @@ public final class Matrix4 {
     /**
      * Computes the y component of this*(x,y,z,1).
      * 
-     * @param x
-     *            x coordinate of the vector to multiply
-     * @param y
-     *            y coordinate of the vector to multiply
-     * @param z
-     *            z coordinate of the vector to multiply
+     * @param x x coordinate of the vector to multiply
+     * @param y y coordinate of the vector to multiply
+     * @param z z coordinate of the vector to multiply
      * @return
      */
     public final float transformPY(float x, float y, float z) {
@@ -427,12 +380,9 @@ public final class Matrix4 {
     /**
      * Computes the z component of this*(x,y,z,1).
      * 
-     * @param x
-     *            x coordinate of the vector to multiply
-     * @param y
-     *            y coordinate of the vector to multiply
-     * @param z
-     *            z coordinate of the vector to multiply
+     * @param x x coordinate of the vector to multiply
+     * @param y y coordinate of the vector to multiply
+     * @param z z coordinate of the vector to multiply
      * @return
      */
     public final float transformPZ(float x, float y, float z) {
@@ -442,12 +392,9 @@ public final class Matrix4 {
     /**
      * Create a translation matrix for the specified vector.
      * 
-     * @param x
-     *            x component of translation
-     * @param y
-     *            y component of translation
-     * @param z
-     *            z component of translation
+     * @param x x component of translation
+     * @param y y component of translation
+     * @param z z component of translation
      * @return a new Matrix4 object representing the translation
      */
     public final static Matrix4 translation(float x, float y, float z) {
@@ -462,8 +409,7 @@ public final class Matrix4 {
     /**
      * Creates a rotation matrix about the X axis.
      * 
-     * @param theta
-     *            angle to rotate about the X axis in radians
+     * @param theta angle to rotate about the X axis in radians
      * @return a new Matrix4 object representing the rotation
      */
     public final static Matrix4 rotateX(float theta) {
@@ -480,8 +426,7 @@ public final class Matrix4 {
     /**
      * Creates a rotation matrix about the Y axis.
      * 
-     * @param theta
-     *            angle to rotate about the Y axis in radians
+     * @param theta angle to rotate about the Y axis in radians
      * @return a new Matrix4 object representing the rotation
      */
     public final static Matrix4 rotateY(float theta) {
@@ -498,8 +443,7 @@ public final class Matrix4 {
     /**
      * Creates a rotation matrix about the Z axis.
      * 
-     * @param theta
-     *            angle to rotate about the Z axis in radians
+     * @param theta angle to rotate about the Z axis in radians
      * @return a new Matrix4 object representing the rotation
      */
     public final static Matrix4 rotateZ(float theta) {
@@ -517,14 +461,10 @@ public final class Matrix4 {
      * Creates a rotation matrix about the specified axis. The axis vector need
      * not be normalized.
      * 
-     * @param x
-     *            x component of the axis vector
-     * @param y
-     *            y component of the axis vector
-     * @param z
-     *            z component of the axis vector
-     * @param theta
-     *            angle to rotate about the axis in radians
+     * @param x x component of the axis vector
+     * @param y y component of the axis vector
+     * @param z z component of the axis vector
+     * @param theta angle to rotate about the axis in radians
      * @return a new Matrix4 object representing the rotation
      */
     public final static Matrix4 rotate(float x, float y, float z, float theta) {
@@ -558,8 +498,7 @@ public final class Matrix4 {
     /**
      * Create a uniform scaling matrix.
      * 
-     * @param s
-     *            scale factor for all three axes
+     * @param s scale factor for all three axes
      * @return a new Matrix4 object representing the uniform scale
      */
     public final static Matrix4 scale(float s) {
@@ -572,12 +511,9 @@ public final class Matrix4 {
     /**
      * Creates a non-uniform scaling matrix.
      * 
-     * @param sx
-     *            scale factor in the x dimension
-     * @param sy
-     *            scale factor in the y dimension
-     * @param sz
-     *            scale factor in the z dimension
+     * @param sx scale factor in the x dimension
+     * @param sy scale factor in the y dimension
+     * @param sz scale factor in the z dimension
      * @return a new Matrix4 object representing the non-uniform scale
      */
     public final static Matrix4 scale(float sx, float sy, float sz) {

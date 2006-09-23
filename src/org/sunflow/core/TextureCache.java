@@ -19,8 +19,7 @@ public final class TextureCache {
      * texture has already been loaded the previous reference is returned,
      * otherwise, a new texture is created.
      * 
-     * @param filename
-     *            image file to load
+     * @param filename image file to load
      * @return texture object
      * @see Texture
      */

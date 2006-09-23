@@ -25,10 +25,8 @@ public final class Ray {
      * copied, so the ray has a new instance of both. The direction vector is
      * normalized.
      * 
-     * @param o
-     *            ray origin
-     * @param d
-     *            ray direction (need not be normalized)
+     * @param o ray origin
+     * @param d ray direction (need not be normalized)
      */
     public Ray(Point3 o, Vector3 d) {
         ox = o.x;
@@ -50,10 +48,8 @@ public final class Ray {
      * will set tMin and tMax to limit the ray to the segment (a,b)
      * (non-inclusive of a and b). This is often used to create shadow rays.
      * 
-     * @param a
-     *            start point
-     * @param b
-     *            end point
+     * @param a start point
+     * @param b end point
      */
     public Ray(Point3 a, Point3 b) {
         ox = a.x;
@@ -119,8 +115,7 @@ public final class Ray {
      * this ray. This should always be used before an intersection with the ray
      * is detected.
      * 
-     * @param t
-     *            distance to be tested
+     * @param t distance to be tested
      * @return <code>true</code> if t falls between the minimum and maximum
      *         distance of this ray, <code>false</code> otherwise
      * @see Primitive
@@ -133,8 +128,7 @@ public final class Ray {
      * Gets the end point of the ray. A reference to <code>dest</code> is
      * returned to support chaining.
      * 
-     * @param dest
-     *            reference to the point to store
+     * @param dest reference to the point to store
      * @return reference to <code>dest</code>
      */
     public final Point3 getPoint(Point3 dest) {
@@ -149,8 +143,7 @@ public final class Ray {
      * ray. This method avoids having to call getDirection() which would
      * instantiate a new Vector object.
      * 
-     * @param v
-     *            arbitrary vector
+     * @param v arbitrary vector
      * @return dot product of the ray direction and the specified vector
      */
     public final float dot(Vector3 v) {
@@ -161,8 +154,7 @@ public final class Ray {
      * Updates the maximum to the specified distance if and only if the new
      * distance is smaller than the current one.
      * 
-     * @param t
-     *            new maximum distance
+     * @param t new maximum distance
      */
     public final void setMax(float t) {
         tMax = t;

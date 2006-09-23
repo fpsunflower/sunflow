@@ -16,8 +16,7 @@ public interface AggregateTraceable {
      * use {@link Matrix4#transform(BoundingBox)}. If the matrix is
      * <code>null</code> no transformation is needed.
      * 
-     * @param o2w
-     *            object to world transformation matrix
+     * @param o2w object to world transformation matrix
      * @return object bounding box in world space
      */
     public BoundingBox getWorldBounds(Matrix4 o2w);
@@ -32,10 +31,8 @@ public interface AggregateTraceable {
     /**
      * Retrieve the bounding box component of a particular primitive.
      * 
-     * @param primID
-     *            primitive index
-     * @param i
-     *            bounding box side index
+     * @param primID primitive index
+     * @param i bounding box side index
      * @return value of the request bound
      */
     public float getBound(int primID, int i);
@@ -43,14 +40,10 @@ public interface AggregateTraceable {
     /**
      * Intersect the specified primitive in local space.
      * 
-     * @param ray
-     *            ray in the object's local space
-     * @param parent
-     *            instance currently being intersected
-     * @param primID
-     *            primitive index to intersect
-     * @param state
-     *            intersection state
+     * @param ray ray in the object's local space
+     * @param parent instance currently being intersected
+     * @param primID primitive index to intersect
+     * @param state intersection state
      */
     public void intersectPrimitive(Ray ray, Instance parent, int primID, IntersectionState state);
 
@@ -59,12 +52,9 @@ public interface AggregateTraceable {
      * parameters. The provided instance can be used to transform between object
      * and world space.
      * 
-     * @param parent
-     *            instance which was hit
-     * @param primID
-     *            primitive index which was hit
-     * @param state
-     *            shading state to fill in
+     * @param parent instance which was hit
+     * @param primID primitive index which was hit
+     * @param state shading state to fill in
      */
     public void prepareShadingState(Instance parent, int primID, ShadingState state);
 }

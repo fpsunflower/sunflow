@@ -18,10 +18,8 @@ public interface Filter {
      * called with values beyond its extents but should return 0 in those cases
      * anyway.
      * 
-     * @param x
-     *            x offset in pixels
-     * @param y
-     *            y offset in pixels
+     * @param x x offset in pixels
+     * @param y y offset in pixels
      * @return value of the filter at the specified location
      */
     public float get(float x, float y);

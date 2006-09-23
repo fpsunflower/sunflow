@@ -69,10 +69,8 @@ public class Scene {
     /**
      * Set final image resolution in pixels
      * 
-     * @param imageWidth
-     *            width in pixels
-     * @param imageHeight
-     *            height in pixels
+     * @param imageWidth width in pixels
+     * @param imageHeight height in pixels
      */
     public void setResolution(int imageWidth, int imageHeight) {
         this.imageWidth = imageWidth;
@@ -83,8 +81,7 @@ public class Scene {
      * Sets the intersetion accelerator used to accelerate raytracing. This can
      * be changed up until rendertime.
      * 
-     * @param accel
-     *            intersection accelerator to use
+     * @param accel intersection accelerator to use
      */
     public void setIntersectionAccelerator(IntersectionAccelerator accel) {
         intAccel = accel;
@@ -94,8 +91,7 @@ public class Scene {
     /**
      * Sets the current camera (no support for multiple cameras yet).
      * 
-     * @param camera
-     *            camera to be used as the viewpoint for the scene
+     * @param camera camera to be used as the viewpoint for the scene
      */
     public void addCamera(Camera camera) {
         this.camera = camera;
@@ -104,8 +100,7 @@ public class Scene {
     /**
      * Adds an object to the scene.
      * 
-     * @param prim
-     *            object to be added to the scene
+     * @param prim object to be added to the scene
      */
     public void addPrimitive(Primitive prim) {
         primitives.add(prim);
@@ -114,8 +109,7 @@ public class Scene {
     /**
      * Add an object to the scene.
      * 
-     * @param prim
-     *            object to be added to the scene
+     * @param prim object to be added to the scene
      */
     public void addBoundedPrimitive(BoundedPrimitive prim) {
         boundedPrimitives.add(prim);
@@ -127,8 +121,7 @@ public class Scene {
      * will need to call {@link #addPrimitive(Primitive)}in order to make the
      * light source visible to the raytracer.
      * 
-     * @param light
-     *            light to be added to the scene
+     * @param light light to be added to the scene
      */
     public void addLight(LightSource light) {
         lightServer.registerLight(light);
@@ -138,8 +131,7 @@ public class Scene {
      * Sets which filter type used to filter image samples into the final.
      * pixels.
      * 
-     * @param f
-     *            filter to be used
+     * @param f filter to be used
      */
     public void setFilter(Filter f) {
         filter = f;
@@ -148,12 +140,9 @@ public class Scene {
     /**
      * Sets the maximum raytracing depths per bounce type.
      * 
-     * @param diffuseDepth
-     *            maximum diffuse trace depth
-     * @param reflectionDepth
-     *            maximum reflection trace depth
-     * @param refractionDepth
-     *            maximum refraction trace depth
+     * @param diffuseDepth maximum diffuse trace depth
+     * @param reflectionDepth maximum reflection trace depth
+     * @param refractionDepth maximum refraction trace depth
      */
     public void setMaxDepth(int diffuseDepth, int reflectionDepth, int refractionDepth) {
         lightServer.setMaxDepth(diffuseDepth, reflectionDepth, refractionDepth);
@@ -163,8 +152,7 @@ public class Scene {
      * Sets the type of map to use for caustic photons. You may pass
      * <code>null</code> to disable caustics.
      * 
-     * @param cmap
-     *            caustic photon map data structure
+     * @param cmap caustic photon map data structure
      */
     public void photons(CausticPhotonMapInterface cmap) {
         lightServer.photons(cmap);
@@ -174,12 +162,11 @@ public class Scene {
      * Enables shader overiding (set null to disable). The specified shader will
      * be used to shade all surfaces
      * 
-     * @param shader
-     *            shader to run over all surfaces, or <code>null</code> to
+     * @param shader shader to run over all surfaces, or <code>null</code> to
      *            disable overriding
-     * @param photonOverride
-     *            <code>true</code> to override photon scattering with this
-     *            shader or <code>false</code> to run the regular shaders
+     * @param photonOverride <code>true</code> to override photon scattering
+     *            with this shader or <code>false</code> to run the regular
+     *            shaders
      */
     public void setShaderOverride(Shader shader, boolean photonOverride) {
         lightServer.setShaderOverride(shader, photonOverride);

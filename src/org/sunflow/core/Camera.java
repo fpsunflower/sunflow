@@ -12,18 +12,12 @@ public interface Camera {
      * position of the source of the ray on the lens of the camera for DOF
      * effects.
      * 
-     * @param x
-     *            x coordinate of the (sub)pixel
-     * @param y
-     *            y coordinate of the (sub)pixel
-     * @param imageWidth
-     *            image width in (sub)pixels
-     * @param imageHeight
-     *            image height in (sub)pixels
-     * @param lensX
-     *            x lens sampling parameter
-     * @param lensY
-     *            y lens sampling parameter
+     * @param x x coordinate of the (sub)pixel
+     * @param y y coordinate of the (sub)pixel
+     * @param imageWidth image width in (sub)pixels
+     * @param imageHeight image height in (sub)pixels
+     * @param lensX x lens sampling parameter
+     * @param lensY y lens sampling parameter
      * @return a new ray passing through the given pixel
      */
     public Ray getRay(float x, float y, int imageWidth, int imageHeight, double lensX, double lensY, double time);

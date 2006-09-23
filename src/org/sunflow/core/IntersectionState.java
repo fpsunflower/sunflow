@@ -37,14 +37,10 @@ public final class IntersectionState {
      * Record an intersection with the specified object.The u and v parameters
      * are used to pinpoint the location on the surface if needed.
      * 
-     * @param object
-     *            reference to the object beeing intersected
-     * @param id
-     *            element id of the intersected object
-     * @param u
-     *            u surface parameter of the intersection point
-     * @param v
-     *            v surface parameter of the intersection point
+     * @param object reference to the object beeing intersected
+     * @param id element id of the intersected object
+     * @param u u surface parameter of the intersection point
+     * @param v v surface parameter of the intersection point
      * @see Primitive#intersect(Ray, IntersectionState)
      */
     public final void setIntersection(Primitive object, int id, float u, float v) {

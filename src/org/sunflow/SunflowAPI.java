@@ -123,8 +123,7 @@ public class SunflowAPI {
      * Attempts to resolve the specified filename by checking it against the
      * texture search path.
      * 
-     * @param filename
-     *            filename
+     * @param filename filename
      * @return a path which matches the filename, or filename if no matches are
      *         found
      */
@@ -135,13 +134,11 @@ public class SunflowAPI {
     /**
      * Sets the number of threads to use for all multi-threadable processes.
      * 
-     * @param threads
-     *            Number of threads, 0 means autodect the number of available
-     *            cpu cores.
-     * @param lowPriority
-     *            Create low priority threads, this improves the responsiveness
-     *            of the GUI while slightly reducing performance if the machine
-     *            has many background tasks.
+     * @param threads Number of threads, 0 means autodect the number of
+     *            available cpu cores.
+     * @param lowPriority Create low priority threads, this improves the
+     *            responsiveness of the GUI while slightly reducing performance
+     *            if the machine has many background tasks.
      */
     public final void threads(int threads, boolean lowPriority) {
         scene.setThreads(threads, lowPriority);
@@ -150,10 +147,8 @@ public class SunflowAPI {
     /**
      * Sets the desired image resolution in pixels.
      * 
-     * @param w
-     *            width of the final image in pixels
-     * @param h
-     *            height of the final image in pixels
+     * @param w width of the final image in pixels
+     * @param h height of the final image in pixels
      */
     public final void resolution(int w, int h) {
         scene.setResolution(w, h);
@@ -162,8 +157,7 @@ public class SunflowAPI {
     /**
      * Sets the bucket size in pixels to be used by the bucket renderer.
      * 
-     * @param size
-     *            bucket size in pixels
+     * @param size bucket size in pixels
      */
     public final void bucketSize(int size) {
         bucketRenderer.setBucketSize(size);
@@ -174,8 +168,7 @@ public class SunflowAPI {
      * instantiates built-in bucket oreders by their short string name: "row",
      * "column", "diagonal", "spiral", "hilbert". Invalid strings are ignored.
      * 
-     * @param order
-     *            name of a built-in bucket order
+     * @param order name of a built-in bucket order
      */
     public final void bucketOrder(String order) {
         if (order.equals("row"))
@@ -195,8 +188,7 @@ public class SunflowAPI {
     /**
      * Sets the bucket order object for the bucket renderer explicitly.
      * 
-     * @param order
-     *            bucket order object
+     * @param order bucket order object
      */
     public final void bucketOrder(BucketOrder order) {
         bucketRenderer.setBuckerOrder(order);
@@ -207,10 +199,8 @@ public class SunflowAPI {
      * the method sets the number of super samples (for depth-of-field and
      * motion blur) to 1.
      * 
-     * @param minDepth
-     *            minimum AA depth
-     * @param maxDepth
-     *            maximum AA depth
+     * @param minDepth minimum AA depth
+     * @param maxDepth maximum AA depth
      */
     public final void antiAliasing(int minDepth, int maxDepth) {
         antiAliasing(minDepth, maxDepth, 1);
@@ -221,12 +211,9 @@ public class SunflowAPI {
      * number of super samples per (sub)pixel. These are used to refine
      * depth-of-field and motion blur independently of spatial anti-aliasing.
      * 
-     * @param minDepth
-     *            minimum AA depth
-     * @param maxDepth
-     *            maximum AA depth
-     * @param superSample
-     *            number of samples per (sub)pixel.
+     * @param minDepth minimum AA depth
+     * @param maxDepth maximum AA depth
+     * @param superSample number of samples per (sub)pixel.
      */
     public final void antiAliasing(int minDepth, int maxDepth, int superSample) {
         bucketRenderer.setAA(minDepth, maxDepth, superSample);
@@ -239,8 +226,7 @@ public class SunflowAPI {
      * should result in a mostly grey image in which only the visually
      * significant edges are anti-aliased.
      * 
-     * @param displayAA
-     *            display AA density
+     * @param displayAA display AA density
      */
     public final void displayAA(boolean displayAA) {
         bucketRenderer.setDisplayAA(displayAA);
@@ -253,8 +239,7 @@ public class SunflowAPI {
      * "blackman-harris", "sinc", "lanczos", "triangle". Invalid names are
      * ignored.
      * 
-     * @param filter
-     *            built-in filter name
+     * @param filter built-in filter name
      */
     public final void filter(String filter) {
         // create filter with optimal size
@@ -292,12 +277,9 @@ public class SunflowAPI {
      * global illumination algorithms while reflection and refraction depths
      * control specular reflections.
      * 
-     * @param diffuseDepth
-     *            number of allowed diffuse bounces
-     * @param reflectionDepth
-     *            number of reflection levels
-     * @param refractionDepth
-     *            number of refraction levels
+     * @param diffuseDepth number of allowed diffuse bounces
+     * @param reflectionDepth number of reflection levels
+     * @param refractionDepth number of refraction levels
      */
     public final void traceDepth(int diffuseDepth, int reflectionDepth, int refractionDepth) {
         scene.setMaxDepth(diffuseDepth, reflectionDepth, refractionDepth);
@@ -307,8 +289,7 @@ public class SunflowAPI {
      * Sets the type of caustic photons to use. To disable caustics use:
      * <code>photons(null);</code>.
      * 
-     * @param cmap
-     *            Caustic photon object.
+     * @param cmap Caustic photon object.
      */
     public final void photons(CausticPhotonMapInterface cmap) {
         scene.photons(cmap);
@@ -318,8 +299,7 @@ public class SunflowAPI {
      * Sets the global illumination engine to be used. To disable GI
      * computations use: <code>giEngine(null);</code>.
      * 
-     * @param engine
-     *            global illumination engine to use.
+     * @param engine global illumination engine to use.
      */
     public final void giEngine(GIEngine engine) {
         scene.giEngine(engine);
@@ -330,8 +310,7 @@ public class SunflowAPI {
      * types. Valid names are: "uniformgrid", "null", "bvh", "kdtree",
      * "kdtree_old". Other names are ignored.
      * 
-     * @param accel
-     *            name of a built-in intersection accelerator.
+     * @param accel name of a built-in intersection accelerator.
      */
     public final void accel(String accel) {
         if (accel.equals("uniformgrid"))
@@ -353,8 +332,7 @@ public class SunflowAPI {
     /**
      * Sets the acceleration structure object directly.
      * 
-     * @param accel
-     *            intersetion accelerator to use for rendering
+     * @param accel intersetion accelerator to use for rendering
      */
     public final void accel(IntersectionAccelerator accel) {
         scene.setIntersectionAccelerator(accel);
@@ -365,10 +343,8 @@ public class SunflowAPI {
      * shader. Shader names must be unique, attempts to redeclare an existing
      * shader are ignored.
      * 
-     * @param name
-     *            a unique name given to the shader
-     * @param shader
-     *            a shader object
+     * @param name a unique name given to the shader
+     * @param shader a shader object
      */
     public final void shader(String name, Shader shader) {
         if (!shadersTable.containsKey(name)) {
@@ -382,8 +358,7 @@ public class SunflowAPI {
      * Retrieve a shader object by its name, or <code>null</code> if no shader
      * was found. This also sets the "active" shader.
      * 
-     * @param name
-     *            shader name
+     * @param name shader name
      * @return the shader object associated with that name
      */
     public final Shader shader(String name) {
@@ -396,10 +371,8 @@ public class SunflowAPI {
      * is not found, the overriding is disabled. The second parameter controls
      * whether the override applies to the photon tracing process.
      * 
-     * @param name
-     *            shader name
-     * @param photonOverride
-     *            apply override to photon tracing phase
+     * @param name shader name
+     * @param photonOverride apply override to photon tracing phase
      */
     public final void shaderOverride(String name, boolean photonOverride) {
         Shader shader = shadersTable.get(name);
@@ -410,14 +383,10 @@ public class SunflowAPI {
      * Created a sphere at the specified coordinates. The currently active
      * shader is used.
      * 
-     * @param x
-     *            x coordinate of the sphere center
-     * @param y
-     *            y coordinate of the sphere center
-     * @param z
-     *            z coordinate of the sphere center
-     * @param radius
-     *            sphere radius
+     * @param x x coordinate of the sphere center
+     * @param y y coordinate of the sphere center
+     * @param z z coordinate of the sphere center
+     * @param radius sphere radius
      */
     public final void sphere(float x, float y, float z, float radius) {
         Sphere sphere = new Sphere();
@@ -430,8 +399,7 @@ public class SunflowAPI {
      * a unit-radius sphere centered at the origin. The currently active shader
      * is used.
      * 
-     * @param m
-     *            object to world transformation matrix
+     * @param m object to world transformation matrix
      */
     public final void sphere(Matrix4 m) {
         Sphere sphere = new Sphere();
@@ -441,8 +409,7 @@ public class SunflowAPI {
     /**
      * Adds the specified mesh to the scene.
      * 
-     * @param mesh
-     *            mesh object
+     * @param mesh mesh object
      */
     public final void mesh(Mesh mesh) {
         mesh.init(this);
@@ -451,8 +418,7 @@ public class SunflowAPI {
     /**
      * Adds the specified infinite primitive to the scene.
      * 
-     * @param prim
-     *            primitive object
+     * @param prim primitive object
      */
     public final void primitive(Primitive prim) {
         scene.addPrimitive(prim);
@@ -461,8 +427,7 @@ public class SunflowAPI {
     /**
      * Adds the specified bounded primitive to the scene.
      * 
-     * @param prim
-     *            bounded primitive object
+     * @param prim bounded primitive object
      */
     public final void primitive(BoundedPrimitive prim) {
         scene.addBoundedPrimitive(prim);
@@ -471,8 +436,7 @@ public class SunflowAPI {
     /**
      * Adds the specified light to the scene.
      * 
-     * @param light
-     *            light source object
+     * @param light light source object
      */
     public final void light(LightSource light) {
         scene.addLight(light);
@@ -481,14 +445,10 @@ public class SunflowAPI {
     /**
      * Creats a point light with specified power
      * 
-     * @param x
-     *            x coordinate of the point light
-     * @param y
-     *            y coordinate of the point light
-     * @param z
-     *            z coordinate of the point light
-     * @param power
-     *            light power
+     * @param x x coordinate of the point light
+     * @param y y coordinate of the point light
+     * @param z z coordinate of the point light
+     * @param power light power
      */
     public final void pointLight(float x, float y, float z, Color power) {
         light(new PointLight(new Point3(x, y, z), power));
@@ -497,8 +457,7 @@ public class SunflowAPI {
     /**
      * Sets the current camera for the scene
      * 
-     * @param cam
-     *            camera object
+     * @param cam camera object
      */
     public final void camera(Camera cam) {
         scene.addCamera(cam);
@@ -509,10 +468,8 @@ public class SunflowAPI {
      * specified display. Valid sampler names are "bucket", "ipr",
      * "fast".Attempts to use an unknown sampler are ignored.
      * 
-     * @param sampler
-     *            built-in sampler name
-     * @param display
-     *            display object
+     * @param sampler built-in sampler name
+     * @param display display object
      */
     public final void render(String sampler, Display display) {
         if (sampler == null || sampler.equals("none") || sampler.equals("null"))
@@ -531,10 +488,8 @@ public class SunflowAPI {
      * Render using the specified image sampler object and the specified
      * display.
      * 
-     * @param sampler
-     *            image sampler
-     * @param display
-     *            display object
+     * @param sampler image sampler
+     * @param display display object
      */
     public final void render(ImageSampler sampler, Display display) {
         scene.render(sampler, display);
@@ -543,8 +498,7 @@ public class SunflowAPI {
     /**
      * Render using the bucket sampler to the specified display.
      * 
-     * @param display
-     *            display object
+     * @param display display object
      */
     public final void render(Display display) {
         render(bucketRenderer, display);
@@ -553,8 +507,7 @@ public class SunflowAPI {
     /**
      * Render using the progressive sampler to the specified display.
      * 
-     * @param display
-     *            display object
+     * @param display display object
      */
     public final void progressiveRender(Display display) {
         render(progressiveRenderer, display);
@@ -566,8 +519,7 @@ public class SunflowAPI {
      * break up a scene into parts, even across file formats. The appropriate
      * parser is chosen based on file extension.
      * 
-     * @param filename
-     *            filename to load
+     * @param filename filename to load
      * @return <code>true</code> upon sucess, <code>false</code> if an error
      *         occured.
      */
@@ -612,8 +564,7 @@ public class SunflowAPI {
      * derived class of SunflowAPI. The build method is called if the code
      * compiles succesfully. Other files types are handled by the parse method.
      * 
-     * @param filename
-     *            filename to load
+     * @param filename filename to load
      * @return a valid SunflowAPI object or <code>null</code> on failure
      */
     public static SunflowAPI create(String filename) {
@@ -664,8 +615,7 @@ public class SunflowAPI {
      * build method as described above. The build method is not called on the
      * output, it is up the caller to do so.
      * 
-     * @param code
-     *            java code string
+     * @param code java code string
      * @return a valid SunflowAPI object upon succes, <code>null</code>
      *         otherwise.
      */

@@ -21,8 +21,7 @@ public class BoundingBox {
     /**
      * Creates a copy of the given box.
      * 
-     * @param b
-     *            bounding box to copy
+     * @param b bounding box to copy
      */
     public BoundingBox(BoundingBox b) {
         minimum = new Point3(b.minimum);
@@ -32,8 +31,7 @@ public class BoundingBox {
     /**
      * Creates a bounding box containing only the specified point.
      * 
-     * @param p
-     *            point to include
+     * @param p point to include
      */
     public BoundingBox(Point3 p) {
         this(p.x, p.y, p.z);
@@ -42,12 +40,9 @@ public class BoundingBox {
     /**
      * Creates a bounding box containing only the specified point.
      * 
-     * @param x
-     *            x coordinate of the point to include
-     * @param y
-     *            y coordinate of the point to include
-     * @param z
-     *            z coordinate of the point to include
+     * @param x x coordinate of the point to include
+     * @param y y coordinate of the point to include
+     * @param z z coordinate of the point to include
      */
     public BoundingBox(float x, float y, float z) {
         minimum = new Point3(x, y, z);
@@ -92,8 +87,7 @@ public class BoundingBox {
      * representation of the index to decide which corner to return. Corner 0 is
      * equivalent to the minimum and corner 7 is equivalent to the maximum.
      * 
-     * @param i
-     *            a corner index, from 0 to 7
+     * @param i a corner index, from 0 to 7
      * @return the corresponding corner
      */
     public final Point3 getCorner(int i) {
@@ -106,8 +100,7 @@ public class BoundingBox {
     /**
      * Gets a specific coordinate of the surface's bounding box.
      * 
-     * @param i
-     *            index of a side from 0 to 5
+     * @param i index of a side from 0 to 5
      * @return value of the request bounding box side
      */
     public final float getBound(int i) {
@@ -200,8 +193,7 @@ public class BoundingBox {
      * return true. Returns <code>false</code> if the parameter is
      * <code>null</code>.
      * 
-     * @param b
-     *            box to be tested for intersection
+     * @param b box to be tested for intersection
      * @return <code>true</code> if the boxes overlap, <code>false</code>
      *         otherwise
      */
@@ -214,8 +206,7 @@ public class BoundingBox {
      * inside the volume defined by this box. Returns <code>false</code> if
      * the parameter is <code>null</code>.
      * 
-     * @param p
-     *            point to be tested for containment
+     * @param p point to be tested for containment
      * @return <code>true</code> if the point is inside the box,
      *         <code>false</code> otherwise
      */
@@ -227,12 +218,9 @@ public class BoundingBox {
      * Check to see if the specified point is inside the volume defined by this
      * box.
      * 
-     * @param x
-     *            x coordinate of the point to be tested
-     * @param y
-     *            y coordinate of the point to be tested
-     * @param z
-     *            z coordinate of the point to be tested
+     * @param x x coordinate of the point to be tested
+     * @param y y coordinate of the point to be tested
+     * @param z z coordinate of the point to be tested
      * @return <code>true</code> if the point is inside the box,
      *         <code>false</code> otherwise
      */
@@ -245,8 +233,7 @@ public class BoundingBox {
      * {@link org.sunflow.math.Point3 point}into this box. Does nothing if the
      * parameter is <code>null</code>.
      * 
-     * @param p
-     *            point to be included
+     * @param p point to be included
      */
     public final void include(Point3 p) {
         if (p != null) {
@@ -269,12 +256,9 @@ public class BoundingBox {
      * Changes the extents of the box as needed to include the given point into
      * this box.
      * 
-     * @param x
-     *            x coordinate of the point
-     * @param y
-     *            y coordinate of the point
-     * @param z
-     *            z coordinate of the point
+     * @param x x coordinate of the point
+     * @param y y coordinate of the point
+     * @param z z coordinate of the point
      */
     public final void include(float x, float y, float z) {
         if (x < minimum.x)
@@ -295,8 +279,7 @@ public class BoundingBox {
      * Changes the extents of the box as needed to include the given box into
      * this box. Does nothing if the parameter is <code>null</code>.
      * 
-     * @param b
-     *            box to be included
+     * @param b box to be included
      */
     public final void include(BoundingBox b) {
         if (b != null) {

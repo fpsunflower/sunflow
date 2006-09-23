@@ -14,8 +14,7 @@ public interface GIEngine {
      * radiance in the scene (like a photon map). Engines can safely return
      * <code>Color.BLACK</code> if they can't or don't wish to support this.
      * 
-     * @param state
-     *            shading state
+     * @param state shading state
      * @return color approximating global radiance
      */
     public Color getGlobalRadiance(ShadingState state);
@@ -32,8 +31,7 @@ public interface GIEngine {
      * Return the incomming irradiance due to indirect diffuse illumination at
      * the specified surface point.
      * 
-     * @param state
-     *            current render state describing the point to be computed
+     * @param state current render state describing the point to be computed
      * @return irradiance from indirect diffuse illumination at the specified
      *         point
      */

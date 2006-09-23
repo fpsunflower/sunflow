@@ -9,10 +9,8 @@ public interface ImageSampler {
     /**
      * Prepare the sampler for rendering an image of w x h pixels
      * 
-     * @param w
-     *            width of the image
-     * @param h
-     *            height of the image
+     * @param w width of the image
+     * @param h height of the image
      */
     public boolean prepare(Scene scene, int w, int h);
 
@@ -21,8 +19,7 @@ public interface ImageSampler {
      * display has been opened and that it will be closed after the method
      * returns.
      * 
-     * @param display
-     *            Display driver to send image data to
+     * @param display Display driver to send image data to
      */
     public void render(Display display);
 }

@@ -15,8 +15,7 @@ public interface Traceable {
      * use {@link Matrix4#transform(BoundingBox)}. If the matrix is
      * <code>null</code> no transformation is needed.
      * 
-     * @param o2w
-     *            object to world transformation matrix
+     * @param o2w object to world transformation matrix
      * @return object bounding box in world space
      */
     public BoundingBox getWorldBounds(Matrix4 o2w);
@@ -25,10 +24,8 @@ public interface Traceable {
      * Intersect the specified ray with the geometry in local space. The ray
      * will be provided in local space.
      * 
-     * @param r
-     *            ray in local space
-     * @param istate
-     *            state to store the intersection into
+     * @param r ray in local space
+     * @param istate state to store the intersection into
      */
     public void intersect(Ray r, Instance parent, IntersectionState istate);
 
@@ -37,10 +34,8 @@ public interface Traceable {
      * parameters. The provided instance can be used to transform between object
      * and world space.
      * 
-     * @param parent
-     *            instance which was hit
-     * @param state
-     *            shading state to fill in
+     * @param parent instance which was hit
+     * @param state shading state to fill in
      */
     public void prepareShadingState(Instance parent, ShadingState state);
 }

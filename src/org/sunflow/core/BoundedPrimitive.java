@@ -28,8 +28,7 @@ public interface BoundedPrimitive extends Primitive {
      * {@link BoundingBox#intersects(BoundingBox)} on the
      * {@link #getBounds() boundingbox}of this object.
      * 
-     * @param box
-     *            box to be intersected with the surface
+     * @param box box to be intersected with the surface
      * @return <code>true</code> if the surface intersects the box,
      *         <code>false</code> otherwise
      */

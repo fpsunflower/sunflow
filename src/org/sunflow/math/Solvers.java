@@ -5,12 +5,9 @@ public final class Solvers {
      * Solves the equation ax^2+bx+c=0. Solutions are returned in a sorted array
      * if they exist.
      * 
-     * @param a
-     *            coefficient of x^2
-     * @param b
-     *            coefficient of x^1
-     * @param c
-     *            coefficient of x^0
+     * @param a coefficient of x^2
+     * @param b coefficient of x^1
+     * @param c coefficient of x^0
      * @return an array containing the two real roots, or <code>null</code> if
      *         no real solutions exist
      */
@@ -30,16 +27,11 @@ public final class Solvers {
      * Solve a quartic equation of the form ax^4+bx^3+cx^2+cx^1+d=0. The roots
      * are returned in a sorted array of doubles in increasing order.
      * 
-     * @param a
-     *            coefficient of x^4
-     * @param b
-     *            coefficient of x^3
-     * @param c
-     *            coefficient of x^2
-     * @param d
-     *            coefficient of x^1
-     * @param e
-     *            coefficient of x^0
+     * @param a coefficient of x^4
+     * @param b coefficient of x^3
+     * @param c coefficient of x^2
+     * @param d coefficient of x^1
+     * @param e coefficient of x^0
      * @return a sorted array of roots, or <code>null</code> if no solutions
      *         exist
      */

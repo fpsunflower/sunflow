@@ -9,7 +9,7 @@ import org.sunflow.math.Vector3;
  */
 public class LightSample {
     private Ray shadowRay; // ray to be used to evaluate if the point is in
-                            // shadow
+    // shadow
     private Color ldiff;
     private Color lspec;
     LightSample next; // pointer to next item in a linked list of samples

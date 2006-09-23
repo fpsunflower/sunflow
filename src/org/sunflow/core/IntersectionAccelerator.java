@@ -13,8 +13,7 @@ public interface IntersectionAccelerator {
      * Build the data structures needed. This method will be called before
      * rendering, with a list of all objects in the scene.
      * 
-     * @param objects
-     *            array of objects in the scene
+     * @param objects array of objects in the scene
      * @return <code>true</code> if the build succeeded, <code>false</code>
      *         if there were errors or interuptions
      */
@@ -34,8 +33,7 @@ public interface IntersectionAccelerator {
      * may skip those objects which are trivially known to be off the path of
      * the ray.
      * 
-     * @param state
-     *            current state to record the intersection point
+     * @param state current state to record the intersection point
      */
     void intersect(Ray r, IntersectionState state);
 }
