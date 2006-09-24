@@ -50,6 +50,16 @@ public class BoundingBox {
     }
 
     /**
+     * Creates a bounding box centered around the origin.
+     * 
+     * @param size half edge length of the bounding box
+     */
+    public BoundingBox(float size) {
+        minimum = new Point3(-size, -size, -size);
+        maximum = new Point3(size, size, size);
+    }
+
+    /**
      * Gets the minimum corner of the box. That is the corner of smallest
      * coordinates on each axis. Note that the returned reference is not cloned
      * for efficiency purposes so care must be taken not to change the

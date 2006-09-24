@@ -1,4 +1,5 @@
 v0.06.4
+* Upgraded to Janino 2.5.0
 * Modified Mesh class to implement the AggregateTraceable interface
 * Added AggregateTraceable interface
 * Implemented Instance/Traceable combination

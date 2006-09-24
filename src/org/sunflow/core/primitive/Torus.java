@@ -1,10 +1,10 @@
 package org.sunflow.core.primitive;
 
+import org.sunflow.core.AggregateTraceable;
 import org.sunflow.core.Instance;
 import org.sunflow.core.IntersectionState;
 import org.sunflow.core.Ray;
 import org.sunflow.core.ShadingState;
-import org.sunflow.core.Traceable;
 import org.sunflow.math.BoundingBox;
 import org.sunflow.math.MathUtils;
 import org.sunflow.math.Matrix4;
@@ -13,7 +13,7 @@ import org.sunflow.math.Point3;
 import org.sunflow.math.Solvers;
 import org.sunflow.math.Vector3;
 
-public class Torus implements Traceable {
+public class Torus implements AggregateTraceable {
     private float ri2, ro2;
     private float ri, ro;
 
@@ -33,7 +33,28 @@ public class Torus implements Traceable {
         return bounds;
     }
 
-    public void prepareShadingState(Instance parent, ShadingState state) {
+    public float getObjectBound(int primID, int i) {
+        switch (i) {
+            case 0:
+            case 2:
+                return -ro - ri;
+            case 1:
+            case 3:
+                return ro + ri;
+            case 4:
+                return -ri;
+            case 5:
+                return ri;
+            default:
+                return 0;
+        }
+    }
+
+    public int numPrimitives() {
+        return 1;
+    }
+
+    public void prepareShadingState(Instance parent, int primID, ShadingState state) {
         state.init();
         state.getRay().getPoint(state.getPoint());
         // get local point
@@ -60,7 +81,7 @@ public class Torus implements Traceable {
 
     }
 
-    public void intersect(Ray r, Instance parent, IntersectionState state) {
+    public void intersectPrimitive(Ray r, Instance parent, int primID, IntersectionState state) {
         // intersect in local space
         float rd2x = r.dx * r.dx;
         float rd2y = r.dy * r.dy;

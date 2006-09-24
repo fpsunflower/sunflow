@@ -5,7 +5,7 @@ import org.sunflow.math.Matrix4;
 
 /**
  * This class represents an object made up of many traceable elements. You may
- * use an {@link IntersectionAccelerator} to turn this into a regular
+ * use an {@link AccelerationStructure} to turn this into a regular
  * {@link Traceable} object which may be instanced.
  */
 public interface AggregateTraceable {
@@ -29,13 +29,14 @@ public interface AggregateTraceable {
     public int numPrimitives();
 
     /**
-     * Retrieve the bounding box component of a particular primitive.
+     * Retrieve the bounding box component of a particular primitive in object
+     * space.
      * 
      * @param primID primitive index
      * @param i bounding box side index
      * @return value of the request bound
      */
-    public float getBound(int primID, int i);
+    public float getObjectBound(int primID, int i);
 
     /**
      * Intersect the specified primitive in local space.

@@ -1,10 +1,10 @@
 package org.sunflow.core.primitive;
 
+import org.sunflow.core.AggregateTraceable;
 import org.sunflow.core.Instance;
 import org.sunflow.core.IntersectionState;
 import org.sunflow.core.Ray;
 import org.sunflow.core.ShadingState;
-import org.sunflow.core.Traceable;
 import org.sunflow.math.BoundingBox;
 import org.sunflow.math.Matrix4;
 import org.sunflow.math.OrthoNormalBasis;
@@ -12,16 +12,23 @@ import org.sunflow.math.Point3;
 import org.sunflow.math.Solvers;
 import org.sunflow.math.Vector3;
 
-public class BanchoffSurface implements Traceable {
+public class BanchoffSurface implements AggregateTraceable {
     public BoundingBox getWorldBounds(Matrix4 o2w) {
-        BoundingBox bounds = new BoundingBox(-1.5f, -1.5f, -1.5f);
-        bounds.include(1.5f, 1.5f, 1.5f);
+        BoundingBox bounds = new BoundingBox(1.5f);
         if (o2w != null)
             bounds = o2w.transform(bounds);
         return bounds;
     }
 
-    public void prepareShadingState(Instance parent, ShadingState state) {
+    public float getObjectBound(int primID, int i) {
+        return (i & 1) == 0 ? -1.5f : 1.5f;
+    }
+
+    public int numPrimitives() {
+        return 1;
+    }
+
+    public void prepareShadingState(Instance parent, int primID, ShadingState state) {
         state.init();
         state.getRay().getPoint(state.getPoint());
         Point3 n = parent.transformWorldToObject(state.getPoint());
@@ -37,7 +44,7 @@ public class BanchoffSurface implements Traceable {
         state.setBasis(OrthoNormalBasis.makeFromW(state.getNormal()));
     }
 
-    public void intersect(Ray r, Instance parent, IntersectionState state) {
+    public void intersectPrimitive(Ray r, Instance parent, int primID, IntersectionState state) {
         // intersect in local space
         float rd2x = r.dx * r.dx;
         float rd2y = r.dy * r.dy;

@@ -18,6 +18,7 @@ import org.sunflow.core.CausticPhotonMapInterface;
 import org.sunflow.core.Display;
 import org.sunflow.core.Filter;
 import org.sunflow.core.GIEngine;
+import org.sunflow.core.Geometry;
 import org.sunflow.core.ImageSampler;
 import org.sunflow.core.Instance;
 import org.sunflow.core.IntersectionAccelerator;
@@ -45,6 +46,7 @@ import org.sunflow.core.filter.LanczosFilter;
 import org.sunflow.core.filter.MitchellFilter;
 import org.sunflow.core.filter.SincFilter;
 import org.sunflow.core.filter.TriangleFilter;
+import org.sunflow.core.light.MeshLight;
 import org.sunflow.core.light.PointLight;
 import org.sunflow.core.parser.RA2Parser;
 import org.sunflow.core.parser.RA3Parser;
@@ -390,8 +392,9 @@ public class SunflowAPI {
      */
     public final void sphere(float x, float y, float z, float radius) {
         Sphere sphere = new Sphere();
+        Geometry geo = new Geometry(sphere);
         Matrix4 transform = Matrix4.translation(x, y, z).multiply(Matrix4.scale(radius));
-        primitive(new Instance(new Shader[] { currentShader }, transform, sphere));
+        primitive(new Instance(new Shader[] { currentShader }, transform, geo));
     }
 
     /**
@@ -403,7 +406,8 @@ public class SunflowAPI {
      */
     public final void sphere(Matrix4 m) {
         Sphere sphere = new Sphere();
-        primitive(new Instance(new Shader[] { currentShader }, m, sphere));
+        Geometry geo = new Geometry(sphere);
+        primitive(new Instance(new Shader[] { currentShader }, m, geo));
     }
 
     /**
@@ -412,7 +416,13 @@ public class SunflowAPI {
      * @param mesh mesh object
      */
     public final void mesh(Mesh mesh) {
-        mesh.init(this);
+        if (mesh instanceof MeshLight)
+            mesh.init(this);
+        else {
+            Geometry geo = new Geometry(mesh);
+            Instance instance = new Instance(mesh.getShaders(), null, geo);
+            primitive(instance);
+        }
     }
 
     /**

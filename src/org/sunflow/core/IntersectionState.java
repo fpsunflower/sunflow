@@ -21,7 +21,7 @@ public final class IntersectionState {
     public StackNode[] getStack() {
         return stack;
     }
-
+    
     /**
      * Checks to see if a hit has been recorded.
      * 

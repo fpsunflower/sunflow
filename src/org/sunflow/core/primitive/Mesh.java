@@ -48,7 +48,11 @@ public class Mesh implements AggregateTraceable {
         normalInterp = uvInterp = InterpType.NONE;
     }
 
-    public float getBound(int primID, int i) {
+    public Shader[] getShaders() {
+        return shaders;
+    }
+
+    public float getObjectBound(int primID, int i) {
         int a, b, c, t = 3 * primID;
         if (triangles == null) {
             // implicit indexing

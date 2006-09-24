@@ -33,6 +33,19 @@ public class Benchmark extends SunflowAPI implements BenchmarkTest, UserInterfac
     private boolean showBenchmarkOutput;
     private int errorThreshold;
 
+    public static void main(String[] args) {
+        if (args.length > 0 && args[0].equals("-test"))
+            new Benchmark("resources/", System.out, 0, 512, true, true, true, 4, true);
+        else {
+            // this is used to regenerated the reference frames if needed
+            new Benchmark("resources/", System.out, 0, 128, false, false, true, 4, true).build();
+            new Benchmark("resources/", System.out, 0, 256, false, false, true, 4, true).build();
+            new Benchmark("resources/", System.out, 0, 384, false, false, true, 4, true).build();
+            new Benchmark("resources/", System.out, 0, 512, false, false, true, 4, true).build();
+            new Benchmark("resources/", System.out, 0, 1024, false, false, true, 4, true).build();
+        }
+    }
+
     public Benchmark(boolean showGUI) {
         this("resources/", System.out, 0, 512, showGUI, false, true, 4, false);
     }

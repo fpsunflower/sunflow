@@ -10,19 +10,19 @@ public class Instance implements BoundedPrimitive {
     private Matrix4 w2o;
     private BoundingBox bounds;
     private Shader[] shaders;
-    private Traceable traceable;
+    private Geometry geometry;
 
-    public Instance(Shader[] shaders, Matrix4 o2w, Traceable traceable) {
+    public Instance(Shader[] shaders, Matrix4 o2w, Geometry geometry) {
         this.shaders = shaders;
         this.o2w = o2w;
-        this.traceable = traceable;
+        this.geometry = geometry;
         if (o2w != null) {
             w2o = o2w.inverse();
             if (w2o == null)
                 throw new RuntimeException("Unable to inverse scale/translate matrix!");
         } else
             o2w = w2o = null;
-        bounds = traceable.getWorldBounds(o2w);
+        bounds = geometry.getWorldBounds(o2w);
     }
 
     public float getBound(int i) {
@@ -39,13 +39,13 @@ public class Instance implements BoundedPrimitive {
 
     public void intersect(Ray r, IntersectionState istate) {
         Ray localRay = r.transform(w2o);
-        traceable.intersect(localRay, this, istate);
+        geometry.intersect(localRay, this, istate);
         // FIXME: transfer max distance to current ray
         r.setMax(localRay.getMax());
     }
 
     public void prepareShadingState(ShadingState state) {
-        traceable.prepareShadingState(this, state);
+        geometry.prepareShadingState(this, state);
     }
 
     public Shader getShader(int i) {
