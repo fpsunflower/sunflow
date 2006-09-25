@@ -2,7 +2,7 @@ package org.sunflow.core;
 
 import java.util.ArrayList;
 
-import org.sunflow.core.accel.UniformGrid;
+import org.sunflow.core.accel2.UniformGrid;
 import org.sunflow.core.display.FrameDisplay;
 import org.sunflow.image.Color;
 import org.sunflow.math.BoundingBox;
@@ -16,10 +16,10 @@ import org.sunflow.system.UI;
 public class Scene {
     // scene storage
     private LightServer lightServer;
-    private ArrayList<BoundedPrimitive> boundedPrimitives;
+    private InstanceList instanceList;
     private ArrayList<Primitive> primitives;
-    private IntersectionAccelerator intAccel;
     private Camera camera;
+    private AccelerationStructure intAccel;
 
     private boolean changedGeometry;
 
@@ -39,7 +39,7 @@ public class Scene {
      */
     public Scene() {
         lightServer = new LightServer(this);
-        boundedPrimitives = new ArrayList<BoundedPrimitive>();
+        instanceList = new InstanceList();
         primitives = new ArrayList<Primitive>();
         intAccel = new UniformGrid();
 
@@ -83,7 +83,7 @@ public class Scene {
      * 
      * @param accel intersection accelerator to use
      */
-    public void setIntersectionAccelerator(IntersectionAccelerator accel) {
+    public void setIntersectionAccelerator(AccelerationStructure accel) {
         intAccel = accel;
         changedGeometry = true;
     }
@@ -111,8 +111,8 @@ public class Scene {
      * 
      * @param prim object to be added to the scene
      */
-    public void addBoundedPrimitive(BoundedPrimitive prim) {
-        boundedPrimitives.add(prim);
+    public void addInstance(Instance instance) {
+        instanceList.add(instance);
         changedGeometry = true;
     }
 
@@ -192,6 +192,7 @@ public class Scene {
     void trace(Ray r, IntersectionState state) {
         // reset object
         state.object = null;
+        state.current = null;
         for (Primitive p : primitives)
             p.intersect(r, state);
         intAccel.intersect(r, state);
@@ -214,9 +215,10 @@ public class Scene {
         imageHeight = MathUtils.clamp(imageHeight, 1, 1 << 14);
         UI.printInfo("[SCN] Scene stats:");
         UI.printInfo("[SCN]   * Infinite Primitives: %d", primitives.size());
-        UI.printInfo("[SCN]   * Primitives:          %d", boundedPrimitives.size());
+        UI.printInfo("[SCN]   * Instances:           %d", instanceList.getNumPrimitives());
         if (changedGeometry) {
-            if (!intAccel.build(boundedPrimitives))
+            instanceList.trim();
+            if (!intAccel.build(instanceList))
                 return;
             changedGeometry = false;
         }

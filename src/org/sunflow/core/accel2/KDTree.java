@@ -4,9 +4,8 @@ import java.io.FileWriter;
 import java.io.IOException;
 
 import org.sunflow.core.AccelerationStructure;
-import org.sunflow.core.AggregateTraceable;
-import org.sunflow.core.Instance;
 import org.sunflow.core.IntersectionState;
+import org.sunflow.core.PrimitiveList;
 import org.sunflow.core.Ray;
 import org.sunflow.image.Color;
 import org.sunflow.math.BoundingBox;
@@ -19,7 +18,7 @@ import org.sunflow.util.IntArray;
 public class KDTree implements AccelerationStructure {
     private int[] tree;
     private int[] primitives;
-    private AggregateTraceable primitiveList;
+    private PrimitiveList primitiveList;
     private BoundingBox bounds;
 
     private int maxPrims;
@@ -131,7 +130,7 @@ public class KDTree implements AccelerationStructure {
         KDTree.dumpPrefix = prefix;
     }
 
-    public boolean build(AggregateTraceable primitives) {
+    public boolean build(PrimitiveList primitives) {
         UI.printInfo("[KDT] KDTree settings");
         UI.printInfo("[KDT]   * Max Leaf Size:  %d", maxPrims);
         UI.printInfo("[KDT]   * Max Depth:      %d", MAX_DEPTH);
@@ -144,15 +143,15 @@ public class KDTree implements AccelerationStructure {
         this.primitiveList = primitives;
         // get the object space bounds
         bounds = primitives.getWorldBounds(null);
-        int nPrim = primitiveList.numPrimitives(), nSplits = 0;
+        int nPrim = primitiveList.getNumPrimitives(), nSplits = 0;
         UI.taskStart("[KDT] Preparing objects", 0, nPrim);
         BuildTask task = new BuildTask(nPrim);
         Timer prepare = new Timer();
         prepare.start();
         for (int i = 0; i < nPrim; i++) {
             for (int axis = 0; axis < 3; axis++) {
-                float ls = primitiveList.getObjectBound(i, 2 * axis + 0);
-                float rs = primitiveList.getObjectBound(i, 2 * axis + 1);
+                float ls = primitiveList.getPrimitiveBound(i, 2 * axis + 0);
+                float rs = primitiveList.getPrimitiveBound(i, 2 * axis + 1);
                 if (ls == rs) {
                     // flat in this dimension
                     task.splits[nSplits] = pack(ls, PLANAR, axis, i);
@@ -654,7 +653,7 @@ public class KDTree implements AccelerationStructure {
         task.splits = null;
     }
 
-    public void intersect(Ray r, Instance parent, IntersectionState state) {
+    public void intersect(Ray r, IntersectionState state) {
         float intervalMin = r.getMin();
         float intervalMax = r.getMax();
         float orgX = r.ox;
@@ -720,7 +719,8 @@ public class KDTree implements AccelerationStructure {
         int offsetZBack = offsetZFront ^ 2;
 
         IntersectionState.StackNode[] stack = state.getStack();
-        int stackPos = 0;
+        int stackTop = state.getStackTop();
+        int stackPos = stackTop;
         int node = 0;
 
         while (true) {
@@ -789,7 +789,7 @@ public class KDTree implements AccelerationStructure {
                         // leaf - test some objects
                         int n = tree[node + 1];
                         while (n > 0) {
-                            primitiveList.intersectPrimitive(r, parent, primitives[offset], state);
+                            primitiveList.intersectPrimitive(r, primitives[offset], state);
                             n--;
                             offset++;
                         }
@@ -801,7 +801,7 @@ public class KDTree implements AccelerationStructure {
             } // traversal loop
             do {
                 // stack is empty?
-                if (stackPos == 0)
+                if (stackPos == stackTop)
                     return;
                 // move back up the stack
                 stackPos--;

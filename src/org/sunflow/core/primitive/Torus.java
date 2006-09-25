@@ -1,6 +1,6 @@
 package org.sunflow.core.primitive;
 
-import org.sunflow.core.AggregateTraceable;
+import org.sunflow.core.PrimitiveList;
 import org.sunflow.core.Instance;
 import org.sunflow.core.IntersectionState;
 import org.sunflow.core.Ray;
@@ -13,7 +13,7 @@ import org.sunflow.math.Point3;
 import org.sunflow.math.Solvers;
 import org.sunflow.math.Vector3;
 
-public class Torus implements AggregateTraceable {
+public class Torus implements PrimitiveList {
     private float ri2, ro2;
     private float ri, ro;
 
@@ -33,7 +33,7 @@ public class Torus implements AggregateTraceable {
         return bounds;
     }
 
-    public float getObjectBound(int primID, int i) {
+    public float getPrimitiveBound(int primID, int i) {
         switch (i) {
             case 0:
             case 2:
@@ -50,13 +50,15 @@ public class Torus implements AggregateTraceable {
         }
     }
 
-    public int numPrimitives() {
+    public int getNumPrimitives() {
         return 1;
     }
 
-    public void prepareShadingState(Instance parent, int primID, ShadingState state) {
+    public void prepareShadingState(ShadingState state) {
         state.init();
         state.getRay().getPoint(state.getPoint());
+        // FIXME: get parent instance
+        Instance parent = (Instance) state.getObject();
         // get local point
         Point3 p = parent.transformWorldToObject(state.getPoint());
         // compute local normal
@@ -81,7 +83,7 @@ public class Torus implements AggregateTraceable {
 
     }
 
-    public void intersectPrimitive(Ray r, Instance parent, int primID, IntersectionState state) {
+    public void intersectPrimitive(Ray r, int primID, IntersectionState state) {
         // intersect in local space
         float rd2x = r.dx * r.dx;
         float rd2y = r.dy * r.dy;
@@ -109,7 +111,7 @@ public class Torus implements AggregateTraceable {
             for (int i = 0; i < t.length; i++) {
                 if (t[i] > r.getMin()) {
                     r.setMax((float) t[i]);
-                    state.setIntersection(parent, 0, 0, 0);
+                    state.setIntersection(0, 0, 0);
                     return;
                 }
             }

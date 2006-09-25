@@ -725,7 +725,8 @@ public class KDTree implements IntersectionAccelerator {
         int offsetZBack = offsetZFront ^ 2;
 
         IntersectionState.StackNode[] stack = state.getStack();
-        int stackPos = 0;
+        int stackTop = state.getStackTop();
+        int stackPos = stackTop;
         int node = 0;
 
         while (true) {
@@ -806,7 +807,7 @@ public class KDTree implements IntersectionAccelerator {
             } // traversal loop
             do {
                 // stack is empty?
-                if (stackPos == 0)
+                if (stackPos == stackTop)
                     return;
                 // move back up the stack
                 stackPos--;

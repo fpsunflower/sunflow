@@ -566,7 +566,7 @@ public class SCParser implements SceneParser {
         } else if (p.peekNextToken("janino")) {
             String code = p.getNextCodeBlock();
             try {
-                Shader shader = (Shader) ClassBodyEvaluator.createFastClassBodyEvaluator(new Scanner(null, new StringReader(code)), Shader.class, (ClassLoader) null);
+                Shader shader = (Shader) ClassBodyEvaluator.createFastClassBodyEvaluator(new Scanner(null, new StringReader(code)), Shader.class, ClassLoader.getSystemClassLoader());
                 api.shader(name, shader);
             } catch (CompileException e) {
                 UI.printInfo("[API] Compiling: %s", code);
@@ -711,7 +711,7 @@ public class SCParser implements SceneParser {
             Matrix4 m = parseMatrix();
             BanchoffSurface surf = new BanchoffSurface();
             Geometry g = new Geometry(surf);
-            api.primitive(new Instance(shaders, m, g));
+            api.instance(new Instance(shaders, m, g));
         } else if (p.peekNextToken("torus")) {
             UI.printInfo("[API] Reading banchoff ...");
             Matrix4 m = parseMatrix();
@@ -720,7 +720,7 @@ public class SCParser implements SceneParser {
             float ro = p.getNextFloat();
             Torus torus = new Torus(ri, ro);
             Geometry geo = new Geometry(torus);
-            api.primitive(new Instance(shaders, m, geo));
+            api.instance(new Instance(shaders, m, geo));
         } else if (p.peekNextToken("plane")) {
             UI.printInfo("[API] Reading plane ...");
             p.checkNextToken("p");

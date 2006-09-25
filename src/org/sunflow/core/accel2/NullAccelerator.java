@@ -1,14 +1,13 @@
 package org.sunflow.core.accel2;
 
 import org.sunflow.core.AccelerationStructure;
-import org.sunflow.core.AggregateTraceable;
-import org.sunflow.core.Instance;
 import org.sunflow.core.IntersectionState;
+import org.sunflow.core.PrimitiveList;
 import org.sunflow.core.Ray;
 import org.sunflow.math.BoundingBox;
 
 public class NullAccelerator implements AccelerationStructure {
-    private AggregateTraceable primitives;
+    private PrimitiveList primitives;
     private BoundingBox bounds;
     private int n;
 
@@ -21,15 +20,15 @@ public class NullAccelerator implements AccelerationStructure {
         return bounds;
     }
 
-    public boolean build(AggregateTraceable primitives) {
+    public boolean build(PrimitiveList primitives) {
         this.primitives = primitives;
-        n = primitives.numPrimitives();
+        n = primitives.getNumPrimitives();
         bounds = primitives.getWorldBounds(null);
         return true;
     }
 
-    public void intersect(Ray r, Instance parent, IntersectionState state) {
+    public void intersect(Ray r, IntersectionState state) {
         for (int i = 0; i < n; i++)
-            primitives.intersectPrimitive(r, parent, i, state);
+            primitives.intersectPrimitive(r, i, state);
     }
 }

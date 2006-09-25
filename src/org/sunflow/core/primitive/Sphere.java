@@ -1,6 +1,6 @@
 package org.sunflow.core.primitive;
 
-import org.sunflow.core.AggregateTraceable;
+import org.sunflow.core.PrimitiveList;
 import org.sunflow.core.Instance;
 import org.sunflow.core.IntersectionState;
 import org.sunflow.core.Ray;
@@ -12,7 +12,7 @@ import org.sunflow.math.Point3;
 import org.sunflow.math.Solvers;
 import org.sunflow.math.Vector3;
 
-public class Sphere implements AggregateTraceable {
+public class Sphere implements PrimitiveList {
     public BoundingBox getWorldBounds(Matrix4 o2w) {
         BoundingBox bounds = new BoundingBox(1);
         if (o2w != null)
@@ -20,17 +20,19 @@ public class Sphere implements AggregateTraceable {
         return bounds;
     }
 
-    public float getObjectBound(int primID, int i) {
+    public float getPrimitiveBound(int primID, int i) {
         return (i & 1) == 0 ? -1 : 1;
     }
 
-    public int numPrimitives() {
+    public int getNumPrimitives() {
         return 1;
     }
 
-    public void prepareShadingState(Instance parent, int primID, ShadingState state) {
+    public void prepareShadingState(ShadingState state) {
         state.init();
         state.getRay().getPoint(state.getPoint());
+        // FIXME: get parent instance
+        Instance parent = (Instance) state.getObject();
         Point3 localPoint = parent.transformWorldToObject(state.getPoint());
         state.getNormal().set(localPoint.x, localPoint.y, localPoint.z);
         state.getNormal().normalize();
@@ -57,7 +59,7 @@ public class Sphere implements AggregateTraceable {
 
     }
 
-    public void intersectPrimitive(Ray r, Instance parent, int primID, IntersectionState state) {
+    public void intersectPrimitive(Ray r, int primID, IntersectionState state) {
         // intersect in local space
         float qa = r.dx * r.dx + r.dy * r.dy + r.dz * r.dz;
         float qb = 2 * ((r.dx * r.ox) + (r.dy * r.oy) + (r.dz * r.oz));
@@ -71,7 +73,7 @@ public class Sphere implements AggregateTraceable {
                 r.setMax((float) t[0]);
             else
                 r.setMax((float) t[1]);
-            state.setIntersection(parent, 0, 0, 0);
+            state.setIntersection(0, 0, 0);
         }
     }
 }

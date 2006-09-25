@@ -1,7 +1,7 @@
 package org.sunflow.core.primitive;
 
 import org.sunflow.SunflowAPI;
-import org.sunflow.core.AggregateTraceable;
+import org.sunflow.core.PrimitiveList;
 import org.sunflow.core.BoundedPrimitive;
 import org.sunflow.core.Instance;
 import org.sunflow.core.IntersectionState;
@@ -16,7 +16,7 @@ import org.sunflow.math.Point3;
 import org.sunflow.math.Vector3;
 import org.sunflow.system.UI;
 
-public class Mesh implements AggregateTraceable {
+public class Mesh implements PrimitiveList {
     private static boolean smallTriangles = false;
     protected float[] points;
     protected int[] triangles;
@@ -52,7 +52,7 @@ public class Mesh implements AggregateTraceable {
         return shaders;
     }
 
-    public float getObjectBound(int primID, int i) {
+    public float getPrimitiveBound(int primID, int i) {
         int a, b, c, t = 3 * primID;
         if (triangles == null) {
             // implicit indexing
@@ -92,7 +92,7 @@ public class Mesh implements AggregateTraceable {
         return bounds;
     }
 
-    public void intersectPrimitive(Ray r, Instance parent, int primID, IntersectionState state) {
+    public void intersectPrimitive(Ray r, int primID, IntersectionState state) {
         // ray-triangle intersection here
         int a, b, c, tri = primID * 3;
         if (triangles == null) {
@@ -148,19 +148,24 @@ public class Mesh implements AggregateTraceable {
         float t = (float) ((edge2x * qvecx + edge2y * qvecy + edge2z * qvecz) * inv_det);
         if (r.isInside(t)) {
             r.setMax(t);
-            state.setIntersection(parent, primID, (float) (u * inv_det), (float) (v * inv_det));
+            state.setIntersection(primID, (float) (u * inv_det), (float) (v * inv_det));
         }
     }
 
-    public int numPrimitives() {
+    public int getNumPrimitives() {
         if (triangles == null)
             return points.length / 9;
         else
             return triangles.length / 3;
     }
 
-    public void prepareShadingState(Instance parent, int primID, ShadingState state) {
+    public void prepareShadingState(ShadingState state) {
         state.init();
+
+        // FIXME: get object info
+        Instance parent = (state.getObject() instanceof Instance) ? (Instance) state.getObject() : null;
+        int primID = state.getPrimitiveID();
+
         float u = state.getU();
         float v = state.getV();
         float w = 1 - u - v;
@@ -279,7 +284,7 @@ public class Mesh implements AggregateTraceable {
         if (points == null)
             UI.printWarning("[TRI] Incomplete mesh, cannot initialize");
         else {
-            int nTriangles = numPrimitives();
+            int nTriangles = getNumPrimitives();
             if (smallTriangles) {
                 for (int i = 0; i < nTriangles; i++)
                     api.primitive(new SmallTriangle(this, i));
@@ -496,7 +501,7 @@ public class Mesh implements AggregateTraceable {
         }
 
         public void prepareShadingState(ShadingState state) {
-            Mesh.this.prepareShadingState(null, flags >>> 2, state);
+            Mesh.this.prepareShadingState(state);
         }
 
         public void intersect(Ray r, IntersectionState state) {
@@ -517,7 +522,7 @@ public class Mesh implements AggregateTraceable {
                     if (u + v > 1.0f)
                         return;
                     r.setMax(t);
-                    state.setIntersection(this, 0, u, v);
+                    state.setIntersection(this, flags >>> 2, u, v);
                     return;
                 }
                 case 1: {
@@ -536,7 +541,7 @@ public class Mesh implements AggregateTraceable {
                     if (u + v > 1.0f)
                         return;
                     r.setMax(t);
-                    state.setIntersection(this, 0, u, v);
+                    state.setIntersection(this, flags >>> 2, u, v);
                     return;
                 }
                 case 2: {
@@ -555,7 +560,7 @@ public class Mesh implements AggregateTraceable {
                     if (u + v > 1.0f)
                         return;
                     r.setMax(t);
-                    state.setIntersection(this, 0, u, v);
+                    state.setIntersection(this, flags >>> 2, u, v);
                     return;
                 }
             }
@@ -598,7 +603,7 @@ public class Mesh implements AggregateTraceable {
         }
 
         public void prepareShadingState(ShadingState state) {
-            mesh.prepareShadingState(null, t / 3, state);
+            mesh.prepareShadingState(state);
         }
 
         public void intersect(Ray r, IntersectionState state) {
@@ -656,7 +661,7 @@ public class Mesh implements AggregateTraceable {
             float t = (float) ((edge2x * qvecx + edge2y * qvecy + edge2z * qvecz) * inv_det);
             if (r.isInside(t)) {
                 r.setMax(t);
-                state.setIntersection(this, 0, (float) (u * inv_det), (float) (v * inv_det));
+                state.setIntersection(this, this.t / 3, (float) (u * inv_det), (float) (v * inv_det));
             }
         }
     }

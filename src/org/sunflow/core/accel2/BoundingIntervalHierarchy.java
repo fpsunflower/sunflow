@@ -1,10 +1,8 @@
-package org.sunflow.core.accel;
+package org.sunflow.core.accel2;
 
-import java.util.ArrayList;
-
-import org.sunflow.core.BoundedPrimitive;
-import org.sunflow.core.IntersectionAccelerator;
+import org.sunflow.core.AccelerationStructure;
 import org.sunflow.core.IntersectionState;
+import org.sunflow.core.PrimitiveList;
 import org.sunflow.core.Ray;
 import org.sunflow.math.BoundingBox;
 import org.sunflow.system.Memory;
@@ -12,9 +10,10 @@ import org.sunflow.system.Timer;
 import org.sunflow.system.UI;
 import org.sunflow.util.IntArray;
 
-public class BoundingIntervalHierarchy implements IntersectionAccelerator {
+public class BoundingIntervalHierarchy implements AccelerationStructure {
     private int[] tree;
-    private BoundedPrimitive[] objects;
+    private int[] objects;
+    private PrimitiveList primitives;
     private BoundingBox bounds;
     private int maxPrims;
 
@@ -22,42 +21,30 @@ public class BoundingIntervalHierarchy implements IntersectionAccelerator {
         maxPrims = 2;
     }
 
-    public boolean build(final ArrayList<BoundedPrimitive> objects) {
-        this.objects = objects.toArray(new BoundedPrimitive[objects.size()]);
-        int[] indices = new int[this.objects.length];
-        int i = 0;
-        bounds = new BoundingBox();
-        UI.printInfo("[BIH] Storing bounding boxes ...");
-        for (BoundedPrimitive prim : this.objects) {
-            BoundingBox b = prim.getBounds();
-            bounds.include(b);
-            indices[i] = i;
-            i++;
-        }
+    public boolean build(PrimitiveList primitives) {
+        this.primitives = primitives;
+        int n = primitives.getNumPrimitives();
+        UI.printInfo("[BIH] Getting bounding box ...");
+        bounds = primitives.getWorldBounds(null);
+        objects = new int[n];
+        for (int i = 0; i < n; i++)
+            objects[i] = i;
         UI.printInfo("[BIH] Creating tree ...");
-        int initialSize = 3 * (2 * 6 * this.objects.length + 1);
+        int initialSize = 3 * (2 * 6 * n + 1);
         IntArray tempTree = new IntArray((initialSize + 3) / 4);
         BuildStats stats = new BuildStats();
         Timer t = new Timer();
         t.start();
-        buildHierarchy(tempTree, indices, stats);
+        buildHierarchy(tempTree, objects, stats);
         t.end();
         UI.printInfo("[BIH] Trimming tree ...");
         tree = tempTree.trim();
-        tempTree = null; // free memory
-        UI.printInfo("[BIH] Sorting primitive pointers ...");
-        // resort pointers
-        BoundedPrimitive[] prims = new BoundedPrimitive[this.objects.length];
-        for (i = 0; i < prims.length; i++)
-            prims[i] = this.objects[indices[i]];
-        this.objects = prims;
-        // free memory
-        indices = null;
-        // gather stats
+        // display stats
         stats.printStats();
         UI.printInfo("[BIH]   * Creation time:  %s", t);
         UI.printInfo("[BIH]   * Usage of init:  %3d%%", 100 * tree.length / initialSize);
         UI.printInfo("[BIH]   * Tree memory:    %s", Memory.sizeof(tree));
+        UI.printInfo("[BIH]   * Indices memory: %s", Memory.sizeof(objects));
         return true;
     }
 
@@ -215,8 +202,8 @@ public class BoundingIntervalHierarchy implements IntersectionAccelerator {
             float nodeR = Float.NEGATIVE_INFINITY;
             for (int i = left; i <= right;) {
                 int obj = indices[i];
-                float minb = objects[obj].getBound(2 * axis + 0);
-                float maxb = objects[obj].getBound(2 * axis + 1);
+                float minb = primitives.getPrimitiveBound(obj, 2 * axis + 0);
+                float maxb = primitives.getPrimitiveBound(obj, 2 * axis + 1);
                 float center = (minb + maxb) * 0.5f;
                 if (center <= split) {
                     // stay left
@@ -582,7 +569,7 @@ public class BoundingIntervalHierarchy implements IntersectionAccelerator {
                         // leaf - test some objects
                         int n = tree[node + 1];
                         while (n > 0) {
-                            objects[offset].intersect(r, state);
+                            primitives.intersectPrimitive(r, objects[offset], state);
                             n--;
                             offset++;
                         }
@@ -592,7 +579,7 @@ public class BoundingIntervalHierarchy implements IntersectionAccelerator {
             } // traversal loop
             do {
                 // stack is empty?
-                if (stackPos == 0)
+                if (stackPos == stackTop)
                     return;
                 // move back up the stack
                 stackPos--;

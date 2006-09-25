@@ -1,4 +1,6 @@
-v0.06.4
+v0.07.0
+* Modified Scene to use an InstanceList
+* Converted Janino invocations to use the default system compiler
 * Upgraded to Janino 2.5.0
 * Modified Mesh class to implement the AggregateTraceable interface
 * Added AggregateTraceable interface
@@ -6,6 +8,8 @@ v0.06.4
 * Added checks for black diffuse/specular components
 * Added PerlinVector which produce vector valued noise
 * Renamed ImprovedNoise to PerlinScalar and added renderman-like calls
+
+v0.06.4
 * Upgraded to Janino 2.4.7
 * Regenerated golden benchmark files
 * Implemented BanchoffSurface primitive (from RJii's submission)

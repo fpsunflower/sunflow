@@ -11,7 +11,7 @@ import org.codehaus.janino.CompileException;
 import org.codehaus.janino.Scanner;
 import org.codehaus.janino.Parser.ParseException;
 import org.codehaus.janino.Scanner.ScanException;
-import org.sunflow.core.BoundedPrimitive;
+import org.sunflow.core.AccelerationStructure;
 import org.sunflow.core.BucketOrder;
 import org.sunflow.core.Camera;
 import org.sunflow.core.CausticPhotonMapInterface;
@@ -21,18 +21,15 @@ import org.sunflow.core.GIEngine;
 import org.sunflow.core.Geometry;
 import org.sunflow.core.ImageSampler;
 import org.sunflow.core.Instance;
-import org.sunflow.core.IntersectionAccelerator;
 import org.sunflow.core.LightSource;
 import org.sunflow.core.Primitive;
 import org.sunflow.core.Scene;
 import org.sunflow.core.SceneParser;
 import org.sunflow.core.Shader;
-import org.sunflow.core.accel.BoundingIntervalHierarchy;
-import org.sunflow.core.accel.BoundingVolumeHierarchy;
-import org.sunflow.core.accel.KDTree;
-import org.sunflow.core.accel.KDTreeOld;
-import org.sunflow.core.accel.NullAccelerator;
-import org.sunflow.core.accel.UniformGrid;
+import org.sunflow.core.accel2.BoundingIntervalHierarchy;
+import org.sunflow.core.accel2.KDTree;
+import org.sunflow.core.accel2.NullAccelerator;
+import org.sunflow.core.accel2.UniformGrid;
 import org.sunflow.core.bucket.ColumnBucketOrder;
 import org.sunflow.core.bucket.DiagonalBucketOrder;
 import org.sunflow.core.bucket.HilbertBucketOrder;
@@ -72,7 +69,7 @@ import org.sunflow.system.UI;
  * scene.
  */
 public class SunflowAPI {
-    public static final String VERSION = "0.06.4";
+    public static final String VERSION = "0.07.0";
 
     private Scene scene;
     private HashMap<String, Shader> shadersTable;
@@ -319,12 +316,8 @@ public class SunflowAPI {
             accel(new UniformGrid());
         else if (accel.equals("null"))
             accel(new NullAccelerator());
-        else if (accel.equals("bvh"))
-            accel(new BoundingVolumeHierarchy());
         else if (accel.equals("kdtree"))
             accel(new KDTree());
-        else if (accel.equals("kdtree_old"))
-            accel(new KDTreeOld());
         else if (accel.equals("bih"))
             accel(new BoundingIntervalHierarchy());
         else
@@ -336,7 +329,7 @@ public class SunflowAPI {
      * 
      * @param accel intersetion accelerator to use for rendering
      */
-    public final void accel(IntersectionAccelerator accel) {
+    public final void accel(AccelerationStructure accel) {
         scene.setIntersectionAccelerator(accel);
     }
 
@@ -394,7 +387,7 @@ public class SunflowAPI {
         Sphere sphere = new Sphere();
         Geometry geo = new Geometry(sphere);
         Matrix4 transform = Matrix4.translation(x, y, z).multiply(Matrix4.scale(radius));
-        primitive(new Instance(new Shader[] { currentShader }, transform, geo));
+        instance(new Instance(new Shader[] { currentShader }, transform, geo));
     }
 
     /**
@@ -407,7 +400,7 @@ public class SunflowAPI {
     public final void sphere(Matrix4 m) {
         Sphere sphere = new Sphere();
         Geometry geo = new Geometry(sphere);
-        primitive(new Instance(new Shader[] { currentShader }, m, geo));
+        instance(new Instance(new Shader[] { currentShader }, m, geo));
     }
 
     /**
@@ -416,12 +409,13 @@ public class SunflowAPI {
      * @param mesh mesh object
      */
     public final void mesh(Mesh mesh) {
+        // FIXME: MeshLight should work using the same mechanism
         if (mesh instanceof MeshLight)
             mesh.init(this);
         else {
             Geometry geo = new Geometry(mesh);
             Instance instance = new Instance(mesh.getShaders(), null, geo);
-            primitive(instance);
+            instance(instance);
         }
     }
 
@@ -435,12 +429,12 @@ public class SunflowAPI {
     }
 
     /**
-     * Adds the specified bounded primitive to the scene.
+     * Adds the specified instance to the scene.
      * 
-     * @param prim bounded primitive object
+     * @param instance
      */
-    public final void primitive(BoundedPrimitive prim) {
-        scene.addBoundedPrimitive(prim);
+    public final void instance(Instance instance) {
+        scene.addInstance(instance);
     }
 
     /**
@@ -587,7 +581,7 @@ public class SunflowAPI {
             t.start();
             try {
                 FileInputStream stream = new FileInputStream(filename);
-                api = (SunflowAPI) ClassBodyEvaluator.createFastClassBodyEvaluator(new Scanner(filename, stream), SunflowAPI.class, (ClassLoader) null);
+                api = (SunflowAPI) ClassBodyEvaluator.createFastClassBodyEvaluator(new Scanner(filename, stream), SunflowAPI.class, ClassLoader.getSystemClassLoader());
                 stream.close();
             } catch (CompileException e) {
                 UI.printError("[API] Could not compile: \"%s\"", filename);

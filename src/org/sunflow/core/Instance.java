@@ -37,15 +37,16 @@ public class Instance implements BoundedPrimitive {
         return bounds.intersects(box);
     }
 
-    public void intersect(Ray r, IntersectionState istate) {
+    public void intersect(Ray r, IntersectionState state) {
         Ray localRay = r.transform(w2o);
-        geometry.intersect(localRay, this, istate);
+        state.current = this;
+        geometry.intersect(localRay, state);
         // FIXME: transfer max distance to current ray
         r.setMax(localRay.getMax());
     }
 
     public void prepareShadingState(ShadingState state) {
-        geometry.prepareShadingState(this, state);
+        geometry.prepareShadingState(state);
     }
 
     public Shader getShader(int i) {

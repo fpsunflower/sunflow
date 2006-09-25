@@ -1,6 +1,6 @@
 package org.sunflow.core.primitive;
 
-import org.sunflow.core.AggregateTraceable;
+import org.sunflow.core.PrimitiveList;
 import org.sunflow.core.Instance;
 import org.sunflow.core.IntersectionState;
 import org.sunflow.core.Ray;
@@ -12,7 +12,7 @@ import org.sunflow.math.Point3;
 import org.sunflow.math.Solvers;
 import org.sunflow.math.Vector3;
 
-public class BanchoffSurface implements AggregateTraceable {
+public class BanchoffSurface implements PrimitiveList {
     public BoundingBox getWorldBounds(Matrix4 o2w) {
         BoundingBox bounds = new BoundingBox(1.5f);
         if (o2w != null)
@@ -20,17 +20,19 @@ public class BanchoffSurface implements AggregateTraceable {
         return bounds;
     }
 
-    public float getObjectBound(int primID, int i) {
+    public float getPrimitiveBound(int primID, int i) {
         return (i & 1) == 0 ? -1.5f : 1.5f;
     }
 
-    public int numPrimitives() {
+    public int getNumPrimitives() {
         return 1;
     }
 
-    public void prepareShadingState(Instance parent, int primID, ShadingState state) {
+    public void prepareShadingState(ShadingState state) {
         state.init();
         state.getRay().getPoint(state.getPoint());
+        // FIXME: get parent instance object
+        Instance parent = (Instance) state.getObject();
         Point3 n = parent.transformWorldToObject(state.getPoint());
         state.getNormal().set(n.x * (2 * n.x * n.x - 1), n.y * (2 * n.y * n.y - 1), n.z * (2 * n.z * n.z - 1));
         state.getNormal().normalize();
@@ -44,7 +46,7 @@ public class BanchoffSurface implements AggregateTraceable {
         state.setBasis(OrthoNormalBasis.makeFromW(state.getNormal()));
     }
 
-    public void intersectPrimitive(Ray r, Instance parent, int primID, IntersectionState state) {
+    public void intersectPrimitive(Ray r, int primID, IntersectionState state) {
         // intersect in local space
         float rd2x = r.dx * r.dx;
         float rd2y = r.dy * r.dy;
@@ -69,7 +71,7 @@ public class BanchoffSurface implements AggregateTraceable {
             for (int i = 0; i < t.length; i++) {
                 if (t[i] > r.getMin()) {
                     r.setMax((float) t[i]);
-                    state.setIntersection(parent, 0, 0, 0);
+                    state.setIntersection(0, 0, 0);
                     return;
                 }
             }

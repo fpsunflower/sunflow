@@ -9,7 +9,7 @@ public interface AccelerationStructure {
      * @param primitives
      * @return
      */
-    public boolean build(AggregateTraceable primitives);
+    public boolean build(PrimitiveList primitives);
 
     /**
      * Get the bounding box of all enclosed primitives.
@@ -25,5 +25,5 @@ public interface AccelerationStructure {
      * @param r ray in local space
      * @param istate state to store the intersection into
      */
-    public void intersect(Ray r, Instance parent, IntersectionState istate);
+    public void intersect(Ray r, IntersectionState istate);
 }

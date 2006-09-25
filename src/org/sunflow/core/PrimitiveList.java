@@ -4,17 +4,16 @@ import org.sunflow.math.BoundingBox;
 import org.sunflow.math.Matrix4;
 
 /**
- * This class represents an object made up of many traceable elements. You may
- * use an {@link AccelerationStructure} to turn this into a regular
- * {@link Traceable} object which may be instanced.
+ * This class represents an object made up of many primitives.
  */
-public interface AggregateTraceable {
+public interface PrimitiveList {
     /**
      * Compute a bounding box of this object in world space, using the specified
      * object-to-world transformation matrix. The bounds should be as exact as
      * possible, if they are difficult or expensive to compute exactly, you may
      * use {@link Matrix4#transform(BoundingBox)}. If the matrix is
-     * <code>null</code> no transformation is needed.
+     * <code>null</code> no transformation is needed, and object space is
+     * equivalent to world space.
      * 
      * @param o2w object to world transformation matrix
      * @return object bounding box in world space
@@ -26,7 +25,7 @@ public interface AggregateTraceable {
      * 
      * @return number of primitives
      */
-    public int numPrimitives();
+    public int getNumPrimitives();
 
     /**
      * Retrieve the bounding box component of a particular primitive in object
@@ -36,7 +35,7 @@ public interface AggregateTraceable {
      * @param i bounding box side index
      * @return value of the request bound
      */
-    public float getObjectBound(int primID, int i);
+    public float getPrimitiveBound(int primID, int i);
 
     /**
      * Intersect the specified primitive in local space.
@@ -46,7 +45,7 @@ public interface AggregateTraceable {
      * @param primID primitive index to intersect
      * @param state intersection state
      */
-    public void intersectPrimitive(Ray ray, Instance parent, int primID, IntersectionState state);
+    public void intersectPrimitive(Ray ray, int primID, IntersectionState state);
 
     /**
      * Prepare the specified {@link ShadingState} by setting all of its internal
@@ -57,5 +56,5 @@ public interface AggregateTraceable {
      * @param primID primitive index which was hit
      * @param state shading state to fill in
      */
-    public void prepareShadingState(Instance parent, int primID, ShadingState state);
+    public void prepareShadingState(ShadingState state);
 }

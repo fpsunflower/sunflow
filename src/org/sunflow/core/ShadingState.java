@@ -23,6 +23,7 @@ public final class ShadingState implements Iterable<LightSample> {
     private boolean behind;
     private float hitU, hitV;
     private Primitive object;
+    private int primitiveID;
     private Ray r;
     private int d; // quasi monte carlo instance variables
     private int i; // quasi monte carlo instance variables
@@ -93,6 +94,7 @@ public final class ShadingState implements Iterable<LightSample> {
         this.i = i;
         this.d = d;
         this.object = istate.object; // local copy
+        this.primitiveID = istate.id;
         this.hitU = istate.u;
         this.hitV = istate.v;
         if (previous == null) {
@@ -161,6 +163,10 @@ public final class ShadingState implements Iterable<LightSample> {
 
     public final Primitive getObject() {
         return object;
+    }
+
+    public final int getPrimitiveID() {
+        return primitiveID;
     }
 
     final void setResult(Color c) {

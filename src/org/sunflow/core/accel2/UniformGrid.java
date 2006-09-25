@@ -1,9 +1,8 @@
 package org.sunflow.core.accel2;
 
 import org.sunflow.core.AccelerationStructure;
-import org.sunflow.core.AggregateTraceable;
-import org.sunflow.core.Instance;
 import org.sunflow.core.IntersectionState;
+import org.sunflow.core.PrimitiveList;
 import org.sunflow.core.Ray;
 import org.sunflow.math.BoundingBox;
 import org.sunflow.math.MathUtils;
@@ -14,7 +13,7 @@ import org.sunflow.util.IntArray;
 
 public final class UniformGrid implements AccelerationStructure {
     private int nx, ny, nz;
-    private AggregateTraceable primitives;
+    private PrimitiveList primitives;
     private BoundingBox bounds;
     private int[][] cells;
     private float voxelwx, voxelwy, voxelwz;
@@ -28,11 +27,11 @@ public final class UniformGrid implements AccelerationStructure {
         invVoxelwx = invVoxelwy = invVoxelwz = 0;
     }
 
-    public boolean build(AggregateTraceable primitives) {
+    public boolean build(PrimitiveList primitives) {
         Timer t = new Timer();
         t.start();
         this.primitives = primitives;
-        int n = primitives.numPrimitives();
+        int n = primitives.getNumPrimitives();
         // compute bounds
         bounds = primitives.getWorldBounds(null);
         // create grid from number of objects
@@ -61,8 +60,8 @@ public final class UniformGrid implements AccelerationStructure {
                 UI.taskStop();
                 return false;
             }
-            getGridIndex(primitives.getObjectBound(i, 0), primitives.getObjectBound(i, 2), primitives.getObjectBound(i, 4), imin);
-            getGridIndex(primitives.getObjectBound(i, 1), primitives.getObjectBound(i, 3), primitives.getObjectBound(i, 5), imax);
+            getGridIndex(primitives.getPrimitiveBound(i, 0), primitives.getPrimitiveBound(i, 2), primitives.getPrimitiveBound(i, 4), imin);
+            getGridIndex(primitives.getPrimitiveBound(i, 1), primitives.getPrimitiveBound(i, 3), primitives.getPrimitiveBound(i, 5), imax);
             for (int ix = imin[0]; ix <= imax[0]; ix++) {
                 for (int iy = imin[1]; iy <= imax[1]; iy++) {
                     for (int iz = imin[2]; iz <= imax[2]; iz++) {
@@ -111,7 +110,7 @@ public final class UniformGrid implements AccelerationStructure {
         return bounds;
     }
 
-    public void intersect(Ray r, Instance parent, IntersectionState state) {
+    public void intersect(Ray r, IntersectionState state) {
         float intervalMin = r.getMin();
         float intervalMax = r.getMax();
         float orgX = r.ox;
@@ -252,7 +251,7 @@ public final class UniformGrid implements AccelerationStructure {
             if (tnextX < tnextY && tnextX < tnextZ) {
                 if (cells[cell] != null) {
                     for (int i : cells[cell])
-                        primitives.intersectPrimitive(r, parent, i, state);
+                        primitives.intersectPrimitive(r, i, state);
                     if (state.hit() && (r.getMax() < tnextX && r.getMax() < intervalMax))
                         return;
                 }
@@ -267,7 +266,7 @@ public final class UniformGrid implements AccelerationStructure {
             } else if (tnextY < tnextZ) {
                 if (cells[cell] != null) {
                     for (int i : cells[cell])
-                        primitives.intersectPrimitive(r, parent, i, state);
+                        primitives.intersectPrimitive(r, i, state);
                     if (state.hit() && (r.getMax() < tnextY && r.getMax() < intervalMax))
                         return;
                 }
@@ -282,7 +281,7 @@ public final class UniformGrid implements AccelerationStructure {
             } else {
                 if (cells[cell] != null) {
                     for (int i : cells[cell])
-                        primitives.intersectPrimitive(r, parent, i, state);
+                        primitives.intersectPrimitive(r, i, state);
                     if (state.hit() && (r.getMax() < tnextZ && r.getMax() < intervalMax))
                         return;
                 }

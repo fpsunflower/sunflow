@@ -3,37 +3,59 @@ package org.sunflow.core;
 import org.sunflow.math.BoundingBox;
 import org.sunflow.math.Matrix4;
 
-class InstanceList implements AggregateTraceable {
+final class InstanceList implements PrimitiveList {
     private Instance[] instances;
-    private BoundingBox bounds;
+    private int n;
 
-    InstanceList(Instance[] instances) {
-        this.instances = instances;
-        bounds = new BoundingBox();
-        for (Instance i : instances)
-            bounds.include(i.getBounds());
+    InstanceList() {
+        clear();
     }
 
-    public float getObjectBound(int primID, int i) {
+    final void clear() {
+        instances = new Instance[10];
+        n = 0;
+    }
+
+    final void add(Instance instance) {
+        if (n == instances.length) {
+            Instance[] oldArray = instances;
+            instances = new Instance[(n * 3) / 2 + 1];
+            System.arraycopy(oldArray, 0, instances, 0, n);
+        }
+        instances[n] = instance;
+        n++;
+    }
+
+    final Instance[] trim() {
+        if (n < instances.length) {
+            Instance[] oldArray = instances;
+            instances = new Instance[n];
+            System.arraycopy(oldArray, 0, instances, 0, n);
+        }
+        return instances;
+    }
+
+    public final float getPrimitiveBound(int primID, int i) {
         return instances[primID].getBound(i);
     }
 
-    public BoundingBox getWorldBounds(Matrix4 o2w) {
-        assert o2w == null;
+    public final BoundingBox getWorldBounds(Matrix4 o2w) {
+        BoundingBox bounds = new BoundingBox();
+        for (Instance i : instances)
+            bounds.include(i.getBounds());
         return bounds;
     }
 
-    public void intersectPrimitive(Ray r, Instance parent, int primID, IntersectionState state) {
-        assert parent == null;
+    public final void intersectPrimitive(Ray r, int primID, IntersectionState state) {
         instances[primID].intersect(r, state);
     }
 
-    public int numPrimitives() {
-        return instances.length;
+    public final int getNumPrimitives() {
+        return n;
     }
 
-    public void prepareShadingState(Instance parent, int primID, ShadingState state) {
-        assert parent == null;
-        instances[primID].prepareShadingState(state);
+    public final void prepareShadingState(ShadingState state) {
+        Instance instance = (Instance) state.getIntersectionState().object;
+        instance.prepareShadingState(state);
     }
 }
