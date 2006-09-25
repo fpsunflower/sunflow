@@ -2,6 +2,7 @@ package org.sunflow.core;
 
 import java.util.ArrayList;
 
+import org.sunflow.core.accel2.SimpleAccelerator;
 import org.sunflow.core.accel2.UniformGrid;
 import org.sunflow.core.display.FrameDisplay;
 import org.sunflow.image.Color;
@@ -218,6 +219,9 @@ public class Scene {
         UI.printInfo("[SCN]   * Instances:           %d", instanceList.getNumPrimitives());
         if (changedGeometry) {
             instanceList.trim();
+            // use special case if we have only one instance in the scene 
+            if (instanceList.getNumPrimitives() == 1)
+                intAccel = new SimpleAccelerator();
             if (!intAccel.build(instanceList))
                 return;
             changedGeometry = false;
