@@ -116,7 +116,7 @@ public class IrradianceCacheGIEngine implements GIEngine {
                     minR = Math.min(r.getMax(), minR);
                     invR += 1.0f / r.getMax();
                     hits++;
-                    temp.getObject().prepareShadingState(temp);
+                    temp.getInstance().prepareShadingState(temp);
                     irr.add(getGlobalRadiance(temp));
                 }
             }

@@ -1,19 +1,20 @@
 package org.sunflow.core.primitive;
 
-import org.sunflow.core.BoundedPrimitive;
 import org.sunflow.core.IntersectionState;
 import org.sunflow.core.LightSample;
 import org.sunflow.core.LightSource;
+import org.sunflow.core.PrimitiveList;
 import org.sunflow.core.Ray;
 import org.sunflow.core.Shader;
 import org.sunflow.core.ShadingState;
 import org.sunflow.image.Color;
 import org.sunflow.math.BoundingBox;
+import org.sunflow.math.Matrix4;
 import org.sunflow.math.OrthoNormalBasis;
 import org.sunflow.math.Point3;
 import org.sunflow.math.Vector3;
 
-public class CornellBox implements BoundedPrimitive, Shader, LightSource {
+public class CornellBox implements PrimitiveList, Shader, LightSource {
     private float minX, minY, minZ;
     private float maxX, maxY, maxZ;
     private Color left, right, top, bottom, back;
@@ -24,17 +25,19 @@ public class CornellBox implements BoundedPrimitive, Shader, LightSource {
     private BoundingBox lightBounds;
 
     public CornellBox(Point3 corner0, Point3 corner1, Color left, Color right, Color top, Color bottom, Color back, Color radiance, int samples) {
-        // cube extents
-        minX = Math.min(corner0.x, corner1.x);
-        minY = Math.min(corner0.y, corner1.y);
-        minZ = Math.min(corner0.z, corner1.z);
-        maxX = Math.max(corner0.x, corner1.x);
-        maxY = Math.max(corner0.y, corner1.y);
-        maxZ = Math.max(corner0.z, corner1.z);
+        // figure out cube extents
+        lightBounds = new BoundingBox(corner0);
+        lightBounds.include(corner1);
 
-        lightBounds = new BoundingBox();
-        lightBounds.include(new Point3(minX, minY, minZ));
-        lightBounds.include(new Point3(maxX, maxY, maxZ));
+        // cube extents
+        minX = lightBounds.getMinimum().x;
+        minY = lightBounds.getMinimum().y;
+        minZ = lightBounds.getMinimum().z;
+        maxX = lightBounds.getMaximum().x;
+        maxY = lightBounds.getMaximum().y;
+        maxZ = lightBounds.getMaximum().z;
+
+        // work around epsilon problems for light test
         lightBounds.enlargeUlps();
 
         // cube colors
@@ -108,7 +111,7 @@ public class CornellBox implements BoundedPrimitive, Shader, LightSource {
     public void prepareShadingState(ShadingState state) {
         state.init();
         state.getRay().getPoint(state.getPoint());
-        int n = (int) state.getU();
+        int n = state.getPrimitiveID();
         switch (n) {
             case 0:
                 state.getNormal().set(new Vector3(1, 0, 0));
@@ -137,7 +140,7 @@ public class CornellBox implements BoundedPrimitive, Shader, LightSource {
         state.setShader(this);
     }
 
-    public void intersect(Ray r, IntersectionState state) {
+    public void intersectPrimitive(Ray r, int primID, IntersectionState state) {
         float intervalMin = Float.NEGATIVE_INFINITY;
         float intervalMax = Float.POSITIVE_INFINITY;
         float orgX = r.ox;
@@ -222,15 +225,15 @@ public class CornellBox implements BoundedPrimitive, Shader, LightSource {
         // can't hit minY wall, there is none
         if (sideIn != 2 && r.isInside(intervalMin)) {
             r.setMax(intervalMin);
-            state.setIntersection(this, 0, sideIn, 0);
+            state.setIntersection(sideIn, 0, 0);
         } else if (sideOut != 2 && r.isInside(intervalMax)) {
             r.setMax(intervalMax);
-            state.setIntersection(this, 0, sideOut, 0);
+            state.setIntersection(sideOut, 0, 0);
         }
     }
 
     public Color getRadiance(ShadingState state) {
-        int side = (int) state.getU();
+        int side = state.getPrimitiveID();
         Color kd = null;
         switch (side) {
             case 0:
@@ -256,23 +259,15 @@ public class CornellBox implements BoundedPrimitive, Shader, LightSource {
                 assert false;
         }
         // make sure we are on the right side of the material
-        if (Vector3.dot(state.getNormal(), state.getRay().getDirection()) > 0.0) {
-            state.getNormal().negate();
-            state.getGeoNormal().negate();
-        }
-
-        // direct lighting
+        state.faceforward();
+        // setup lighting
         state.initLightSamples();
         state.initCausticSamples();
-        Color lr = Color.black();
-        for (LightSample sample : state)
-            lr.madd(sample.dot(state.getNormal()), sample.getDiffuseRadiance());
-        lr.add(state.getIrradiance(kd));
-        return lr.mul(kd).mul(1.0f / (float) Math.PI);
+        return state.diffuse(kd);
     }
 
     public void scatterPhoton(ShadingState state, Color power) {
-        int side = (int) state.getU();
+        int side = state.getPrimitiveID();
         Color kd = null;
         switch (side) {
             case 0:
@@ -381,5 +376,36 @@ public class CornellBox implements BoundedPrimitive, Shader, LightSource {
 
     public float getPower() {
         return radiance.copy().mul((float) Math.PI * area).getLuminance();
+    }
+
+    public int getNumPrimitives() {
+        return 1;
+    }
+
+    public float getPrimitiveBound(int primID, int i) {
+        switch (i) {
+            case 0:
+                return minX;
+            case 1:
+                return maxX;
+            case 2:
+                return minY;
+            case 3:
+                return maxY;
+            case 4:
+                return minZ;
+            case 5:
+                return maxZ;
+            default:
+                return 0;
+        }
+    }
+
+    public BoundingBox getWorldBounds(Matrix4 o2w) {
+        BoundingBox bounds = new BoundingBox(minX, minY, minZ);
+        bounds.include(maxX, maxY, maxZ);
+        if (o2w == null)
+            return bounds;
+        return o2w.transform(bounds);
     }
 }

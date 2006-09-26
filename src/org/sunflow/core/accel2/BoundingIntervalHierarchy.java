@@ -379,10 +379,6 @@ public class BoundingIntervalHierarchy implements AccelerationStructure {
             stats.updateLeaf(depth + 1, 0);
     }
 
-    public BoundingBox getBounds() {
-        return bounds;
-    }
-
     public void intersect(Ray r, IntersectionState state) {
         float intervalMin = r.getMin();
         float intervalMax = r.getMax();

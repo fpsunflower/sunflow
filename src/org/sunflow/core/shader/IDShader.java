@@ -6,7 +6,7 @@ import org.sunflow.image.Color;
 
 public class IDShader implements Shader {
     public Color getRadiance(ShadingState state) {
-        return new Color(state.getObject().hashCode());
+        return new Color(state.getInstance().hashCode() + state.getPrimitiveID());
     }
 
     public void scatterPhoton(ShadingState state, Color power) {

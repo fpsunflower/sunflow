@@ -17,33 +17,33 @@ public class MeshLight extends Mesh implements Shader {
     private Color radiance;
     private int numSamples;
 
-    public MeshLight(Color radiance, int numSamples) {
+    public MeshLight(float[] points, int[] triangles, Color radiance, int numSamples) {
+        super(points, triangles);
         this.radiance = radiance;
         this.numSamples = numSamples;
     }
 
     public void init(SunflowAPI api) {
-        if (points == null || triangles == null)
-            UI.printWarning("[TRI] Incomplete mesh, cannot initialize");
+        if (points == null)
+            UI.printWarning("[TRI] Incomplete mesh - cannot create lights");
         else {
-            shader(this);
             // the shader does not require normals or texture coords
             normals(InterpType.NONE, null);
             uvs(InterpType.NONE, null);
             for (int i = 0, j = 0; i < triangles.length; i += 3, j++) {
                 TriangleLight t = new TriangleLight(j);
-                api.primitive(t);
                 api.light(t);
             }
         }
     }
 
-    private class TriangleLight extends Triangle implements LightSource {
+    private class TriangleLight implements LightSource {
+        private int tri3;
         private float area;
         private Vector3 ng;
 
         TriangleLight(int tri) {
-            super(tri);
+            tri3 = 3 * tri;
             Point3 v0p = getPoint(triangles[3 * tri + 0]);
             Point3 v1p = getPoint(triangles[3 * tri + 1]);
             Point3 v2p = getPoint(triangles[3 * tri + 2]);
@@ -64,16 +64,15 @@ public class MeshLight extends Mesh implements Shader {
             Point3 p = state.getPoint();
             Vector3 n = state.getNormal();
             Vector3 sub = new Vector3();
-            int tri = 3 * getTriangleNum();
-            Point3 v0p = getPoint(triangles[tri + 0]);
+            Point3 v0p = getPoint(triangles[tri3 + 0]);
             Point3.sub(v0p, p, sub);
             if ((Vector3.dot(sub, n) > 0.0) || (Vector3.dot(sub, ng) < 0.0))
                 return true;
-            Point3 v1p = getPoint(triangles[tri + 1]);
+            Point3 v1p = getPoint(triangles[tri3 + 1]);
             Point3.sub(v1p, p, sub);
             if ((Vector3.dot(sub, n) > 0.0) || (Vector3.dot(sub, ng) < 0.0))
                 return true;
-            Point3 v2p = getPoint(triangles[tri + 2]);
+            Point3 v2p = getPoint(triangles[tri3 + 2]);
             Point3.sub(v2p, p, sub);
             if ((Vector3.dot(sub, n) > 0.0) || (Vector3.dot(sub, ng) < 0.0))
                 return true;
@@ -91,10 +90,9 @@ public class MeshLight extends Mesh implements Shader {
             float w = 1 - u - v;
 
             Point3 p = new Point3();
-            int tri = 3 * getTriangleNum();
-            int index0 = 3 * triangles[tri + 0];
-            int index1 = 3 * triangles[tri + 1];
-            int index2 = 3 * triangles[tri + 2];
+            int index0 = 3 * triangles[tri3 + 0];
+            int index1 = 3 * triangles[tri3 + 1];
+            int index2 = 3 * triangles[tri3 + 2];
             p.x = w * points[index0 + 0] + u * points[index1 + 0] + v * points[index2 + 0];
             p.y = w * points[index0 + 1] + u * points[index1 + 1] + v * points[index2 + 1];
             p.z = w * points[index0 + 2] + u * points[index1 + 2] + v * points[index2 + 2];
@@ -127,10 +125,9 @@ public class MeshLight extends Mesh implements Shader {
             float u = (float) (randY2 * s);
             float v = (float) (1 - s);
             float w = 1 - u - v;
-            int tri = 3 * getTriangleNum();
-            int index0 = 3 * triangles[tri + 0];
-            int index1 = 3 * triangles[tri + 1];
-            int index2 = 3 * triangles[tri + 2];
+            int index0 = 3 * triangles[tri3 + 0];
+            int index1 = 3 * triangles[tri3 + 1];
+            int index2 = 3 * triangles[tri3 + 2];
             p.x = w * points[index0 + 0] + u * points[index1 + 0] + v * points[index2 + 0];
             p.y = w * points[index0 + 1] + u * points[index1 + 1] + v * points[index2 + 1];
             p.z = w * points[index0 + 2] + u * points[index1 + 2] + v * points[index2 + 2];

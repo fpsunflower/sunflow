@@ -40,12 +40,12 @@ public interface PrimitiveList {
     /**
      * Intersect the specified primitive in local space.
      * 
-     * @param ray ray in the object's local space
+     * @param r ray in the object's local space
      * @param parent instance currently being intersected
      * @param primID primitive index to intersect
      * @param state intersection state
      */
-    public void intersectPrimitive(Ray ray, int primID, IntersectionState state);
+    public void intersectPrimitive(Ray r, int primID, IntersectionState state);
 
     /**
      * Prepare the specified {@link ShadingState} by setting all of its internal

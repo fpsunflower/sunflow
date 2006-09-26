@@ -22,7 +22,6 @@ import org.sunflow.core.Geometry;
 import org.sunflow.core.ImageSampler;
 import org.sunflow.core.Instance;
 import org.sunflow.core.LightSource;
-import org.sunflow.core.Primitive;
 import org.sunflow.core.Scene;
 import org.sunflow.core.SceneParser;
 import org.sunflow.core.Shader;
@@ -43,13 +42,11 @@ import org.sunflow.core.filter.LanczosFilter;
 import org.sunflow.core.filter.MitchellFilter;
 import org.sunflow.core.filter.SincFilter;
 import org.sunflow.core.filter.TriangleFilter;
-import org.sunflow.core.light.MeshLight;
 import org.sunflow.core.light.PointLight;
 import org.sunflow.core.parser.RA2Parser;
 import org.sunflow.core.parser.RA3Parser;
 import org.sunflow.core.parser.SCParser;
 import org.sunflow.core.parser.TriParser;
-import org.sunflow.core.primitive.Mesh;
 import org.sunflow.core.primitive.Sphere;
 import org.sunflow.core.renderer.BucketRenderer;
 import org.sunflow.core.renderer.ProgressiveRenderer;
@@ -401,31 +398,6 @@ public class SunflowAPI {
         Sphere sphere = new Sphere();
         Geometry geo = new Geometry(sphere);
         instance(new Instance(new Shader[] { currentShader }, m, geo));
-    }
-
-    /**
-     * Adds the specified mesh to the scene.
-     * 
-     * @param mesh mesh object
-     */
-    public final void mesh(Mesh mesh) {
-        // FIXME: MeshLight should work using the same mechanism
-        if (mesh instanceof MeshLight)
-            mesh.init(this);
-        else {
-            Geometry geo = new Geometry(mesh);
-            Instance instance = new Instance(mesh.getShaders(), null, geo);
-            instance(instance);
-        }
-    }
-
-    /**
-     * Adds the specified infinite primitive to the scene.
-     * 
-     * @param prim primitive object
-     */
-    public final void primitive(Primitive prim) {
-        scene.addPrimitive(prim);
     }
 
     /**

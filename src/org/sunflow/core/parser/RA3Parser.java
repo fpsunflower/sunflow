@@ -11,6 +11,8 @@ import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
 
 import org.sunflow.SunflowAPI;
+import org.sunflow.core.Geometry;
+import org.sunflow.core.Instance;
 import org.sunflow.core.SceneParser;
 import org.sunflow.core.Shader;
 import org.sunflow.core.ShadingState;
@@ -39,12 +41,14 @@ public class RA3Parser implements SceneParser {
             for (int i = 0; i < tris.length; i++)
                 tris[i] = ints.get(2 + verts.length + i);
             UI.printInfo("[RA3]   * Creating mesh ...");
-            Mesh mesh = new Mesh();
-            mesh.points(verts);
-            mesh.triangles(tris);
+            Mesh mesh = new Mesh(verts, tris);
             Shader s = api.shader("ra3shader");
-            mesh.shader(s == null ? new SimpleShader() : s);
-            api.mesh(mesh);
+
+            Geometry geo = new Geometry(mesh);
+
+            Instance instance = new Instance(s == null ? new SimpleShader() : s, null, geo);
+
+            api.instance(instance);
             stream.close();
         } catch (FileNotFoundException e) {
             e.printStackTrace();

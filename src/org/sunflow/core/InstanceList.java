@@ -36,7 +36,7 @@ final class InstanceList implements PrimitiveList {
     }
 
     public final float getPrimitiveBound(int primID, int i) {
-        return instances[primID].getBound(i);
+        return instances[primID].getBounds().getBound(i);
     }
 
     public final BoundingBox getWorldBounds(Matrix4 o2w) {
@@ -55,7 +55,6 @@ final class InstanceList implements PrimitiveList {
     }
 
     public final void prepareShadingState(ShadingState state) {
-        Instance instance = (Instance) state.getIntersectionState().object;
-        instance.prepareShadingState(state);
+        state.getInstance().prepareShadingState(state);
     }
 }

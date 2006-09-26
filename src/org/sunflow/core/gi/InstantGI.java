@@ -115,7 +115,7 @@ public class InstantGI implements GIEngine {
             r.setMax((float) Math.sqrt(cosTheta / b));
             ShadingState temp = state.traceFinalGather(r, i);
             if (temp != null) {
-                temp.getObject().prepareShadingState(temp);
+                temp.getInstance().prepareShadingState(temp);
                 if (temp.getShader() != null) {
                     float dist = temp.getRay().getMax();
                     float r2 = dist * dist;

@@ -106,10 +106,6 @@ public final class UniformGrid implements AccelerationStructure {
         return true;
     }
 
-    public BoundingBox getBounds() {
-        return bounds;
-    }
-
     public void intersect(Ray r, IntersectionState state) {
         float intervalMin = r.getMin();
         float intervalMax = r.getMax();

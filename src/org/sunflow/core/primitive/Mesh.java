@@ -1,12 +1,9 @@
 package org.sunflow.core.primitive;
 
-import org.sunflow.SunflowAPI;
-import org.sunflow.core.PrimitiveList;
-import org.sunflow.core.BoundedPrimitive;
 import org.sunflow.core.Instance;
 import org.sunflow.core.IntersectionState;
+import org.sunflow.core.PrimitiveList;
 import org.sunflow.core.Ray;
-import org.sunflow.core.Shader;
 import org.sunflow.core.ShadingState;
 import org.sunflow.math.BoundingBox;
 import org.sunflow.math.MathUtils;
@@ -20,7 +17,7 @@ public class Mesh implements PrimitiveList {
     private static boolean smallTriangles = false;
     protected float[] points;
     protected int[] triangles;
-    private Shader[] shaders;
+    private WaldTriangle[] triaccel;
     private float[] normals;
     private float[] uvs;
     private byte[] faceShaders;
@@ -39,17 +36,14 @@ public class Mesh implements PrimitiveList {
         NONE, VERTEX, FACEVARYING,
     }
 
-    public Mesh() {
-        points = null;
-        triangles = null;
-        shaders = null;
+    public Mesh(float[] points, int[] triangles) {
+        this.points = points;
+        this.triangles = triangles;
         normals = uvs = null;
         faceShaders = null;
         normalInterp = uvInterp = InterpType.NONE;
-    }
-
-    public Shader[] getShaders() {
-        return shaders;
+        // create triangle acceleration structure
+        init();
     }
 
     public float getPrimitiveBound(int primID, int i) {
@@ -93,6 +87,11 @@ public class Mesh implements PrimitiveList {
     }
 
     public void intersectPrimitive(Ray r, int primID, IntersectionState state) {
+        if (triaccel != null) {
+            // optional fast intersection method
+            triaccel[primID].intersect(r, primID, state);
+            return;
+        }
         // ray-triangle intersection here
         int a, b, c, tri = primID * 3;
         if (triangles == null) {
@@ -161,11 +160,8 @@ public class Mesh implements PrimitiveList {
 
     public void prepareShadingState(ShadingState state) {
         state.init();
-
-        // FIXME: get object info
-        Instance parent = (state.getObject() instanceof Instance) ? (Instance) state.getObject() : null;
+        Instance parent = state.getInstance();
         int primID = state.getPrimitiveID();
-
         float u = state.getU();
         float v = state.getV();
         float w = 1 - u - v;
@@ -274,41 +270,25 @@ public class Mesh implements PrimitiveList {
         } else
             state.setBasis(OrthoNormalBasis.makeFromW(state.getNormal()));
         int shaderIndex = faceShaders == null ? 0 : (faceShaders[primID] & 0xFF);
-        if (parent == null)
-            state.setShader(shaders[shaderIndex]);
-        else
-            state.setShader(parent.getShader(shaderIndex));
+        state.setShader(parent.getShader(shaderIndex));
     }
 
-    public void init(SunflowAPI api) {
+    public void init() {
+        triaccel = null;
         if (points == null)
-            UI.printWarning("[TRI] Incomplete mesh, cannot initialize");
-        else {
-            int nTriangles = getNumPrimitives();
-            if (smallTriangles) {
-                for (int i = 0; i < nTriangles; i++)
-                    api.primitive(new SmallTriangle(this, i));
-            } else {
-                for (int i = 0; i < nTriangles; i++)
-                    api.primitive(new Triangle(i));
-            }
+            return;
+        int nTriangles = getNumPrimitives();
+        if (!smallTriangles) {
+            triaccel = new WaldTriangle[nTriangles];
+            for (int i = 0; i < nTriangles; i++)
+                triaccel[i] = new WaldTriangle(i);
         }
-    }
-
-    public void shader(Shader shader) {
-        this.shaders = new Shader[] { shader };
-    }
-
-    public void shader(Shader[] shaders) {
-        this.shaders = shaders;
     }
 
     public void points(float[] points) {
         this.points = points;
-    }
-
-    public void triangles(int[] triangles) {
-        this.triangles = triangles;
+        // refresh triangles
+        init();
     }
 
     public void normals(InterpType t, float[] normals) {
@@ -379,33 +359,15 @@ public class Mesh implements PrimitiveList {
         return new Point3(points[i], points[i + 1], points[i + 2]);
     }
 
-    private BoundingBox getBounds(int tri3) {
-        int a, b, c;
-        if (triangles != null) {
-            a = 3 * triangles[tri3 + 0];
-            b = 3 * triangles[tri3 + 1];
-            c = 3 * triangles[tri3 + 2];
-        } else {
-            a = 3 * (tri3 + 0);
-            b = 3 * (tri3 + 1);
-            c = 3 * (tri3 + 2);
-
-        }
-        BoundingBox box = new BoundingBox(points[a + 0], points[a + 1], points[a + 2]);
-        box.include(points[b + 0], points[b + 1], points[b + 2]);
-        box.include(points[c + 0], points[c + 1], points[c + 2]);
-        return box;
-    }
-
-    protected class Triangle implements BoundedPrimitive {
+    protected class WaldTriangle {
         // private data for fast triangle intersection testing
-        private int flags;
+        private int k;
         private float nu, nv, nd;
         private float bnu, bnv, bnd;
         private float cnu, cnv, cnd;
 
-        public Triangle(int tri) {
-            flags = tri << 2;
+        public WaldTriangle(int tri) {
+            k = 0;
             int index0 = 3 * tri + 0, index1 = 3 * tri + 1, index2 = 3 * tri + 2;
             if (triangles != null) {
                 index0 = triangles[index0];
@@ -417,13 +379,13 @@ public class Mesh implements PrimitiveList {
             Point3 v2p = getPoint(index2);
             Vector3 ng = Vector3.cross(Point3.sub(v1p, v0p, new Vector3()), Point3.sub(v2p, v0p, new Vector3()), new Vector3()).normalize();
             if (Math.abs(ng.x) > Math.abs(ng.y) && Math.abs(ng.x) > Math.abs(ng.z))
-                flags |= 0;
+                k = 0;
             else if (Math.abs(ng.y) > Math.abs(ng.z))
-                flags |= 1;
+                k = 1;
             else
-                flags |= 2;
+                k = 2;
             float ax, ay, bx, by, cx, cy;
-            switch (flags & 3) {
+            switch (k) {
                 case 0: {
                     nu = ng.y / ng.x;
                     nv = ng.z / ng.x;
@@ -470,42 +432,8 @@ public class Mesh implements PrimitiveList {
             cnd = (cx * ay - cy * ax) / det;
         }
 
-        protected int getTriangleNum() {
-            return flags >>> 2;
-        }
-
-        public BoundingBox getBounds() {
-            return Mesh.this.getBounds(3 * (flags >>> 2));
-        }
-
-        public float getBound(int i) {
-            int a, b, c, t = 3 * getTriangleNum();
-            if (Mesh.this.triangles == null) {
-                a = 3 * (t + 0);
-                b = 3 * (t + 1);
-                c = 3 * (t + 2);
-            } else {
-                a = 3 * Mesh.this.triangles[t + 0];
-                b = 3 * Mesh.this.triangles[t + 1];
-                c = 3 * Mesh.this.triangles[t + 2];
-            }
-            int axis = i >>> 1;
-            if ((i & 1) == 0)
-                return MathUtils.min(Mesh.this.points[a + axis], Mesh.this.points[b + axis], Mesh.this.points[c + axis]);
-            else
-                return MathUtils.max(Mesh.this.points[a + axis], Mesh.this.points[b + axis], Mesh.this.points[c + axis]);
-        }
-
-        public boolean intersects(BoundingBox box) {
-            return box.intersects(getBounds());
-        }
-
-        public void prepareShadingState(ShadingState state) {
-            Mesh.this.prepareShadingState(state);
-        }
-
-        public void intersect(Ray r, IntersectionState state) {
-            switch (flags & 3) {
+        void intersect(Ray r, int primID, IntersectionState state) {
+            switch (k) {
                 case 0: {
                     float det = 1.0f / (r.dx + nu * r.dy + nv * r.dz);
                     float t = (nd - r.ox - nu * r.oy - nv * r.oz) * det;
@@ -522,7 +450,7 @@ public class Mesh implements PrimitiveList {
                     if (u + v > 1.0f)
                         return;
                     r.setMax(t);
-                    state.setIntersection(this, flags >>> 2, u, v);
+                    state.setIntersection(primID, u, v);
                     return;
                 }
                 case 1: {
@@ -541,7 +469,7 @@ public class Mesh implements PrimitiveList {
                     if (u + v > 1.0f)
                         return;
                     r.setMax(t);
-                    state.setIntersection(this, flags >>> 2, u, v);
+                    state.setIntersection(primID, u, v);
                     return;
                 }
                 case 2: {
@@ -560,108 +488,9 @@ public class Mesh implements PrimitiveList {
                     if (u + v > 1.0f)
                         return;
                     r.setMax(t);
-                    state.setIntersection(this, flags >>> 2, u, v);
+                    state.setIntersection(primID, u, v);
                     return;
                 }
-            }
-        }
-    }
-
-    private static class SmallTriangle implements BoundedPrimitive {
-        private Mesh mesh;
-        private int t;
-
-        public SmallTriangle(Mesh mesh, int t) {
-            this.mesh = mesh;
-            this.t = 3 * t;
-        }
-
-        public BoundingBox getBounds() {
-            return mesh.getBounds(t);
-        }
-
-        public float getBound(int i) {
-            int a, b, c;
-            if (mesh.triangles == null) {
-                a = 3 * (t + 0);
-                b = 3 * (t + 1);
-                c = 3 * (t + 2);
-            } else {
-                a = 3 * mesh.triangles[t + 0];
-                b = 3 * mesh.triangles[t + 1];
-                c = 3 * mesh.triangles[t + 2];
-            }
-            int axis = i >>> 1;
-            if ((i & 1) == 0)
-                return MathUtils.min(mesh.points[a + axis], mesh.points[b + axis], mesh.points[c + axis]);
-            else
-                return MathUtils.max(mesh.points[a + axis], mesh.points[b + axis], mesh.points[c + axis]);
-        }
-
-        public boolean intersects(BoundingBox box) {
-            return box.intersects(getBounds());
-        }
-
-        public void prepareShadingState(ShadingState state) {
-            mesh.prepareShadingState(state);
-        }
-
-        public void intersect(Ray r, IntersectionState state) {
-            int a, b, c;
-            if (mesh.triangles == null) {
-                a = 3 * (t + 0);
-                b = 3 * (t + 1);
-                c = 3 * (t + 2);
-            } else {
-                a = 3 * mesh.triangles[t + 0];
-                b = 3 * mesh.triangles[t + 1];
-                c = 3 * mesh.triangles[t + 2];
-            }
-            double edge1x = mesh.points[b + 0] - mesh.points[a + 0];
-            double edge1y = mesh.points[b + 1] - mesh.points[a + 1];
-            double edge1z = mesh.points[b + 2] - mesh.points[a + 2];
-            double edge2x = mesh.points[c + 0] - mesh.points[a + 0];
-            double edge2y = mesh.points[c + 1] - mesh.points[a + 1];
-            double edge2z = mesh.points[c + 2] - mesh.points[a + 2];
-            double pvecx = r.dy * edge2z - r.dz * edge2y;
-            double pvecy = r.dz * edge2x - r.dx * edge2z;
-            double pvecz = r.dx * edge2y - r.dy * edge2x;
-            double qvecx, qvecy, qvecz;
-            double u, v;
-            double det = edge1x * pvecx + edge1y * pvecy + edge1z * pvecz;
-            if (det > 0) {
-                double tvecx = r.ox - mesh.points[a + 0];
-                double tvecy = r.oy - mesh.points[a + 1];
-                double tvecz = r.oz - mesh.points[a + 2];
-                u = (tvecx * pvecx + tvecy * pvecy + tvecz * pvecz);
-                if (u < 0.0 || u > det)
-                    return;
-                qvecx = tvecy * edge1z - tvecz * edge1y;
-                qvecy = tvecz * edge1x - tvecx * edge1z;
-                qvecz = tvecx * edge1y - tvecy * edge1x;
-                v = (r.dx * qvecx + r.dy * qvecy + r.dz * qvecz);
-                if (v < 0.0 || u + v > det)
-                    return;
-            } else if (det < 0) {
-                double tvecx = r.ox - mesh.points[a + 0];
-                double tvecy = r.oy - mesh.points[a + 1];
-                double tvecz = r.oz - mesh.points[a + 2];
-                u = (tvecx * pvecx + tvecy * pvecy + tvecz * pvecz);
-                if (u > 0.0 || u < det)
-                    return;
-                qvecx = tvecy * edge1z - tvecz * edge1y;
-                qvecy = tvecz * edge1x - tvecx * edge1z;
-                qvecz = tvecx * edge1y - tvecy * edge1x;
-                v = (r.dx * qvecx + r.dy * qvecy + r.dz * qvecz);
-                if (v > 0.0 || u + v < det)
-                    return;
-            } else
-                return;
-            double inv_det = 1.0 / det;
-            float t = (float) ((edge2x * qvecx + edge2y * qvecy + edge2z * qvecz) * inv_det);
-            if (r.isInside(t)) {
-                r.setMax(t);
-                state.setIntersection(this, this.t / 3, (float) (u * inv_det), (float) (v * inv_det));
             }
         }
     }

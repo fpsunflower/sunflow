@@ -57,8 +57,7 @@ public class Torus implements PrimitiveList {
     public void prepareShadingState(ShadingState state) {
         state.init();
         state.getRay().getPoint(state.getPoint());
-        // FIXME: get parent instance
-        Instance parent = (Instance) state.getObject();
+        Instance parent = state.getInstance();
         // get local point
         Point3 p = parent.transformWorldToObject(state.getPoint());
         // compute local normal

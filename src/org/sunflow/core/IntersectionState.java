@@ -3,7 +3,7 @@ package org.sunflow.core;
 public final class IntersectionState {
     private static final int MAX_STACK_SIZE = 64;
     float u, v;
-    Primitive object;
+    Instance instance;
     int id;
     StackNode[] stack;
     Instance current;
@@ -27,7 +27,7 @@ public final class IntersectionState {
     public final int getStackTop() {
         return current == null ? 0 : MAX_STACK_SIZE;
     }
-    
+
     /**
      * Checks to see if a hit has been recorded.
      * 
@@ -36,7 +36,7 @@ public final class IntersectionState {
      * @see #setIntersection(Primitive, float, float)
      */
     public final boolean hit() {
-        return object != null;
+        return instance != null;
     }
 
     /**
@@ -44,14 +44,12 @@ public final class IntersectionState {
      * are used to pinpoint the location on the surface if needed.
      * 
      * @param object reference to the object beeing intersected
-     * @param id primitive id of the intersected object
      * @param u u surface parameter of the intersection point
      * @param v v surface parameter of the intersection point
      * @see Primitive#intersect(Ray, IntersectionState)
      */
-    public final void setIntersection(Primitive object, int id, float u, float v) {
-        this.object = object;
-        this.id = id;
+    public final void setIntersection(Instance object, float u, float v) {
+        instance = object;
         this.u = u;
         this.v = v;
     }
@@ -66,7 +64,7 @@ public final class IntersectionState {
      * @param v v surface parameter of the intersection point
      */
     public final void setIntersection(int id, float u, float v) {
-        object = current;
+        instance = current;
         this.id = id;
         this.u = u;
         this.v = v;

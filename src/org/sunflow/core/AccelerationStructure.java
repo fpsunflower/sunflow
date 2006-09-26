@@ -1,6 +1,5 @@
 package org.sunflow.core;
 
-import org.sunflow.math.BoundingBox;
 
 public interface AccelerationStructure {
     /**
@@ -10,13 +9,6 @@ public interface AccelerationStructure {
      * @return
      */
     public boolean build(PrimitiveList primitives);
-
-    /**
-     * Get the bounding box of all enclosed primitives.
-     * 
-     * @return bounding box of all enclosed primitives
-     */
-    public BoundingBox getBounds();
 
     /**
      * Intersect the specified ray with the geometry in local space. The ray

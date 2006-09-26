@@ -814,8 +814,4 @@ public class KDTree implements AccelerationStructure {
             } while (true);
         }
     }
-
-    public BoundingBox getBounds() {
-        return bounds;
-    }
 }

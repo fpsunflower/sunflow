@@ -31,8 +31,7 @@ public class BanchoffSurface implements PrimitiveList {
     public void prepareShadingState(ShadingState state) {
         state.init();
         state.getRay().getPoint(state.getPoint());
-        // FIXME: get parent instance object
-        Instance parent = (Instance) state.getObject();
+        Instance parent = state.getInstance();
         Point3 n = parent.transformWorldToObject(state.getPoint());
         state.getNormal().set(n.x * (2 * n.x * n.x - 1), n.y * (2 * n.y * n.y - 1), n.z * (2 * n.z * n.z - 1));
         state.getNormal().normalize();

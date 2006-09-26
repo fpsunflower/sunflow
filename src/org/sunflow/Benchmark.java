@@ -8,6 +8,8 @@ import java.io.PrintStream;
 import javax.imageio.ImageIO;
 
 import org.sunflow.core.Display;
+import org.sunflow.core.Geometry;
+import org.sunflow.core.Instance;
 import org.sunflow.core.Shader;
 import org.sunflow.core.camera.PinholeCamera;
 import org.sunflow.core.display.FrameDisplay;
@@ -132,21 +134,20 @@ public class Benchmark extends SunflowAPI implements BenchmarkTest, UserInterfac
         float[] verts = new float[] { minX, minY, minZ, maxX, minY, minZ, maxX, minY, maxZ, minX, minY, maxZ, minX, maxY, minZ, maxX, maxY, minZ, maxX, maxY, maxZ, minX, maxY, maxZ, };
         int[] indices = new int[] { 0, 1, 2, 2, 3, 0, 4, 5, 6, 6, 7, 4, 1, 2, 5, 5, 6, 2, 2, 3, 6, 6, 7, 3, 0, 3, 4, 4, 7, 3 };
 
-        Mesh walls = new Mesh();
-        walls.points(verts);
-        walls.triangles(indices);
+        Mesh walls = new Mesh(verts, indices);
         walls.faceShaders(new byte[] { 0, 0, 0, 0, 1, 1, 0, 0, 2, 2 });
         Shader[] shaders = new Shader[3];
         shaders[0] = new DiffuseShader(grey);
         shaders[1] = new DiffuseShader(red);
         shaders[2] = new DiffuseShader(blue);
-        walls.shader(shaders);
-        mesh(walls);
 
-        MeshLight light = new MeshLight(emit, 16);
-        light.points(new float[] { -50, maxY - 1, -50, 50, maxY - 1, -50, 50, maxY - 1, 50, -50, maxY - 1, 50 });
-        light.triangles(new int[] { 0, 1, 2, 2, 3, 0 });
-        mesh(light);
+        Geometry geo = new Geometry(walls);
+        Instance instance = new Instance(shaders, null, geo);
+        instance(instance);
+
+        MeshLight light = new MeshLight(new float[] { -50, maxY - 1, -50, 50, maxY - 1, -50, 50, maxY - 1, 50, -50, maxY - 1, 50 }, new int[] { 0, 1, 2, 2, 3, 0 }, emit, 16);
+        //mesh(light);
+        // FIXME: add the meshlight to the scene
 
         // spheres
         shader("Glass", new GlassShader(1.6f, Color.WHITE));

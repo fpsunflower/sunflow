@@ -49,7 +49,7 @@ public class PathTracingGIEngine implements GIEngine {
             onb.transform(w);
             ShadingState temp = state.traceFinalGather(new Ray(state.getPoint(), w), i);
             if (temp != null) {
-                temp.getObject().prepareShadingState(temp);
+                temp.getInstance().prepareShadingState(temp);
                 if (temp.getShader() != null)
                     irr.add(temp.getShader().getRadiance(temp));
             }

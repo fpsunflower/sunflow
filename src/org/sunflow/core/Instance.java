@@ -5,13 +5,17 @@ import org.sunflow.math.Matrix4;
 import org.sunflow.math.Point3;
 import org.sunflow.math.Vector3;
 
-public class Instance implements BoundedPrimitive {
+public class Instance {
     private Matrix4 o2w;
     private Matrix4 w2o;
     private BoundingBox bounds;
     private Shader[] shaders;
     private Geometry geometry;
 
+    public Instance(Shader shader, Matrix4 o2w, Geometry geometry) {
+        this(new Shader[] { shader }, o2w, geometry);
+    }
+    
     public Instance(Shader[] shaders, Matrix4 o2w, Geometry geometry) {
         this.shaders = shaders;
         this.o2w = o2w;
@@ -25,16 +29,8 @@ public class Instance implements BoundedPrimitive {
         bounds = geometry.getWorldBounds(o2w);
     }
 
-    public float getBound(int i) {
-        return bounds.getBound(i);
-    }
-
     public BoundingBox getBounds() {
         return bounds;
-    }
-
-    public boolean intersects(BoundingBox box) {
-        return bounds.intersects(box);
     }
 
     public void intersect(Ray r, IntersectionState state) {

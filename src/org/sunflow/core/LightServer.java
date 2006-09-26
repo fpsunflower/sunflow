@@ -201,7 +201,7 @@ class LightServer {
     }
 
     void shadePhoton(ShadingState state, Color power) {
-        state.getObject().prepareShadingState(state);
+        state.getInstance().prepareShadingState(state);
         // figure out which shader to use
         Shader shader = shaderOverride;
         if (shader == null || !shaderOverridePhotons)
@@ -259,7 +259,7 @@ class LightServer {
     }
 
     Color shadeHit(ShadingState state) {
-        state.getObject().prepareShadingState(state);
+        state.getInstance().prepareShadingState(state);
         Shader shader = shaderOverride;
         if (shader == null)
             shader = state.getShader();

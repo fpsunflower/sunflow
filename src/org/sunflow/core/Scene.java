@@ -1,7 +1,5 @@
 package org.sunflow.core;
 
-import java.util.ArrayList;
-
 import org.sunflow.core.accel2.SimpleAccelerator;
 import org.sunflow.core.accel2.UniformGrid;
 import org.sunflow.core.display.FrameDisplay;
@@ -18,7 +16,7 @@ public class Scene {
     // scene storage
     private LightServer lightServer;
     private InstanceList instanceList;
-    private ArrayList<Primitive> primitives;
+    private InstanceList infiniteInstanceList;
     private Camera camera;
     private AccelerationStructure intAccel;
 
@@ -41,7 +39,7 @@ public class Scene {
     public Scene() {
         lightServer = new LightServer(this);
         instanceList = new InstanceList();
-        primitives = new ArrayList<Primitive>();
+        infiniteInstanceList = new InstanceList();
         intAccel = new UniformGrid();
 
         camera = null;
@@ -99,22 +97,17 @@ public class Scene {
     }
 
     /**
-     * Adds an object to the scene.
-     * 
-     * @param prim object to be added to the scene
-     */
-    public void addPrimitive(Primitive prim) {
-        primitives.add(prim);
-    }
-
-    /**
      * Add an object to the scene.
      * 
      * @param prim object to be added to the scene
      */
     public void addInstance(Instance instance) {
-        instanceList.add(instance);
-        changedGeometry = true;
+        if (instance.getBounds() == null)
+            infiniteInstanceList.add(instance);
+        else {
+            instanceList.add(instance);
+            changedGeometry = true;
+        }
     }
 
     /**
@@ -187,15 +180,17 @@ public class Scene {
     }
 
     public BoundingBox getBounds() {
-        return intAccel.getBounds();
+        return instanceList.getWorldBounds(null);
     }
 
     void trace(Ray r, IntersectionState state) {
         // reset object
-        state.object = null;
+        state.instance = null;
         state.current = null;
-        for (Primitive p : primitives)
-            p.intersect(r, state);
+        for (int i = 0; i < infiniteInstanceList.getNumPrimitives(); i++)
+            infiniteInstanceList.intersectPrimitive(r, i, state);
+        // reset for next accel structure
+        state.current = null;
         intAccel.intersect(r, state);
     }
 
@@ -215,17 +210,18 @@ public class Scene {
         imageWidth = MathUtils.clamp(imageWidth, 1, 1 << 14);
         imageHeight = MathUtils.clamp(imageHeight, 1, 1 << 14);
         UI.printInfo("[SCN] Scene stats:");
-        UI.printInfo("[SCN]   * Infinite Primitives: %d", primitives.size());
+        UI.printInfo("[SCN]   * Infinite Primitives: %d", infiniteInstanceList.getNumPrimitives());
         UI.printInfo("[SCN]   * Instances:           %d", instanceList.getNumPrimitives());
         if (changedGeometry) {
             instanceList.trim();
-            // use special case if we have only one instance in the scene 
+            // use special case if we have only one instance in the scene
             if (instanceList.getNumPrimitives() == 1)
                 intAccel = new SimpleAccelerator();
             if (!intAccel.build(instanceList))
                 return;
             changedGeometry = false;
         }
+        infiniteInstanceList.trim();
         UI.printInfo("[SCN]   * Scene bounds:        %s", getBounds());
         UI.printInfo("[SCN]   * Scene center:        %s", getBounds().getCenter());
         UI.printInfo("[SCN]   * Scene diameter:      %.2f", getBounds().getExtents().length());

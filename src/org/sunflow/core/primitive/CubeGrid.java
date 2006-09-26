@@ -1,28 +1,27 @@
 package org.sunflow.core.primitive;
 
-import org.sunflow.core.BoundedPrimitive;
+import org.sunflow.core.Instance;
 import org.sunflow.core.IntersectionState;
+import org.sunflow.core.PrimitiveList;
 import org.sunflow.core.Ray;
-import org.sunflow.core.Shader;
 import org.sunflow.core.ShadingState;
 import org.sunflow.math.BoundingBox;
+import org.sunflow.math.Matrix4;
 import org.sunflow.math.OrthoNormalBasis;
 import org.sunflow.math.Vector3;
 
-public abstract class CubeGrid implements BoundedPrimitive {
+public abstract class CubeGrid implements PrimitiveList {
     private int nx, ny, nz;
     private float voxelwx, voxelwy, voxelwz;
     private float invVoxelwx, invVoxelwy, invVoxelwz;
     private BoundingBox bounds;
-    private Shader shader;
 
-    protected CubeGrid(BoundingBox bounds, Shader shader) {
-        this(1, 1, 1, bounds, shader);
+    protected CubeGrid() {
+        this(1, 1, 1);
     }
 
-    protected CubeGrid(int nx, int ny, int nz, BoundingBox bounds, Shader shader) {
-        this.bounds = bounds;
-        this.shader = shader;
+    protected CubeGrid(int nx, int ny, int nz) {
+        this.bounds = new BoundingBox(1);
         setSize(nx, ny, nz);
     }
 
@@ -30,10 +29,9 @@ public abstract class CubeGrid implements BoundedPrimitive {
         this.nx = nx;
         this.ny = ny;
         this.nz = nz;
-        Vector3 w = bounds.getExtents();
-        voxelwx = w.x / nx;
-        voxelwy = w.y / ny;
-        voxelwz = w.z / nz;
+        voxelwx = 2.0f / nx;
+        voxelwy = 2.0f / ny;
+        voxelwz = 2.0f / nz;
         invVoxelwx = 1 / voxelwx;
         invVoxelwy = 1 / voxelwy;
         invVoxelwz = 1 / voxelwz;
@@ -45,43 +43,41 @@ public abstract class CubeGrid implements BoundedPrimitive {
         return bounds;
     }
 
-    public boolean intersects(BoundingBox box) {
-        return box.intersects(bounds);
-    }
-
     public void prepareShadingState(ShadingState state) {
         state.init();
         state.getRay().getPoint(state.getPoint());
-        int n = (int) state.getU();
-        switch (n) {
+        Instance parent = state.getInstance();
+        Vector3 normal;
+        switch (state.getPrimitiveID()) {
             case 0:
-                state.getNormal().set(new Vector3(-1, 0, 0));
+                normal = new Vector3(-1, 0, 0);
                 break;
             case 1:
-                state.getNormal().set(new Vector3(1, 0, 0));
+                normal = new Vector3(1, 0, 0);
                 break;
             case 2:
-                state.getNormal().set(new Vector3(0, -1, 0));
+                normal = new Vector3(0, -1, 0);
                 break;
             case 3:
-                state.getNormal().set(new Vector3(0, 1, 0));
+                normal = new Vector3(0, 1, 0);
                 break;
             case 4:
-                state.getNormal().set(new Vector3(0, 0, -1));
+                normal = new Vector3(0, 0, -1);
                 break;
             case 5:
-                state.getNormal().set(new Vector3(0, 0, 1));
+                normal = new Vector3(0, 0, 1);
                 break;
             default:
-                state.getNormal().set(new Vector3(0, 0, 0));
+                normal = new Vector3(0, 0, 0);
                 break;
         }
+        state.getNormal().set(parent.transformNormalObjectToWorld(normal));
         state.getGeoNormal().set(state.getNormal());
         state.setBasis(OrthoNormalBasis.makeFromW(state.getNormal()));
-        state.setShader(shader);
+        state.setShader(parent.getShader(0));
     }
 
-    public void intersect(Ray r, IntersectionState state) {
+    public void intersectPrimitive(Ray r, int primID, IntersectionState state) {
         float intervalMin = r.getMin();
         float intervalMax = r.getMax();
         float orgX = r.ox;
@@ -91,8 +87,8 @@ public abstract class CubeGrid implements BoundedPrimitive {
         float dirY = r.dy, invDirY = 1 / dirY;
         float dirZ = r.dz, invDirZ = 1 / dirZ;
         float t1, t2;
-        t1 = (bounds.getMinimum().x - orgX) * invDirX;
-        t2 = (bounds.getMaximum().x - orgX) * invDirX;
+        t1 = (-1 - orgX) * invDirX;
+        t2 = (+1 - orgX) * invDirX;
         int curr = -1;
         if (invDirX > 0) {
             if (t1 > intervalMin) {
@@ -113,8 +109,8 @@ public abstract class CubeGrid implements BoundedPrimitive {
             if (intervalMin > intervalMax)
                 return;
         }
-        t1 = (bounds.getMinimum().y - orgY) * invDirY;
-        t2 = (bounds.getMaximum().y - orgY) * invDirY;
+        t1 = (-1 - orgY) * invDirY;
+        t2 = (+1 - orgY) * invDirY;
         if (invDirY > 0) {
             if (t1 > intervalMin) {
                 intervalMin = t1;
@@ -134,8 +130,8 @@ public abstract class CubeGrid implements BoundedPrimitive {
             if (intervalMin > intervalMax)
                 return;
         }
-        t1 = (bounds.getMinimum().z - orgZ) * invDirZ;
-        t2 = (bounds.getMaximum().z - orgZ) * invDirZ;
+        t1 = (-1 - orgZ) * invDirZ;
+        t2 = (+1 - orgZ) * invDirZ;
         if (invDirZ > 0) {
             if (t1 > intervalMin) {
                 intervalMin = t1;
@@ -167,7 +163,7 @@ public abstract class CubeGrid implements BoundedPrimitive {
         float deltaX, deltaY, deltaZ;
         float tnextX, tnextY, tnextZ;
         // stepping factors along X
-        indxX = (int) ((orgX - bounds.getMinimum().x) * invVoxelwx);
+        indxX = (int) ((orgX + 1) * invVoxelwx);
         if (indxX < 0)
             indxX = 0;
         else if (indxX >= nx)
@@ -181,15 +177,15 @@ public abstract class CubeGrid implements BoundedPrimitive {
             stepX = 1;
             stopX = nx;
             deltaX = voxelwx * invDirX;
-            tnextX = intervalMin + ((indxX + 1) * voxelwx + bounds.getMinimum().x - orgX) * invDirX;
+            tnextX = intervalMin + ((indxX + 1) * voxelwx - 1 - orgX) * invDirX;
         } else {
             stepX = -1;
             stopX = -1;
             deltaX = -voxelwx * invDirX;
-            tnextX = intervalMin + (indxX * voxelwx + bounds.getMinimum().x - orgX) * invDirX;
+            tnextX = intervalMin + (indxX * voxelwx - 1 - orgX) * invDirX;
         }
         // stepping factors along Y
-        indxY = (int) ((orgY - bounds.getMinimum().y) * invVoxelwy);
+        indxY = (int) ((orgY + 1) * invVoxelwy);
         if (indxY < 0)
             indxY = 0;
         else if (indxY >= ny)
@@ -203,15 +199,15 @@ public abstract class CubeGrid implements BoundedPrimitive {
             stepY = 1;
             stopY = ny;
             deltaY = voxelwy * invDirY;
-            tnextY = intervalMin + ((indxY + 1) * voxelwy + bounds.getMinimum().y - orgY) * invDirY;
+            tnextY = intervalMin + ((indxY + 1) * voxelwy - 1 - orgY) * invDirY;
         } else {
             stepY = -1;
             stopY = -1;
             deltaY = -voxelwy * invDirY;
-            tnextY = intervalMin + (indxY * voxelwy + bounds.getMinimum().y - orgY) * invDirY;
+            tnextY = intervalMin + (indxY * voxelwy - 1 - orgY) * invDirY;
         }
         // stepping factors along Z
-        indxZ = (int) ((orgZ - bounds.getMinimum().z) * invVoxelwz);
+        indxZ = (int) ((orgZ + 1) * invVoxelwz);
         if (indxZ < 0)
             indxZ = 0;
         else if (indxZ >= nz)
@@ -225,12 +221,12 @@ public abstract class CubeGrid implements BoundedPrimitive {
             stepZ = 1;
             stopZ = nz;
             deltaZ = voxelwz * invDirZ;
-            tnextZ = intervalMin + ((indxZ + 1) * voxelwz + bounds.getMinimum().z - orgZ) * invDirZ;
+            tnextZ = intervalMin + ((indxZ + 1) * voxelwz - 1 - orgZ) * invDirZ;
         } else {
             stepZ = -1;
             stopZ = -1;
             deltaZ = -voxelwz * invDirZ;
-            tnextZ = intervalMin + (indxZ * voxelwz + bounds.getMinimum().z - orgZ) * invDirZ;
+            tnextZ = intervalMin + (indxZ * voxelwz - 1 - orgZ) * invDirZ;
         }
         // are we starting inside the cube
         boolean isInside = inside(indxX, indxY, indxZ) && bounds.contains(r.ox, r.oy, r.oz);
@@ -242,7 +238,7 @@ public abstract class CubeGrid implements BoundedPrimitive {
                 // if we are inside, the last bit needs to be flipped
                 if (isInside)
                     curr ^= 1;
-                state.setIntersection(this, 0, curr, 0);
+                state.setIntersection(curr, 0, 0);
                 return;
             }
             if (tnextX < tnextY && tnextX < tnextZ) {
@@ -274,5 +270,19 @@ public abstract class CubeGrid implements BoundedPrimitive {
                 tnextZ += deltaZ;
             }
         }
+    }
+
+    public int getNumPrimitives() {
+        return 1;
+    }
+
+    public float getPrimitiveBound(int primID, int i) {
+        return ((i & 1) == 0) ? -1 : 1;
+    }
+
+    public BoundingBox getWorldBounds(Matrix4 o2w) {
+        if (o2w == null)
+            return bounds;
+        return o2w.transform(bounds);
     }
 }

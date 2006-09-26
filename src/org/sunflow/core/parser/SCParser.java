@@ -195,7 +195,9 @@ public class SCParser implements SceneParser {
     private void parseBackgroundBlock(SunflowAPI api) throws IOException, ParserException {
         p.checkNextToken("{");
         p.checkNextToken("color");
-        api.primitive(new Background(parseColor()));
+        Color bg = parseColor();
+        Geometry geo = new Geometry(new Background());
+        api.instance(new Instance(new ConstantShader(bg), null, geo));
         p.checkNextToken("}");
     }
 
@@ -630,7 +632,6 @@ public class SCParser implements SceneParser {
             UI.printWarning("[API] Deprecated object type: mesh");
             p.checkNextToken("name");
             UI.printInfo("[API] Reading mesh: %s ...", p.getNextToken());
-            Mesh mesh = new Mesh();
             int numVertices = p.getNextInt();
             int numTriangles = p.getNextInt();
             float[] points = new float[numVertices * 3];
@@ -647,9 +648,6 @@ public class SCParser implements SceneParser {
                 uvs[2 * i + 0] = p.getNextFloat();
                 uvs[2 * i + 1] = p.getNextFloat();
             }
-            mesh.points(points);
-            mesh.normals(Mesh.InterpType.VERTEX, normals);
-            mesh.uvs(Mesh.InterpType.VERTEX, uvs);
             int[] triangles = new int[numTriangles * 3];
             for (int i = 0; i < numTriangles; i++) {
                 p.checkNextToken("t");
@@ -657,14 +655,16 @@ public class SCParser implements SceneParser {
                 triangles[i * 3 + 1] = p.getNextInt();
                 triangles[i * 3 + 2] = p.getNextInt();
             }
-            mesh.shader(shaders[0]);
-            mesh.triangles(triangles);
-            api.mesh(mesh);
+            Mesh mesh = new Mesh(points, triangles);
+            mesh.normals(Mesh.InterpType.VERTEX, normals);
+            mesh.uvs(Mesh.InterpType.VERTEX, uvs);
+            Geometry geo = new Geometry(mesh);
+            Instance instance = new Instance(shaders, null, geo);
+            api.instance(instance);
         } else if (p.peekNextToken("flat-mesh")) {
             UI.printWarning("[API] Deprecated object type: flat-mesh");
             p.checkNextToken("name");
             UI.printInfo("[API] Reading flat mesh: %s ...", p.getNextToken());
-            Mesh mesh = new Mesh();
             int numVertices = p.getNextInt();
             int numTriangles = p.getNextInt();
             float[] points = new float[numVertices * 3];
@@ -680,9 +680,6 @@ public class SCParser implements SceneParser {
                 uvs[2 * i + 0] = p.getNextFloat();
                 uvs[2 * i + 1] = p.getNextFloat();
             }
-            mesh.points(points);
-            mesh.normals(Mesh.InterpType.NONE, null);
-            mesh.uvs(Mesh.InterpType.VERTEX, uvs);
             int[] triangles = new int[numTriangles * 3];
             for (int i = 0; i < numTriangles; i++) {
                 p.checkNextToken("t");
@@ -690,9 +687,12 @@ public class SCParser implements SceneParser {
                 triangles[i * 3 + 1] = p.getNextInt();
                 triangles[i * 3 + 2] = p.getNextInt();
             }
-            mesh.triangles(triangles);
-            mesh.shader(shaders[0]);
-            api.mesh(mesh);
+            Mesh mesh = new Mesh(points, triangles);
+            mesh.normals(Mesh.InterpType.NONE, null);
+            mesh.uvs(Mesh.InterpType.VERTEX, uvs);
+            Geometry geo = new Geometry(mesh);
+            Instance instance = new Instance(shaders, null, geo);
+            api.instance(instance);
         } else if (p.peekNextToken("sphere")) {
             UI.printInfo("[API] Reading sphere ...");
             if (p.peekNextToken("c")) {
@@ -723,17 +723,21 @@ public class SCParser implements SceneParser {
             api.instance(new Instance(shaders, m, geo));
         } else if (p.peekNextToken("plane")) {
             UI.printInfo("[API] Reading plane ...");
+            Plane plane = null;
             p.checkNextToken("p");
             Point3 p0 = parsePoint();
-            String t = p.getNextToken();
-            if (t.equals("n")) {
+            if (p.peekNextToken("n")) {
                 Vector3 n = parseVector();
-                api.primitive(new Plane(shaders[0], p0, n));
-            } else if (t.equals("p")) {
+                plane = new Plane(p0, n);
+            } else if (p.peekNextToken("p")) {
                 Point3 pu = parsePoint();
                 p.checkNextToken("p");
                 Point3 pv = parsePoint();
-                api.primitive(new Plane(shaders[0], p0, pu, pv));
+                plane = new Plane(p0, pu, pv);
+            }
+            if (plane != null) {
+                Geometry geo = new Geometry(plane);
+                api.instance(new Instance(shaders, null, geo));
             }
         } else if (p.peekNextToken("cornellbox")) {
             UI.printInfo("[API] Reading cornell box ...");
@@ -759,26 +763,26 @@ public class SCParser implements SceneParser {
             else
                 UI.printWarning("[API] Samples keyword not found - defaulting to %d", samples);
             CornellBox box = new CornellBox(c0, c1, left, right, top, bottom, back, emit, samples);
-            api.primitive(box);
+            Geometry geo = new Geometry(box);
+            api.instance(new Instance((Shader) null, null, geo));
             api.light(box);
         } else if (p.peekNextToken("generic-mesh")) {
             p.checkNextToken("name");
             UI.printInfo("[API] Reading generic mesh: %s ... ", p.getNextToken());
-            Mesh mesh = new Mesh();
             // parse vertices
             p.checkNextToken("points");
             int np = p.getNextInt();
             float[] points = new float[np * 3];
             for (int i = 0; i < points.length; i++)
                 points[i] = p.getNextFloat();
-            mesh.points(points);
             // parse triangle indices
             p.checkNextToken("triangles");
             int nt = p.getNextInt();
             int[] triangles = new int[nt * 3];
             for (int i = 0; i < triangles.length; i++)
                 triangles[i] = p.getNextInt();
-            mesh.triangles(triangles);
+            // create basic mesh
+            Mesh mesh = new Mesh(points, triangles);
             // parse normals
             p.checkNextToken("normals");
             if (p.peekNextToken("vertex")) {
@@ -819,8 +823,9 @@ public class SCParser implements SceneParser {
                     faceShaders[i] = (byte) p.getNextInt();
                 mesh.faceShaders(faceShaders);
             }
-            mesh.shader(shaders);
-            api.mesh(mesh);
+            Geometry geo = new Geometry(mesh);
+            Instance instance = new Instance(shaders, null, geo);
+            api.instance(instance);
         } else
             UI.printWarning("[API] Unrecognized object type: %s", p.getNextToken());
         p.checkNextToken("}");
@@ -840,7 +845,6 @@ public class SCParser implements SceneParser {
                 samples = p.getNextInt();
             else
                 UI.printWarning("[API] Samples keyword not found - defaulting to %d", samples);
-            MeshLight mesh = new MeshLight(e, samples);
             int numVertices = p.getNextInt();
             int numTriangles = p.getNextInt();
             float[] points = new float[3 * numVertices];
@@ -857,15 +861,15 @@ public class SCParser implements SceneParser {
                 p.getNextFloat();
                 p.getNextFloat();
             }
-            mesh.points(points);
             for (int i = 0; i < numTriangles; i++) {
                 p.checkNextToken("t");
                 triangles[3 * i + 0] = p.getNextInt();
                 triangles[3 * i + 1] = p.getNextInt();
                 triangles[3 * i + 2] = p.getNextInt();
             }
-            mesh.triangles(triangles);
-            api.mesh(mesh);
+            MeshLight mesh = new MeshLight(points, triangles, e, samples);
+            // FIXME: do something with the mesh light
+            // api.mesh(mesh);
         } else if (p.peekNextToken("point")) {
             UI.printInfo("[API] Reading point light ...");
             Color pow;
@@ -917,7 +921,8 @@ public class SCParser implements SceneParser {
                 UI.printWarning("[API] Samples keyword not found - defaulting to %d", samples);
             ImageBasedLight i = new ImageBasedLight(img, c, u, samples, lock);
             api.light(i);
-            api.primitive(i);
+            // FIXME: add primitive
+            //api.primitive(i);
         } else if (p.peekNextToken("meshlight")) {
             p.checkNextToken("name");
             UI.printInfo("[API] Reading meshlight: %s ...", p.getNextToken());
@@ -933,22 +938,21 @@ public class SCParser implements SceneParser {
                 samples = p.getNextInt();
             else
                 UI.printWarning("[API] Samples keyword not found - defaulting to %d", samples);
-            MeshLight mesh = new MeshLight(e, samples);
             // parse vertices
             p.checkNextToken("points");
             int np = p.getNextInt();
             float[] points = new float[np * 3];
             for (int i = 0; i < points.length; i++)
                 points[i] = p.getNextFloat();
-            mesh.points(points);
             // parse triangle indices
             p.checkNextToken("triangles");
             int nt = p.getNextInt();
             int[] triangles = new int[nt * 3];
             for (int i = 0; i < triangles.length; i++)
                 triangles[i] = p.getNextInt();
-            mesh.triangles(triangles);
-            api.mesh(mesh);
+            MeshLight mesh = new MeshLight(points, triangles, e, samples);
+            // FIXME: add the light to the scene
+            // api.mesh(mesh);
         } else
             UI.printWarning("[API] Unrecognized object type: %s", p.getNextToken());
         p.checkNextToken("}");
