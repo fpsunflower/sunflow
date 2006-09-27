@@ -47,9 +47,21 @@ public class MeshLight extends Mesh implements Shader {
 
         TriangleLight(int tri) {
             tri3 = 3 * tri;
-            Point3 v0p = getPoint(triangles[3 * tri + 0]);
-            Point3 v1p = getPoint(triangles[3 * tri + 1]);
-            Point3 v2p = getPoint(triangles[3 * tri + 2]);
+            int a, b, c;
+            if (triangles == null) {
+                // implicit indexing
+                a = tri3 + 0;
+                b = tri3 + 1;
+                c = tri3 + 2;
+            } else {
+                // explicit indexing
+                a = triangles[tri3 + 0];
+                b = triangles[tri3 + 1];
+                c = triangles[tri3 + 2];
+            }
+            Point3 v0p = getPoint(a);
+            Point3 v1p = getPoint(b);
+            Point3 v2p = getPoint(c);
             ng = Vector3.cross(Point3.sub(v1p, v0p, new Vector3()), Point3.sub(v2p, v0p, new Vector3()), new Vector3());
             area = 0.5f * ng.length();
             ng.normalize();
@@ -67,15 +79,27 @@ public class MeshLight extends Mesh implements Shader {
             Point3 p = state.getPoint();
             Vector3 n = state.getNormal();
             Vector3 sub = new Vector3();
-            Point3 v0p = getPoint(triangles[tri3 + 0]);
+            int a, b, c;
+            if (triangles == null) {
+                // implicit indexing
+                a = tri3 + 0;
+                b = tri3 + 1;
+                c = tri3 + 2;
+            } else {
+                // explicit indexing
+                a = triangles[tri3 + 0];
+                b = triangles[tri3 + 1];
+                c = triangles[tri3 + 2];
+            }
+            Point3 v0p = getPoint(a);
             Point3.sub(v0p, p, sub);
             if ((Vector3.dot(sub, n) > 0.0) || (Vector3.dot(sub, ng) < 0.0))
                 return true;
-            Point3 v1p = getPoint(triangles[tri3 + 1]);
+            Point3 v1p = getPoint(b);
             Point3.sub(v1p, p, sub);
             if ((Vector3.dot(sub, n) > 0.0) || (Vector3.dot(sub, ng) < 0.0))
                 return true;
-            Point3 v2p = getPoint(triangles[tri3 + 2]);
+            Point3 v2p = getPoint(c);
             Point3.sub(v2p, p, sub);
             if ((Vector3.dot(sub, n) > 0.0) || (Vector3.dot(sub, ng) < 0.0))
                 return true;
@@ -93,9 +117,21 @@ public class MeshLight extends Mesh implements Shader {
             float w = 1 - u - v;
 
             Point3 p = new Point3();
-            int index0 = 3 * triangles[tri3 + 0];
-            int index1 = 3 * triangles[tri3 + 1];
-            int index2 = 3 * triangles[tri3 + 2];
+            int a, b, c;
+            if (triangles == null) {
+                // implicit indexing
+                a = tri3 + 0;
+                b = tri3 + 1;
+                c = tri3 + 2;
+            } else {
+                // explicit indexing
+                a = triangles[tri3 + 0];
+                b = triangles[tri3 + 1];
+                c = triangles[tri3 + 2];
+            }
+            int index0 = 3 * a;
+            int index1 = 3 * b;
+            int index2 = 3 * c;
             p.x = w * points[index0 + 0] + u * points[index1 + 0] + v * points[index2 + 0];
             p.y = w * points[index0 + 1] + u * points[index1 + 1] + v * points[index2 + 1];
             p.z = w * points[index0 + 2] + u * points[index1 + 2] + v * points[index2 + 2];
@@ -128,9 +164,21 @@ public class MeshLight extends Mesh implements Shader {
             float u = (float) (randY2 * s);
             float v = (float) (1 - s);
             float w = 1 - u - v;
-            int index0 = 3 * triangles[tri3 + 0];
-            int index1 = 3 * triangles[tri3 + 1];
-            int index2 = 3 * triangles[tri3 + 2];
+            int a, b, c;
+            if (triangles == null) {
+                // implicit indexing
+                a = tri3 + 0;
+                b = tri3 + 1;
+                c = tri3 + 2;
+            } else {
+                // explicit indexing
+                a = triangles[tri3 + 0];
+                b = triangles[tri3 + 1];
+                c = triangles[tri3 + 2];
+            }
+            int index0 = 3 * a;
+            int index1 = 3 * b;
+            int index2 = 3 * c;
             p.x = w * points[index0 + 0] + u * points[index1 + 0] + v * points[index2 + 0];
             p.y = w * points[index0 + 1] + u * points[index1 + 1] + v * points[index2 + 1];
             p.z = w * points[index0 + 2] + u * points[index1 + 2] + v * points[index2 + 2];
