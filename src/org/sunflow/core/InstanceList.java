@@ -54,6 +54,10 @@ final class InstanceList implements PrimitiveList {
         return n;
     }
 
+    public final int getNumPrimitives(int primID) {
+        return instances[primID].getNumPrimitives();
+    }
+
     public final void prepareShadingState(ShadingState state) {
         state.getInstance().prepareShadingState(state);
     }

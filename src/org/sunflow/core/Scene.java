@@ -102,11 +102,17 @@ public class Scene {
      * @param prim object to be added to the scene
      */
     public void addInstance(Instance instance) {
-        if (instance.getBounds() == null)
+        if (instance.getBounds() == null) {
+            // null bounds means this primitive is infinite and should be placed
+            // on a seperate list for intersection
             infiniteInstanceList.add(instance);
-        else {
-            instanceList.add(instance);
-            changedGeometry = true;
+        } else {
+            if (instance.getBounds().isEmpty())
+                UI.printWarning("[API] Instance has an empty bounding box - ignoring.");
+            else {
+                instanceList.add(instance);
+                changedGeometry = true;
+            }
         }
     }
 
@@ -209,9 +215,15 @@ public class Scene {
         // limit resolution to 16k
         imageWidth = MathUtils.clamp(imageWidth, 1, 1 << 14);
         imageHeight = MathUtils.clamp(imageHeight, 1, 1 << 14);
+        
+        // count scene primitives
+        long numPrimitives = 0;
+        for (int i = 0; i < instanceList.getNumPrimitives(); i++)
+            numPrimitives += instanceList.getNumPrimitives(i);
         UI.printInfo("[SCN] Scene stats:");
-        UI.printInfo("[SCN]   * Infinite Primitives: %d", infiniteInstanceList.getNumPrimitives());
+        UI.printInfo("[SCN]   * Infinite instances:  %d", infiniteInstanceList.getNumPrimitives());
         UI.printInfo("[SCN]   * Instances:           %d", instanceList.getNumPrimitives());
+        UI.printInfo("[SCN]   * Primitives:          %d", numPrimitives);
         if (changedGeometry) {
             instanceList.trim();
             // use special case if we have only one instance in the scene

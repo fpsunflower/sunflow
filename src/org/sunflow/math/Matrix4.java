@@ -227,6 +227,8 @@ public final class Matrix4 {
      *         b
      */
     public final BoundingBox transform(BoundingBox b) {
+        if (b.isEmpty())
+            return new BoundingBox();
         // special case extreme corners
         BoundingBox rb = new BoundingBox(transformP(b.getMinimum()));
         rb.include(transformP(b.getMaximum()));

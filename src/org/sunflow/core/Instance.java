@@ -15,7 +15,7 @@ public class Instance {
     public Instance(Shader shader, Matrix4 o2w, Geometry geometry) {
         this(new Shader[] { shader }, o2w, geometry);
     }
-    
+
     public Instance(Shader[] shaders, Matrix4 o2w, Geometry geometry) {
         this.shaders = shaders;
         this.o2w = o2w;
@@ -31,6 +31,10 @@ public class Instance {
 
     public BoundingBox getBounds() {
         return bounds;
+    }
+
+    public int getNumPrimitives() {
+        return geometry.getNumPrimitives();
     }
 
     public void intersect(Ray r, IntersectionState state) {
