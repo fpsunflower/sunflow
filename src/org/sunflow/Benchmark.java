@@ -146,8 +146,7 @@ public class Benchmark extends SunflowAPI implements BenchmarkTest, UserInterfac
         instance(instance);
 
         MeshLight light = new MeshLight(new float[] { -50, maxY - 1, -50, 50, maxY - 1, -50, 50, maxY - 1, 50, -50, maxY - 1, 50 }, new int[] { 0, 1, 2, 2, 3, 0 }, emit, 16);
-        //mesh(light);
-        // FIXME: add the meshlight to the scene
+        light.init(this);
 
         // spheres
         shader("Glass", new GlassShader(1.6f, Color.WHITE));

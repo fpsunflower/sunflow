@@ -43,8 +43,7 @@ import org.sunflow.SunflowAPI;
 import org.sunflow.core.Display;
 import org.sunflow.core.Shader;
 import org.sunflow.core.TextureCache;
-import org.sunflow.core.accel.KDTree;
-import org.sunflow.core.accel.KDTreeOld;
+import org.sunflow.core.accel2.KDTree;
 import org.sunflow.core.display.FileDisplay;
 import org.sunflow.core.display.FrameDisplay;
 import org.sunflow.core.display.OpenExrDisplay;
@@ -201,7 +200,6 @@ public class SunflowGUI extends javax.swing.JFrame implements UserInterface {
                     i++;
                 } else if (args[i].equals("-dumpkd")) {
                     KDTree.setDumpMode(true, "kdtree");
-                    KDTreeOld.setDumpMode(true, "kdtree");
                     i++;
                 } else if (args[i].equals("-buildonly")) {
                     noRender = true;

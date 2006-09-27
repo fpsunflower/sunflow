@@ -1,6 +1,8 @@
 package org.sunflow.core.light;
 
 import org.sunflow.SunflowAPI;
+import org.sunflow.core.Geometry;
+import org.sunflow.core.Instance;
 import org.sunflow.core.LightSample;
 import org.sunflow.core.LightSource;
 import org.sunflow.core.Ray;
@@ -27,6 +29,7 @@ public class MeshLight extends Mesh implements Shader {
         if (points == null)
             UI.printWarning("[TRI] Incomplete mesh - cannot create lights");
         else {
+            api.instance(new Instance(this, null, new Geometry(this)));
             // the shader does not require normals or texture coords
             normals(InterpType.NONE, null);
             uvs(InterpType.NONE, null);

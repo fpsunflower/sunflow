@@ -1,9 +1,12 @@
 package org.sunflow.core.light;
 
+import org.sunflow.SunflowAPI;
+import org.sunflow.core.Geometry;
+import org.sunflow.core.Instance;
 import org.sunflow.core.IntersectionState;
 import org.sunflow.core.LightSample;
 import org.sunflow.core.LightSource;
-import org.sunflow.core.Primitive;
+import org.sunflow.core.PrimitiveList;
 import org.sunflow.core.Ray;
 import org.sunflow.core.Shader;
 import org.sunflow.core.ShadingState;
@@ -11,12 +14,14 @@ import org.sunflow.core.Texture;
 import org.sunflow.core.TextureCache;
 import org.sunflow.image.Bitmap;
 import org.sunflow.image.Color;
+import org.sunflow.math.BoundingBox;
+import org.sunflow.math.Matrix4;
 import org.sunflow.math.OrthoNormalBasis;
 import org.sunflow.math.Point3;
 import org.sunflow.math.QMC;
 import org.sunflow.math.Vector3;
 
-public class ImageBasedLight implements Primitive, LightSource, Shader {
+public class ImageBasedLight implements PrimitiveList, LightSource, Shader {
     private Texture texture;
     private OrthoNormalBasis basis;
     private int numSamples;
@@ -101,15 +106,33 @@ public class ImageBasedLight implements Primitive, LightSource, Shader {
             imageHistogram = null;
         }
     }
+    
+    public void init(SunflowAPI api) {
+        // register this object with the api properly
+        api.instance(new Instance(this, null, new Geometry(this)));
+        api.light(this);
+    }
 
     public void prepareShadingState(ShadingState state) {
         if (state.includeLights())
             state.setShader(this);
     }
 
-    public void intersect(Ray r, IntersectionState state) {
+    public void intersectPrimitive(Ray r, int primID, IntersectionState state) {
         if (r.getMax() == Float.POSITIVE_INFINITY)
-            state.setIntersection(this, 0, 0, 0);
+            state.setIntersection(0, 0, 0);
+    }
+
+    public int getNumPrimitives() {
+        return 1;
+    }
+
+    public float getPrimitiveBound(int primID, int i) {
+        return 0;
+    }
+
+    public BoundingBox getWorldBounds(Matrix4 o2w) {
+        return null;
     }
 
     public int getNumSamples() {

@@ -868,8 +868,7 @@ public class SCParser implements SceneParser {
                 triangles[3 * i + 2] = p.getNextInt();
             }
             MeshLight mesh = new MeshLight(points, triangles, e, samples);
-            // FIXME: do something with the mesh light
-            // api.mesh(mesh);
+            mesh.init(api);
         } else if (p.peekNextToken("point")) {
             UI.printInfo("[API] Reading point light ...");
             Color pow;
@@ -919,10 +918,8 @@ public class SCParser implements SceneParser {
                 samples = p.getNextInt();
             else
                 UI.printWarning("[API] Samples keyword not found - defaulting to %d", samples);
-            ImageBasedLight i = new ImageBasedLight(img, c, u, samples, lock);
-            api.light(i);
-            // FIXME: add primitive
-            //api.primitive(i);
+            ImageBasedLight ibl = new ImageBasedLight(img, c, u, samples, lock);
+            ibl.init(api);
         } else if (p.peekNextToken("meshlight")) {
             p.checkNextToken("name");
             UI.printInfo("[API] Reading meshlight: %s ...", p.getNextToken());
@@ -951,8 +948,7 @@ public class SCParser implements SceneParser {
             for (int i = 0; i < triangles.length; i++)
                 triangles[i] = p.getNextInt();
             MeshLight mesh = new MeshLight(points, triangles, e, samples);
-            // FIXME: add the light to the scene
-            // api.mesh(mesh);
+            mesh.init(api);
         } else
             UI.printWarning("[API] Unrecognized object type: %s", p.getNextToken());
         p.checkNextToken("}");
