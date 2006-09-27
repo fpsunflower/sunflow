@@ -1,7 +1,7 @@
 package org.sunflow.core;
 
-import org.sunflow.core.accel2.SimpleAccelerator;
-import org.sunflow.core.accel2.UniformGrid;
+import org.sunflow.core.accel.SimpleAccelerator;
+import org.sunflow.core.accel.UniformGrid;
 import org.sunflow.core.display.FrameDisplay;
 import org.sunflow.image.Color;
 import org.sunflow.math.BoundingBox;

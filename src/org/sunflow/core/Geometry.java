@@ -1,7 +1,7 @@
 package org.sunflow.core;
 
-import org.sunflow.core.accel2.KDTree;
-import org.sunflow.core.accel2.SimpleAccelerator;
+import org.sunflow.core.accel.KDTree;
+import org.sunflow.core.accel.SimpleAccelerator;
 import org.sunflow.math.BoundingBox;
 import org.sunflow.math.Matrix4;
 

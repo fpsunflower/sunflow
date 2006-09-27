@@ -43,7 +43,7 @@ import org.sunflow.SunflowAPI;
 import org.sunflow.core.Display;
 import org.sunflow.core.Shader;
 import org.sunflow.core.TextureCache;
-import org.sunflow.core.accel2.KDTree;
+import org.sunflow.core.accel.KDTree;
 import org.sunflow.core.display.FileDisplay;
 import org.sunflow.core.display.FrameDisplay;
 import org.sunflow.core.display.OpenExrDisplay;

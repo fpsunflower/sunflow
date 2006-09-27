@@ -1,4 +1,4 @@
-package org.sunflow.core.accel2;
+package org.sunflow.core.accel;
 
 import org.sunflow.core.AccelerationStructure;
 import org.sunflow.core.IntersectionState;

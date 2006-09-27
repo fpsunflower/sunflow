@@ -1,4 +1,4 @@
-package org.sunflow.core.accel2;
+package org.sunflow.core.accel;
 
 import java.io.FileWriter;
 import java.io.IOException;
