@@ -24,12 +24,12 @@ public class BoundingIntervalHierarchy implements AccelerationStructure {
     public boolean build(PrimitiveList primitives) {
         this.primitives = primitives;
         int n = primitives.getNumPrimitives();
-        UI.printInfo("[BIH] Getting bounding box ...");
+        UI.printDetailed("[BIH] Getting bounding box ...");
         bounds = primitives.getWorldBounds(null);
         objects = new int[n];
         for (int i = 0; i < n; i++)
             objects[i] = i;
-        UI.printInfo("[BIH] Creating tree ...");
+        UI.printDetailed("[BIH] Creating tree ...");
         int initialSize = 3 * (2 * 6 * n + 1);
         IntArray tempTree = new IntArray((initialSize + 3) / 4);
         BuildStats stats = new BuildStats();
@@ -37,14 +37,14 @@ public class BoundingIntervalHierarchy implements AccelerationStructure {
         t.start();
         buildHierarchy(tempTree, objects, stats);
         t.end();
-        UI.printInfo("[BIH] Trimming tree ...");
+        UI.printDetailed("[BIH] Trimming tree ...");
         tree = tempTree.trim();
         // display stats
         stats.printStats();
-        UI.printInfo("[BIH]   * Creation time:  %s", t);
-        UI.printInfo("[BIH]   * Usage of init:  %3d%%", 100 * tree.length / initialSize);
-        UI.printInfo("[BIH]   * Tree memory:    %s", Memory.sizeof(tree));
-        UI.printInfo("[BIH]   * Indices memory: %s", Memory.sizeof(objects));
+        UI.printDetailed("[BIH]   * Creation time:  %s", t);
+        UI.printDetailed("[BIH]   * Usage of init:  %3d%%", 100 * tree.length / initialSize);
+        UI.printDetailed("[BIH]   * Tree memory:    %s", Memory.sizeof(tree));
+        UI.printDetailed("[BIH]   * Indices memory: %s", Memory.sizeof(objects));
         return true;
     }
 
@@ -121,23 +121,23 @@ public class BoundingIntervalHierarchy implements AccelerationStructure {
         }
 
         void printStats() {
-            UI.printInfo("[BIH] Tree stats:");
-            UI.printInfo("[BIH]   * Nodes:          %d", numNodes);
-            UI.printInfo("[BIH]   * Leaves:         %d", numLeaves);
-            UI.printInfo("[BIH]   * Objects: min    %d", minObjects);
-            UI.printInfo("[BIH]              avg    %.2f", (float) sumObjects / numLeaves);
-            UI.printInfo("[BIH]            avg(n>0) %.2f", (float) sumObjects / (numLeaves - numLeaves0));
-            UI.printInfo("[BIH]              max    %d", maxObjects);
-            UI.printInfo("[BIH]   * Depth:   min    %d", minDepth);
-            UI.printInfo("[BIH]              avg    %.2f", (float) sumDepth / numLeaves);
-            UI.printInfo("[BIH]              max    %d", maxDepth);
-            UI.printInfo("[BIH]   * Leaves w/: N=0  %3d%%", 100 * numLeaves0 / numLeaves);
-            UI.printInfo("[BIH]                N=1  %3d%%", 100 * numLeaves1 / numLeaves);
-            UI.printInfo("[BIH]                N=2  %3d%%", 100 * numLeaves2 / numLeaves);
-            UI.printInfo("[BIH]                N=3  %3d%%", 100 * numLeaves3 / numLeaves);
-            UI.printInfo("[BIH]                N=4  %3d%%", 100 * numLeaves4 / numLeaves);
-            UI.printInfo("[BIH]                N>4  %3d%%", 100 * numLeaves4p / numLeaves);
-            UI.printInfo("[BIH]   * BVH2 nodes:     %d (%3d%%)", numBVH2, 100 * numBVH2 / (numNodes + numLeaves - 2 * numBVH2));
+            UI.printDetailed("[BIH] Tree stats:");
+            UI.printDetailed("[BIH]   * Nodes:          %d", numNodes);
+            UI.printDetailed("[BIH]   * Leaves:         %d", numLeaves);
+            UI.printDetailed("[BIH]   * Objects: min    %d", minObjects);
+            UI.printDetailed("[BIH]              avg    %.2f", (float) sumObjects / numLeaves);
+            UI.printDetailed("[BIH]            avg(n>0) %.2f", (float) sumObjects / (numLeaves - numLeaves0));
+            UI.printDetailed("[BIH]              max    %d", maxObjects);
+            UI.printDetailed("[BIH]   * Depth:   min    %d", minDepth);
+            UI.printDetailed("[BIH]              avg    %.2f", (float) sumDepth / numLeaves);
+            UI.printDetailed("[BIH]              max    %d", maxDepth);
+            UI.printDetailed("[BIH]   * Leaves w/: N=0  %3d%%", 100 * numLeaves0 / numLeaves);
+            UI.printDetailed("[BIH]                N=1  %3d%%", 100 * numLeaves1 / numLeaves);
+            UI.printDetailed("[BIH]                N=2  %3d%%", 100 * numLeaves2 / numLeaves);
+            UI.printDetailed("[BIH]                N=3  %3d%%", 100 * numLeaves3 / numLeaves);
+            UI.printDetailed("[BIH]                N=4  %3d%%", 100 * numLeaves4 / numLeaves);
+            UI.printDetailed("[BIH]                N>4  %3d%%", 100 * numLeaves4p / numLeaves);
+            UI.printDetailed("[BIH]   * BVH2 nodes:     %d (%3d%%)", numBVH2, 100 * numBVH2 / (numNodes + numLeaves - 2 * numBVH2));
         }
     }
 

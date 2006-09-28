@@ -141,6 +141,7 @@ public class SunflowGUI extends javax.swing.JFrame implements UserInterface {
             System.out.println("  -quick_normals   Applies a surface normal visualization shader to the scene");
             System.out.println("  -resolution w h  Changes the render resolution to the specified width and height (in pixels)");
             System.out.println("  -bench           Run several built-in scenes for benchmark purposes");
+            System.out.println("  -v verbosity     Set the verbosity level: 0=none,1=errors,2=warnings,3=info,4=detailed");
             System.out.println("  -h               Prints this message");
         }
         System.exit(1);
@@ -235,6 +236,11 @@ public class SunflowGUI extends javax.swing.JFrame implements UserInterface {
                 } else if (args[i].equals("-bench")) {
                     runBenchmark = true;
                     i++;
+                } else if (args[i].equals("-v")) {
+                    if (i > args.length - 2)
+                        usage(false);
+                    UI.verbosity(Integer.parseInt(args[i + 1]));
+                    i += 2;
                 } else if (args[i].equals("-h") || args[i].equals("-help")) {
                     usage(true);
                 } else {
@@ -806,6 +812,10 @@ public class SunflowGUI extends javax.swing.JFrame implements UserInterface {
         buildButton.setEnabled(enabled);
         renderButton.setEnabled(enabled);
         iprButton.setEnabled(enabled);
+    }
+
+    public void printDetailed(String s) {
+        println(s);
     }
 
     public void printInfo(String s) {

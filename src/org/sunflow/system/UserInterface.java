@@ -2,6 +2,14 @@ package org.sunflow.system;
 
 public interface UserInterface {
     /**
+     * Displays some information which would be considered detailed and not
+     * needed during typical runs.
+     * 
+     * @param s string to display
+     */
+    void printDetailed(String s);
+
+    /**
      * Displays an informative string to the user. It is assumed the string
      * corresponds to one line only.
      * 

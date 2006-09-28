@@ -2,9 +2,9 @@ package org.sunflow.core;
 
 import org.sunflow.core.accel.KDTree;
 import org.sunflow.core.accel.NullAccelerator;
-import org.sunflow.core.accel.SimpleAccelerator;
 import org.sunflow.math.BoundingBox;
 import org.sunflow.math.Matrix4;
+import org.sunflow.system.UI;
 
 public class Geometry {
     private PrimitiveList primitives;
@@ -20,13 +20,14 @@ public class Geometry {
         // TODO: construct appropriate acceleration structure from parameters
         accel = null;
         int n = primitives.getNumPrimitives();
-        if (n == 1)
-            accel = new SimpleAccelerator();
-        else if (n > 2)
+        if (n > 2)
             accel = new KDTree();
         else
             accel = new NullAccelerator();
-        accel.build(primitives);
+        if (!accel.build(primitives)) {
+            UI.printError("[GEO] Unable to build acceleration data structure");
+            return;
+        }
     }
 
     int getNumPrimitives() {

@@ -47,7 +47,7 @@ public final class UniformGrid implements AccelerationStructure {
         invVoxelwx = 1 / voxelwx;
         invVoxelwy = 1 / voxelwy;
         invVoxelwz = 1 / voxelwz;
-        UI.printInfo("[ACC] Creating grid: %dx%dx%d ...", nx, ny, nz);
+        UI.printDetailed("[ACC] Creating grid: %dx%dx%d ...", nx, ny, nz);
         IntArray[] buildCells = new IntArray[nx * ny * nz];
         // add all objects into the grid cells they overlap
         int[] imin = new int[3];
@@ -75,7 +75,7 @@ public final class UniformGrid implements AccelerationStructure {
             }
         }
         UI.taskStop();
-        UI.printInfo("[ACC] Building cells ...");
+        UI.printDetailed("[ACC] Building cells ...");
         int numEmpty = 0;
         int numInFull = 0;
         cells = new int[nx * ny * nz][];
@@ -94,15 +94,15 @@ public final class UniformGrid implements AccelerationStructure {
             i++;
         }
         t.end();
-        UI.printInfo("[ACC] Uniform grid statistics:");
-        UI.printInfo("[ACC]   * Grid cells:          %d", cells.length);
-        UI.printInfo("[ACC]   * Used cells:          %d", cells.length - numEmpty);
-        UI.printInfo("[ACC]   * Empty cells:         %d", numEmpty);
-        UI.printInfo("[ACC]   * Occupancy:           %.2f%%", 100.0 * (cells.length - numEmpty) / cells.length);
-        UI.printInfo("[ACC]   * Objects/Cell:        %.2f", (double) numInFull / (double) cells.length);
-        UI.printInfo("[ACC]   * Objects/Used Cell:   %.2f", (double) numInFull / (double) (cells.length - numEmpty));
-        UI.printInfo("[ACC]   * Cells/Object:        %.2f", (double) numCellsPerObject / (double) n);
-        UI.printInfo("[ACC]   * Build time:          %s", t.toString());
+        UI.printDetailed("[ACC] Uniform grid statistics:");
+        UI.printDetailed("[ACC]   * Grid cells:          %d", cells.length);
+        UI.printDetailed("[ACC]   * Used cells:          %d", cells.length - numEmpty);
+        UI.printDetailed("[ACC]   * Empty cells:         %d", numEmpty);
+        UI.printDetailed("[ACC]   * Occupancy:           %.2f%%", 100.0 * (cells.length - numEmpty) / cells.length);
+        UI.printDetailed("[ACC]   * Objects/Cell:        %.2f", (double) numInFull / (double) cells.length);
+        UI.printDetailed("[ACC]   * Objects/Used Cell:   %.2f", (double) numInFull / (double) (cells.length - numEmpty));
+        UI.printDetailed("[ACC]   * Cells/Object:        %.2f", (double) numCellsPerObject / (double) n);
+        UI.printDetailed("[ACC]   * Build time:          %s", t.toString());
         return true;
     }
 

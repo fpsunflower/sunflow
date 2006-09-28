@@ -10,6 +10,7 @@ import org.sunflow.system.ui.SilentInterface;
 public final class UI {
     private static UserInterface ui = new ConsoleInterface();
     private static boolean canceled = false;
+    private static int verbosity = 3;
 
     private UI() {
     }
@@ -27,16 +28,28 @@ public final class UI {
         UI.ui = ui;
     }
 
+    public final static void verbosity(int verbosity) {
+        UI.verbosity = verbosity;
+    }
+
+    public final static synchronized void printDetailed(String s, Object... args) {
+        if (verbosity > 3)
+            ui.printDetailed(String.format(s, args));
+    }
+
     public final static synchronized void printInfo(String s, Object... args) {
-        ui.printInfo(String.format(s, args));
+        if (verbosity > 2)
+            ui.printInfo(String.format(s, args));
     }
 
     public final static synchronized void printWarning(String s, Object... args) {
-        ui.printWarning(String.format(s, args));
+        if (verbosity > 1)
+            ui.printWarning(String.format(s, args));
     }
 
     public final static synchronized void printError(String s, Object... args) {
-        ui.printError(String.format(s, args));
+        if (verbosity > 0)
+            ui.printError(String.format(s, args));
     }
 
     public final static synchronized void taskStart(String s, int min, int max) {

@@ -1,5 +1,8 @@
 package org.sunflow.core.primitive;
 
+import org.sunflow.SunflowAPI;
+import org.sunflow.core.Geometry;
+import org.sunflow.core.Instance;
 import org.sunflow.core.IntersectionState;
 import org.sunflow.core.LightSample;
 import org.sunflow.core.LightSource;
@@ -54,6 +57,12 @@ public class CornellBox implements PrimitiveList, Shader, LightSource {
         lymin = maxY / 3 + 2 * minY / 3;
         lymax = minY / 3 + 2 * maxY / 3;
         area = (lxmax - lxmin) * (lymax - lymin);
+    }
+
+    public void init(SunflowAPI api) {
+        // must be created this way - because lights don't support arbitrary instancing
+        api.instance(new Instance(this, null, new Geometry(this)));
+        api.light(this);
     }
 
     public BoundingBox getBounds() {

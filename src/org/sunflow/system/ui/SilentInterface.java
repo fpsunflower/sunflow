@@ -9,6 +9,9 @@ import org.sunflow.system.UserInterface;
  * @author Administrator
  */
 public class SilentInterface implements UserInterface {
+    public void printDetailed(String s) {
+    }
+
     public void printInfo(String s) {
     }
 

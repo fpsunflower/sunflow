@@ -69,7 +69,7 @@ public class Benchmark extends SunflowAPI implements BenchmarkTest, UserInterfac
         traceDepth(4, 2, 2);
         bucketOrder("hilbert");
         bucketSize(32);
-        accel("kdtree");
+        accel("bih");
         // geometry
         buildCornellBox();
         String referenceImageFilename = String.format("%sgolden_%04X.png", resourcePath, resolution);
@@ -235,6 +235,12 @@ public class Benchmark extends SunflowAPI implements BenchmarkTest, UserInterfac
                     UI.printError("Image check failed! - reference is not comparable");
             }
         }
+    }
+
+    public void printDetailed(String s) {
+        if (stream != null)
+            if (showOutput || (showBenchmarkOutput && s.startsWith("[BCH])))")))
+                stream.println(s);
     }
 
     public void printInfo(String s) {

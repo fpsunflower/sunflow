@@ -763,9 +763,7 @@ public class SCParser implements SceneParser {
             else
                 UI.printWarning("[API] Samples keyword not found - defaulting to %d", samples);
             CornellBox box = new CornellBox(c0, c1, left, right, top, bottom, back, emit, samples);
-            Geometry geo = new Geometry(box);
-            api.instance(new Instance((Shader) null, null, geo));
-            api.light(box);
+            box.init(api);
         } else if (p.peekNextToken("generic-mesh")) {
             p.checkNextToken("name");
             UI.printInfo("[API] Reading generic mesh: %s ... ", p.getNextToken());

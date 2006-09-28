@@ -1,4 +1,5 @@
 v0.07.0
+* Added verbosity control to the UI system. Accessible on the command line using "-v n".
 * Modified Scene to use an InstanceList
 * Converted Janino invocations to use the default system compiler
 * Upgraded to Janino 2.5.0

@@ -15,6 +15,10 @@ public class ConsoleInterface implements UserInterface {
     public ConsoleInterface() {
     }
 
+    public void printDetailed(String s) {
+        System.out.println(s);
+    }
+    
     public void printInfo(String s) {
         System.out.println(s);
     }

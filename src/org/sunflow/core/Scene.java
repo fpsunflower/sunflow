@@ -1,7 +1,7 @@
 package org.sunflow.core;
 
-import org.sunflow.core.accel.SimpleAccelerator;
-import org.sunflow.core.accel.UniformGrid;
+import org.sunflow.core.accel.BoundingIntervalHierarchy;
+import org.sunflow.core.accel.NullAccelerator;
 import org.sunflow.core.display.FrameDisplay;
 import org.sunflow.image.Color;
 import org.sunflow.math.BoundingBox;
@@ -40,7 +40,7 @@ public class Scene {
         lightServer = new LightServer(this);
         instanceList = new InstanceList();
         infiniteInstanceList = new InstanceList();
-        intAccel = new UniformGrid();
+        intAccel = new BoundingIntervalHierarchy();
 
         camera = null;
         imageWidth = 640;
@@ -215,7 +215,7 @@ public class Scene {
         // limit resolution to 16k
         imageWidth = MathUtils.clamp(imageWidth, 1, 1 << 14);
         imageHeight = MathUtils.clamp(imageHeight, 1, 1 << 14);
-        
+
         // count scene primitives
         long numPrimitives = 0;
         for (int i = 0; i < instanceList.getNumPrimitives(); i++)
@@ -227,8 +227,8 @@ public class Scene {
         if (changedGeometry) {
             instanceList.trim();
             // use special case if we have only one instance in the scene
-            if (instanceList.getNumPrimitives() == 1)
-                intAccel = new SimpleAccelerator();
+            if (instanceList.getNumPrimitives() < 3)
+                intAccel = new NullAccelerator();
             if (!intAccel.build(instanceList))
                 return;
             changedGeometry = false;
