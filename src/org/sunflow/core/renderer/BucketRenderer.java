@@ -6,6 +6,7 @@ import org.sunflow.core.BucketOrder;
 import org.sunflow.core.Display;
 import org.sunflow.core.Filter;
 import org.sunflow.core.ImageSampler;
+import org.sunflow.core.Instance;
 import org.sunflow.core.IntersectionState;
 import org.sunflow.core.Scene;
 import org.sunflow.core.Shader;
@@ -333,6 +334,7 @@ public class BucketRenderer implements ImageSampler {
         float rx, ry;
         int i, n;
         Color c;
+        Instance instance;
         Shader shader;
         float nx, ny, nz;
         boolean sampled;
@@ -343,6 +345,7 @@ public class BucketRenderer implements ImageSampler {
             this.i = i;
             n = 0;
             c = null;
+            instance = null;
             shader = null;
             nx = ny = nz = 0;
             sampled = false;
@@ -354,6 +357,7 @@ public class BucketRenderer implements ImageSampler {
             else {
                 c = state.getResult();
                 shader = state.getShader();
+                instance = state.getInstance();
                 if (state.getNormal() != null) {
                     nx = state.getNormal().x;
                     ny = state.getNormal().y;
@@ -382,6 +386,8 @@ public class BucketRenderer implements ImageSampler {
         }
 
         boolean isDifferent(ImageSample sample, float thresh) {
+            if (instance != sample.instance)
+                return true;
             if (shader != sample.shader)
                 return true;
             if (shader == null)
