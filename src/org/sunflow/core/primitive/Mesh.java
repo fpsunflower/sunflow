@@ -176,7 +176,7 @@ public class Mesh implements PrimitiveList {
         Point3 v0p = getPoint(index0);
         Point3 v1p = getPoint(index1);
         Point3 v2p = getPoint(index2);
-        Vector3 ng = Vector3.cross(Point3.sub(v1p, v0p, new Vector3()), Point3.sub(v2p, v0p, new Vector3()), new Vector3());
+        Vector3 ng = Point3.normal(v0p, v1p, v2p);
         if (parent != null)
             ng = parent.transformNormalObjectToWorld(ng);
         ng.normalize();
@@ -377,7 +377,7 @@ public class Mesh implements PrimitiveList {
             Point3 v0p = getPoint(index0);
             Point3 v1p = getPoint(index1);
             Point3 v2p = getPoint(index2);
-            Vector3 ng = Vector3.cross(Point3.sub(v1p, v0p, new Vector3()), Point3.sub(v2p, v0p, new Vector3()), new Vector3()).normalize();
+            Vector3 ng = Point3.normal(v0p, v1p, v2p);
             if (Math.abs(ng.x) > Math.abs(ng.y) && Math.abs(ng.x) > Math.abs(ng.z))
                 k = 0;
             else if (Math.abs(ng.y) > Math.abs(ng.z))

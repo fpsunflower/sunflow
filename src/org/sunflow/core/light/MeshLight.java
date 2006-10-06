@@ -62,7 +62,7 @@ public class MeshLight extends Mesh implements Shader {
             Point3 v0p = getPoint(a);
             Point3 v1p = getPoint(b);
             Point3 v2p = getPoint(c);
-            ng = Vector3.cross(Point3.sub(v1p, v0p, new Vector3()), Point3.sub(v2p, v0p, new Vector3()), new Vector3());
+            ng = Point3.normal(v0p, v1p, v2p);
             area = 0.5f * ng.length();
             ng.normalize();
         }
