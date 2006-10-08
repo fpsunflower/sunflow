@@ -281,7 +281,7 @@ public class Mesh implements PrimitiveList {
         if (!smallTriangles) {
             triaccel = new WaldTriangle[nTriangles];
             for (int i = 0; i < nTriangles; i++)
-                triaccel[i] = new WaldTriangle(i);
+                triaccel[i] = new WaldTriangle(this, i);
         }
     }
 
@@ -359,24 +359,24 @@ public class Mesh implements PrimitiveList {
         return new Point3(points[i], points[i + 1], points[i + 2]);
     }
 
-    protected class WaldTriangle {
+    private static final class WaldTriangle {
         // private data for fast triangle intersection testing
         private int k;
         private float nu, nv, nd;
         private float bnu, bnv, bnd;
         private float cnu, cnv, cnd;
 
-        public WaldTriangle(int tri) {
+        private WaldTriangle(Mesh mesh, int tri) {
             k = 0;
             int index0 = 3 * tri + 0, index1 = 3 * tri + 1, index2 = 3 * tri + 2;
-            if (triangles != null) {
-                index0 = triangles[index0];
-                index1 = triangles[index1];
-                index2 = triangles[index2];
+            if (mesh.triangles != null) {
+                index0 = mesh.triangles[index0];
+                index1 = mesh.triangles[index1];
+                index2 = mesh.triangles[index2];
             }
-            Point3 v0p = getPoint(index0);
-            Point3 v1p = getPoint(index1);
-            Point3 v2p = getPoint(index2);
+            Point3 v0p = mesh.getPoint(index0);
+            Point3 v1p = mesh.getPoint(index1);
+            Point3 v2p = mesh.getPoint(index2);
             Vector3 ng = Point3.normal(v0p, v1p, v2p);
             if (Math.abs(ng.x) > Math.abs(ng.y) && Math.abs(ng.x) > Math.abs(ng.z))
                 k = 0;
