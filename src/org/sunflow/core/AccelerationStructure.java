@@ -8,7 +8,7 @@ public interface AccelerationStructure {
      * @param primitives
      * @return
      */
-    public boolean build(PrimitiveList primitives);
+    public void build(PrimitiveList primitives);
 
     /**
      * Intersect the specified ray with the geometry in local space. The ray

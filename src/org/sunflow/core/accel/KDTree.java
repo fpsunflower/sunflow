@@ -130,7 +130,7 @@ public class KDTree implements AccelerationStructure {
         KDTree.dumpPrefix = prefix;
     }
 
-    public boolean build(PrimitiveList primitives) {
+    public void build(PrimitiveList primitives) {
         UI.printDetailed("[KDT] KDTree settings");
         UI.printDetailed("[KDT]   * Max Leaf Size:  %d", maxPrims);
         UI.printDetailed("[KDT]   * Max Depth:      %d", MAX_DEPTH);
@@ -144,8 +144,6 @@ public class KDTree implements AccelerationStructure {
         // get the object space bounds
         bounds = primitives.getWorldBounds(null);
         int nPrim = primitiveList.getNumPrimitives(), nSplits = 0;
-        UI.taskStart("[KDT] Building tree", 0, 4);
-        UI.taskUpdate(0);
         BuildTask task = new BuildTask(nPrim);
         Timer prepare = new Timer();
         prepare.start();
@@ -173,26 +171,21 @@ public class KDTree implements AccelerationStructure {
         tempTree.add(1);
         t.start();
         // sort it
-        UI.taskUpdate(1);
         Timer sorting = new Timer();
         sorting.start();
         radix12(task.splits, task.n);
         sorting.end();
         // build the actual tree
-        UI.taskUpdate(2);
         BuildStats stats = new BuildStats();
         buildTree(bounds.getMinimum().x, bounds.getMaximum().x, bounds.getMinimum().y, bounds.getMaximum().y, bounds.getMinimum().z, bounds.getMaximum().z, task, 1, tempTree, 0, tempList, stats);
         t.end();
         // write out final arrays
-        UI.taskUpdate(3);
         // free some memory
         task = null;
         tree = tempTree.trim();
         tempTree = null;
         this.primitives = tempList.trim();
         tempList = null;
-        UI.taskUpdate(4);
-        UI.taskStop();
         total.end();
         // display some extra info
         stats.printStats();
@@ -233,7 +226,6 @@ public class KDTree implements AccelerationStructure {
                 e.printStackTrace();
             }
         }
-        return true;
     }
 
     private int dumpObj(int offset, int vertOffset, int maxN, BoundingBox bounds, FileWriter file, FileWriter mtlFile) throws IOException {

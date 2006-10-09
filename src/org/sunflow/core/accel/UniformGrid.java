@@ -27,7 +27,7 @@ public final class UniformGrid implements AccelerationStructure {
         invVoxelwx = invVoxelwy = invVoxelwz = 0;
     }
 
-    public boolean build(PrimitiveList primitives) {
+    public void build(PrimitiveList primitives) {
         Timer t = new Timer();
         t.start();
         this.primitives = primitives;
@@ -52,14 +52,8 @@ public final class UniformGrid implements AccelerationStructure {
         // add all objects into the grid cells they overlap
         int[] imin = new int[3];
         int[] imax = new int[3];
-        UI.taskStart("Creating Uniform Grid", 0, n);
         int numCellsPerObject = 0;
         for (int i = 0; i < n; i++) {
-            UI.taskUpdate(i);
-            if (UI.taskCanceled()) {
-                UI.taskStop();
-                return false;
-            }
             getGridIndex(primitives.getPrimitiveBound(i, 0), primitives.getPrimitiveBound(i, 2), primitives.getPrimitiveBound(i, 4), imin);
             getGridIndex(primitives.getPrimitiveBound(i, 1), primitives.getPrimitiveBound(i, 3), primitives.getPrimitiveBound(i, 5), imax);
             for (int ix = imin[0]; ix <= imax[0]; ix++) {
@@ -74,7 +68,6 @@ public final class UniformGrid implements AccelerationStructure {
                 }
             }
         }
-        UI.taskStop();
         UI.printDetailed("[ACC] Building cells ...");
         int numEmpty = 0;
         int numInFull = 0;
@@ -103,7 +96,6 @@ public final class UniformGrid implements AccelerationStructure {
         UI.printDetailed("[ACC]   * Objects/Used Cell:   %.2f", (double) numInFull / (double) (cells.length - numEmpty));
         UI.printDetailed("[ACC]   * Cells/Object:        %.2f", (double) numCellsPerObject / (double) n);
         UI.printDetailed("[ACC]   * Build time:          %s", t.toString());
-        return true;
     }
 
     public void intersect(Ray r, IntersectionState state) {

@@ -19,21 +19,7 @@ public class Geometry {
      */
     public Geometry(PrimitiveList primitives) {
         this.primitives = primitives;
-        // TODO: construct appropriate acceleration structure from parameters
         accel = null;
-        int n = primitives.getNumPrimitives();
-        if (n > 20000000)
-            accel = new UniformGrid();
-        else if (n > 2000000)
-            accel = new BoundingIntervalHierarchy();
-        else if (n > 2)
-            accel = new KDTree();
-        else
-            accel = new NullAccelerator();
-        if (!accel.build(primitives)) {
-            UI.printError("[GEO] Unable to build acceleration data structure");
-            return;
-        }
     }
 
     int getNumPrimitives() {
@@ -45,7 +31,27 @@ public class Geometry {
     }
 
     void intersect(Ray r, IntersectionState state) {
+        if (accel == null)
+            build();
         accel.intersect(r, state);
+    }
+
+    private synchronized void build() {
+        // check accel
+        if (accel != null)
+            return;
+        int n = primitives.getNumPrimitives();
+        if (n >= 10)
+            UI.printInfo("[GEO] Building acceleration structure for %d primitives ...", n);
+        if (n > 20000000)
+            accel = new UniformGrid();
+        else if (n > 2000000)
+            accel = new BoundingIntervalHierarchy();
+        else if (n > 2)
+            accel = new KDTree();
+        else
+            accel = new NullAccelerator();
+        accel.build(primitives);
     }
 
     void prepareShadingState(ShadingState state) {

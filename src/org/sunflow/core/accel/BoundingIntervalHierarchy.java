@@ -21,7 +21,7 @@ public class BoundingIntervalHierarchy implements AccelerationStructure {
         maxPrims = 2;
     }
 
-    public boolean build(PrimitiveList primitives) {
+    public void build(PrimitiveList primitives) {
         this.primitives = primitives;
         int n = primitives.getNumPrimitives();
         UI.printDetailed("[BIH] Getting bounding box ...");
@@ -45,7 +45,6 @@ public class BoundingIntervalHierarchy implements AccelerationStructure {
         UI.printDetailed("[BIH]   * Usage of init:  %3d%%", 100 * tree.length / initialSize);
         UI.printDetailed("[BIH]   * Tree memory:    %s", Memory.sizeof(tree));
         UI.printDetailed("[BIH]   * Indices memory: %s", Memory.sizeof(objects));
-        return true;
     }
 
     private static class BuildStats {

@@ -229,8 +229,7 @@ public class Scene {
             // use special case if we have only one instance in the scene
             if (instanceList.getNumPrimitives() < 3)
                 intAccel = new NullAccelerator();
-            if (!intAccel.build(instanceList))
-                return;
+            intAccel.build(instanceList);
             changedGeometry = false;
         }
         infiniteInstanceList.trim();

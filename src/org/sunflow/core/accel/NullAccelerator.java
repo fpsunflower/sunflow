@@ -13,10 +13,9 @@ public class NullAccelerator implements AccelerationStructure {
         primitives = null;
     }
 
-    public boolean build(PrimitiveList primitives) {
+    public void build(PrimitiveList primitives) {
         this.primitives = primitives;
         n = primitives.getNumPrimitives();
-        return true;
     }
 
     public void intersect(Ray r, IntersectionState state) {
