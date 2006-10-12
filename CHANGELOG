@@ -1,4 +1,6 @@
 v0.07.0
+* Added ParameterList class to store arbitrary name/value pairs
+* AccelerationStructure's are now built on demand for each geometry
 * Added verbosity control to the UI system. Accessible on the command line using "-v n".
 * Modified Scene to use an InstanceList
 * Converted Janino invocations to use the default system compiler
