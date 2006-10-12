@@ -32,6 +32,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
 import javax.swing.JTextArea;
 import javax.swing.KeyStroke;
+import javax.swing.ScrollPaneConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.TransferHandler;
 import javax.swing.filechooser.FileFilter;
@@ -119,6 +120,11 @@ public class SunflowGUI extends javax.swing.JFrame implements UserInterface {
 
     public static void usage(boolean verbose) {
         System.out.println("Usage: SunflowGUI [options] scenefile");
+        String bold_red = "\u001B[1;31m";
+        String normal = "\u001B[0m";
+        
+        System.out.println(bold_red + "FATAL ERROR!!!" + normal);
+        System.out.println ((char)27 + "[2J");
         if (verbose) {
             System.out.println("Sunflow v" + SunflowAPI.VERSION + " textmode");
             System.out.println("Renders the specified scene file");
@@ -372,7 +378,7 @@ public class SunflowGUI extends javax.swing.JFrame implements UserInterface {
                 {
                     jScrollPane1 = new JScrollPane();
                     editorFrame.getContentPane().add(jScrollPane1, BorderLayout.CENTER);
-                    jScrollPane1.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
+                    jScrollPane1.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
                     jScrollPane1.setPreferredSize(new java.awt.Dimension(360, 280));
                     {
                         editorTextArea = new JTextArea();
@@ -412,7 +418,7 @@ public class SunflowGUI extends javax.swing.JFrame implements UserInterface {
                 {
                     jScrollPane2 = new JScrollPane();
                     consoleFrame.getContentPane().add(jScrollPane2, BorderLayout.CENTER);
-                    jScrollPane2.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
+                    jScrollPane2.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
                     jScrollPane2.setPreferredSize(new java.awt.Dimension(360, 100));
                     {
                         consoleTextArea = new JTextArea();

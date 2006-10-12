@@ -22,6 +22,7 @@ import org.sunflow.core.Geometry;
 import org.sunflow.core.ImageSampler;
 import org.sunflow.core.Instance;
 import org.sunflow.core.LightSource;
+import org.sunflow.core.ParameterList;
 import org.sunflow.core.Scene;
 import org.sunflow.core.SceneParser;
 import org.sunflow.core.Shader;
@@ -75,6 +76,7 @@ public class SunflowAPI {
     private ProgressiveRenderer progressiveRenderer;
     private SearchPath includeSearchPath;
     private SearchPath textureSearchPath;
+    private ParameterList parameterList;
 
     /**
      * The default constructor is only available to sub-classes.
@@ -95,6 +97,23 @@ public class SunflowAPI {
         currentShader = null;
         includeSearchPath = new SearchPath("include");
         textureSearchPath = new SearchPath("texture");
+        parameterList = new ParameterList();
+    }
+
+    public final void parameter(String name, String value) {
+        parameterList.addString(name, value);
+    }
+
+    public final void parameter(String name, boolean value) {
+        parameterList.addBoolean(name, value);
+    }
+
+    public final void parameter(String name, int value) {
+        parameterList.addInteger(name, value);
+    }
+
+    public final void parameter(String name, float value) {
+        parameterList.addFloat(name, value);
     }
 
     /**

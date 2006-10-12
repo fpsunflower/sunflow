@@ -2,6 +2,7 @@ package org.sunflow.system;
 
 import java.awt.Dimension;
 import java.awt.Graphics;
+import java.awt.event.InputEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseWheelEvent;
 import java.awt.event.MouseWheelListener;
@@ -39,7 +40,7 @@ public class ImagePanel extends JPanel implements Display {
                 case MouseEvent.BUTTON2: {
                     dragging = zooming = false;
                     // if CTRL is pressed
-                    if ((e.getModifiersEx() & MouseEvent.CTRL_DOWN_MASK) == MouseEvent.CTRL_DOWN_MASK)
+                    if ((e.getModifiersEx() & InputEvent.CTRL_DOWN_MASK) == InputEvent.CTRL_DOWN_MASK)
                         fit();
                     else
                         reset();
