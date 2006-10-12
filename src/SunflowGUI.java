@@ -120,11 +120,6 @@ public class SunflowGUI extends javax.swing.JFrame implements UserInterface {
 
     public static void usage(boolean verbose) {
         System.out.println("Usage: SunflowGUI [options] scenefile");
-        String bold_red = "\u001B[1;31m";
-        String normal = "\u001B[0m";
-        
-        System.out.println(bold_red + "FATAL ERROR!!!" + normal);
-        System.out.println ((char)27 + "[2J");
         if (verbose) {
             System.out.println("Sunflow v" + SunflowAPI.VERSION + " textmode");
             System.out.println("Renders the specified scene file");
