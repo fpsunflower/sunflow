@@ -710,94 +710,91 @@ public class KDTree implements AccelerationStructure {
         int node = 0;
 
         while (true) {
-            pushloop: while (true) {
-                int tn = tree[node];
-                int axis = tn & (3 << 30);
-                int offset = tn & ~(3 << 30);
-                switch (axis) {
-                    case 0: {
-                        float d = (Float.intBitsToFloat(tree[node + 1]) - orgX) * invDirX;
-                        int back = offset + offsetXBack;
-                        node = back;
-                        if (d < intervalMin)
-                            continue;
-                        node = offset + offsetXFront; // front
-                        if (d > intervalMax)
-                            continue;
-                        // push back node
-                        stack[stackPos].node = back;
-                        stack[stackPos].near = (d >= intervalMin) ? d : intervalMin;
-                        stack[stackPos].far = intervalMax;
-                        stackPos++;
-                        // update ray interval for front node
-                        intervalMax = (d <= intervalMax) ? d : intervalMax;
+            int tn = tree[node];
+            int axis = tn & (3 << 30);
+            int offset = tn & ~(3 << 30);
+            switch (axis) {
+                case 0: {
+                    float d = (Float.intBitsToFloat(tree[node + 1]) - orgX) * invDirX;
+                    int back = offset + offsetXBack;
+                    node = back;
+                    if (d < intervalMin)
                         continue;
-                    }
-                    case 1 << 30: {
-                        // y axis
-                        float d = (Float.intBitsToFloat(tree[node + 1]) - orgY) * invDirY;
-                        int back = offset + offsetYBack;
-                        node = back;
-                        if (d < intervalMin)
-                            continue;
-                        node = offset + offsetYFront; // front
-                        if (d > intervalMax)
-                            continue;
-                        // push back node
-                        stack[stackPos].node = back;
-                        stack[stackPos].near = (d >= intervalMin) ? d : intervalMin;
-                        stack[stackPos].far = intervalMax;
-                        stackPos++;
-                        // update ray interval for front node
-                        intervalMax = (d <= intervalMax) ? d : intervalMax;
+                    node = offset + offsetXFront; // front
+                    if (d > intervalMax)
                         continue;
-                    }
-                    case 2 << 30: {
-                        // z axis
-                        float d = (Float.intBitsToFloat(tree[node + 1]) - orgZ) * invDirZ;
-                        int back = offset + offsetZBack;
-                        node = back;
-                        if (d < intervalMin)
-                            continue;
-                        node = offset + offsetZFront; // front
-                        if (d > intervalMax)
-                            continue;
-                        // push back node
-                        stack[stackPos].node = back;
-                        stack[stackPos].near = (d >= intervalMin) ? d : intervalMin;
-                        stack[stackPos].far = intervalMax;
-                        stackPos++;
-                        // update ray interval for front node
-                        intervalMax = (d <= intervalMax) ? d : intervalMax;
-                        continue;
-                    }
-                    default: {
-                        // leaf - test some objects
-                        int n = tree[node + 1];
-                        while (n > 0) {
-                            primitiveList.intersectPrimitive(r, primitives[offset], state);
-                            n--;
-                            offset++;
-                        }
-                        if (r.getMax() < intervalMax)
-                            return;
-                        break pushloop;
-                    }
-                } // switch
-            } // traversal loop
-            do {
-                // stack is empty?
-                if (stackPos == stackTop)
-                    return;
-                // move back up the stack
-                stackPos--;
-                intervalMin = stack[stackPos].near;
-                if (r.getMax() < intervalMin)
+                    // push back node
+                    stack[stackPos].node = back;
+                    stack[stackPos].near = (d >= intervalMin) ? d : intervalMin;
+                    stack[stackPos].far = intervalMax;
+                    stackPos++;
+                    // update ray interval for front node
+                    intervalMax = (d <= intervalMax) ? d : intervalMax;
                     continue;
-                node = stack[stackPos].node;
-                intervalMax = stack[stackPos].far;
-                break;
-            } while (true);
-        }
+                }
+                case 1 << 30: {
+                    // y axis
+                    float d = (Float.intBitsToFloat(tree[node + 1]) - orgY) * invDirY;
+                    int back = offset + offsetYBack;
+                    node = back;
+                    if (d < intervalMin)
+                        continue;
+                    node = offset + offsetYFront; // front
+                    if (d > intervalMax)
+                        continue;
+                    // push back node
+                    stack[stackPos].node = back;
+                    stack[stackPos].near = (d >= intervalMin) ? d : intervalMin;
+                    stack[stackPos].far = intervalMax;
+                    stackPos++;
+                    // update ray interval for front node
+                    intervalMax = (d <= intervalMax) ? d : intervalMax;
+                    continue;
+                }
+                case 2 << 30: {
+                    // z axis
+                    float d = (Float.intBitsToFloat(tree[node + 1]) - orgZ) * invDirZ;
+                    int back = offset + offsetZBack;
+                    node = back;
+                    if (d < intervalMin)
+                        continue;
+                    node = offset + offsetZFront; // front
+                    if (d > intervalMax)
+                        continue;
+                    // push back node
+                    stack[stackPos].node = back;
+                    stack[stackPos].near = (d >= intervalMin) ? d : intervalMin;
+                    stack[stackPos].far = intervalMax;
+                    stackPos++;
+                    // update ray interval for front node
+                    intervalMax = (d <= intervalMax) ? d : intervalMax;
+                    continue;
+                }
+                default: {
+                    // leaf - test some objects
+                    int n = tree[node + 1];
+                    while (n > 0) {
+                        primitiveList.intersectPrimitive(r, primitives[offset], state);
+                        n--;
+                        offset++;
+                    }
+                    if (r.getMax() < intervalMax)
+                        return;
+                    do {
+                        // stack is empty?
+                        if (stackPos == stackTop)
+                            return;
+                        // move back up the stack
+                        stackPos--;
+                        intervalMin = stack[stackPos].near;
+                        if (r.getMax() < intervalMin)
+                            continue;
+                        node = stack[stackPos].node;
+                        intervalMax = stack[stackPos].far;
+                        break;
+                    } while (true);
+                }
+            } // switch
+        } // traversal loop
     }
 }

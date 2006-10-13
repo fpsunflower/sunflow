@@ -50,6 +50,7 @@ import org.sunflow.core.display.FrameDisplay;
 import org.sunflow.core.display.OpenExrDisplay;
 import org.sunflow.core.primitive.Mesh;
 import org.sunflow.core.shader.AmbientOcclusionShader;
+import org.sunflow.core.shader.IDShader;
 import org.sunflow.core.shader.NormalShader;
 import org.sunflow.core.shader.UVShader;
 import org.sunflow.image.Color;
@@ -140,7 +141,9 @@ public class SunflowGUI extends javax.swing.JFrame implements UserInterface {
             System.out.println("  -quick_ambocc d  Applies ambient occlusion to the scene with specified maximum distance");
             System.out.println("  -quick_uvs       Applies a surface uv visualization shader to the scene");
             System.out.println("  -quick_normals   Applies a surface normal visualization shader to the scene");
+            System.out.println("  -quick_id        Renders using a unique color for each instance");
             System.out.println("  -resolution w h  Changes the render resolution to the specified width and height (in pixels)");
+            System.out.println("  -bucket n order  Changes the default bucket size to n pixels and the default order");
             System.out.println("  -bench           Run several built-in scenes for benchmark purposes");
             System.out.println("  -v verbosity     Set the verbosity level: 0=none,1=errors,2=warnings,3=info,4=detailed");
             System.out.println("  -h               Prints this message");
@@ -163,6 +166,8 @@ public class SunflowGUI extends javax.swing.JFrame implements UserInterface {
             boolean noGI = false;
             Shader shaderOverride = null;
             int resolutionW = 0, resolutionH = 0;
+            int bucketSize = 0;
+            String bucketOrder = null;
             boolean runBenchmark = false;
             while (i < args.length) {
                 if (args[i].equals("-o")) {
@@ -228,11 +233,22 @@ public class SunflowGUI extends javax.swing.JFrame implements UserInterface {
                         usage(false);
                     shaderOverride = new NormalShader();
                     i++;
+                } else if (args[i].equals("-quick_id")) {
+                    if (i > args.length - 1)
+                        usage(false);
+                    shaderOverride = new IDShader();
+                    i++;
                 } else if (args[i].equals("-resolution")) {
                     if (i > args.length - 3)
                         usage(false);
                     resolutionW = Integer.parseInt(args[i + 1]);
                     resolutionH = Integer.parseInt(args[i + 2]);
+                    i += 3;
+                } else if (args[i].equals("-bucket")) {
+                    if (i > args.length - 3)
+                        usage(false);
+                    bucketSize = Integer.parseInt(args[i + 1]);
+                    bucketOrder = args[i + 2];
                     i += 3;
                 } else if (args[i].equals("-bench")) {
                     runBenchmark = true;
@@ -264,6 +280,10 @@ public class SunflowGUI extends javax.swing.JFrame implements UserInterface {
                 System.exit(0);
             if (resolutionW > 0 && resolutionH > 0)
                 api.resolution(resolutionW, resolutionH);
+            if (bucketSize > 0)
+                api.bucketSize(bucketSize);
+            if (bucketOrder != null)
+                api.bucketOrder(bucketOrder);
             api.displayAA(showAA);
             api.threads(threads, lowPriority);
             if (accel != null)

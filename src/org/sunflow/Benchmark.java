@@ -49,7 +49,7 @@ public class Benchmark extends SunflowAPI implements BenchmarkTest, UserInterfac
     }
 
     public Benchmark(boolean showGUI) {
-        this("resources/", System.out, 0, 512, showGUI, false, true, 4, false);
+        this("resources/", System.out, 0, 512, showGUI, false, true, 6, false);
     }
 
     public Benchmark(String resourcePath, PrintStream stream, int threads, int resolution, boolean showGUI, boolean showOutput, boolean showBenchmarkOutput, int errorThreshold, boolean generateMissingReference) {

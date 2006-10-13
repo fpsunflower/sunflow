@@ -1,4 +1,14 @@
 v0.07.0
+* Textures are now loaded on demand, when they are first accessed
+* Modified bucketOrder call in SunflowAPI to create inverted bucket orders
+* Added InvertedBucketOrder
+* Added RandomBucketOrder
+* Added Box primitive
+* Removed SimpleShader from parser classes
+* Added SimpleShader which shades using facing ratio
+* Modified IDShader to be based on instance ID only, and to use facing ratio for better shading
+* Added -quick_id option on the command line to override using IDShader
+* Slight simplification of KDTree traversal
 * Added ParameterList class to store arbitrary name/value pairs
 * AccelerationStructure's are now built on demand for each geometry
 * Added verbosity control to the UI system. Accessible on the command line using "-v n".

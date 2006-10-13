@@ -13,10 +13,8 @@ import org.sunflow.SunflowAPI;
 import org.sunflow.core.Geometry;
 import org.sunflow.core.Instance;
 import org.sunflow.core.SceneParser;
-import org.sunflow.core.Shader;
-import org.sunflow.core.ShadingState;
 import org.sunflow.core.primitive.Mesh;
-import org.sunflow.image.Color;
+import org.sunflow.core.shader.SimpleShader;
 import org.sunflow.system.Parser;
 import org.sunflow.system.UI;
 
@@ -67,14 +65,5 @@ public class TriParser implements SceneParser {
             return false;
         }
         return true;
-    }
-
-    private static class SimpleShader implements Shader {
-        public Color getRadiance(ShadingState state) {
-            return new Color(Math.abs(state.getRay().dot(state.getNormal())));
-        }
-
-        public void scatterPhoton(ShadingState state, Color power) {
-        }
     }
 }

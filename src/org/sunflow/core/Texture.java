@@ -12,7 +12,9 @@ import org.sunflow.system.UI;
  * Represents a 2D texture, typically used by {@link Shader shaders}.
  */
 public class Texture {
+    private String filename;
     private Bitmap bitmap;
+    private int loaded;
 
     /**
      * Creates a new texture from the specfied file.
@@ -20,7 +22,15 @@ public class Texture {
      * @param filename image file to load
      */
     Texture(String filename) {
+        this.filename = filename;
+        loaded = 0;
+    }
+
+    private synchronized void load() {
+        if (loaded != 0)
+            return;
         try {
+            UI.printInfo("[TEX] Reading texture bitmap from: \"%s\" ...", filename);
             bitmap = new Bitmap(filename);
             if (bitmap.getWidth() == 0 || bitmap.getHeight() == 0)
                 bitmap = null;
@@ -28,9 +38,12 @@ public class Texture {
             UI.printError("[TEX] %s", e.getMessage());
             e.printStackTrace();
         }
+        loaded = 1;
     }
-
+    
     public Bitmap getBitmap() {
+        if (loaded == 0)
+            load();
         return bitmap;
     }
 
@@ -45,6 +58,7 @@ public class Texture {
      * @return filtered color at location (x,y)
      */
     public Color getPixel(float x, float y) {
+        Bitmap bitmap = getBitmap();
         if (bitmap == null)
             return Color.BLACK;
         x = x - (int) x;
@@ -84,6 +98,9 @@ public class Texture {
     }
 
     public Vector3 getBump(float x, float y, OrthoNormalBasis basis, float scale) {
+        Bitmap bitmap = getBitmap();
+        if (bitmap == null)
+            return basis.transform(new Vector3(0, 0, 1));
         float dx = 1.0f / (bitmap.getWidth() - 1);
         float dy = 1.0f / (bitmap.getHeight() - 1);
         float b0 = getPixel(x, y).getLuminance();

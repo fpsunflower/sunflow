@@ -11,7 +11,7 @@ import org.sunflow.system.UI;
 public class Geometry {
     private PrimitiveList primitives;
     private AccelerationStructure accel;
-    private boolean builtAccel;
+    private int builtAccel;
 
     /**
      * Create a geometry from the specified primitive aggregate
@@ -21,7 +21,7 @@ public class Geometry {
     public Geometry(PrimitiveList primitives) {
         this.primitives = primitives;
         accel = null;
-        builtAccel = false;
+        builtAccel = 0;
     }
 
     int getNumPrimitives() {
@@ -33,15 +33,16 @@ public class Geometry {
     }
 
     void intersect(Ray r, IntersectionState state) {
-        if (!builtAccel)
+        if (builtAccel == 0)
             build();
         accel.intersect(r, state);
     }
 
     private synchronized void build() {
         // double check flag
-        if (builtAccel)
+        if (builtAccel != 0)
             return;
+
         int n = primitives.getNumPrimitives();
         if (n >= 10)
             UI.printInfo("[GEO] Building acceleration structure for %d primitives ...", n);
@@ -54,7 +55,7 @@ public class Geometry {
         else
             accel = new NullAccelerator();
         accel.build(primitives);
-        builtAccel = true;
+        builtAccel = 1;
     }
 
     void prepareShadingState(ShadingState state) {

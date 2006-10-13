@@ -33,6 +33,8 @@ import org.sunflow.core.accel.UniformGrid;
 import org.sunflow.core.bucket.ColumnBucketOrder;
 import org.sunflow.core.bucket.DiagonalBucketOrder;
 import org.sunflow.core.bucket.HilbertBucketOrder;
+import org.sunflow.core.bucket.InvertedBucketOrder;
+import org.sunflow.core.bucket.RandomBucketOrder;
 import org.sunflow.core.bucket.RowBucketOrder;
 import org.sunflow.core.bucket.SpiralBucketOrder;
 import org.sunflow.core.filter.BlackmanHarrisFilter;
@@ -181,23 +183,40 @@ public class SunflowAPI {
     /**
      * Sets the bucket ordering scheme for the bucket renderer. This version
      * instantiates built-in bucket oreders by their short string name: "row",
-     * "column", "diagonal", "spiral", "hilbert". Invalid strings are ignored.
+     * "column", "diagonal", "spiral", "hilbert", "random". Invalid strings are
+     * ignored.
      * 
      * @param order name of a built-in bucket order
      */
     public final void bucketOrder(String order) {
+        boolean flip = false;
+        if (order.startsWith("inverse") || order.startsWith("invert") || order.startsWith("reverse")) {
+            String[] tokens = order.split("\\s+");
+            if (tokens.length == 2) {
+                order = tokens[1];
+                flip = true;
+            }
+        }
+        BucketOrder o = null;
         if (order.equals("row"))
-            bucketOrder(new RowBucketOrder());
+            o = new RowBucketOrder();
         else if (order.equals("column"))
-            bucketOrder(new ColumnBucketOrder());
+            o = new ColumnBucketOrder();
         else if (order.equals("diagonal"))
-            bucketOrder(new DiagonalBucketOrder());
+            o = new DiagonalBucketOrder();
         else if (order.equals("spiral"))
-            bucketOrder(new SpiralBucketOrder());
+            o = new SpiralBucketOrder();
         else if (order.equals("hilbert"))
-            bucketOrder(new HilbertBucketOrder());
-        else
+            o = new HilbertBucketOrder();
+        else if (order.equals("random"))
+            o = new RandomBucketOrder();
+        if (o == null)
             UI.printWarning("[API] Unrecognized bucket ordering: \"%s\"", order);
+        else {
+            if (flip)
+                o = new InvertedBucketOrder(o);
+            bucketOrder(o);
+        }
     }
 
     /**
