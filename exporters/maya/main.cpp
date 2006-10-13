@@ -13,9 +13,72 @@
 #include <maya/MPoint.h>
 #include <maya/MVector.h>
 #include <maya/MAngle.h>
+#include <maya/MSelectionList.h>
 #include <iostream>
 #include <fstream>
 #include <vector>
+#include <string>
+
+// global variables:
+
+float resolutionAspectRatio = 4.0f / 3.0f;
+
+bool isObjectVisible(const MDagPath& path) {
+    MStatus status;
+    MFnDagNode node(path);
+    MPlug vPlug = node.findPlug("visibility", &status);
+    bool visible = true;
+    if (status == MS::kSuccess)
+        vPlug.getValue(visible);
+    status.clear();
+    MPlug iPlug = node.findPlug("intermediateObject", &status);
+    bool intermediate = false;
+    if (status == MS::kSuccess)
+        iPlug.getValue(intermediate);
+    return visible && !intermediate;
+}
+
+bool areObjectAndParentsVisible(const MDagPath& path) {
+    bool result = true;
+    MDagPath searchPath(path);
+    for (;;) {
+        if (!isObjectVisible(searchPath)) {
+            result = false;
+            break;
+        }
+        if (searchPath.length() <= 1)
+            break;
+        searchPath.pop();
+    }
+    return result;
+}
+
+bool isCameraRenderable(const MDagPath& path) {
+    MStatus status;
+    MFnDagNode node(path);
+    MPlug rPlug = node.findPlug("renderable", &status);
+    bool renderable = true;
+    if (status == MS::kSuccess)
+        rPlug.getValue(renderable);
+    return renderable;
+}
+
+int getAttributeInt(const std::string& node, const std::string& attributeName, int defaultValue) {
+    MStatus status;
+    MSelectionList list;
+    status = list.add((node + "." + attributeName).c_str());
+    if (status != MS::kSuccess)
+        return defaultValue;
+    MPlug plug;
+    status = list.getPlug(0, plug);
+    if (status != MS::kSuccess)
+        return defaultValue;
+    int value;
+    status = plug.getValue(value);
+    if (status != MS::kSuccess)
+        return defaultValue;
+    return value;
+}
 
 void exportMesh(const MDagPath& path, std::ofstream& file) {
     MFnMesh mesh(path);
@@ -173,6 +236,7 @@ void exportMesh(const MDagPath& path, std::ofstream& file) {
 void exportCamera(const MDagPath& path, std::ofstream& file) {
     MFnCamera camera(path);
 
+    if (!isCameraRenderable(path)) return;
     if (camera.isOrtho()) return;
 
     MSpace::Space space = MSpace::kWorld;
@@ -189,7 +253,7 @@ void exportCamera(const MDagPath& path, std::ofstream& file) {
     file << "\ttarget " << (eye.x + dir.x) << " " << (eye.y + dir.y) << " " << (eye.z + dir.z) << std::endl;
     file << "\tup     " << up.x << " " << up.y << " " << up.z << std::endl;
     file << "\tfov    " << fov << std::endl;
-    file << "\taspect " << 1.33333333f << std::endl;
+    file << "\taspect " << resolutionAspectRatio << std::endl;
     file << "}" << std::endl;
     file << std::endl;
 }
@@ -200,16 +264,29 @@ MStatus sunflowExport::doIt(const MArgList& args) {
     MString filename = args.asString(0);
     std::cout << "Exporting scene to: " << filename.asChar() << " ..." << std::endl;
     std::ofstream file(filename.asChar());
+
+
+    int resX = getAttributeInt("defaultResolution", "width" , 640);
+    int resY = getAttributeInt("defaultResolution", "height", 480);
+    resolutionAspectRatio = (float) resX / (float) resY;
+    file << "image {" << std::endl;
+    file << "\tresolution " << resX << " " << resY << std::endl;
+    file << "\taa 0 2" << std::endl;
+    file << "}" << std::endl; 
+    file << std::endl;
+
     MStatus status;
     for (MItDag mItDag = MItDag(MItDag::kBreadthFirst); !mItDag.isDone(&status); mItDag.next()) {
         MDagPath path;
         status = mItDag.getPath(path);
         switch (path.apiType(&status)) {
             case MFn::kMesh: {
+                if (!areObjectAndParentsVisible(path)) continue;
                 std::cout << "Exporting mesh: " << path.fullPathName().asChar() << " ..." << std::endl;
                 exportMesh(path, file);
             } break;
             case MFn::kCamera: {
+                if (!areObjectAndParentsVisible(path)) continue;
                 std::cout << "Exporting camera: " << path.fullPathName().asChar() << " ..." << std::endl;
                 exportCamera(path, file);
             } break;
@@ -219,6 +296,7 @@ MStatus sunflowExport::doIt(const MArgList& args) {
             case MFn::kVolumeLight:
             case MFn::kAmbientLight:
             case MFn::kAreaLight: {
+                if (!areObjectAndParentsVisible(path)) continue;
                 std::cout << "Exporting light: " << path.fullPathName().asChar() << " ..." << std::endl;
             } break;
             default: break;
