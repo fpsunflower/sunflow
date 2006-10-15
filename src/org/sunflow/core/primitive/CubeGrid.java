@@ -1,7 +1,9 @@
 package org.sunflow.core.primitive;
 
+import org.sunflow.SunflowAPI;
 import org.sunflow.core.Instance;
 import org.sunflow.core.IntersectionState;
+import org.sunflow.core.ParameterList;
 import org.sunflow.core.PrimitiveList;
 import org.sunflow.core.Ray;
 import org.sunflow.core.ShadingState;
@@ -16,25 +18,22 @@ public abstract class CubeGrid implements PrimitiveList {
     private float invVoxelwx, invVoxelwy, invVoxelwz;
     private BoundingBox bounds;
 
-    protected CubeGrid() {
-        this(1, 1, 1);
+    public CubeGrid() {
+        nx = ny = nz = 1;
+        bounds = new BoundingBox(1);
     }
 
-    protected CubeGrid(int nx, int ny, int nz) {
-        this.bounds = new BoundingBox(1);
-        setSize(nx, ny, nz);
-    }
-
-    protected void setSize(int nx, int ny, int nz) {
-        this.nx = nx;
-        this.ny = ny;
-        this.nz = nz;
+    public boolean update(ParameterList pl, SunflowAPI api) {
+        nx = pl.getInt("resolutionX", nx);
+        ny = pl.getInt("resolutionY", ny);
+        nz = pl.getInt("resolutionZ", nz);
         voxelwx = 2.0f / nx;
         voxelwy = 2.0f / ny;
         voxelwz = 2.0f / nz;
         invVoxelwx = 1 / voxelwx;
         invVoxelwy = 1 / voxelwy;
         invVoxelwz = 1 / voxelwz;
+        return true;
     }
 
     protected abstract boolean inside(int x, int y, int z);

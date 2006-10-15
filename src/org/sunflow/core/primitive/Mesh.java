@@ -1,10 +1,14 @@
 package org.sunflow.core.primitive;
 
+import org.sunflow.SunflowAPI;
 import org.sunflow.core.Instance;
 import org.sunflow.core.IntersectionState;
+import org.sunflow.core.ParameterList;
 import org.sunflow.core.PrimitiveList;
 import org.sunflow.core.Ray;
 import org.sunflow.core.ShadingState;
+import org.sunflow.core.ParameterList.FloatParameter;
+import org.sunflow.core.ParameterList.InterpolationType;
 import org.sunflow.math.BoundingBox;
 import org.sunflow.math.MathUtils;
 import org.sunflow.math.Matrix4;
@@ -18,11 +22,9 @@ public class Mesh implements PrimitiveList {
     protected float[] points;
     protected int[] triangles;
     private WaldTriangle[] triaccel;
-    private float[] normals;
-    private float[] uvs;
+    private FloatParameter normals;
+    private FloatParameter uvs;
     private byte[] faceShaders;
-    private InterpType normalInterp;
-    private InterpType uvInterp;
 
     public static void setSmallTriangles(boolean smallTriangles) {
         if (smallTriangles)
@@ -32,33 +34,73 @@ public class Mesh implements PrimitiveList {
         Mesh.smallTriangles = smallTriangles;
     }
 
-    public enum InterpType {
-        NONE, VERTEX, FACEVARYING,
+    public Mesh() {
+        triangles = null;
+        points = null;
+        normals = uvs = new FloatParameter();
+        faceShaders = null;
     }
 
-    public Mesh(float[] points, int[] triangles) {
-        this.points = points;
-        this.triangles = triangles;
-        normals = uvs = null;
-        faceShaders = null;
-        normalInterp = uvInterp = InterpType.NONE;
-        // create triangle acceleration structure
-        init();
+    public boolean update(ParameterList pl, SunflowAPI api) {
+        boolean updatedTopology = false;
+        {
+            int[] triangles = pl.getIntArray("triangles");
+            if (triangles != null) {
+                this.triangles = triangles;
+                updatedTopology = true;
+            }
+        }
+        if (triangles == null) {
+            UI.printError("[TRI] Unable to update mesh - triangle indices are missing");
+            return false;
+        }
+        if (triangles.length % 3 != 0)
+            UI.printWarning("[TRI] Triangle index data is not a multiple of 3 - triangles may be missing");
+        pl.setFaceCount(triangles.length / 3);
+        {
+            FloatParameter pointsP = pl.getPointArray("points");
+            if (pointsP != null)
+                if (pointsP.interp != InterpolationType.VERTEX)
+                    UI.printError("[TRI] Point interpolation type must be set to \"vertex\" - was \"%s\"", pointsP.interp.name().toLowerCase());
+                else {
+                    points = pointsP.data;
+                    updatedTopology = true;
+                }
+        }
+        if (points == null) {
+            UI.printError("[TRI] Unabled to update mesh - vertices are missing");
+            return false;
+        }
+        pl.setVertexCount(points.length / 3);
+        pl.setFaceVertexCount(3 * (triangles.length / 3));
+        FloatParameter normals = pl.getVectorArray("normals");
+        if (normals != null)
+            this.normals = normals;
+        FloatParameter uvs = pl.getTexCoordArray("uvs");
+        if (uvs != null)
+            this.uvs = uvs;
+        int[] faceShaders = pl.getIntArray("faceshaders");
+        if (faceShaders != null && faceShaders.length == triangles.length / 3) {
+            this.faceShaders = new byte[faceShaders.length];
+            for (int i = 0; i < faceShaders.length; i++) {
+                int v = faceShaders[i];
+                if (v > 255)
+                    UI.printWarning("[TRI] Shader index too large on triangle %d", i);
+                this.faceShaders[i] = (byte) (v & 0xFF);
+            }
+        }
+        if (updatedTopology) {
+            // create triangle acceleration structure
+            init();
+        }
+        return true;
     }
 
     public float getPrimitiveBound(int primID, int i) {
-        int a, b, c, t = 3 * primID;
-        if (triangles == null) {
-            // implicit indexing
-            a = 3 * (t + 0);
-            b = 3 * (t + 1);
-            c = 3 * (t + 2);
-        } else {
-            // explicit indexing
-            a = 3 * triangles[t + 0];
-            b = 3 * triangles[t + 1];
-            c = 3 * triangles[t + 2];
-        }
+        int tri = 3 * primID;
+        int a = 3 * triangles[tri + 0];
+        int b = 3 * triangles[tri + 1];
+        int c = 3 * triangles[tri + 2];
         int axis = i >>> 1;
         if ((i & 1) == 0)
             return MathUtils.min(points[a + axis], points[b + axis], points[c + axis]);
@@ -93,16 +135,10 @@ public class Mesh implements PrimitiveList {
             return;
         }
         // ray-triangle intersection here
-        int a, b, c, tri = primID * 3;
-        if (triangles == null) {
-            a = 3 * (tri + 0);
-            b = 3 * (tri + 1);
-            c = 3 * (tri + 2);
-        } else {
-            a = 3 * triangles[tri + 0];
-            b = 3 * triangles[tri + 1];
-            c = 3 * triangles[tri + 2];
-        }
+        int tri = 3 * primID;
+        int a = 3 * triangles[tri + 0];
+        int b = 3 * triangles[tri + 1];
+        int c = 3 * triangles[tri + 2];
         double edge1x = points[b + 0] - points[a + 0];
         double edge1y = points[b + 1] - points[a + 1];
         double edge1z = points[b + 2] - points[a + 2];
@@ -167,12 +203,9 @@ public class Mesh implements PrimitiveList {
         float w = 1 - u - v;
         state.getRay().getPoint(state.getPoint());
         int tri = 3 * primID;
-        int index0 = tri + 0, index1 = tri + 1, index2 = tri + 2;
-        if (triangles != null) {
-            index0 = triangles[index0];
-            index1 = triangles[index1];
-            index2 = triangles[index2];
-        }
+        int index0 = triangles[tri + 0];
+        int index1 = triangles[tri + 1];
+        int index2 = triangles[tri + 2];
         Point3 v0p = getPoint(index0);
         Point3 v1p = getPoint(index1);
         Point3 v2p = getPoint(index2);
@@ -181,8 +214,9 @@ public class Mesh implements PrimitiveList {
             ng = parent.transformNormalObjectToWorld(ng);
         ng.normalize();
         state.getGeoNormal().set(ng);
-        switch (normalInterp) {
-            case NONE: {
+        switch (normals.interp) {
+            case NONE:
+            case FACE: {
                 state.getNormal().set(ng);
                 break;
             }
@@ -190,6 +224,7 @@ public class Mesh implements PrimitiveList {
                 int i30 = 3 * index0;
                 int i31 = 3 * index1;
                 int i32 = 3 * index2;
+                float[] normals = this.normals.data;
                 state.getNormal().x = w * normals[i30 + 0] + u * normals[i31 + 0] + v * normals[i32 + 0];
                 state.getNormal().y = w * normals[i30 + 1] + u * normals[i31 + 1] + v * normals[i32 + 1];
                 state.getNormal().z = w * normals[i30 + 2] + u * normals[i31 + 2] + v * normals[i32 + 2];
@@ -200,6 +235,7 @@ public class Mesh implements PrimitiveList {
             }
             case FACEVARYING: {
                 int idx = 3 * tri;
+                float[] normals = this.normals.data;
                 state.getNormal().x = w * normals[idx + 0] + u * normals[idx + 3] + v * normals[idx + 6];
                 state.getNormal().y = w * normals[idx + 1] + u * normals[idx + 4] + v * normals[idx + 7];
                 state.getNormal().z = w * normals[idx + 2] + u * normals[idx + 5] + v * normals[idx + 8];
@@ -210,8 +246,9 @@ public class Mesh implements PrimitiveList {
             }
         }
         float uv00 = 0, uv01 = 0, uv10 = 0, uv11 = 0, uv20 = 0, uv21 = 0;
-        switch (uvInterp) {
-            case NONE: {
+        switch (uvs.interp) {
+            case NONE:
+            case FACE: {
                 state.getUV().x = 0;
                 state.getUV().y = 0;
                 break;
@@ -220,6 +257,7 @@ public class Mesh implements PrimitiveList {
                 int i20 = 2 * index0;
                 int i21 = 2 * index1;
                 int i22 = 2 * index2;
+                float[] uvs = this.uvs.data;
                 uv00 = uvs[i20 + 0];
                 uv01 = uvs[i20 + 1];
                 uv10 = uvs[i21 + 0];
@@ -230,6 +268,7 @@ public class Mesh implements PrimitiveList {
             }
             case FACEVARYING: {
                 int idx = tri << 1;
+                float[] uvs = this.uvs.data;
                 uv00 = uvs[idx + 0];
                 uv01 = uvs[idx + 1];
                 uv10 = uvs[idx + 2];
@@ -239,7 +278,7 @@ public class Mesh implements PrimitiveList {
                 break;
             }
         }
-        if (uvInterp != InterpType.NONE) {
+        if (uvs.interp != InterpolationType.NONE) {
             // get exact uv coords and compute tangent vectors
             state.getUV().x = w * uv00 + u * uv10 + v * uv20;
             state.getUV().y = w * uv01 + u * uv11 + v * uv21;
@@ -275,83 +314,17 @@ public class Mesh implements PrimitiveList {
 
     public void init() {
         triaccel = null;
-        if (points == null)
-            return;
-        int nTriangles = getNumPrimitives();
+        int nt = getNumPrimitives();
         if (!smallTriangles) {
-            triaccel = new WaldTriangle[nTriangles];
-            for (int i = 0; i < nTriangles; i++)
+            // too many triangles? -- don't generate triaccel to save memory
+            if (nt > 2000000) {
+                UI.printWarning("[TRI] Too many triangles -- triaccel generation skipped");
+                return;
+            }
+            triaccel = new WaldTriangle[nt];
+            for (int i = 0; i < nt; i++)
                 triaccel[i] = new WaldTriangle(this, i);
         }
-    }
-
-    public void points(float[] points) {
-        this.points = points;
-        // refresh triangles
-        init();
-    }
-
-    public void normals(InterpType t, float[] normals) {
-        switch (t) {
-            case NONE:
-                normalInterp = t;
-                this.normals = null;
-                break;
-            case VERTEX:
-                if (points == null)
-                    UI.printWarning("[TRI] Unable to set vertex normals before points");
-                else if (normals != null && normals.length == points.length) {
-                    normalInterp = t;
-                    this.normals = normals;
-                } else
-                    UI.printWarning("[TRI] Invalid number of vertex normals.");
-                break;
-            case FACEVARYING:
-                if (triangles == null)
-                    UI.printWarning("[TRI] Unable to set facevarying normals before triangles");
-                else if (normals != null && normals.length == triangles.length * 3) {
-                    normalInterp = t;
-                    this.normals = normals;
-                } else
-                    UI.printWarning("[TRI] Invalid number of facevarying normals.");
-                break;
-        }
-    }
-
-    public void uvs(InterpType t, float[] uvs) {
-        switch (t) {
-            case NONE:
-                uvInterp = t;
-                this.uvs = null;
-                break;
-            case VERTEX:
-                if (points == null)
-                    UI.printWarning("[TRI] Unable to set vertex uvs before points");
-                else if (uvs != null && uvs.length * 3 == points.length * 2) {
-                    uvInterp = t;
-                    this.uvs = uvs;
-                } else
-                    UI.printWarning("[TRI] Invalid number of vertex uvs.");
-                break;
-            case FACEVARYING:
-                if (triangles == null)
-                    UI.printWarning("[TRI] Unable to set facevarying uvs before triangles");
-                else if (uvs != null && (uvs.length == triangles.length * 2)) {
-                    uvInterp = t;
-                    this.uvs = uvs;
-                } else
-                    UI.printWarning("[TRI] Invalid number of facevarying normals.");
-                break;
-        }
-    }
-
-    public void faceShaders(byte[] faceShaders) {
-        if (triangles == null)
-            UI.printWarning("[TRI] Unable to set face shaders before triangles.");
-        else if (faceShaders != null && 3 * faceShaders.length == triangles.length)
-            this.faceShaders = faceShaders;
-        else
-            UI.printWarning("[TRI] Invalid number of face shaders.");
     }
 
     protected Point3 getPoint(int i) {
@@ -368,12 +341,10 @@ public class Mesh implements PrimitiveList {
 
         private WaldTriangle(Mesh mesh, int tri) {
             k = 0;
-            int index0 = 3 * tri + 0, index1 = 3 * tri + 1, index2 = 3 * tri + 2;
-            if (mesh.triangles != null) {
-                index0 = mesh.triangles[index0];
-                index1 = mesh.triangles[index1];
-                index2 = mesh.triangles[index2];
-            }
+            tri *= 3;
+            int index0 = mesh.triangles[tri + 0];
+            int index1 = mesh.triangles[tri + 1];
+            int index2 = mesh.triangles[tri + 2];
             Point3 v0p = mesh.getPoint(index0);
             Point3 v1p = mesh.getPoint(index1);
             Point3 v2p = mesh.getPoint(index2);

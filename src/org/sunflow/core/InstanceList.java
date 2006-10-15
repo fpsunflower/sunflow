@@ -1,5 +1,6 @@
 package org.sunflow.core;
 
+import org.sunflow.SunflowAPI;
 import org.sunflow.math.BoundingBox;
 import org.sunflow.math.Matrix4;
 
@@ -60,5 +61,10 @@ final class InstanceList implements PrimitiveList {
 
     public final void prepareShadingState(ShadingState state) {
         state.getInstance().prepareShadingState(state);
+    }
+
+    public boolean update(ParameterList pl, SunflowAPI api) {
+        // TODO: build accelstructure into this (?)
+        return true;
     }
 }

@@ -1,5 +1,7 @@
 package org.sunflow.core.shader;
 
+import org.sunflow.SunflowAPI;
+import org.sunflow.core.ParameterList;
 import org.sunflow.core.Ray;
 import org.sunflow.core.Shader;
 import org.sunflow.core.ShadingState;
@@ -7,10 +9,15 @@ import org.sunflow.image.Color;
 import org.sunflow.math.Vector3;
 
 public class MirrorShader implements Shader {
-    private Color reflect;
+    private Color color;
 
-    public MirrorShader(Color reflect) {
-        this.reflect = reflect.copy();
+    public MirrorShader() {
+        this.color = Color.WHITE;
+    }
+
+    public boolean update(ParameterList pl, SunflowAPI api) {
+        color = pl.getColor("color", color);
+        return true;
     }
 
     public Color getRadiance(ShadingState state) {
@@ -30,20 +37,20 @@ public class MirrorShader implements Shader {
         float cos2 = cos * cos;
         float cos5 = cos2 * cos2 * cos;
         Color ret = Color.white();
-        ret.sub(reflect);
+        ret.sub(color);
         ret.mul(cos5);
-        ret.add(reflect);
+        ret.add(color);
         return ret.mul(state.traceReflection(refRay, 0));
     }
 
     public void scatterPhoton(ShadingState state, Color power) {
-        float avg = reflect.getAverage();
+        float avg = color.getAverage();
         double rnd = state.getRandom(0, 0, 1);
         if (rnd >= avg)
             return;
         state.faceforward();
         float cos = state.getCosND();
-        power.mul(reflect).mul(1.0f / avg);
+        power.mul(color).mul(1.0f / avg);
         // photon is reflected
         float dn = 2 * cos;
         Vector3 dir = new Vector3();

@@ -38,11 +38,11 @@ public class SearchPath {
         // account for relative naming schemes from 3rd party softwares
         if (filename.startsWith("//"))
             filename = filename.substring(2);
-        UI.printInfo("[SYS] Resolving %s path \"%s\" ...", type, filename);
+        UI.printDetailed("[SYS] Resolving %s path \"%s\" ...", type, filename);
         File f = new File(filename);
         if (!f.isAbsolute()) {
             for (String prefix : searchPath) {
-                UI.printInfo("[SYS]   * searching: \"%s\" ...", prefix);
+                UI.printDetailed("[SYS]   * searching: \"%s\" ...", prefix);
                 if (prefix.endsWith(File.separator) || filename.startsWith(File.separator))
                     f = new File(prefix + filename);
                 else

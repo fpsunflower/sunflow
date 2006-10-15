@@ -7,7 +7,7 @@ import org.sunflow.image.Color;
  * used as sources of light, reflectors of light, and even as surface modifiers
  * for effects such as bump-mapping.
  */
-public interface Shader {
+public interface Shader extends RenderObject {
     /**
      * Gets the radiance for a specified rendering state. When this method is
      * called, you can assume that a hit has been registered in the state and

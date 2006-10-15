@@ -1,5 +1,7 @@
 package org.sunflow.core.shader;
 
+import org.sunflow.SunflowAPI;
+import org.sunflow.core.ParameterList;
 import org.sunflow.core.ShadingState;
 import org.sunflow.core.Texture;
 import org.sunflow.core.TextureCache;
@@ -8,14 +10,15 @@ import org.sunflow.image.Color;
 public class TexturedAmbientOcclusionShader extends AmbientOcclusionShader {
     private Texture tex;
 
-    public TexturedAmbientOcclusionShader(String filename) {
-        super(null);
-        tex = TextureCache.getTexture(filename);
+    public TexturedAmbientOcclusionShader() {
+        tex = null;
     }
-
-    public TexturedAmbientOcclusionShader(String filename, Color dark, int samples, float maxDist) {
-        super(null, dark, samples, maxDist);
-        tex = TextureCache.getTexture(filename);
+    
+    public boolean update(ParameterList pl, SunflowAPI api) {
+        String filename = pl.getString("texture", null);
+        if (filename != null)
+            tex = TextureCache.getTexture(api.resolveTextureFilename(filename));
+        return tex != null && super.update(pl, api);
     }
 
     @Override

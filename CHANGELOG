@@ -1,4 +1,5 @@
 v0.07.0
+* Implemented parameter system for all render object creation
 * Textures are now loaded on demand, when they are first accessed
 * Modified bucketOrder call in SunflowAPI to create inverted bucket orders
 * Added InvertedBucketOrder

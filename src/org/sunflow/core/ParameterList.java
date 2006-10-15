@@ -39,10 +39,12 @@ public final class ParameterList {
      * Clears the list of all its members. If some members were never used, a
      * warning will be printed to remind the user something may be wrong.
      */
-    public void clear() {
-        for (Map.Entry<String, Parameter> e : list.entrySet()) {
-            if (!e.getValue().checked)
-                UI.printWarning("[API] Unused parameter: %s", e.getKey());
+    public void clear(boolean showUnused) {
+        if (showUnused) {
+            for (Map.Entry<String, Parameter> e : list.entrySet()) {
+                if (!e.getValue().checked)
+                    UI.printWarning("[API] Unused parameter: %s - %s", e.getKey(), e.getValue());
+            }
         }
         list.clear();
         numVerts = numFaces = numFaceVerts = 0;
@@ -87,8 +89,6 @@ public final class ParameterList {
      * @param value parameter value
      */
     public void addString(String name, String value) {
-        if (name == null || value == null)
-            throw new NullPointerException();
         add(name, new Parameter(value));
     }
 
@@ -100,8 +100,6 @@ public final class ParameterList {
      * @param value parameter value
      */
     public void addInteger(String name, int value) {
-        if (name == null)
-            throw new NullPointerException();
         add(name, new Parameter(value));
     }
 
@@ -113,8 +111,6 @@ public final class ParameterList {
      * @param value parameter value
      */
     public void addBoolean(String name, boolean value) {
-        if (name == null)
-            throw new NullPointerException();
         add(name, new Parameter(value));
     }
 
@@ -126,8 +122,6 @@ public final class ParameterList {
      * @param value parameter value
      */
     public void addFloat(String name, float value) {
-        if (name == null)
-            throw new NullPointerException();
         add(name, new Parameter(value));
     }
 
@@ -139,7 +133,7 @@ public final class ParameterList {
      * @param value parameter value
      */
     public void addColor(String name, Color value) {
-        if (name == null || value == null)
+        if (value == null)
             throw new NullPointerException();
         add(name, new Parameter(value));
     }
@@ -152,7 +146,20 @@ public final class ParameterList {
      * @param value parameter value
      */
     public void addIntegerArray(String name, int[] array) {
-        if (name == null || array == null)
+        if (array == null)
+            throw new NullPointerException();
+        add(name, new Parameter(array));
+    }
+
+    /**
+     * Add the specified array of integers as a parameter. <code>null</code>
+     * values are not permitted.
+     * 
+     * @param name parameter name
+     * @param value parameter value
+     */
+    public void addStringArray(String name, String[] array) {
+        if (array == null)
             throw new NullPointerException();
         add(name, new Parameter(array));
     }
@@ -166,9 +173,7 @@ public final class ParameterList {
      * @param value parameter value
      */
     public void addPoints(String name, InterpolationType interp, float[] data) {
-        if (name == null || data == null)
-            throw new NullPointerException();
-        if (data.length % 3 != 0) {
+        if (data == null || data.length % 3 != 0) {
             UI.printError("[API]] Cannot create point parameter %s -- invalid data length", name);
             return;
         }
@@ -185,9 +190,7 @@ public final class ParameterList {
      */
 
     public void addVectors(String name, InterpolationType interp, float[] data) {
-        if (name == null || data == null)
-            throw new NullPointerException();
-        if (data.length % 3 != 0) {
+        if (data == null || data.length % 3 != 0) {
             UI.printError("[API]] Cannot create vector parameter %s -- invalid data length", name);
             return;
         }
@@ -203,9 +206,7 @@ public final class ParameterList {
      * @param value parameter value
      */
     public void addTexCoords(String name, InterpolationType interp, float[] data) {
-        if (name == null || data == null)
-            throw new NullPointerException();
-        if (data.length % 2 != 0) {
+        if (data == null || data.length % 2 != 0) {
             UI.printError("[API]] Cannot create texcoord parameter %s -- invalid data length", name);
             return;
         }
@@ -221,9 +222,7 @@ public final class ParameterList {
      * @param value parameter value
      */
     public void addMatrices(String name, InterpolationType interp, float[] data) {
-        if (name == null || data == null)
-            throw new NullPointerException();
-        if (data.length % 16 != 0) {
+        if (data == null || data.length % 16 != 0) {
             UI.printError("[API]] Cannot create matrix parameter %s -- invalid data length", name);
             return;
         }
@@ -231,156 +230,157 @@ public final class ParameterList {
     }
 
     private void add(String name, Parameter param) {
-        if (list.put(name, param) != null)
+        if (name == null)
+            UI.printError("[API] Cannot declare parameter with null name");
+        else if (list.put(name, param) != null)
             UI.printWarning("[API] Parameter %s was already defined -- overwriting", name);
     }
 
     public String getString(String name, String defaultValue) {
         Parameter p = list.get(name);
-        if (p != null && p.type == ParameterType.STRING) {
-            p.checked = true;
+        if (isValidParameter(name, ParameterType.STRING, InterpolationType.NONE, 1, p))
             return p.getStringValue();
-        }
         return defaultValue;
+    }
+
+    public String[] getStringArray(String name) {
+        Parameter p = list.get(name);
+        if (isValidParameter(name, ParameterType.STRING, InterpolationType.NONE, -1, p))
+            return p.getStrings();
+        return null;
     }
 
     public int getInt(String name, int defaultValue) {
         Parameter p = list.get(name);
-        if (p != null && p.type == ParameterType.INT && p.interp == InterpolationType.NONE && p.size() == 1) {
-            p.checked = true;
+        if (isValidParameter(name, ParameterType.INT, InterpolationType.NONE, 1, p))
             return p.getIntValue();
-        }
         return defaultValue;
     }
 
     public int[] getIntArray(String name) {
         Parameter p = list.get(name);
-        if (p != null && p.type == ParameterType.INT && p.interp == InterpolationType.NONE) {
-            p.checked = true;
+        if (isValidParameter(name, ParameterType.INT, InterpolationType.NONE, -1, p))
             return p.getInts();
-        }
         return null;
     }
 
     public boolean getBoolean(String name, boolean defaultValue) {
         Parameter p = list.get(name);
-        if (p != null && p.type == ParameterType.BOOL && p.interp == InterpolationType.NONE && p.size() == 1) {
-            p.checked = true;
+        if (isValidParameter(name, ParameterType.BOOL, InterpolationType.NONE, 1, p))
             return p.getBoolValue();
-        }
         return defaultValue;
     }
 
     public float getFloat(String name, float defaultValue) {
         Parameter p = list.get(name);
-        if (p != null && p.type == ParameterType.FLOAT && p.interp == InterpolationType.NONE && p.size() == 1) {
-            p.checked = true;
+        if (isValidParameter(name, ParameterType.FLOAT, InterpolationType.NONE, 1, p))
             return p.getFloatValue();
-        }
         return defaultValue;
     }
 
     public Color getColor(String name, Color defaultValue) {
         Parameter p = list.get(name);
-        if (p != null && p.type == ParameterType.COLOR) {
-            p.checked = true;
+        if (isValidParameter(name, ParameterType.COLOR, InterpolationType.NONE, 1, p))
             return p.getColor();
-        }
         return defaultValue;
     }
 
-    public Point3 getPoint(String name) {
+    public Point3 getPoint(String name, Point3 defaultValue) {
         Parameter p = list.get(name);
-        if (p != null && p.type == ParameterType.POINT && p.interp == InterpolationType.NONE && p.size() == 1) {
-            p.checked = true;
+        if (isValidParameter(name, ParameterType.POINT, InterpolationType.NONE, 1, p))
             return p.getPoint();
-        }
-        return null;
+        return defaultValue;
     }
 
-    public Vector3 getVector(String name) {
+    public Vector3 getVector(String name, Vector3 defaultValue) {
         Parameter p = list.get(name);
-        if (p != null && p.type == ParameterType.VECTOR && p.interp == InterpolationType.NONE && p.size() == 1) {
-            p.checked = true;
+        if (isValidParameter(name, ParameterType.VECTOR, InterpolationType.NONE, 1, p))
             return p.getVector();
-        }
-        return null;
+        return defaultValue;
     }
 
-    public Point2 getTexCoord(String name) {
+    public Point2 getTexCoord(String name, Point2 defaultValue) {
         Parameter p = list.get(name);
-        if (p != null && p.type == ParameterType.TEXCOORD && p.interp == InterpolationType.NONE && p.size() == 1) {
-            p.checked = true;
+        if (isValidParameter(name, ParameterType.TEXCOORD, InterpolationType.NONE, 1, p))
             return p.getTexCoord();
-        }
-        return null;
+        return defaultValue;
     }
 
     public Matrix4 getMatrix(String name, Matrix4 defaultValue) {
         Parameter p = list.get(name);
-        if (p != null && p.type == ParameterType.MATRIX && p.interp == InterpolationType.NONE && p.size() == 1) {
-            p.checked = true;
+        if (isValidParameter(name, ParameterType.MATRIX, InterpolationType.NONE, 1, p))
             return p.getMatrix();
-        }
         return defaultValue;
     }
 
     public FloatParameter getPointArray(String name) {
-        Parameter p = list.get(name);
-        if (p != null && p.type == ParameterType.POINT)
-            return getFloatParameter(name, p);
-        return null;
+        return getFloatParameter(name, ParameterType.POINT, list.get(name));
     }
 
     public FloatParameter getVectorArray(String name) {
-        Parameter p = list.get(name);
-        if (p != null && p.type == ParameterType.VECTOR)
-            return getFloatParameter(name, p);
-        return null;
+        return getFloatParameter(name, ParameterType.VECTOR, list.get(name));
     }
 
     public FloatParameter getTexCoordArray(String name) {
-        Parameter p = list.get(name);
-        if (p != null && p.type == ParameterType.TEXCOORD)
-            return getFloatParameter(name, p);
-        return null;
+        return getFloatParameter(name, ParameterType.TEXCOORD, list.get(name));
     }
 
     public FloatParameter getMatrixArray(String name) {
-        Parameter p = list.get(name);
-        if (p != null && p.type == ParameterType.MATRIX)
-            return getFloatParameter(name, p);
-        return null;
+        return getFloatParameter(name, ParameterType.MATRIX, list.get(name));
     }
 
-    private FloatParameter getFloatParameter(String name, Parameter p) {
+    private boolean isValidParameter(String name, ParameterType type, InterpolationType interp, int requestedSize, Parameter p) {
+        if (p == null)
+            return false;
+        if (p.type != type) {
+            UI.printWarning("[API] Parameter %s requested as a %s - declared as %s", name, type.name().toLowerCase(), p.type.name().toLowerCase());
+            return false;
+        }
+        if (p.interp != interp) {
+            UI.printWarning("[API] Parameter %s requested as a %s - declared as %s", name, interp.name().toLowerCase(), p.interp.name().toLowerCase());
+            return false;
+        }
+        if (requestedSize > 0 && p.size() != requestedSize) {
+            UI.printWarning("[API] Parameter %s requires %d %s - declared with %d", name, requestedSize, requestedSize == 1 ? "value" : "values", p.size());
+            return false;
+        }
         p.checked = true;
+        return true;
+    }
+
+    private FloatParameter getFloatParameter(String name, ParameterType type, Parameter p) {
+        if (p == null)
+            return null;
         switch (p.interp) {
             case NONE:
-                return p.getFloats();
+                if (!isValidParameter(name, type, p.interp, -1, p))
+                    return null;
+                break;
             case VERTEX:
-                if (numVerts <= 0 || p.size() == numVerts)
-                    return p.getFloats();
-                UI.printWarning("[API] Parameter %s expecting %d values for vertex interpolation, found %d -- ignoring", name, numVerts, p.size());
+                if (!isValidParameter(name, type, p.interp, numVerts, p))
+                    return null;
                 break;
             case FACE:
-                if (numFaces <= 0 || p.size() == numFaces)
-                    return p.getFloats();
-                UI.printWarning("[API] Parameter %s expecting %d values for face interpolation, found %d -- ignoring", name, numFaces, p.size());
+                if (!isValidParameter(name, type, p.interp, numFaces, p))
+                    return null;
                 break;
             case FACEVARYING:
-                if (numFaceVerts <= 0 || p.size() == numFaceVerts)
-                    return p.getFloats();
-                UI.printWarning("[API] Parameter %s expecting %d values for facevarying interpolation, found %d -- ignoring", name, numFaces, p.size());
+                if (!isValidParameter(name, type, p.interp, numFaceVerts, p))
+                    return null;
                 break;
             default:
+                return null;
         }
-        return null;
+        return p.getFloats();
     }
 
     public static final class FloatParameter {
         public final InterpolationType interp;
         public final float[] data;
+
+        public FloatParameter() {
+            this(InterpolationType.NONE, null);
+        }
 
         private FloatParameter(InterpolationType interp, float[] data) {
             this.interp = interp;
@@ -393,7 +393,7 @@ public final class ParameterList {
         private InterpolationType interp;
         private float[] floats;
         private int[] ints;
-        private String str;
+        private String[] strs;
         private Color color;
         private boolean bool;
         private boolean checked;
@@ -401,7 +401,7 @@ public final class ParameterList {
         private Parameter(String value) {
             type = ParameterType.STRING;
             interp = InterpolationType.NONE;
-            str = value;
+            strs = new String[] { value };
             checked = false;
         }
 
@@ -433,6 +433,13 @@ public final class ParameterList {
             checked = false;
         }
 
+        private Parameter(String[] array) {
+            type = ParameterType.STRING;
+            interp = InterpolationType.NONE;
+            strs = array;
+            checked = false;
+        }
+
         private Parameter(Color c) {
             type = ParameterType.COLOR;
             interp = InterpolationType.NONE;
@@ -451,7 +458,7 @@ public final class ParameterList {
             // number of elements
             switch (type) {
                 case STRING:
-                    return 1;
+                    return strs.length;
                 case INT:
                     return ints.length;
                 case BOOL:
@@ -474,11 +481,11 @@ public final class ParameterList {
         }
 
         public String toString() {
-            return String.format("%s%s[%d]", interp == InterpolationType.NONE ? "" : " " + interp.name().toLowerCase() + " ", type.name().toLowerCase(), size());
+            return String.format("%s%s[%d]", interp == InterpolationType.NONE ? "" : interp.name().toLowerCase() + " ", type.name().toLowerCase(), size());
         }
 
         private String getStringValue() {
-            return str;
+            return strs[0];
         }
 
         private boolean getBoolValue() {
@@ -491,6 +498,10 @@ public final class ParameterList {
 
         private int[] getInts() {
             return ints;
+        }
+
+        private String[] getStrings() {
+            return strs;
         }
 
         private float getFloatValue() {

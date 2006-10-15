@@ -1,5 +1,7 @@
 package org.sunflow.core.shader;
 
+import org.sunflow.SunflowAPI;
+import org.sunflow.core.ParameterList;
 import org.sunflow.core.Ray;
 import org.sunflow.core.Shader;
 import org.sunflow.core.ShadingState;
@@ -15,11 +17,21 @@ public class UberShader implements Shader {
     private Texture tex;
     private float amount;
 
-    public UberShader(Color d, Color r, String filename, float a) {
-        diff = d;
-        refl = r;
-        tex = filename != null ? TextureCache.getTexture(filename) : null;
-        amount = a;
+    public UberShader() {
+        diff = Color.GREY;
+        refl = Color.GREY;
+        tex = null;
+        amount = 1;
+    }
+
+    public boolean update(ParameterList pl, SunflowAPI api) {
+        diff = pl.getColor("diffuse", diff);
+        refl = pl.getColor("reflection", refl);
+        String filename = pl.getString("texture", null);
+        if (filename != null)
+            tex = TextureCache.getTexture(api.resolveTextureFilename(filename));
+        amount = pl.getFloat("blend", amount);
+        return true;
     }
 
     public Color getDiffuse(ShadingState state) {

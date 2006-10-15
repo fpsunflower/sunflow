@@ -1,10 +1,9 @@
 package org.sunflow.core.light;
 
 import org.sunflow.SunflowAPI;
-import org.sunflow.core.Geometry;
-import org.sunflow.core.Instance;
 import org.sunflow.core.LightSample;
 import org.sunflow.core.LightSource;
+import org.sunflow.core.ParameterList;
 import org.sunflow.core.Ray;
 import org.sunflow.core.Shader;
 import org.sunflow.core.ShadingState;
@@ -13,30 +12,31 @@ import org.sunflow.image.Color;
 import org.sunflow.math.OrthoNormalBasis;
 import org.sunflow.math.Point3;
 import org.sunflow.math.Vector3;
-import org.sunflow.system.UI;
 
 public class MeshLight extends Mesh implements Shader {
     private Color radiance;
     private int numSamples;
 
-    public MeshLight(float[] points, int[] triangles, Color radiance, int numSamples) {
-        super(points, triangles);
-        this.radiance = radiance;
-        this.numSamples = numSamples;
+    public MeshLight() {
+        radiance = Color.WHITE;
+        numSamples = 4;
     }
 
-    public void init(SunflowAPI api) {
-        if (points == null)
-            UI.printWarning("[TRI] Incomplete mesh - cannot create lights");
-        else {
-            api.instance(new Instance(this, null, new Geometry(this)));
-            // the shader does not require normals or texture coords
-            normals(InterpType.NONE, null);
-            uvs(InterpType.NONE, null);
-            for (int i = 0, j = 0; i < triangles.length; i += 3, j++) {
-                TriangleLight t = new TriangleLight(j);
-                api.light(t);
-            }
+    public boolean update(ParameterList pl, SunflowAPI api) {
+        radiance = pl.getColor("radiance", radiance);
+        numSamples = pl.getInt("samples", numSamples);
+        return super.update(pl, api);
+    }
+
+    public void init(String name, SunflowAPI api) {
+        api.geometry(name, this);
+        api.shader(name + ".shader", this);
+        api.parameter("shaders", name + ".shader");
+        api.instance(name + ".instance", name);
+        for (int i = 0, j = 0; i < triangles.length; i += 3, j++) {
+            TriangleLight t = new TriangleLight(j);
+            String lname = String.format("%s.light[%d]", name, j);
+            api.light(lname, t);
         }
     }
 
@@ -65,6 +65,10 @@ public class MeshLight extends Mesh implements Shader {
             ng = Point3.normal(v0p, v1p, v2p);
             area = 0.5f * ng.length();
             ng.normalize();
+        }
+
+        public boolean update(ParameterList pl, SunflowAPI api) {
+            return true;
         }
 
         public boolean isAdaptive() {

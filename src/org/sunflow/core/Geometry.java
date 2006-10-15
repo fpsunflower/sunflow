@@ -1,5 +1,6 @@
 package org.sunflow.core;
 
+import org.sunflow.SunflowAPI;
 import org.sunflow.core.accel.BoundingIntervalHierarchy;
 import org.sunflow.core.accel.KDTree;
 import org.sunflow.core.accel.NullAccelerator;
@@ -8,7 +9,7 @@ import org.sunflow.math.BoundingBox;
 import org.sunflow.math.Matrix4;
 import org.sunflow.system.UI;
 
-public class Geometry {
+public class Geometry implements RenderObject {
     private PrimitiveList primitives;
     private AccelerationStructure accel;
     private int builtAccel;
@@ -24,6 +25,10 @@ public class Geometry {
         builtAccel = 0;
     }
 
+    public boolean update(ParameterList pl, SunflowAPI api) {
+        return primitives.update(pl, api);
+    }
+    
     int getNumPrimitives() {
         return primitives.getNumPrimitives();
     }

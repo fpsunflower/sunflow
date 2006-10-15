@@ -10,8 +10,6 @@ import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel.MapMode;
 
 import org.sunflow.SunflowAPI;
-import org.sunflow.core.Geometry;
-import org.sunflow.core.Instance;
 import org.sunflow.core.SceneParser;
 import org.sunflow.core.primitive.Mesh;
 import org.sunflow.core.shader.SimpleShader;
@@ -37,11 +35,18 @@ public class TriParser implements SceneParser {
                 triangles[t + 1] = p.getNextInt();
                 triangles[t + 2] = p.getNextInt();
             }
-            Mesh mesh = new Mesh(verts, triangles);
 
-            Geometry geo = new Geometry(mesh);
-            Instance instance = new Instance(new SimpleShader(), null, geo);
-            api.instance(instance);
+            // create geometry
+            api.parameter("triangles", triangles);
+            api.parameter("points", "point", "vertex", verts);
+            api.geometry(filename, new Mesh());
+
+            // create shader
+            api.shader(filename + ".shader", new SimpleShader());
+            api.parameter("shaders", filename + ".shader");
+
+            // create instance
+            api.instance(filename + ".instance", filename);
 
             p.close();
             // output to ra3 format

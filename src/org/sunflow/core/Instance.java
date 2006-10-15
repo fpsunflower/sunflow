@@ -1,32 +1,43 @@
 package org.sunflow.core;
 
+import org.sunflow.SunflowAPI;
 import org.sunflow.math.BoundingBox;
 import org.sunflow.math.Matrix4;
 import org.sunflow.math.Point3;
 import org.sunflow.math.Vector3;
+import org.sunflow.system.UI;
 
-public class Instance {
+public class Instance implements RenderObject {
     private Matrix4 o2w;
     private Matrix4 w2o;
     private BoundingBox bounds;
     private Shader[] shaders;
     private Geometry geometry;
 
-    public Instance(Shader shader, Matrix4 o2w, Geometry geometry) {
-        this(new Shader[] { shader }, o2w, geometry);
+    public Instance(Geometry geometry) {
+        this.geometry = geometry;
+        o2w = w2o = null;
+        shaders = null;
     }
 
-    public Instance(Shader[] shaders, Matrix4 o2w, Geometry geometry) {
-        this.shaders = shaders;
-        this.o2w = o2w;
-        this.geometry = geometry;
+    public boolean update(ParameterList pl, SunflowAPI api) {
+        String[] shaders = pl.getStringArray("shaders");
+        if (shaders != null) {
+            this.shaders = new Shader[shaders.length];
+            for (int i = 0; i < shaders.length; i++)
+                this.shaders[i] = api.shader(shaders[i]);
+        }
+        o2w = pl.getMatrix("transform", o2w);
         if (o2w != null) {
             w2o = o2w.inverse();
-            if (w2o == null)
-                throw new RuntimeException("Unable to inverse scale/translate matrix!");
+            if (w2o == null) {
+                UI.printError("[GEO] Unable to compute transform inverse");
+                return false;
+            }
         } else
             o2w = w2o = null;
         bounds = geometry.getWorldBounds(o2w);
+        return true;
     }
 
     public BoundingBox getBounds() {

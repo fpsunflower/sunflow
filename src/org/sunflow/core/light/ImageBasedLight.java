@@ -1,11 +1,10 @@
 package org.sunflow.core.light;
 
 import org.sunflow.SunflowAPI;
-import org.sunflow.core.Geometry;
-import org.sunflow.core.Instance;
 import org.sunflow.core.IntersectionState;
 import org.sunflow.core.LightSample;
 import org.sunflow.core.LightSource;
+import org.sunflow.core.ParameterList;
 import org.sunflow.core.PrimitiveList;
 import org.sunflow.core.Ray;
 import org.sunflow.core.Shader;
@@ -31,46 +30,67 @@ public class ImageBasedLight implements PrimitiveList, LightSource, Shader {
     private Vector3[] samples;
     private Color[] colors;
 
-    public ImageBasedLight(String filename, Vector3 center, Vector3 up, int numSamples, boolean lockSamples) {
-        texture = TextureCache.getTexture(filename);
+    public ImageBasedLight() {
+        texture = null;
+        updateBasis(new Vector3(0, 0, -1), new Vector3(0, 1, 0));
+        numSamples = 64;
+    }
 
-        basis = OrthoNormalBasis.makeFromWV(center, up);
-        basis.swapWU();
-        basis.flipV();
+    private void updateBasis(Vector3 center, Vector3 up) {
+        if (center != null && up != null) {
+            basis = OrthoNormalBasis.makeFromWV(center, up);
+            basis.swapWU();
+            basis.flipV();
+        }
+    }
+
+    public boolean update(ParameterList pl, SunflowAPI api) {
+        updateBasis(pl.getVector("center", null), pl.getVector("up", null));
+        numSamples = pl.getInt("samples", numSamples);
+
+        String filename = pl.getString("texture", null);
+        if (filename != null)
+            texture = TextureCache.getTexture(api.resolveTextureFilename(filename));
+
+        // no texture provided
+        if (texture == null)
+            return false;
         Bitmap b = texture.getBitmap();
         if (b == null)
-            numSamples = 0;
-        this.numSamples = numSamples;
+            return false;
 
-        imageHistogram = new float[b.getWidth()][b.getHeight()];
-        colHistogram = new float[b.getWidth()];
-        float du = 1.0f / b.getWidth();
-        float dv = 1.0f / b.getHeight();
-        for (int x = 0; x < b.getWidth(); x++) {
-            for (int y = 0; y < b.getHeight(); y++) {
-                float u = (x + 0.5f) * du;
-                float v = (y + 0.5f) * dv;
-                Color c = texture.getPixel(u, v);
-                // box filter the image
-                // c.add(texture.getPixel(u + du, v));
-                // c.add(texture.getPixel(u + du, v+ dv));
-                // c.add(texture.getPixel(u, v + dv));
-                // c.mul(0.25f);
-                imageHistogram[x][y] = c.getLuminance() * (float) Math.sin(Math.PI * v);
-                if (y > 0)
-                    imageHistogram[x][y] += imageHistogram[x][y - 1];
+        // rebuild histograms if this is a new texture
+        if (filename != null) {
+            imageHistogram = new float[b.getWidth()][b.getHeight()];
+            colHistogram = new float[b.getWidth()];
+            float du = 1.0f / b.getWidth();
+            float dv = 1.0f / b.getHeight();
+            for (int x = 0; x < b.getWidth(); x++) {
+                for (int y = 0; y < b.getHeight(); y++) {
+                    float u = (x + 0.5f) * du;
+                    float v = (y + 0.5f) * dv;
+                    Color c = texture.getPixel(u, v);
+                    // box filter the image
+                    // c.add(texture.getPixel(u + du, v));
+                    // c.add(texture.getPixel(u + du, v+ dv));
+                    // c.add(texture.getPixel(u, v + dv));
+                    // c.mul(0.25f);
+                    imageHistogram[x][y] = c.getLuminance() * (float) Math.sin(Math.PI * v);
+                    if (y > 0)
+                        imageHistogram[x][y] += imageHistogram[x][y - 1];
+                }
+                colHistogram[x] = imageHistogram[x][b.getHeight() - 1];
+                if (x > 0)
+                    colHistogram[x] += colHistogram[x - 1];
+                for (int y = 0; y < b.getHeight(); y++)
+                    imageHistogram[x][y] /= imageHistogram[x][b.getHeight() - 1];
             }
-            colHistogram[x] = imageHistogram[x][b.getHeight() - 1];
-            if (x > 0)
-                colHistogram[x] += colHistogram[x - 1];
-            for (int y = 0; y < b.getHeight(); y++)
-                imageHistogram[x][y] /= imageHistogram[x][b.getHeight() - 1];
+            for (int x = 0; x < b.getWidth(); x++)
+                colHistogram[x] /= colHistogram[b.getWidth() - 1];
+            jacobian = (float) (2 * Math.PI * Math.PI) / (b.getWidth() * b.getHeight());
         }
-        for (int x = 0; x < b.getWidth(); x++)
-            colHistogram[x] /= colHistogram[b.getWidth() - 1];
-        jacobian = (float) (2 * Math.PI * Math.PI) / (b.getWidth() * b.getHeight());
-
-        if (lockSamples) {
+        // take fixed samples
+        if (pl.getBoolean("fixed", samples != null)) {
             // Bitmap loc = new Bitmap(filename);
             samples = new Vector3[numSamples];
             colors = new Color[numSamples];
@@ -101,16 +121,21 @@ public class ImageBasedLight implements PrimitiveList, LightSource, Shader {
                 // loc.setPixel(x, y, Color.YELLOW.copy().mul(1e6f));
             }
             // loc.save("samples.hdr");
-            // histograms are no longer needed
-            colHistogram = null;
-            imageHistogram = null;
+        } else {
+            // turn off
+            samples = null;
+            colors = null;
         }
+        return true;
     }
-    
-    public void init(SunflowAPI api) {
+
+    public void init(String name, SunflowAPI api) {
         // register this object with the api properly
-        api.instance(new Instance(this, null, new Geometry(this)));
-        api.light(this);
+        api.geometry(name, this);
+        api.shader(name + ".shader", this);
+        api.parameter("shaders", name + ".shader");
+        api.instance(name + ".instance", name);
+        api.light(name + ".light", this);
     }
 
     public void prepareShadingState(ShadingState state) {

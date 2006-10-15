@@ -8,9 +8,6 @@ import java.io.PrintStream;
 import javax.imageio.ImageIO;
 
 import org.sunflow.core.Display;
-import org.sunflow.core.Geometry;
-import org.sunflow.core.Instance;
-import org.sunflow.core.Shader;
 import org.sunflow.core.camera.PinholeCamera;
 import org.sunflow.core.display.FrameDisplay;
 import org.sunflow.core.gi.InstantGI;
@@ -134,27 +131,43 @@ public class Benchmark extends SunflowAPI implements BenchmarkTest, UserInterfac
         float[] verts = new float[] { minX, minY, minZ, maxX, minY, minZ, maxX, minY, maxZ, minX, minY, maxZ, minX, maxY, minZ, maxX, maxY, minZ, maxX, maxY, maxZ, minX, maxY, maxZ, };
         int[] indices = new int[] { 0, 1, 2, 2, 3, 0, 4, 5, 6, 6, 7, 4, 1, 2, 5, 5, 6, 2, 2, 3, 6, 6, 7, 3, 0, 3, 4, 4, 7, 3 };
 
-        Mesh walls = new Mesh(verts, indices);
-        walls.faceShaders(new byte[] { 0, 0, 0, 0, 1, 1, 0, 0, 2, 2 });
-        Shader[] shaders = new Shader[3];
-        shaders[0] = new DiffuseShader(grey);
-        shaders[1] = new DiffuseShader(red);
-        shaders[2] = new DiffuseShader(blue);
+        parameter("diffuse", grey);
+        shader("grey_shader", new DiffuseShader());
+        parameter("diffuse", red);
+        shader("red_shader", new DiffuseShader());
+        parameter("diffuse", blue);
+        shader("blue_shader", new DiffuseShader());
 
-        Geometry geo = new Geometry(walls);
-        Instance instance = new Instance(shaders, null, geo);
-        instance(instance);
+        // build walls
+        parameter("triangles", indices);
+        parameter("points", "point", "vertex", verts);
+        parameter("faceshaders", new int[] { 0, 0, 0, 0, 1, 1, 0, 0, 2, 2 });
+        geometry("walls", new Mesh());
+        
+        // instance walls
+        parameter("shaders", new String[] {"grey_shader", "red_shader","blue_shader" });
+        instance("walls.instance", "walls");
 
-        MeshLight light = new MeshLight(new float[] { -50, maxY - 1, -50, 50, maxY - 1, -50, 50, maxY - 1, 50, -50, maxY - 1, 50 }, new int[] { 0, 1, 2, 2, 3, 0 }, emit, 16);
-        light.init(this);
+
+        // create mesh light
+        parameter("points", "point", "vertex", new float[] { -50, maxY - 1, -50, 50, maxY - 1, -50, 50, maxY - 1, 50, -50, maxY - 1, 50 });
+        parameter("triangles", new int[] { 0, 1, 2, 2, 3, 0 });
+        parameter("radiance", emit);
+        parameter("samples", 16);
+        MeshLight light = new MeshLight();
+        light.init("light", this);
 
         // spheres
-        shader("Glass", new GlassShader(1.6f, Color.WHITE));
-        sphere(-60, minY + 100, -100, 50);
-        shader("Mirror", new MirrorShader(new Color(0.70f, 0.70f, 0.70f)));
-        sphere(100, minY + 60, -50, 50);
+        parameter("eta", 1.6f);
+        shader("Glass", new GlassShader());
+        sphere("glass_sphere", "Glass", -60, minY + 100, -100, 50);
+        parameter("color", new Color(0.70f, 0.70f, 0.70f));
+        shader("Mirror", new MirrorShader());
+        sphere("mirror_sphere", "Mirror", 100, minY + 60, -50, 50);
+
         // scanned model
-        shader("ra3shader", shaders[0]);
+        parameter("diffuse", grey);
+        shader("ra3shader", new DiffuseShader());
         String ra3file = resourcePath + "maxplanck.ra3";
         if (!parse(ra3file))
             UI.printError("[BCH] Unable to load %s", ra3file);

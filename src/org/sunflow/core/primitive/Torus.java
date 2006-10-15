@@ -1,5 +1,7 @@
 package org.sunflow.core.primitive;
 
+import org.sunflow.SunflowAPI;
+import org.sunflow.core.ParameterList;
 import org.sunflow.core.PrimitiveList;
 import org.sunflow.core.Instance;
 import org.sunflow.core.IntersectionState;
@@ -17,12 +19,20 @@ public class Torus implements PrimitiveList {
     private float ri2, ro2;
     private float ri, ro;
 
-    public Torus(float ri, float ro) {
-        this.ri = ri;
-        this.ro = ro;
-        this.ri2 = ri * ri;
-        this.ro2 = ro * ro;
+    public Torus() {
+        ri = 0.25f;
+        ro = 1;
+        ri2 = ri * ri;
+        ro2 = ro * ro;
 
+    }
+
+    public boolean update(ParameterList pl, SunflowAPI api) {
+        ri = pl.getFloat("radiusInner", ri);
+        ro = pl.getFloat("radiusOuter", ro);
+        ri2 = ri * ri;
+        ro2 = ro * ro;
+        return true;
     }
 
     public BoundingBox getWorldBounds(Matrix4 o2w) {

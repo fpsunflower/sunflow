@@ -1,5 +1,7 @@
 package org.sunflow.core.primitive;
 
+import org.sunflow.SunflowAPI;
+import org.sunflow.core.ParameterList;
 import org.sunflow.core.PrimitiveList;
 import org.sunflow.core.Instance;
 import org.sunflow.core.IntersectionState;
@@ -13,6 +15,10 @@ import org.sunflow.math.Solvers;
 import org.sunflow.math.Vector3;
 
 public class Sphere implements PrimitiveList {
+    public boolean update(ParameterList pl, SunflowAPI api) {
+        return true;
+    }
+
     public BoundingBox getWorldBounds(Matrix4 o2w) {
         BoundingBox bounds = new BoundingBox(1);
         if (o2w != null)

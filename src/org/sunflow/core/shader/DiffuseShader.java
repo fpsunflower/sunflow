@@ -1,5 +1,7 @@
 package org.sunflow.core.shader;
 
+import org.sunflow.SunflowAPI;
+import org.sunflow.core.ParameterList;
 import org.sunflow.core.Ray;
 import org.sunflow.core.Shader;
 import org.sunflow.core.ShadingState;
@@ -10,12 +12,13 @@ import org.sunflow.math.Vector3;
 public class DiffuseShader implements Shader {
     private Color diff;
 
-    protected DiffuseShader() {
-        diff = null;
+    public DiffuseShader() {
+        diff = Color.WHITE;
     }
 
-    public DiffuseShader(Color d) {
-        diff = d.copy();
+    public boolean update(ParameterList pl, SunflowAPI api) {
+        diff = pl.getColor("diffuse", diff);
+        return true;
     }
 
     public Color getDiffuse(ShadingState state) {

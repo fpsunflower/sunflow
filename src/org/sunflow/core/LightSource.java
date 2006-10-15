@@ -8,7 +8,7 @@ import org.sunflow.math.Vector3;
  * The <code>LightSource</code> interface is used to represent any light
  * emitting primitive. It permits efficient sampling of direct illumination.
  */
-public interface LightSource {
+public interface LightSource extends RenderObject {
     /**
      * Returns true if adaptive sampling can be used
      * 

@@ -1,7 +1,9 @@
 package org.sunflow.core.light;
 
+import org.sunflow.SunflowAPI;
 import org.sunflow.core.LightSample;
 import org.sunflow.core.LightSource;
+import org.sunflow.core.ParameterList;
 import org.sunflow.core.Ray;
 import org.sunflow.core.ShadingState;
 import org.sunflow.image.Color;
@@ -16,15 +18,27 @@ public class DirectionalSpotlight implements LightSource {
     private float r, r2;
     private Color radiance;
 
-    public DirectionalSpotlight(Point3 src, Point3 target, float r, Color radiance) {
-        this.src = new Point3(src);
-        dir = Point3.sub(target, src, new Vector3()).normalize();
+    public DirectionalSpotlight() {
+        src = new Point3(0, 0, 0);
+        dir = new Vector3(0, 0, -1);
+        dir.normalize();
         basis = OrthoNormalBasis.makeFromW(dir);
-        this.r = r;
-        this.r2 = r * r;
-        this.radiance = new Color(radiance);
+        r = 1;
+        r2 = r * r;
+        radiance = Color.WHITE;
     }
 
+    public boolean update(ParameterList pl, SunflowAPI api) {
+        src = pl.getPoint("source", src);
+        dir = pl.getVector("dir", dir);
+        dir.normalize();
+        r = pl.getFloat("radius", r);
+        basis = OrthoNormalBasis.makeFromW(dir);
+        r2 = r * r;
+        radiance = pl.getColor("radiance", radiance);
+        return true;
+    }
+    
     public int getNumSamples() {
         return 1;
     }

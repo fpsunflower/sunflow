@@ -1,6 +1,8 @@
 package org.sunflow.core.primitive;
 
+import org.sunflow.SunflowAPI;
 import org.sunflow.core.IntersectionState;
+import org.sunflow.core.ParameterList;
 import org.sunflow.core.PrimitiveList;
 import org.sunflow.core.Ray;
 import org.sunflow.core.ShadingState;
@@ -9,6 +11,10 @@ import org.sunflow.math.Matrix4;
 
 public class Background implements PrimitiveList {
     public Background() {
+    }
+
+    public boolean update(ParameterList pl, SunflowAPI api) {
+        return true;
     }
 
     public void prepareShadingState(ShadingState state) {

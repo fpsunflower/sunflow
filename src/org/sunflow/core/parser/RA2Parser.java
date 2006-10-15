@@ -10,8 +10,6 @@ import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
 
 import org.sunflow.SunflowAPI;
-import org.sunflow.core.Geometry;
-import org.sunflow.core.Instance;
 import org.sunflow.core.SceneParser;
 import org.sunflow.core.camera.PinholeCamera;
 import org.sunflow.core.primitive.Mesh;
@@ -33,11 +31,19 @@ public class RA2Parser implements SceneParser {
             float[] data = new float[buffer.capacity()];
             for (int i = 0; i < data.length; i++)
                 data[i] = buffer.get(i);
-            Mesh mesh = new Mesh(data, null);
-            Geometry geo = new Geometry(mesh);
-            Instance instance = new Instance(new SimpleShader(), null, geo);
-            api.instance(instance);
             stream.close();
+            api.parameter("points", "point", "vertex", data);
+            int[] triangles = new int[data.length / 9];
+            for (int i = 0; i < triangles.length; i++)
+                triangles[i] = i;
+            // create geo
+            api.parameter("triangles", triangles);
+            api.geometry(filename, new Mesh());
+            // create shader
+            api.shader(filename + ".shader", new SimpleShader());
+            // create instance
+            api.parameter("shaders", filename + ".shader");
+            api.instance(filename + ".instance", filename);
         } catch (FileNotFoundException e) {
             e.printStackTrace();
             return false;

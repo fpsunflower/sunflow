@@ -1,6 +1,8 @@
 package org.sunflow.core.shader;
 
+import org.sunflow.SunflowAPI;
 import org.sunflow.core.LightSample;
+import org.sunflow.core.ParameterList;
 import org.sunflow.core.Ray;
 import org.sunflow.core.Shader;
 import org.sunflow.core.ShadingState;
@@ -15,14 +17,23 @@ public class AnisotropicWardShader implements Shader {
     private float alphaY;
     private int numRays;
 
-    public AnisotropicWardShader(Color d, Color s, float rx, float ry, int numRays) {
-        rhoD = d == null ? null : d.copy();
-        rhoS = s == null ? null : s.copy();
-        alphaX = rx;
-        alphaY = ry;
-        this.numRays = numRays;
+    public AnisotropicWardShader() {
+        rhoD = Color.GREY;
+        rhoS = Color.GREY;
+        alphaX = 1;
+        alphaY = 1;
+        numRays = 4;
     }
 
+    public boolean update(ParameterList pl, SunflowAPI api) {
+        rhoD = pl.getColor("diffuse", rhoD);
+        rhoS = pl.getColor("specular", rhoS);
+        alphaX = pl.getFloat("roughnessX", alphaX);
+        alphaY = pl.getFloat("roughnessX", alphaY);
+        numRays = pl.getInt("samples", numRays);
+        return true;
+    }
+    
     protected Color getDiffuse(ShadingState state) {
         return rhoD;
     }

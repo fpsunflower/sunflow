@@ -1,5 +1,7 @@
 package org.sunflow.core.shader;
 
+import org.sunflow.SunflowAPI;
+import org.sunflow.core.ParameterList;
 import org.sunflow.core.Ray;
 import org.sunflow.core.Shader;
 import org.sunflow.core.ShadingState;
@@ -9,13 +11,19 @@ import org.sunflow.math.Vector3;
 public class GlassShader implements Shader {
     private float eta; // refraction index ratio
     private float f0; // fresnel normal incidence
-    private Color glassColor;
+    private Color color;
 
-    public GlassShader(float eta, Color glassColor) {
-        this.eta = eta;
-        this.glassColor = glassColor.copy();
+    public GlassShader() {
+        this.eta = 1.3f;
+        this.color = Color.WHITE;
+    }
+
+    public boolean update(ParameterList pl, SunflowAPI api) {
+        color = pl.getColor("color", color);
+        eta = pl.getFloat("eta", eta);
         f0 = (1 - eta) / (1 + eta);
         f0 = f0 * f0;
+        return true;
     }
 
     public Color getRadiance(ShadingState state) {
@@ -57,16 +65,16 @@ public class GlassShader implements Shader {
         // refracted ray
         Color ret = Color.black();
         if (!tir) {
-            ret.madd(kt, state.traceRefraction(new Ray(state.getPoint(), refrDir), 0)).mul(glassColor);
+            ret.madd(kt, state.traceRefraction(new Ray(state.getPoint(), refrDir), 0)).mul(color);
         }
         if (!inside || tir)
-            ret.add(Color.mul(kr, state.traceReflection(new Ray(state.getPoint(), reflDir), 0)).mul(glassColor));
+            ret.add(Color.mul(kr, state.traceReflection(new Ray(state.getPoint(), reflDir), 0)).mul(color));
         return ret;
     }
 
     public void scatterPhoton(ShadingState state, Color power) {
-        Color refr = Color.mul(1 - f0, glassColor);
-        Color refl = Color.mul(f0, glassColor);
+        Color refr = Color.mul(1 - f0, color);
+        Color refl = Color.mul(f0, color);
         float avgR = refl.getAverage();
         float avgT = refr.getAverage();
         double rnd = state.getRandom(0, 0, 1);

@@ -1,7 +1,9 @@
 package org.sunflow.core.primitive;
 
+import org.sunflow.SunflowAPI;
 import org.sunflow.core.Instance;
 import org.sunflow.core.IntersectionState;
+import org.sunflow.core.ParameterList;
 import org.sunflow.core.PrimitiveList;
 import org.sunflow.core.Ray;
 import org.sunflow.core.ShadingState;
@@ -18,62 +20,73 @@ public class Plane implements PrimitiveList {
     private float bnu, bnv, bnd;
     private float cnu, cnv, cnd;
 
-    public Plane(Point3 center, Vector3 normal) {
-        this.center = center;
-        this.normal = new Vector3(normal).normalize();
+    public Plane() {
+        center = new Point3(0, 0, 0);
+        normal = new Vector3(0, 1, 0);
         k = 3;
         bnu = bnv = bnd = 0;
         cnu = cnv = cnd = 0;
     }
 
-    public Plane(Point3 a, Point3 b, Point3 c) {
-        Point3 v0 = center = a;
-        Point3 v1 = b;
-        Point3 v2 = c;
-        Vector3 ng = normal = Vector3.cross(Point3.sub(v1, v0, new Vector3()), Point3.sub(v2, v0, new Vector3()), new Vector3()).normalize();
-        if (Math.abs(ng.x) > Math.abs(ng.y) && Math.abs(ng.x) > Math.abs(ng.z))
-            k = 0;
-        else if (Math.abs(ng.y) > Math.abs(ng.z))
-            k = 1;
-        else
-            k = 2;
-        float ax, ay, bx, by, cx, cy;
-        switch (k) {
-            case 0: {
-                ax = v0.y;
-                ay = v0.z;
-                bx = v2.y - ax;
-                by = v2.z - ay;
-                cx = v1.y - ax;
-                cy = v1.z - ay;
-                break;
+    public boolean update(ParameterList pl, SunflowAPI api) {
+        center = pl.getPoint("center", center);
+        Point3 b = pl.getPoint("point1", null);
+        Point3 c = pl.getPoint("point2", null);
+        if (b != null && c != null) {
+            Point3 v0 = center;
+            Point3 v1 = b;
+            Point3 v2 = c;
+            Vector3 ng = normal = Vector3.cross(Point3.sub(v1, v0, new Vector3()), Point3.sub(v2, v0, new Vector3()), new Vector3()).normalize();
+            if (Math.abs(ng.x) > Math.abs(ng.y) && Math.abs(ng.x) > Math.abs(ng.z))
+                k = 0;
+            else if (Math.abs(ng.y) > Math.abs(ng.z))
+                k = 1;
+            else
+                k = 2;
+            float ax, ay, bx, by, cx, cy;
+            switch (k) {
+                case 0: {
+                    ax = v0.y;
+                    ay = v0.z;
+                    bx = v2.y - ax;
+                    by = v2.z - ay;
+                    cx = v1.y - ax;
+                    cy = v1.z - ay;
+                    break;
+                }
+                case 1: {
+                    ax = v0.z;
+                    ay = v0.x;
+                    bx = v2.z - ax;
+                    by = v2.x - ay;
+                    cx = v1.z - ax;
+                    cy = v1.x - ay;
+                    break;
+                }
+                case 2:
+                default: {
+                    ax = v0.x;
+                    ay = v0.y;
+                    bx = v2.x - ax;
+                    by = v2.y - ay;
+                    cx = v1.x - ax;
+                    cy = v1.y - ay;
+                }
             }
-            case 1: {
-                ax = v0.z;
-                ay = v0.x;
-                bx = v2.z - ax;
-                by = v2.x - ay;
-                cx = v1.z - ax;
-                cy = v1.x - ay;
-                break;
-            }
-            case 2:
-            default: {
-                ax = v0.x;
-                ay = v0.y;
-                bx = v2.x - ax;
-                by = v2.y - ay;
-                cx = v1.x - ax;
-                cy = v1.y - ay;
-            }
+            float det = bx * cy - by * cx;
+            bnu = -by / det;
+            bnv = bx / det;
+            bnd = (by * ax - bx * ay) / det;
+            cnu = cy / det;
+            cnv = -cx / det;
+            cnd = (cx * ay - cy * ax) / det;
+        } else {
+            normal = pl.getVector("normal", normal);
+            k = 3;
+            bnu = bnv = bnd = 0;
+            cnu = cnv = cnd = 0;
         }
-        float det = bx * cy - by * cx;
-        bnu = -by / det;
-        bnv = bx / det;
-        bnd = (by * ax - bx * ay) / det;
-        cnu = cy / det;
-        cnv = -cx / det;
-        cnd = (cx * ay - cy * ax) / det;
+        return true;
     }
 
     public void prepareShadingState(ShadingState state) {

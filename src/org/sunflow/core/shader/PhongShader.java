@@ -1,5 +1,7 @@
 package org.sunflow.core.shader;
 
+import org.sunflow.SunflowAPI;
+import org.sunflow.core.ParameterList;
 import org.sunflow.core.Ray;
 import org.sunflow.core.Shader;
 import org.sunflow.core.ShadingState;
@@ -13,11 +15,19 @@ public class PhongShader implements Shader {
     private float power;
     private int numRays;
 
-    public PhongShader(Color d, Color s, float power, int numRays) {
-        diff = d == null ? null : d.copy();
-        spec = s == null ? null : s.copy();
-        this.power = power;
-        this.numRays = numRays;
+    public PhongShader() {
+        diff = Color.GREY;
+        spec = Color.GREY;
+        power = 20;
+        numRays = 4;
+    }
+
+    public boolean update(ParameterList pl, SunflowAPI api) {
+        diff = pl.getColor("diffuse", diff);
+        spec = pl.getColor("specular", spec);
+        power = pl.getFloat("power", power);
+        numRays = pl.getInt("samples", numRays);
+        return true;
     }
 
     protected Color getDiffuse(ShadingState state) {

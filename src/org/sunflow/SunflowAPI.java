@@ -23,9 +23,12 @@ import org.sunflow.core.ImageSampler;
 import org.sunflow.core.Instance;
 import org.sunflow.core.LightSource;
 import org.sunflow.core.ParameterList;
+import org.sunflow.core.PrimitiveList;
+import org.sunflow.core.RenderObject;
 import org.sunflow.core.Scene;
 import org.sunflow.core.SceneParser;
 import org.sunflow.core.Shader;
+import org.sunflow.core.ParameterList.InterpolationType;
 import org.sunflow.core.accel.BoundingIntervalHierarchy;
 import org.sunflow.core.accel.KDTree;
 import org.sunflow.core.accel.NullAccelerator;
@@ -58,6 +61,7 @@ import org.sunflow.image.Color;
 import org.sunflow.math.BoundingBox;
 import org.sunflow.math.Matrix4;
 import org.sunflow.math.Point3;
+import org.sunflow.math.Vector3;
 import org.sunflow.system.SearchPath;
 import org.sunflow.system.Timer;
 import org.sunflow.system.UI;
@@ -72,13 +76,61 @@ public class SunflowAPI {
     public static final String VERSION = "0.07.0";
 
     private Scene scene;
-    private HashMap<String, Shader> shadersTable;
-    private Shader currentShader;
     private BucketRenderer bucketRenderer;
     private ProgressiveRenderer progressiveRenderer;
     private SearchPath includeSearchPath;
     private SearchPath textureSearchPath;
     private ParameterList parameterList;
+    private HashMap<String, RenderObjectHandle> renderObjects;
+
+    private enum RenderObjectType {
+        UNKNOWN, SHADER, GEOMETRY, INSTANCE, LIGHT
+    }
+
+    private static final class RenderObjectHandle {
+        private final RenderObject obj;
+        private final RenderObjectType type;
+
+        private RenderObjectHandle(Shader shader) {
+            obj = shader;
+            type = RenderObjectType.SHADER;
+        }
+
+        private RenderObjectHandle(PrimitiveList prims) {
+            obj = new Geometry(prims);
+            type = RenderObjectType.GEOMETRY;
+        }
+
+        private RenderObjectHandle(Instance instance) {
+            obj = instance;
+            type = RenderObjectType.INSTANCE;
+        }
+
+        private RenderObjectHandle(LightSource light) {
+            obj = light;
+            type = RenderObjectType.LIGHT;
+        }
+
+        private boolean update(ParameterList pl, SunflowAPI api) {
+            return obj.update(pl, api);
+        }
+
+        private String typeName() {
+            return type.name().toLowerCase();
+        }
+
+        private Shader getShader() {
+            return (type == RenderObjectType.SHADER) ? (Shader) obj : null;
+        }
+
+        private Geometry getGeometry() {
+            return (type == RenderObjectType.GEOMETRY) ? (Geometry) obj : null;
+        }
+
+        private Instance getInstance() {
+            return (type == RenderObjectType.INSTANCE) ? (Instance) obj : null;
+        }
+    }
 
     /**
      * The default constructor is only available to sub-classes.
@@ -95,11 +147,21 @@ public class SunflowAPI {
         scene = new Scene();
         bucketRenderer = new BucketRenderer();
         progressiveRenderer = new ProgressiveRenderer();
-        shadersTable = new HashMap<String, Shader>();
-        currentShader = null;
         includeSearchPath = new SearchPath("include");
         textureSearchPath = new SearchPath("texture");
         parameterList = new ParameterList();
+        renderObjects = new HashMap<String, RenderObjectHandle>();
+    }
+
+    public final String getUniqueName(String prefix) {
+        // generate a unique name based on the given prefix
+        int counter = 1;
+        String name;
+        do {
+            name = String.format("%s_%d", prefix, counter);
+            counter++;
+        } while (renderObjects.containsKey(name));
+        return name;
     }
 
     public final void parameter(String name, String value) {
@@ -116,6 +178,68 @@ public class SunflowAPI {
 
     public final void parameter(String name, float value) {
         parameterList.addFloat(name, value);
+    }
+
+    public final void parameter(String name, Color value) {
+        parameterList.addColor(name, value);
+    }
+
+    public final void parameter(String name, Point3 value) {
+        parameterList.addPoints(name, InterpolationType.NONE, new float[] { value.x, value.y, value.z });
+    }
+
+    public final void parameter(String name, Vector3 value) {
+        parameterList.addVectors(name, InterpolationType.NONE, new float[] { value.x, value.y, value.z });
+    }
+
+    public final void parameter(String name, Matrix4 value) {
+        parameterList.addMatrices(name, InterpolationType.NONE, value.asRowMajor());
+    }
+
+    public final void parameter(String name, int[] value) {
+        parameterList.addIntegerArray(name, value);
+    }
+
+    public final void parameter(String name, String[] value) {
+        parameterList.addStringArray(name, value);
+    }
+
+    public boolean update(String name) {
+        RenderObjectHandle obj = renderObjects.get(name);
+        boolean success;
+        if (obj == null) {
+            UI.printError("[API] Unable to update \"%s\" - object was not defined yet", name);
+            success = false;
+        } else {
+            UI.printDetailed("[API] Updating %s object \"%s\"", obj.typeName(), name);
+            success = obj.update(parameterList, this);
+            if (!success) {
+                UI.printError("[API] Unable to update \"%s\" -- removing", name);
+                renderObjects.remove(name);
+            }
+        }
+        parameterList.clear(success);
+        return success;
+    }
+
+    public final void parameter(String name, String type, String interpolation, float[] data) {
+        InterpolationType interp;
+        try {
+            interp = InterpolationType.valueOf(interpolation.toUpperCase());
+        } catch (IllegalArgumentException e) {
+            UI.printError("[API] Unknown interpolation type: %s -- ignoring parameter \"%s\"", interpolation, name);
+            return;
+        }
+        if (type.equals("point"))
+            parameterList.addPoints(name, interp, data);
+        else if (type.equals("vector"))
+            parameterList.addVectors(name, interp, data);
+        else if (type.equals("texcoord"))
+            parameterList.addTexCoords(name, interp, data);
+        else if (type.equals("matrix"))
+            parameterList.addMatrices(name, interp, data);
+        else
+            UI.printError("[API] Unknown parameter type: %s -- ignoring parameter \"%s\"", type, name);
     }
 
     /**
@@ -377,11 +501,78 @@ public class SunflowAPI {
      * @param shader a shader object
      */
     public final void shader(String name, Shader shader) {
-        if (!shadersTable.containsKey(name)) {
-            shadersTable.put(name, shader);
-            currentShader = shader;
-        } else
-            UI.printWarning("[API] Shader \"%s\" was already defined - ignoring", name);
+        if (shader != null) {
+            // we are declaring a shader for the first time
+            if (renderObjects.containsKey(name)) {
+                UI.printError("[API] Unable to declare shader \"%s\", name is already in use", name);
+                return;
+            }
+            renderObjects.put(name, new RenderObjectHandle(shader));
+        }
+        // update existing shader
+        update(name);
+    }
+
+    /**
+     * Instance the specified geometry into the scene.
+     * 
+     * @param name instance name
+     * @param geoname name of the geometry to instance
+     */
+    public final void instance(String name, String geoname) {
+        if (geoname != null) {
+            // we are declaring this instance for the first time
+            if (renderObjects.containsKey(name)) {
+                UI.printError("[API] Unable to declare instance \"%s\", name is already in use", name);
+                return;
+            }
+            Geometry geo = lookupGeometry(geoname);
+            if (geo == null) {
+                UI.printError("[API] Cannot instance \"%s\" - geometry was not found", geoname);
+                return;
+            }
+            Instance instance = new Instance(geo);
+            renderObjects.put(name, new RenderObjectHandle(instance));
+        }
+        if (update(name) && geoname != null)
+            scene.addInstance(renderObjects.get(name).getInstance());
+    }
+
+    /**
+     * Adds the specified light to the scene.
+     * 
+     * @param light light source object
+     */
+    public final void light(String name, LightSource light) {
+        if (light != null) {
+            // we are declaring this light for the first time
+            if (renderObjects.containsKey(name)) {
+                UI.printError("[API] Unable to declare light \"%s\", name is already in use", name);
+                return;
+            }
+            renderObjects.put(name, new RenderObjectHandle(light));
+        }
+        if (update(name) && light != null)
+            scene.addLight(light);
+    }
+
+    public final void geometry(String name, PrimitiveList primitives) {
+        if (primitives != null) {
+            // we are declaring a geometry for the first time
+            if (renderObjects.containsKey(name)) {
+                UI.printError("[API] Unable to declare geometry \"%s\", name is already in use", name);
+                return;
+            }
+            renderObjects.put(name, new RenderObjectHandle(primitives));
+        }
+        update(name);
+    }
+
+    public final Geometry lookupGeometry(String name) {
+        RenderObjectHandle handle = renderObjects.get(name);
+        if (handle == null)
+            return null;
+        return handle.getGeometry();
     }
 
     /**
@@ -392,8 +583,13 @@ public class SunflowAPI {
      * @return the shader object associated with that name
      */
     public final Shader shader(String name) {
-        currentShader = shadersTable.get(name);
-        return currentShader;
+        RenderObjectHandle object = renderObjects.get(name);
+        if (object == null)
+            return null;
+        Shader shader = object.getShader();
+        if (shader == null)
+            return null;
+        return shader;
     }
 
     /**
@@ -405,55 +601,21 @@ public class SunflowAPI {
      * @param photonOverride apply override to photon tracing phase
      */
     public final void shaderOverride(String name, boolean photonOverride) {
-        Shader shader = shadersTable.get(name);
-        scene.setShaderOverride(shader, photonOverride);
+        scene.setShaderOverride(shader(name), photonOverride);
     }
 
-    /**
-     * Created a sphere at the specified coordinates. The currently active
-     * shader is used.
-     * 
-     * @param x x coordinate of the sphere center
-     * @param y y coordinate of the sphere center
-     * @param z z coordinate of the sphere center
-     * @param radius sphere radius
-     */
-    public final void sphere(float x, float y, float z, float radius) {
-        Sphere sphere = new Sphere();
-        Geometry geo = new Geometry(sphere);
-        Matrix4 transform = Matrix4.translation(x, y, z).multiply(Matrix4.scale(radius));
-        instance(new Instance(new Shader[] { currentShader }, transform, geo));
+    public final void sphere(String name, String shaderName, float x, float y, float z, float radius) {
+        geometry(name, new Sphere());
+        parameter("transform", Matrix4.translation(x, y, z).multiply(Matrix4.scale(radius)));
+        parameter("shaders", shaderName);
+        instance(name + ".instance", name);
     }
 
-    /**
-     * Create a sphere with the specified transform. The transform is applied to
-     * a unit-radius sphere centered at the origin. The currently active shader
-     * is used.
-     * 
-     * @param m object to world transformation matrix
-     */
-    public final void sphere(Matrix4 m) {
-        Sphere sphere = new Sphere();
-        Geometry geo = new Geometry(sphere);
-        instance(new Instance(new Shader[] { currentShader }, m, geo));
-    }
-
-    /**
-     * Adds the specified instance to the scene.
-     * 
-     * @param instance
-     */
-    public final void instance(Instance instance) {
-        scene.addInstance(instance);
-    }
-
-    /**
-     * Adds the specified light to the scene.
-     * 
-     * @param light light source object
-     */
-    public final void light(LightSource light) {
-        scene.addLight(light);
+    public final void sphere(String name, String shaderName, Matrix4 m) {
+        geometry(name, new Sphere());
+        parameter("transform", m);
+        parameter("shaders", shaderName);
+        instance(name + ".instance", name);
     }
 
     /**
@@ -464,8 +626,10 @@ public class SunflowAPI {
      * @param z z coordinate of the point light
      * @param power light power
      */
-    public final void pointLight(float x, float y, float z, Color power) {
-        light(new PointLight(new Point3(x, y, z), power));
+    public final void pointLight(String name, float x, float y, float z, Color power) {
+        parameter("center", new Point3(x, y, z));
+        parameter("power", power);
+        light(name, new PointLight());
     }
 
     /**

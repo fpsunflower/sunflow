@@ -6,7 +6,7 @@ import org.sunflow.math.Matrix4;
 /**
  * This class represents an object made up of many primitives.
  */
-public interface PrimitiveList {
+public interface PrimitiveList extends RenderObject {
     /**
      * Compute a bounding box of this object in world space, using the specified
      * object-to-world transformation matrix. The bounds should be as exact as

@@ -1,11 +1,10 @@
 package org.sunflow.core.primitive;
 
 import org.sunflow.SunflowAPI;
-import org.sunflow.core.Geometry;
-import org.sunflow.core.Instance;
 import org.sunflow.core.IntersectionState;
 import org.sunflow.core.LightSample;
 import org.sunflow.core.LightSource;
+import org.sunflow.core.ParameterList;
 import org.sunflow.core.PrimitiveList;
 import org.sunflow.core.Ray;
 import org.sunflow.core.Shader;
@@ -27,10 +26,24 @@ public class CornellBox implements PrimitiveList, Shader, LightSource {
     private float area;
     private BoundingBox lightBounds;
 
-    public CornellBox(Point3 corner0, Point3 corner1, Color left, Color right, Color top, Color bottom, Color back, Color radiance, int samples) {
+    public CornellBox() {
+        updateGeometry(new Point3(-1, -1, -1), new Point3(1, 1, 1));
+
+        // cube colors
+        left = new Color(0.80f, 0.25f, 0.25f);
+        right = new Color(0.25f, 0.25f, 0.80f);
+        Color grey = new Color(0.70f, 0.70f, 0.70f);
+        top = bottom = back = grey;
+
+        // light source
+        radiance = Color.WHITE;
+        samples = 16;
+    }
+
+    private void updateGeometry(Point3 c0, Point3 c1) {
         // figure out cube extents
-        lightBounds = new BoundingBox(corner0);
-        lightBounds.include(corner1);
+        lightBounds = new BoundingBox(c0);
+        lightBounds.include(c1);
 
         // cube extents
         minX = lightBounds.getMinimum().x;
@@ -43,15 +56,7 @@ public class CornellBox implements PrimitiveList, Shader, LightSource {
         // work around epsilon problems for light test
         lightBounds.enlargeUlps();
 
-        // cube colors
-        this.left = left;
-        this.right = right;
-        this.top = top;
-        this.bottom = bottom;
-        this.back = back;
-        // light source
-        this.radiance = radiance;
-        this.samples = samples;
+        // light source geometry
         lxmin = maxX / 3 + 2 * minX / 3;
         lxmax = minX / 3 + 2 * maxX / 3;
         lymin = maxY / 3 + 2 * minY / 3;
@@ -59,10 +64,33 @@ public class CornellBox implements PrimitiveList, Shader, LightSource {
         area = (lxmax - lxmin) * (lymax - lymin);
     }
 
-    public void init(SunflowAPI api) {
-        // must be created this way - because lights don't support arbitrary instancing
-        api.instance(new Instance(this, null, new Geometry(this)));
-        api.light(this);
+    public boolean update(ParameterList pl, SunflowAPI api) {
+        Point3 corner0 = pl.getPoint("corner0", null);
+        Point3 corner1 = pl.getPoint("corner1", null);
+        if (corner0 != null && corner1 != null) {
+            updateGeometry(corner0, corner1);
+        }
+
+        // shader colors
+        left = pl.getColor("leftColor", left);
+        right = pl.getColor("rightColor", right);
+        top = pl.getColor("topColor", top);
+        bottom = pl.getColor("bottomColor", bottom);
+        back = pl.getColor("backColor", back);
+
+        // light
+        radiance = pl.getColor("radiance", radiance);
+        samples = pl.getInt("samples", samples);
+        return true;
+    }
+
+    public void init(String name, SunflowAPI api) {
+        // register with the api properly
+        api.geometry(name, this);
+        api.shader(name + ".shader", this);
+        api.parameter("shaders", name + ".shader");
+        api.instance(name + ".instance", name);
+        api.light(name + ".light", this);
     }
 
     public BoundingBox getBounds() {

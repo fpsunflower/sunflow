@@ -1,5 +1,7 @@
 package org.sunflow.core.shader;
 
+import org.sunflow.SunflowAPI;
+import org.sunflow.core.ParameterList;
 import org.sunflow.core.Ray;
 import org.sunflow.core.Shader;
 import org.sunflow.core.ShadingState;
@@ -11,9 +13,15 @@ public class ShinyDiffuseShader implements Shader {
     private Color diff;
     private float refl;
 
-    public ShinyDiffuseShader(Color d, float r) {
-        diff = d;
-        refl = r;
+    public ShinyDiffuseShader() {
+        diff = Color.GREY;
+        refl = 0.5f;
+    }
+
+    public boolean update(ParameterList pl, SunflowAPI api) {
+        diff = pl.getColor("diffuse", diff);
+        refl = pl.getFloat("shiny", refl);
+        return true;
     }
 
     public Color getDiffuse(ShadingState state) {

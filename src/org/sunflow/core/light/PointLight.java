@@ -1,7 +1,9 @@
 package org.sunflow.core.light;
 
+import org.sunflow.SunflowAPI;
 import org.sunflow.core.LightSample;
 import org.sunflow.core.LightSource;
+import org.sunflow.core.ParameterList;
 import org.sunflow.core.Ray;
 import org.sunflow.core.ShadingState;
 import org.sunflow.image.Color;
@@ -12,9 +14,15 @@ public class PointLight implements LightSource {
     private Point3 lightPoint;
     private Color power;
 
-    public PointLight(Point3 lightPoint, Color power) {
-        this.lightPoint = lightPoint;
-        this.power = power;
+    public PointLight() {
+        lightPoint = new Point3(0, 0, 0);
+        power = Color.WHITE;
+    }
+
+    public boolean update(ParameterList pl, SunflowAPI api) {
+        lightPoint = pl.getPoint("center", lightPoint);
+        power = pl.getColor("power", power);
+        return true;
     }
 
     public int getNumSamples() {

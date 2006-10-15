@@ -36,11 +36,10 @@ public class Texture {
                 bitmap = null;
         } catch (IOException e) {
             UI.printError("[TEX] %s", e.getMessage());
-            e.printStackTrace();
         }
         loaded = 1;
     }
-    
+
     public Bitmap getBitmap() {
         if (loaded == 0)
             load();

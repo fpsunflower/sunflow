@@ -1,9 +1,12 @@
 package org.sunflow.core.primitive;
 
+import org.sunflow.SunflowAPI;
 import org.sunflow.core.IntersectionState;
+import org.sunflow.core.ParameterList;
 import org.sunflow.core.PrimitiveList;
 import org.sunflow.core.Ray;
 import org.sunflow.core.ShadingState;
+import org.sunflow.core.ParameterList.FloatParameter;
 import org.sunflow.math.BoundingBox;
 import org.sunflow.math.Matrix4;
 import org.sunflow.math.OrthoNormalBasis;
@@ -13,33 +16,26 @@ public class Box implements PrimitiveList {
     private float minX, minY, minZ;
     private float maxX, maxY, maxZ;
 
-    public Box(BoundingBox bounds) {
-        // cube extents
-        minX = bounds.getMinimum().x;
-        minY = bounds.getMinimum().y;
-        minZ = bounds.getMinimum().z;
-        maxX = bounds.getMaximum().x;
-        maxY = bounds.getMaximum().y;
-        maxZ = bounds.getMaximum().z;
+    public Box() {
+        minX = minY = minZ = -1;
+        maxX = maxY = maxZ = +1;
     }
 
-    public float getBound(int i) {
-        switch (i) {
-            case 0:
-                return minX;
-            case 1:
-                return maxX;
-            case 2:
-                return minY;
-            case 3:
-                return maxY;
-            case 4:
-                return minZ;
-            case 5:
-                return maxZ;
-            default:
-                return 0;
+    public boolean update(ParameterList pl, SunflowAPI api) {
+        FloatParameter pts = pl.getPointArray("points");
+        if (pts != null) {
+            BoundingBox bounds = new BoundingBox();
+            for (int i = 0; i < pts.data.length; i += 3)
+                bounds.include(pts.data[i], pts.data[i + 1], pts.data[i + 2]);
+            // cube extents
+            minX = bounds.getMinimum().x;
+            minY = bounds.getMinimum().y;
+            minZ = bounds.getMinimum().z;
+            maxX = bounds.getMaximum().x;
+            maxY = bounds.getMaximum().y;
+            maxZ = bounds.getMaximum().z;
         }
+        return true;
     }
 
     public void prepareShadingState(ShadingState state) {

@@ -1,5 +1,7 @@
 package org.sunflow.core.shader;
 
+import org.sunflow.SunflowAPI;
+import org.sunflow.core.ParameterList;
 import org.sunflow.core.Ray;
 import org.sunflow.core.Shader;
 import org.sunflow.core.ShadingState;
@@ -13,19 +15,27 @@ public class AmbientOcclusionShader implements Shader {
     private int samples;
     private float maxDist;
 
-    public AmbientOcclusionShader(Color d) {
-        this(d, Float.POSITIVE_INFINITY);
+    public AmbientOcclusionShader() {
+        bright = Color.WHITE;
+        dark = Color.BLACK;
+        samples = 32;
+        maxDist = Float.POSITIVE_INFINITY;
+    }
+    
+    public AmbientOcclusionShader(Color c, float d) {
+        this();
+        bright = c;
+        maxDist = d;
     }
 
-    public AmbientOcclusionShader(Color bright, float maxDist) {
-        this(bright, Color.BLACK, 32, maxDist);
-    }
-
-    public AmbientOcclusionShader(Color bright, Color dark, int samples, float maxDist) {
-        this.bright = bright;
-        this.dark = dark;
-        this.samples = Math.max(samples, 1);
-        this.maxDist = (maxDist <= 0) ? Float.POSITIVE_INFINITY : maxDist;
+    public boolean update(ParameterList pl, SunflowAPI api) {
+        bright = pl.getColor("bright", bright);
+        dark = pl.getColor("dark", dark);
+        samples = pl.getInt("samples", samples);
+        maxDist = pl.getFloat("maxdist", maxDist);
+        if (maxDist <= 0)
+            maxDist = Float.POSITIVE_INFINITY;
+        return true;
     }
 
     public Color getBrightColor(ShadingState state) {

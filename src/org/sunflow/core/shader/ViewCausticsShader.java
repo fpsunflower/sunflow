@@ -1,10 +1,16 @@
 package org.sunflow.core.shader;
 
+import org.sunflow.SunflowAPI;
+import org.sunflow.core.ParameterList;
 import org.sunflow.core.Shader;
 import org.sunflow.core.ShadingState;
 import org.sunflow.image.Color;
 
 public class ViewCausticsShader implements Shader {
+    public boolean update(ParameterList pl, SunflowAPI api) {
+        return true;
+    }
+
     public Color getRadiance(ShadingState state) {
         state.faceforward();
         state.initCausticSamples();
