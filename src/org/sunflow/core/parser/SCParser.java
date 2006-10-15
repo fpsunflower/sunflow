@@ -39,6 +39,7 @@ import org.sunflow.core.primitive.BanchoffSurface;
 import org.sunflow.core.primitive.CornellBox;
 import org.sunflow.core.primitive.Mesh;
 import org.sunflow.core.primitive.Plane;
+import org.sunflow.core.primitive.Sphere;
 import org.sunflow.core.primitive.Torus;
 import org.sunflow.core.shader.AmbientOcclusionShader;
 import org.sunflow.core.shader.AnisotropicWardShader;
@@ -128,6 +129,8 @@ public class SCParser implements SceneParser {
                     api.shaderOverride(p.getNextToken(), p.getNextBoolean());
                 } else if (token.equals("object")) {
                     parseObjectBlock(api);
+                } else if (token.equals("instance")) {
+                    parseInstanceBlock(api);
                 } else if (token.equals("light")) {
                     parseLightBlock(api);
                 } else if (token.equals("texturepath")) {
@@ -605,6 +608,9 @@ public class SCParser implements SceneParser {
             p.checkNextToken("shader");
             shaders = new String[] { p.getNextToken() };
         }
+        Matrix4 transform = null;
+        if (p.peekNextToken("transform"))
+            transform = parseMatrix();
         p.checkNextToken("type");
         if (p.peekNextToken("mesh")) {
             UI.printWarning("[API] Deprecated object type: mesh");
@@ -634,12 +640,16 @@ public class SCParser implements SceneParser {
                 triangles[i * 3 + 1] = p.getNextInt();
                 triangles[i * 3 + 2] = p.getNextInt();
             }
+            // create geometry
             api.parameter("triangles", triangles);
             api.parameter("points", "point", "vertex", points);
             api.parameter("normals", "vector", "vertex", normals);
             api.parameter("uvs", "texcoord", "vertex", uvs);
             api.geometry(name, new Mesh());
+            // create instance
             api.parameter("shaders", shaders);
+            if (transform != null)
+                api.parameter("transform", transform);
             api.instance(name + ".instance", name);
         } else if (p.peekNextToken("flat-mesh")) {
             UI.printWarning("[API] Deprecated object type: flat-mesh");
@@ -676,10 +686,18 @@ public class SCParser implements SceneParser {
             api.geometry(name, new Mesh());
             // create instance
             api.parameter("shaders", shaders);
+            if (transform != null)
+                api.parameter("transform", transform);
             api.instance(name + ".instance", name);
         } else if (p.peekNextToken("sphere")) {
             UI.printInfo("[API] Reading sphere ...");
-            if (p.peekNextToken("c")) {
+            if (transform != null) {
+                String name = api.getUniqueName("sphere");
+                api.geometry(name, new Sphere());
+                api.parameter("transform", transform);
+                api.parameter("shaders", shaders);
+                api.instance(name + ".instance", name);
+            } else if (p.peekNextToken("c")) {
                 float cx = p.getNextFloat();
                 float cy = p.getNextFloat();
                 float cz = p.getNextFloat();
@@ -692,21 +710,19 @@ public class SCParser implements SceneParser {
             }
         } else if (p.peekNextToken("banchoff")) {
             UI.printInfo("[API] Reading banchoff ...");
-            Matrix4 m = parseMatrix();
             String name = api.getUniqueName("banchoff");
             api.geometry(name, new BanchoffSurface());
-            api.parameter("transform", m);
+            api.parameter("transform", transform);
             api.parameter("shaders", shaders);
             api.instance(name + ".instance", name);
         } else if (p.peekNextToken("torus")) {
-            UI.printInfo("[API] Reading banchoff ...");
-            Matrix4 m = parseMatrix();
+            UI.printInfo("[API] Reading torus ...");
             p.checkNextToken("r");
             api.parameter("radiusInner", p.getNextFloat());
             api.parameter("radiusOuter", p.getNextFloat());
             String name = api.getUniqueName("torus");
             api.geometry(name, new Torus());
-            api.parameter("transform", m);
+            api.parameter("transform", transform);
             api.parameter("shaders", shaders);
             api.instance(name + ".instance", name);
         } else if (p.peekNextToken("plane")) {
@@ -724,9 +740,13 @@ public class SCParser implements SceneParser {
             String name = api.getUniqueName("plane");
             api.geometry(name, new Plane());
             api.parameter("shaders", shaders);
+            if (transform != null)
+                api.parameter("transform", transform);
             api.instance(name + ".instance", name);
         } else if (p.peekNextToken("cornellbox")) {
             UI.printInfo("[API] Reading cornell box ...");
+            if (transform != null)
+                UI.printWarning("[API] Instancing is not supported on cornell box -- ignoring transform");
             p.checkNextToken("corner0");
             api.parameter("corner0", parsePoint());
             p.checkNextToken("corner1");
@@ -805,9 +825,35 @@ public class SCParser implements SceneParser {
             }
             api.geometry(name, new Mesh());
             api.parameter("shaders", shaders);
+            if (transform != null)
+                api.parameter("transform", transform);
             api.instance(name + ".instance", name);
         } else
             UI.printWarning("[API] Unrecognized object type: %s", p.getNextToken());
+        p.checkNextToken("}");
+    }
+
+    private void parseInstanceBlock(SunflowAPI api) throws ParserException, IOException {
+        p.checkNextToken("{");
+        p.checkNextToken("name");
+        String name = p.getNextToken();
+        UI.printInfo("Reading instance: %s ...", name);
+        p.checkNextToken("geometry");
+        String geoname = p.getNextToken();
+        p.checkNextToken("transform");
+        api.parameter("transform", parseMatrix());
+        String[] shaders;
+        if (p.peekNextToken("shaders")) {
+            int n = p.getNextInt();
+            shaders = new String[n];
+            for (int i = 0; i < n; i++)
+                shaders[i] = p.getNextToken();
+        } else {
+            p.checkNextToken("shader");
+            shaders = new String[] { p.getNextToken() };
+        }
+        api.parameter("shaders", shaders);
+        api.instance(name, geoname);
         p.checkNextToken("}");
     }
 
@@ -874,7 +920,7 @@ public class SCParser implements SceneParser {
         } else if (p.peekNextToken("directional")) {
             UI.printInfo("[API] Reading directional light ...");
             p.checkNextToken("source");
-            Point3 s =parsePoint();
+            Point3 s = parsePoint();
             api.parameter("source", s);
             p.checkNextToken("target");
             Point3 t = parsePoint();
@@ -989,7 +1035,6 @@ public class SCParser implements SceneParser {
     }
 
     private Matrix4 parseMatrix() throws IOException, ParserException {
-        p.checkNextToken("matrix");
         Matrix4 m = Matrix4.IDENTITY;
         p.checkNextToken("{");
         while (!p.peekNextToken("}")) {
