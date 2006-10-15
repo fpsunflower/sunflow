@@ -46,7 +46,7 @@ public class RA3Parser implements SceneParser {
             api.geometry(filename, new Mesh());
 
             // create shader
-            Shader s = api.shader("ra3shader");
+            Shader s = api.lookupShader("ra3shader");
             if (s == null) {
                 // create default shader
                 api.shader(filename + ".shader", new SimpleShader());

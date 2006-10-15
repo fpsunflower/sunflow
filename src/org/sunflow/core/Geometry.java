@@ -26,6 +26,10 @@ public class Geometry implements RenderObject {
     }
 
     public boolean update(ParameterList pl, SunflowAPI api) {
+        // clear acceleration structure so it will be rebuilt
+        accel = null;
+        builtAccel = 0;
+        // update primitives
         return primitives.update(pl, api);
     }
     

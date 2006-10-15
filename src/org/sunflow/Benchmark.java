@@ -13,10 +13,12 @@ import org.sunflow.core.display.FrameDisplay;
 import org.sunflow.core.gi.InstantGI;
 import org.sunflow.core.light.MeshLight;
 import org.sunflow.core.primitive.Mesh;
+import org.sunflow.core.primitive.Sphere;
 import org.sunflow.core.shader.DiffuseShader;
 import org.sunflow.core.shader.GlassShader;
 import org.sunflow.core.shader.MirrorShader;
 import org.sunflow.image.Color;
+import org.sunflow.math.Matrix4;
 import org.sunflow.math.Point3;
 import org.sunflow.math.Vector3;
 import org.sunflow.system.BenchmarkFramework;
@@ -143,11 +145,10 @@ public class Benchmark extends SunflowAPI implements BenchmarkTest, UserInterfac
         parameter("points", "point", "vertex", verts);
         parameter("faceshaders", new int[] { 0, 0, 0, 0, 1, 1, 0, 0, 2, 2 });
         geometry("walls", new Mesh());
-        
-        // instance walls
-        parameter("shaders", new String[] {"grey_shader", "red_shader","blue_shader" });
-        instance("walls.instance", "walls");
 
+        // instance walls
+        parameter("shaders", new String[] { "grey_shader", "red_shader", "blue_shader" });
+        instance("walls.instance", "walls");
 
         // create mesh light
         parameter("points", "point", "vertex", new float[] { -50, maxY - 1, -50, 50, maxY - 1, -50, 50, maxY - 1, 50, -50, maxY - 1, 50 });
@@ -172,6 +173,13 @@ public class Benchmark extends SunflowAPI implements BenchmarkTest, UserInterfac
         if (!parse(ra3file))
             UI.printError("[BCH] Unable to load %s", ra3file);
         giEngine(new InstantGI(90, 1, 0.00002f, 0));
+    }
+
+    private void sphere(String name, String shaderName, float x, float y, float z, float radius) {
+        geometry(name, new Sphere());
+        parameter("transform", Matrix4.translation(x, y, z).multiply(Matrix4.scale(radius)));
+        parameter("shaders", shaderName);
+        instance(name + ".instance", name);
     }
 
     public void execute() {

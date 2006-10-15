@@ -25,7 +25,7 @@ public class Instance implements RenderObject {
         if (shaders != null) {
             this.shaders = new Shader[shaders.length];
             for (int i = 0; i < shaders.length; i++)
-                this.shaders[i] = api.shader(shaders[i]);
+                this.shaders[i] = api.lookupShader(shaders[i]);
         }
         o2w = pl.getMatrix("transform", o2w);
         if (o2w != null) {

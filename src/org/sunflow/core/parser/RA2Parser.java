@@ -33,7 +33,7 @@ public class RA2Parser implements SceneParser {
                 data[i] = buffer.get(i);
             stream.close();
             api.parameter("points", "point", "vertex", data);
-            int[] triangles = new int[data.length / 9];
+            int[] triangles = new int[3 * (data.length / 9)];
             for (int i = 0; i < triangles.length; i++)
                 triangles[i] = i;
             // create geo

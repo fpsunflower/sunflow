@@ -53,7 +53,6 @@ import org.sunflow.core.parser.RA2Parser;
 import org.sunflow.core.parser.RA3Parser;
 import org.sunflow.core.parser.SCParser;
 import org.sunflow.core.parser.TriParser;
-import org.sunflow.core.primitive.Sphere;
 import org.sunflow.core.renderer.BucketRenderer;
 import org.sunflow.core.renderer.ProgressiveRenderer;
 import org.sunflow.core.renderer.SimpleRenderer;
@@ -130,6 +129,10 @@ public class SunflowAPI {
         private Instance getInstance() {
             return (type == RenderObjectType.INSTANCE) ? (Instance) obj : null;
         }
+
+        private LightSource getLight() {
+            return (type == RenderObjectType.LIGHT) ? (LightSource) obj : null;
+        }
     }
 
     /**
@@ -153,6 +156,13 @@ public class SunflowAPI {
         renderObjects = new HashMap<String, RenderObjectHandle>();
     }
 
+    /**
+     * Returns a name currently not being used by any other object. The returned
+     * name is of the form "prefix_n" where n is an integer starting at 1.
+     * 
+     * @param prefix name prefix
+     * @return a unique name not used by any rendering object
+     */
     public final String getUniqueName(String prefix) {
         // generate a unique name based on the given prefix
         int counter = 1;
@@ -164,64 +174,128 @@ public class SunflowAPI {
         return name;
     }
 
+    /**
+     * Declare a parameter with the specified name and value. This parameter
+     * will be added to the currently active parameter list.
+     * 
+     * @param name parameter name
+     * @param value parameter value
+     */
     public final void parameter(String name, String value) {
         parameterList.addString(name, value);
     }
 
+    /**
+     * Declare a parameter with the specified name and value. This parameter
+     * will be added to the currently active parameter list.
+     * 
+     * @param name parameter name
+     * @param value parameter value
+     */
     public final void parameter(String name, boolean value) {
         parameterList.addBoolean(name, value);
     }
 
+    /**
+     * Declare a parameter with the specified name and value. This parameter
+     * will be added to the currently active parameter list.
+     * 
+     * @param name parameter name
+     * @param value parameter value
+     */
     public final void parameter(String name, int value) {
         parameterList.addInteger(name, value);
     }
 
+    /**
+     * Declare a parameter with the specified name and value. This parameter
+     * will be added to the currently active parameter list.
+     * 
+     * @param name parameter name
+     * @param value parameter value
+     */
     public final void parameter(String name, float value) {
         parameterList.addFloat(name, value);
     }
 
+    /**
+     * Declare a parameter with the specified name and value. This parameter
+     * will be added to the currently active parameter list.
+     * 
+     * @param name parameter name
+     * @param value parameter value
+     */
     public final void parameter(String name, Color value) {
         parameterList.addColor(name, value);
     }
 
+    /**
+     * Declare a parameter with the specified name and value. This parameter
+     * will be added to the currently active parameter list.
+     * 
+     * @param name parameter name
+     * @param value parameter value
+     */
     public final void parameter(String name, Point3 value) {
         parameterList.addPoints(name, InterpolationType.NONE, new float[] { value.x, value.y, value.z });
     }
 
+    /**
+     * Declare a parameter with the specified name and value. This parameter
+     * will be added to the currently active parameter list.
+     * 
+     * @param name parameter name
+     * @param value parameter value
+     */
     public final void parameter(String name, Vector3 value) {
         parameterList.addVectors(name, InterpolationType.NONE, new float[] { value.x, value.y, value.z });
     }
 
+    /**
+     * Declare a parameter with the specified name and value. This parameter
+     * will be added to the currently active parameter list.
+     * 
+     * @param name parameter name
+     * @param value parameter value
+     */
     public final void parameter(String name, Matrix4 value) {
         parameterList.addMatrices(name, InterpolationType.NONE, value.asRowMajor());
     }
 
+    /**
+     * Declare a parameter with the specified name and value. This parameter
+     * will be added to the currently active parameter list.
+     * 
+     * @param name parameter name
+     * @param value parameter value
+     */
     public final void parameter(String name, int[] value) {
         parameterList.addIntegerArray(name, value);
     }
 
+    /**
+     * Declare a parameter with the specified name and value. This parameter
+     * will be added to the currently active parameter list.
+     * 
+     * @param name parameter name
+     * @param value parameter value
+     */
     public final void parameter(String name, String[] value) {
         parameterList.addStringArray(name, value);
     }
 
-    public boolean update(String name) {
-        RenderObjectHandle obj = renderObjects.get(name);
-        boolean success;
-        if (obj == null) {
-            UI.printError("[API] Unable to update \"%s\" - object was not defined yet", name);
-            success = false;
-        } else {
-            UI.printDetailed("[API] Updating %s object \"%s\"", obj.typeName(), name);
-            success = obj.update(parameterList, this);
-            if (!success) {
-                UI.printError("[API] Unable to update \"%s\" -- removing", name);
-                renderObjects.remove(name);
-            }
-        }
-        parameterList.clear(success);
-        return success;
-    }
-
+    /**
+     * Declare a parameter with the specified name. The type may be one of the
+     * follow: "point", "vector", "texcoord", "matrix". The interpolation
+     * determines how the parameter is to be interpreted over surface (see
+     * {@link InterpolationType}). The data is specified in a flattened float
+     * array.
+     * 
+     * @param name parameter name
+     * @param type parameter data type
+     * @param interpolation parameter interpolation mode
+     * @param data raw floating point data
+     */
     public final void parameter(String name, String type, String interpolation, float[] data) {
         InterpolationType interp;
         try {
@@ -240,6 +314,46 @@ public class SunflowAPI {
             parameterList.addMatrices(name, interp, data);
         else
             UI.printError("[API] Unknown parameter type: %s -- ignoring parameter \"%s\"", type, name);
+    }
+
+    /**
+     * Remove the specified render object.
+     * 
+     * @param name name of the object to remove
+     */
+    public void remove(String name) {
+        RenderObjectHandle obj = renderObjects.get(name);
+        if (obj != null)
+            renderObjects.remove(name);
+        else
+            UI.printWarning("[API] Unable to remove \"%s\" - object was not defined yet");
+    }
+
+    /**
+     * Update the specfied object using the currently active parameter list. The
+     * object is removed if the update fails to avoid leaving inconsistently set
+     * objects in the list.
+     * 
+     * @param name name of the object to update
+     * @return <code>true</code> if the update was succesfull, or
+     *         <code>false</code> if the update failed
+     */
+    public boolean update(String name) {
+        RenderObjectHandle obj = renderObjects.get(name);
+        boolean success;
+        if (obj == null) {
+            UI.printError("[API] Unable to update \"%s\" - object was not defined yet", name);
+            success = false;
+        } else {
+            UI.printDetailed("[API] Updating %s object \"%s\"", obj.typeName(), name);
+            success = obj.update(parameterList, this);
+            if (!success) {
+                UI.printError("[API] Unable to update \"%s\" - removing", name);
+                remove(name);
+            }
+        }
+        parameterList.clear(success);
+        return success;
     }
 
     /**
@@ -382,7 +496,7 @@ public class SunflowAPI {
      * anti-aliasing quality. This is mainly meant as a debugging tool though it
      * may be usefull to diagnose long rendering times. Properly tuned AA depths
      * should result in a mostly grey image in which only the visually
-     * significant edges are anti-aliased.
+     * significant edges are white.
      * 
      * @param displayAA display AA density
      */
@@ -493,9 +607,9 @@ public class SunflowAPI {
     }
 
     /**
-     * Defines a shader with a given name and makes it the currently "active"
-     * shader. Shader names must be unique, attempts to redeclare an existing
-     * shader are ignored.
+     * Defines a shader with a given name. If the shader object is
+     * <code>null</code>, the shader with the given name will be updated (if
+     * it exists).
      * 
      * @param name a unique name given to the shader
      * @param shader a shader object
@@ -509,12 +623,41 @@ public class SunflowAPI {
             }
             renderObjects.put(name, new RenderObjectHandle(shader));
         }
-        // update existing shader
-        update(name);
+        // update existing shader (only if it is valid)
+        if (lookupShader(name) != null)
+            update(name);
+        else
+            UI.printError("[API] Unable to update shader \"%s\" - shader object was not found", name);
     }
 
     /**
-     * Instance the specified geometry into the scene.
+     * Defines a geometry with a given name. The geometry is built from the
+     * specified {@link PrimitiveList}. If the primitives object is
+     * <code>null</code>, the geometry with the given name will be updated
+     * (if it exists).
+     * 
+     * @param name a unique name given to the geometry
+     * @param primitives primitives to create the geometry from
+     */
+    public final void geometry(String name, PrimitiveList primitives) {
+        if (primitives != null) {
+            // we are declaring a geometry for the first time
+            if (renderObjects.containsKey(name)) {
+                UI.printError("[API] Unable to declare geometry \"%s\", name is already in use", name);
+                return;
+            }
+            renderObjects.put(name, new RenderObjectHandle(primitives));
+        }
+        if (lookupGeometry(name) != null)
+            update(name);
+        else
+            UI.printError("[API] Unable to update geometry \"%s\" - geometry object was not found", name);
+    }
+
+    /**
+     * Instance the specified geometry into the scene. If geoname is
+     * <code>null</code>, the specified instance object will be updated (if
+     * it exists).
      * 
      * @param name instance name
      * @param geoname name of the geometry to instance
@@ -534,8 +677,11 @@ public class SunflowAPI {
             Instance instance = new Instance(geo);
             renderObjects.put(name, new RenderObjectHandle(instance));
         }
-        if (update(name) && geoname != null)
-            scene.addInstance(renderObjects.get(name).getInstance());
+        if (lookupInstance(name) != null) {
+            if (update(name) && geoname != null)
+                scene.addInstance(renderObjects.get(name).getInstance());
+        } else
+            UI.printError("[API] Unable to update instance \"%s\" - instance object was not found", name);
     }
 
     /**
@@ -552,44 +698,59 @@ public class SunflowAPI {
             }
             renderObjects.put(name, new RenderObjectHandle(light));
         }
-        if (update(name) && light != null)
-            scene.addLight(light);
+        if (lookupLight(name) != null) {
+            if (update(name) && light != null)
+                scene.addLight(light);
+        } else
+            UI.printError("[API] Unable to update instance \"%s\" - instance object was not found", name);
     }
 
-    public final void geometry(String name, PrimitiveList primitives) {
-        if (primitives != null) {
-            // we are declaring a geometry for the first time
-            if (renderObjects.containsKey(name)) {
-                UI.printError("[API] Unable to declare geometry \"%s\", name is already in use", name);
-                return;
-            }
-            renderObjects.put(name, new RenderObjectHandle(primitives));
-        }
-        update(name);
-    }
-
-    public final Geometry lookupGeometry(String name) {
+    /**
+     * Retrieve a geometry object by its name, or <code>null</code> if no
+     * geometry was found, or if the specified object is not a geometry.
+     * 
+     * @param name geometry name
+     * @return the geometry object associated with that name
+     */
+    private final Geometry lookupGeometry(String name) {
         RenderObjectHandle handle = renderObjects.get(name);
-        if (handle == null)
-            return null;
-        return handle.getGeometry();
+        return (handle == null) ? null : handle.getGeometry();
+    }
+
+    /**
+     * Retrieve an instance object by its name, or <code>null</code> if no
+     * instance was found, or if the specified object is not an instance.
+     * 
+     * @param name instance name
+     * @return the instance object associated with that name
+     */
+    private final Instance lookupInstance(String name) {
+        RenderObjectHandle handle = renderObjects.get(name);
+        return (handle == null) ? null : handle.getInstance();
     }
 
     /**
      * Retrieve a shader object by its name, or <code>null</code> if no shader
-     * was found. This also sets the "active" shader.
+     * was found, or if the specified object is not a shader.
      * 
      * @param name shader name
      * @return the shader object associated with that name
      */
-    public final Shader shader(String name) {
-        RenderObjectHandle object = renderObjects.get(name);
-        if (object == null)
-            return null;
-        Shader shader = object.getShader();
-        if (shader == null)
-            return null;
-        return shader;
+    public final Shader lookupShader(String name) {
+        RenderObjectHandle handle = renderObjects.get(name);
+        return (handle == null) ? null : handle.getShader();
+    }
+
+    /**
+     * Retrieve a light object by its name, or <code>null</code> if no shader
+     * was found, or if the specified object is not a light.
+     * 
+     * @param name light name
+     * @return the light object associated with that name
+     */
+    private final LightSource lookupLight(String name) {
+        RenderObjectHandle handle = renderObjects.get(name);
+        return (handle == null) ? null : handle.getLight();
     }
 
     /**
@@ -601,21 +762,7 @@ public class SunflowAPI {
      * @param photonOverride apply override to photon tracing phase
      */
     public final void shaderOverride(String name, boolean photonOverride) {
-        scene.setShaderOverride(shader(name), photonOverride);
-    }
-
-    public final void sphere(String name, String shaderName, float x, float y, float z, float radius) {
-        geometry(name, new Sphere());
-        parameter("transform", Matrix4.translation(x, y, z).multiply(Matrix4.scale(radius)));
-        parameter("shaders", shaderName);
-        instance(name + ".instance", name);
-    }
-
-    public final void sphere(String name, String shaderName, Matrix4 m) {
-        geometry(name, new Sphere());
-        parameter("transform", m);
-        parameter("shaders", shaderName);
-        instance(name + ".instance", name);
+        scene.setShaderOverride(lookupShader(name), photonOverride);
     }
 
     /**
@@ -643,8 +790,8 @@ public class SunflowAPI {
 
     /**
      * Render the scene with the specified built-in image sampler to the
-     * specified display. Valid sampler names are "bucket", "ipr",
-     * "fast".Attempts to use an unknown sampler are ignored.
+     * specified display. Valid sampler names are "bucket", "ipr", "fast".
+     * Attempts to use an unknown sampler are ignored.
      * 
      * @param sampler built-in sampler name
      * @param display display object

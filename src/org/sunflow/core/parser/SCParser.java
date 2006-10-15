@@ -691,23 +691,21 @@ public class SCParser implements SceneParser {
             api.instance(name + ".instance", name);
         } else if (p.peekNextToken("sphere")) {
             UI.printInfo("[API] Reading sphere ...");
-            if (transform != null) {
-                String name = api.getUniqueName("sphere");
-                api.geometry(name, new Sphere());
+            String name = api.getUniqueName("sphere");
+            api.geometry(name, new Sphere());
+            if (transform != null)
                 api.parameter("transform", transform);
-                api.parameter("shaders", shaders);
-                api.instance(name + ".instance", name);
-            } else if (p.peekNextToken("c")) {
-                float cx = p.getNextFloat();
-                float cy = p.getNextFloat();
-                float cz = p.getNextFloat();
+            else if (p.peekNextToken("c")) {
+                float x = p.getNextFloat();
+                float y = p.getNextFloat();
+                float z = p.getNextFloat();
                 p.checkNextToken("r");
-                float r = p.getNextFloat();
-                api.sphere(api.getUniqueName("sphere"), shaders[0], cx, cy, cz, r);
-            } else {
-                Matrix4 m = parseMatrix();
-                api.sphere(api.getUniqueName("sphere"), shaders[0], m);
-            }
+                float radius = p.getNextFloat();
+                api.parameter("transform", Matrix4.translation(x, y, z).multiply(Matrix4.scale(radius)));
+            } else
+                api.parameter("transform", parseMatrix());
+            api.parameter("shaders", shaders);
+            api.instance(name + ".instance", name);
         } else if (p.peekNextToken("banchoff")) {
             UI.printInfo("[API] Reading banchoff ...");
             String name = api.getUniqueName("banchoff");
@@ -1003,14 +1001,14 @@ public class SCParser implements SceneParser {
         float z = p.getNextFloat();
         return new Vector3(x, y, z);
     }
-    
+
     private int[] parseIntArray(int size) throws IOException {
         int[] data = new int[size];
         for (int i = 0; i < size; i++)
             data[i] = p.getNextInt();
         return data;
     }
-    
+
     private float[] parseFloatArray(int size) throws IOException {
         float[] data = new float[size];
         for (int i = 0; i < size; i++)

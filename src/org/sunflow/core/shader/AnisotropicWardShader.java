@@ -29,7 +29,7 @@ public class AnisotropicWardShader implements Shader {
         rhoD = pl.getColor("diffuse", rhoD);
         rhoS = pl.getColor("specular", rhoS);
         alphaX = pl.getFloat("roughnessX", alphaX);
-        alphaY = pl.getFloat("roughnessX", alphaY);
+        alphaY = pl.getFloat("roughnessY", alphaY);
         numRays = pl.getInt("samples", numRays);
         return true;
     }
