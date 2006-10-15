@@ -774,54 +774,30 @@ public class SCParser implements SceneParser {
             // parse vertices
             p.checkNextToken("points");
             int np = p.getNextInt();
-            float[] points = new float[np * 3];
-            for (int i = 0; i < points.length; i++)
-                points[i] = p.getNextFloat();
+            api.parameter("points", "point", "vertex", parseFloatArray(np * 3));
             // parse triangle indices
             p.checkNextToken("triangles");
             int nt = p.getNextInt();
-            int[] triangles = new int[nt * 3];
-            for (int i = 0; i < triangles.length; i++)
-                triangles[i] = p.getNextInt();
-            // create basic mesh
-            api.parameter("points", "point", "vertex", points);
-            api.parameter("triangles", triangles);
-
+            api.parameter("triangles", parseIntArray(nt * 3));
             // parse normals
             p.checkNextToken("normals");
-            if (p.peekNextToken("vertex")) {
-                float[] normals = new float[np * 3];
-                for (int i = 0; i < normals.length; i++)
-                    normals[i] = p.getNextFloat();
-                api.parameter("normals", "vector", "vertex", normals);
-            } else if (p.peekNextToken("facevarying")) {
-                float[] normals = new float[nt * 9];
-                for (int i = 0; i < normals.length; i++)
-                    normals[i] = p.getNextFloat();
-                api.parameter("normals", "vector", "facevarying", normals);
-            } else
+            if (p.peekNextToken("vertex"))
+                api.parameter("normals", "vector", "vertex", parseFloatArray(np * 3));
+            else if (p.peekNextToken("facevarying"))
+                api.parameter("normals", "vector", "facevarying", parseFloatArray(nt * 9));
+            else
                 p.checkNextToken("none");
             // parse texture coordinates
             p.checkNextToken("uvs");
-            float[] uvs = null;
-            if (p.peekNextToken("vertex")) {
-                uvs = new float[np * 2];
-                for (int i = 0; i < uvs.length; i++)
-                    uvs[i] = p.getNextFloat();
-                api.parameter("uvs", "texcoord", "vertex", uvs);
-            } else if (p.peekNextToken("facevarying")) {
-                uvs = new float[nt * 6];
-                for (int i = 0; i < uvs.length; i++)
-                    uvs[i] = p.getNextFloat();
-                api.parameter("uvs", "texcoord", "facevarying", uvs);
-            } else
+            if (p.peekNextToken("vertex"))
+                api.parameter("uvs", "texcoord", "vertex", parseFloatArray(np * 2));
+            else if (p.peekNextToken("facevarying"))
+                api.parameter("uvs", "texcoord", "facevarying", parseFloatArray(nt * 6));
+            else
                 p.checkNextToken("none");
             if (multiShader) {
                 p.checkNextToken("face_shaders");
-                int[] faceShaders = new int[nt];
-                for (int i = 0; i < faceShaders.length; i++)
-                    faceShaders[i] = p.getNextInt();
-                api.parameter("faceshaders", faceShaders);
+                api.parameter("faceshaders", parseIntArray(nt));
             }
             api.geometry(name, new Mesh());
             api.parameter("shaders", shaders);
@@ -975,17 +951,11 @@ public class SCParser implements SceneParser {
             // parse vertices
             p.checkNextToken("points");
             int np = p.getNextInt();
-            float[] points = new float[np * 3];
-            for (int i = 0; i < points.length; i++)
-                points[i] = p.getNextFloat();
+            api.parameter("points", "point", "vertex", parseFloatArray(np * 3));
             // parse triangle indices
             p.checkNextToken("triangles");
             int nt = p.getNextInt();
-            int[] triangles = new int[nt * 3];
-            for (int i = 0; i < triangles.length; i++)
-                triangles[i] = p.getNextInt();
-            api.parameter("points", "point", "vertex", points);
-            api.parameter("triangles", triangles);
+            api.parameter("triangles", parseIntArray(nt * 3));
             MeshLight mesh = new MeshLight();
             mesh.init(name, api);
         } else
@@ -1033,45 +1003,65 @@ public class SCParser implements SceneParser {
         float z = p.getNextFloat();
         return new Vector3(x, y, z);
     }
+    
+    private int[] parseIntArray(int size) throws IOException {
+        int[] data = new int[size];
+        for (int i = 0; i < size; i++)
+            data[i] = p.getNextInt();
+        return data;
+    }
+    
+    private float[] parseFloatArray(int size) throws IOException {
+        float[] data = new float[size];
+        for (int i = 0; i < size; i++)
+            data[i] = p.getNextFloat();
+        return data;
+    }
 
     private Matrix4 parseMatrix() throws IOException, ParserException {
-        Matrix4 m = Matrix4.IDENTITY;
-        p.checkNextToken("{");
-        while (!p.peekNextToken("}")) {
-            Matrix4 t = null;
-            if (p.peekNextToken("translate")) {
-                float x = p.getNextFloat();
-                float y = p.getNextFloat();
-                float z = p.getNextFloat();
-                t = Matrix4.translation(x, y, z);
-            } else if (p.peekNextToken("scaleu")) {
-                float s = p.getNextFloat();
-                t = Matrix4.scale(s);
-            } else if (p.peekNextToken("scale")) {
-                float x = p.getNextFloat();
-                float y = p.getNextFloat();
-                float z = p.getNextFloat();
-                t = Matrix4.scale(x, y, z);
-            } else if (p.peekNextToken("rotatex")) {
-                float angle = p.getNextFloat();
-                t = Matrix4.rotateX((float) Math.toRadians(angle));
-            } else if (p.peekNextToken("rotatey")) {
-                float angle = p.getNextFloat();
-                t = Matrix4.rotateY((float) Math.toRadians(angle));
-            } else if (p.peekNextToken("rotatez")) {
-                float angle = p.getNextFloat();
-                t = Matrix4.rotateZ((float) Math.toRadians(angle));
-            } else if (p.peekNextToken("rotate")) {
-                float x = p.getNextFloat();
-                float y = p.getNextFloat();
-                float z = p.getNextFloat();
-                float angle = p.getNextFloat();
-                t = Matrix4.rotate(x, y, z, (float) Math.toRadians(angle));
-            } else
-                UI.printWarning("[API] Unrecognized transformation type: %s", p.getNextToken());
-            if (t != null)
-                m = t.multiply(m);
+        if (p.peekNextToken("row")) {
+            return new Matrix4(parseFloatArray(16), true);
+        } else if (p.peekNextToken("col")) {
+            return new Matrix4(parseFloatArray(16), false);
+        } else {
+            Matrix4 m = Matrix4.IDENTITY;
+            p.checkNextToken("{");
+            while (!p.peekNextToken("}")) {
+                Matrix4 t = null;
+                if (p.peekNextToken("translate")) {
+                    float x = p.getNextFloat();
+                    float y = p.getNextFloat();
+                    float z = p.getNextFloat();
+                    t = Matrix4.translation(x, y, z);
+                } else if (p.peekNextToken("scaleu")) {
+                    float s = p.getNextFloat();
+                    t = Matrix4.scale(s);
+                } else if (p.peekNextToken("scale")) {
+                    float x = p.getNextFloat();
+                    float y = p.getNextFloat();
+                    float z = p.getNextFloat();
+                    t = Matrix4.scale(x, y, z);
+                } else if (p.peekNextToken("rotatex")) {
+                    float angle = p.getNextFloat();
+                    t = Matrix4.rotateX((float) Math.toRadians(angle));
+                } else if (p.peekNextToken("rotatey")) {
+                    float angle = p.getNextFloat();
+                    t = Matrix4.rotateY((float) Math.toRadians(angle));
+                } else if (p.peekNextToken("rotatez")) {
+                    float angle = p.getNextFloat();
+                    t = Matrix4.rotateZ((float) Math.toRadians(angle));
+                } else if (p.peekNextToken("rotate")) {
+                    float x = p.getNextFloat();
+                    float y = p.getNextFloat();
+                    float z = p.getNextFloat();
+                    float angle = p.getNextFloat();
+                    t = Matrix4.rotate(x, y, z, (float) Math.toRadians(angle));
+                } else
+                    UI.printWarning("[API] Unrecognized transformation type: %s", p.getNextToken());
+                if (t != null)
+                    m = t.multiply(m);
+            }
+            return m;
         }
-        return m;
     }
 }
