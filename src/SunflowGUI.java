@@ -52,6 +52,7 @@ import org.sunflow.core.primitive.Mesh;
 import org.sunflow.core.shader.AmbientOcclusionShader;
 import org.sunflow.core.shader.IDShader;
 import org.sunflow.core.shader.NormalShader;
+import org.sunflow.core.shader.PrimIDShader;
 import org.sunflow.core.shader.UVShader;
 import org.sunflow.image.Color;
 import org.sunflow.system.ImagePanel;
@@ -142,6 +143,7 @@ public class SunflowGUI extends javax.swing.JFrame implements UserInterface {
             System.out.println("  -quick_uvs       Applies a surface uv visualization shader to the scene");
             System.out.println("  -quick_normals   Applies a surface normal visualization shader to the scene");
             System.out.println("  -quick_id        Renders using a unique color for each instance");
+            System.out.println("  -quick_prims     Renders using a unique color for each primitive");
             System.out.println("  -resolution w h  Changes the render resolution to the specified width and height (in pixels)");
             System.out.println("  -bucket n order  Changes the default bucket size to n pixels and the default order");
             System.out.println("  -bench           Run several built-in scenes for benchmark purposes");
@@ -237,6 +239,11 @@ public class SunflowGUI extends javax.swing.JFrame implements UserInterface {
                     if (i > args.length - 1)
                         usage(false);
                     shaderOverride = new IDShader();
+                    i++;
+                } else if (args[i].equals("-quick_prims")) {
+                    if (i > args.length - 1)
+                        usage(false);
+                    shaderOverride = new PrimIDShader();
                     i++;
                 } else if (args[i].equals("-resolution")) {
                     if (i > args.length - 3)

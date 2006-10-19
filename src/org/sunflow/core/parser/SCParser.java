@@ -37,6 +37,7 @@ import org.sunflow.core.photonmap.GridPhotonMap;
 import org.sunflow.core.primitive.Background;
 import org.sunflow.core.primitive.BanchoffSurface;
 import org.sunflow.core.primitive.CornellBox;
+import org.sunflow.core.primitive.Hair;
 import org.sunflow.core.primitive.Mesh;
 import org.sunflow.core.primitive.Plane;
 import org.sunflow.core.primitive.Sphere;
@@ -798,6 +799,21 @@ public class SCParser implements SceneParser {
                 api.parameter("faceshaders", parseIntArray(nt));
             }
             api.geometry(name, new Mesh());
+            api.parameter("shaders", shaders);
+            if (transform != null)
+                api.parameter("transform", transform);
+            api.instance(name + ".instance", name);
+        } else if (p.peekNextToken("hair")) {
+            p.checkNextToken("name");
+            String name = p.getNextToken();
+            UI.printInfo("[API] Reading hair curves: %s ... ", name);
+            p.checkNextToken("segments");
+            api.parameter("segments", p.getNextInt());
+            p.checkNextToken("width");
+            api.parameter("width", p.getNextFloat());
+            p.checkNextToken("points");
+            api.parameter("points", "point", "vertex", parseFloatArray(p.getNextInt()));
+            api.geometry(name, new Hair());
             api.parameter("shaders", shaders);
             if (transform != null)
                 api.parameter("transform", transform);

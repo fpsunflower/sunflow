@@ -286,10 +286,10 @@ public class SunflowAPI {
 
     /**
      * Declare a parameter with the specified name. The type may be one of the
-     * follow: "point", "vector", "texcoord", "matrix". The interpolation
-     * determines how the parameter is to be interpreted over surface (see
-     * {@link InterpolationType}). The data is specified in a flattened float
-     * array.
+     * follow: "float", "point", "vector", "texcoord", "matrix". The
+     * interpolation determines how the parameter is to be interpreted over
+     * surface (see {@link InterpolationType}). The data is specified in a
+     * flattened float array.
      * 
      * @param name parameter name
      * @param type parameter data type
@@ -304,7 +304,9 @@ public class SunflowAPI {
             UI.printError("[API] Unknown interpolation type: %s -- ignoring parameter \"%s\"", interpolation, name);
             return;
         }
-        if (type.equals("point"))
+        if (type.equals("float"))
+            parameterList.addFloats(name, interp, data);
+        else if (type.equals("point"))
             parameterList.addPoints(name, interp, data);
         else if (type.equals("vector"))
             parameterList.addVectors(name, interp, data);

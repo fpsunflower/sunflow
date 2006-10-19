@@ -165,6 +165,22 @@ public final class ParameterList {
     }
 
     /**
+     * Add the specified floats as a parameter. <code>null</code> values are
+     * not permitted.
+     * 
+     * @param name parameter name
+     * @param interp interpolation type
+     * @param value parameter value
+     */
+    public void addFloats(String name, InterpolationType interp, float[] data) {
+        if (data == null) {
+            UI.printError("[API]] Cannot create float parameter %s -- invalid data length", name);
+            return;
+        }
+        add(name, new Parameter(ParameterType.FLOAT, interp, data));
+    }
+
+    /**
      * Add the specified points as a parameter. <code>null</code> values are
      * not permitted.
      * 
@@ -313,6 +329,10 @@ public final class ParameterList {
         return defaultValue;
     }
 
+    public FloatParameter getFloatArray(String name) {
+        return getFloatParameter(name, ParameterType.FLOAT, list.get(name));
+    }
+
     public FloatParameter getPointArray(String name) {
         return getFloatParameter(name, ParameterType.POINT, list.get(name));
     }
@@ -380,6 +400,10 @@ public final class ParameterList {
 
         public FloatParameter() {
             this(InterpolationType.NONE, null);
+        }
+
+        public FloatParameter(float f) {
+            this(InterpolationType.NONE, new float[] { f });
         }
 
         private FloatParameter(InterpolationType interp, float[] data) {

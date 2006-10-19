@@ -31,7 +31,7 @@ public class FrameDisplay implements Display {
             frame.imagePanel.imageBegin(w, h, bucketSize);
             Dimension screenRes = Toolkit.getDefaultToolkit().getScreenSize();
             boolean needFit = false;
-            if (w > screenRes.getWidth() || h > screenRes.getHeight()) {
+            if (w >= (screenRes.getWidth() - 200) || h >= (screenRes.getHeight() - 200)) {
                 frame.imagePanel.setPreferredSize(new Dimension((int) screenRes.getWidth() - 200, (int) screenRes.getHeight() - 200));
                 needFit = true;
             } else
