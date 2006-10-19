@@ -39,16 +39,16 @@ public class Hair implements PrimitiveList {
         int v1 = v0 + 3;
         int axis = i >>> 1;
         if ((i & 1) == 0) {
-            return Math.min(points[v0 + axis] - getWidth(vn), points[v1 + axis] - getWidth(vn + 1));
+            return Math.min(points[v0 + axis] - 0.5f * getWidth(vn), points[v1 + axis] - 0.5f * getWidth(vn + 1));
         } else {
-            return Math.max(points[v0 + axis] + getWidth(vn), points[v1 + axis] - getWidth(vn + 1));
+            return Math.max(points[v0 + axis] + 0.5f * getWidth(vn), points[v1 + axis] + 0.5f * getWidth(vn + 1));
         }
     }
 
     public BoundingBox getWorldBounds(Matrix4 o2w) {
         BoundingBox bounds = new BoundingBox();
         for (int i = 0, j = 0; i < points.length; i += 3, j++) {
-            float w = getWidth(j);
+            float w = 0.5f * getWidth(j);
             bounds.include(points[i] - w, points[i + 1] - w, points[i + 2] - w);
             bounds.include(points[i] + w, points[i + 1] + w, points[i + 2] + w);
         }
@@ -96,6 +96,11 @@ public class Hair implements PrimitiveList {
             float qz = pz - points[v0 + 2];
             float q = (vx * qx + vy * qy + vz * qz) / (vx * vx + vy * vy + vz * vz);
             if (q <= 0) {
+//                float dx = points[v0 + 0] - r.ox;
+//                float dy = points[v0 + 1] - r.oy;
+//                float dz = points[v0 + 2] - r.oz;
+//                float rd = (dx * r.dx + dy * r.dy + dz * r.dz);
+//                float d2 = dx * dx + dy * dy + dz * dz - rd * rd;
                 float dx = points[v0 + 0] - px;
                 float dy = points[v0 + 1] - py;
                 float dz = points[v0 + 2] - pz;
@@ -106,6 +111,11 @@ public class Hair implements PrimitiveList {
                     state.setIntersection(primID, 0, 0);
                 }
             } else if (q >= 1) {
+//                float dx = points[v1 + 0] - r.ox;
+//                float dy = points[v1 + 1] - r.oy;
+//                float dz = points[v1 + 2] - r.oz;
+//                float rd = (dx * r.dx + dy * r.dy + dz * r.dz);
+//                float d2 = dx * dx + dy * dy + dz * dz - rd * rd;
                 float dx = points[v1 + 0] - px;
                 float dy = points[v1 + 1] - py;
                 float dz = points[v1 + 2] - pz;
@@ -116,6 +126,11 @@ public class Hair implements PrimitiveList {
                     state.setIntersection(primID, 0, 1);
                 }
             } else {
+//                float dx = points[v0 + 0] + q * vx - r.ox;
+//                float dy = points[v0 + 1] + q * vy - r.oy;
+//                float dz = points[v0 + 2] + q * vz - r.oz;
+//                float rd = (dx * r.dx + dy * r.dy + dz * r.dz);
+//                float d2 = dx * dx + dy * dy + dz * dz - rd * rd;
                 float dx = points[v0 + 0] + q * vx - px;
                 float dy = points[v0 + 1] + q * vy - py;
                 float dz = points[v0 + 2] + q * vz - pz;
