@@ -52,6 +52,7 @@ import org.sunflow.core.light.PointLight;
 import org.sunflow.core.parser.RA2Parser;
 import org.sunflow.core.parser.RA3Parser;
 import org.sunflow.core.parser.SCParser;
+import org.sunflow.core.parser.ShaveRibParser;
 import org.sunflow.core.parser.TriParser;
 import org.sunflow.core.renderer.BucketRenderer;
 import org.sunflow.core.renderer.ProgressiveRenderer;
@@ -863,8 +864,12 @@ public class SunflowAPI {
             parser = new RA3Parser();
         else if (filename.endsWith(".tri"))
             parser = new TriParser();
-        else
+        else if (filename.endsWith(".rib"))
+            parser = new ShaveRibParser();
+        else {
+            UI.printError("[API] Unable to find a suitable parser for: \"%s\"", filename);
             return false;
+        }
         String currentFolder = new File(filename).getAbsoluteFile().getParentFile().getAbsolutePath();
         includeSearchPath.addSearchPath(currentFolder);
         textureSearchPath.addSearchPath(currentFolder);
