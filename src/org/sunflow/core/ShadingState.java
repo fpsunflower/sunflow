@@ -395,6 +395,10 @@ public final class ShadingState implements Iterable<LightSample> {
         return server.traceRefraction(this, r, i);
     }
 
+    public final Color traceTransparency() {
+        return server.traceRefraction(this, new Ray(p, r.getDirection()), 0);
+    }
+
     /**
      * Trace a shadow ray against the scene, determine if the ray interestected
      * anything.
