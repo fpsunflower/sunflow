@@ -21,7 +21,7 @@ public class AmbientOcclusionShader implements Shader {
         samples = 32;
         maxDist = Float.POSITIVE_INFINITY;
     }
-    
+
     public AmbientOcclusionShader(Color c, float d) {
         this();
         bright = c;
@@ -43,6 +43,8 @@ public class AmbientOcclusionShader implements Shader {
     }
 
     public Color getRadiance(ShadingState state) {
+        if (state.getNormal() == null)
+            return bright;
         // make sure we are on the right side of the material
         state.faceforward();
         OrthoNormalBasis onb = state.getBasis();

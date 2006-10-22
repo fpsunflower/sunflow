@@ -178,7 +178,7 @@ public class Scene {
 
     public ShadingState getRadiance(IntersectionState istate, float rx, float ry, double lensU, double lensV, double time, int instance) {
         Ray r = camera.getRay(rx, ry, imageWidth, imageHeight, lensU, lensV, time);
-        return lightServer.getRadiance(ry, ry, instance, r, istate);
+        return lightServer.getRadiance(rx, ry, instance, r, istate);
     }
 
     public Filter getFilter() {
@@ -244,6 +244,7 @@ public class Scene {
         UI.printInfo("[SCN] Rendering ...");
         sampler.prepare(this, imageWidth, imageHeight);
         sampler.render(display);
+        lightServer.showStats();
         UI.printInfo("[SCN] Done.");
     }
 

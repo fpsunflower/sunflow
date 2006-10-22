@@ -1,4 +1,6 @@
 v0.07.0
+* Added a parser for hair curve data as export by Shave and Haircut (http://www.joealter.com)
+* Added a hair curve primitive
 * Implemented parameter system for all render object creation
 * Textures are now loaded on demand, when they are first accessed
 * Modified bucketOrder call in SunflowAPI to create inverted bucket orders

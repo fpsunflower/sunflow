@@ -1,7 +1,5 @@
 package org.sunflow.core.renderer;
 
-import java.util.concurrent.atomic.AtomicInteger;
-
 import org.sunflow.core.BucketOrder;
 import org.sunflow.core.Display;
 import org.sunflow.core.Filter;
@@ -153,9 +151,6 @@ public class BucketRenderer implements ImageSampler {
 
         BucketThread(int threadID) {
             this.threadID = threadID;
-            AtomicInteger ai = new AtomicInteger(0);
-
-            ai.addAndGet(1);
         }
 
         public void run() {
@@ -395,7 +390,7 @@ public class BucketRenderer implements ImageSampler {
             if (Color.hasContrast(c, sample.c, thresh))
                 return true;
             float dot = (nx * sample.nx + ny * sample.ny + nz * sample.nz);
-            return dot < 0.9;
+            return dot < 0.9f;
         }
 
         static ImageSample bilerp(ImageSample result, ImageSample i00, ImageSample i01, ImageSample i10, ImageSample i11, float dx, float dy) {

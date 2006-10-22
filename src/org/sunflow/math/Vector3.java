@@ -131,6 +131,10 @@ public final class Vector3 {
         return this;
     }
 
+    public final float dot(float vx, float vy, float vz) {
+        return vx * x + vy * y + vz * z;
+    }
+
     public static final float dot(Vector3 v1, Vector3 v2) {
         return (v1.x * v2.x) + (v1.y * v2.y) + (v1.z * v2.z);
     }

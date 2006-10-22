@@ -31,6 +31,29 @@ class LightServer {
     private GIEngine giEngine;
     private int photonCounter;
 
+    // shading cache
+    private CacheEntry[] shadingCache;
+    private float shadingCacheResolution;
+    private long cacheLookups;
+    private long cacheEmptyEntryMisses;
+    private long cacheWrongEntryMisses;
+    private long cacheEntryAdditions;
+    private long cacheHits;
+
+    private static class CacheEntry {
+        int cx, cy;
+        Sample first;
+    }
+
+    private static class Sample {
+        Instance i;
+        Shader s;
+        //int prim;
+        float nx, ny, nz;
+        Color c;
+        Sample next; // linked list
+    }
+
     LightServer(Scene scene) {
         this.scene = scene;
         lightList = new ArrayList<LightSource>();
@@ -46,6 +69,13 @@ class LightServer {
 
         causticPhotonMap = null;
         giEngine = null;
+
+        shadingCache(0);
+    }
+
+    void shadingCache(float shadingRate) {
+        shadingCache = shadingRate > 0 ? new CacheEntry[4096] : null;
+        shadingCacheResolution = (float) (1 / Math.sqrt(shadingRate));
     }
 
     Scene getScene() {
@@ -99,6 +129,16 @@ class LightServer {
         if (!calculatePhotons(causticPhotonMap, "caustic", 0))
             return false;
         t.end();
+        cacheLookups = 0;
+        cacheHits = 0;
+        cacheEmptyEntryMisses = 0;
+        cacheWrongEntryMisses = 0;
+        cacheEntryAdditions = 0;
+        if (shadingCache != null) {
+            // clear shading cache
+            for (int i = 0; i < shadingCache.length; i++)
+                shadingCache[i] = null;
+        }
         UI.printInfo("[LSV] Light Server stats:");
         UI.printInfo("[LSV]   * Light sources found: %d", lights.length);
         UI.printInfo("[LSV]   * Light samples:       %d", numLightSamples);
@@ -108,8 +148,25 @@ class LightServer {
         UI.printInfo("[LSV]       - Refraction       %d", maxRefractionDepth);
         UI.printInfo("[LSV]   * Shader override:     %b", shaderOverride);
         UI.printInfo("[LSV]   * Photon override:     %b", shaderOverridePhotons);
+        UI.printInfo("[LSV]   * Shading cache:       %s", shadingCache == null ? "off" : "on");
         UI.printInfo("[LSV]   * Build time:          %s", t.toString());
         return true;
+    }
+
+    void showStats() {
+        if (shadingCache == null)
+            return;
+        int numUsedEntries = 0;
+        for (CacheEntry e : shadingCache)
+            numUsedEntries += (e != null) ? 1 : 0;
+        UI.printInfo("[LSV] Shading cache stats:");
+        UI.printInfo("[LSV]   * Used entries:        %d (%d%%)", numUsedEntries, (100 * numUsedEntries) / shadingCache.length);
+        UI.printInfo("[LSV]   * Lookups:             %d", cacheLookups);
+        UI.printInfo("[LSV]   * Hits:                %d", cacheHits);
+        UI.printInfo("[LSV]   * Hit rate:            %d%%", (100 * cacheHits) / cacheLookups);
+        UI.printInfo("[LSV]   * Empty entry misses:  %d", cacheEmptyEntryMisses);
+        UI.printInfo("[LSV]   * Wrong entry misses:  %d", cacheWrongEntryMisses);
+        UI.printInfo("[LSV]   * Entry adds:          %d", cacheEntryAdditions);
     }
 
     boolean calculatePhotons(final PhotonStore map, String type, final int seed) {
@@ -202,14 +259,10 @@ class LightServer {
 
     void shadePhoton(ShadingState state, Color power) {
         state.getInstance().prepareShadingState(state);
-        // figure out which shader to use
-        Shader shader = shaderOverride;
-        if (shader == null || !shaderOverridePhotons)
-            shader = state.getShader();
+        Shader shader = getPhotonShader(state);
         // scatter photon
         if (shader != null)
             shader.scatterPhoton(state, power);
-
     }
 
     void traceDiffusePhoton(ShadingState previous, Ray r, Color power) {
@@ -248,11 +301,35 @@ class LightServer {
         }
     }
 
+    private Shader getShader(ShadingState state) {
+        return shaderOverride != null ? shaderOverride : state.getShader();
+    }
+
+    private Shader getPhotonShader(ShadingState state) {
+        return (shaderOverride != null && shaderOverridePhotons) ? shaderOverride : state.getShader();
+
+    }
+
     ShadingState getRadiance(float rx, float ry, int i, Ray r, IntersectionState istate) {
         scene.trace(r, istate);
         if (istate.hit()) {
             ShadingState state = ShadingState.createState(istate, rx, ry, r, i, this);
-            state.setResult(shadeHit(state));
+            state.getInstance().prepareShadingState(state);
+            Shader shader = getShader(state);
+            if (shader == null) {
+                state.setResult(Color.BLACK);
+                return state;
+            }
+            if (shadingCache != null) {
+                Color c = lookupShadingCache(state, shader);
+                if (c != null) {
+                    state.setResult(c);
+                    return state;
+                }
+            }
+            state.setResult(shader.getRadiance(state));
+            if (shadingCache != null)
+                addShadingCache(state, shader, state.getResult());
             return state;
         } else
             return null;
@@ -260,10 +337,81 @@ class LightServer {
 
     Color shadeHit(ShadingState state) {
         state.getInstance().prepareShadingState(state);
-        Shader shader = shaderOverride;
-        if (shader == null)
-            shader = state.getShader();
+        Shader shader = getShader(state);
         return (shader != null) ? shader.getRadiance(state) : Color.BLACK;
+    }
+
+    private static final int hash(int x, int y) {
+//        long bits = java.lang.Double.doubleToLongBits(x);
+//        bits ^= java.lang.Double.doubleToLongBits(y) * 31;
+//        return (((int) bits) ^ ((int) (bits >> 32)));
+        return x ^ y;
+    }
+
+    private synchronized Color lookupShadingCache(ShadingState state, Shader shader) {
+        if (state.getNormal() == null)
+            return null;
+        cacheLookups++;
+        int cx = (int) (state.getRasterX() * shadingCacheResolution);
+        int cy = (int) (state.getRasterY() * shadingCacheResolution);
+        int hash = hash(cx, cy);
+        CacheEntry e = shadingCache[hash & (shadingCache.length - 1)];
+        if (e == null) {
+            cacheEmptyEntryMisses++;
+            return null;
+        }
+        // entry maps to correct pixel
+        if (e.cx == cx && e.cy == cy) {
+            // search further
+            for (Sample s = e.first; s != null; s = s.next) {
+                if (s.i != state.getInstance())
+                    continue;
+//                if (s.prim != state.getPrimitiveID())
+//                    continue;
+                if (s.s != shader)
+                    continue;
+                if (state.getNormal().dot(s.nx, s.ny, s.nz) < 0.95f)
+                    continue;
+                // we have a match
+                cacheHits++;
+                return s.c;
+            }
+        } else
+            cacheWrongEntryMisses++;
+        return null;
+    }
+
+    private synchronized void addShadingCache(ShadingState state, Shader shader, Color c) {
+        // don't cache samples with null normals
+        if (state.getNormal() == null)
+            return;
+        cacheEntryAdditions++;
+        int cx = (int) (state.getRasterX() * shadingCacheResolution);
+        int cy = (int) (state.getRasterY() * shadingCacheResolution);
+        int h = hash(cx, cy) & (shadingCache.length - 1);
+        CacheEntry e = shadingCache[h];
+        // new entry ?
+        if (e == null)
+            e = shadingCache[h] = new CacheEntry();
+        Sample s = new Sample();
+        s.i = state.getInstance();
+//        s.prim = state.getPrimitiveID();
+        s.s = shader;
+        s.c = c;
+        s.nx = state.getNormal().x;
+        s.ny = state.getNormal().y;
+        s.nz = state.getNormal().z;
+        if (e.cx == cx && e.cy == cy) {
+            // same pixel - just add to the front of the list
+            s.next = e.first;
+            e.first = s;
+        } else {
+            // different pixel - new list
+            e.cx = cx;
+            e.cy = cy;
+            s.next = null;
+            e.first = s;
+        }
     }
 
     Color traceGlossy(ShadingState previous, Ray r, int i) {

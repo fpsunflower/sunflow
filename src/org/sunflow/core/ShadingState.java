@@ -129,6 +129,10 @@ public final class ShadingState implements Iterable<LightSample> {
         basis = null;
     }
 
+    public final Color shade() {
+        return server.shadeHit(this);
+    }
+
     public final void faceforward() {
         cosND = -r.dot(n);
         // make sure we are on the right side of the material
@@ -139,6 +143,14 @@ public final class ShadingState implements Iterable<LightSample> {
             cosND = -cosND; // make sure this value is positive
             behind = true;
         }
+    }
+
+    public final float getRasterX() {
+        return rx;
+    }
+
+    public final float getRasterY() {
+        return ry;
     }
 
     public final float getCosND() {
@@ -169,7 +181,7 @@ public final class ShadingState implements Iterable<LightSample> {
         return primitiveID;
     }
 
-    final void setResult(Color c) {
+    public final void setResult(Color c) {
         result = c;
     }
 

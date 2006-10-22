@@ -143,11 +143,25 @@ public final class Ray {
      * ray. This method avoids having to call getDirection() which would
      * instantiate a new Vector object.
      * 
-     * @param v arbitrary vector
+     * @param v vector
      * @return dot product of the ray direction and the specified vector
      */
     public final float dot(Vector3 v) {
         return dx * v.x + dy * v.y + dz * v.z;
+    }
+
+    /**
+     * Computes the dot product of an arbitrary vector with the direction of the
+     * ray. This method avoids having to call getDirection() which would
+     * instantiate a new Vector object.
+     * 
+     * @param vx vector x coordinate
+     * @param vy vector y coordinate
+     * @param vz vector z coordinate
+     * @return dot product of the ray direction and the specified vector
+     */
+    public final float dot(float vx, float vy, float vz) {
+        return dx * vx + dy * vy + dz * vz;
     }
 
     /**
