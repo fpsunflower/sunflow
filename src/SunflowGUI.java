@@ -40,6 +40,7 @@ import javax.swing.plaf.metal.DefaultMetalTheme;
 import javax.swing.plaf.metal.MetalLookAndFeel;
 
 import org.sunflow.Benchmark;
+import org.sunflow.RealtimeBenchmark;
 import org.sunflow.SunflowAPI;
 import org.sunflow.core.Display;
 import org.sunflow.core.Shader;
@@ -147,6 +148,7 @@ public class SunflowGUI extends javax.swing.JFrame implements UserInterface {
             System.out.println("  -resolution w h  Changes the render resolution to the specified width and height (in pixels)");
             System.out.println("  -bucket n order  Changes the default bucket size to n pixels and the default order");
             System.out.println("  -bench           Run several built-in scenes for benchmark purposes");
+            System.out.println("  -rtbench         Run realtime ray-tracing benchmark");
             System.out.println("  -v verbosity     Set the verbosity level: 0=none,1=errors,2=warnings,3=info,4=detailed");
             System.out.println("  -h               Prints this message");
         }
@@ -171,6 +173,7 @@ public class SunflowGUI extends javax.swing.JFrame implements UserInterface {
             int bucketSize = 0;
             String bucketOrder = null;
             boolean runBenchmark = false;
+            boolean runRTBenchmark = false;
             while (i < args.length) {
                 if (args[i].equals("-o")) {
                     if (i > args.length - 2)
@@ -260,6 +263,9 @@ public class SunflowGUI extends javax.swing.JFrame implements UserInterface {
                 } else if (args[i].equals("-bench")) {
                     runBenchmark = true;
                     i++;
+                } else if (args[i].equals("-rtbench")) {
+                    runRTBenchmark = true;
+                    i++;
                 } else if (args[i].equals("-v")) {
                     if (i > args.length - 2)
                         usage(false);
@@ -274,12 +280,16 @@ public class SunflowGUI extends javax.swing.JFrame implements UserInterface {
                     i++;
                 }
             }
-            if (input == null && !runBenchmark)
-                usage(false);
             if (runBenchmark) {
                 new Benchmark(showFrame).execute();
                 System.exit(0);
             }
+            if (runRTBenchmark) {
+                new RealtimeBenchmark(showFrame, threads);
+                return;
+            }
+            if (input == null)
+                usage(false);
             SunflowAPI api = SunflowAPI.create(input);
             if (api == null)
                 System.exit(1);

@@ -15,6 +15,7 @@ import org.sunflow.core.CausticPhotonMapInterface;
 import org.sunflow.core.GlobalPhotonMapInterface;
 import org.sunflow.core.SceneParser;
 import org.sunflow.core.Shader;
+import org.sunflow.core.Tesselatable;
 import org.sunflow.core.camera.PinholeCamera;
 import org.sunflow.core.camera.SphericalCamera;
 import org.sunflow.core.camera.ThinLensCamera;
@@ -60,6 +61,8 @@ import org.sunflow.core.shader.UberShader;
 import org.sunflow.core.shader.ViewCausticsShader;
 import org.sunflow.core.shader.ViewGlobalPhotonsShader;
 import org.sunflow.core.shader.ViewIrradianceShader;
+import org.sunflow.core.tesselatable.Gumbo;
+import org.sunflow.core.tesselatable.Teapot;
 import org.sunflow.image.Color;
 import org.sunflow.math.Matrix4;
 import org.sunflow.math.Point3;
@@ -557,22 +560,22 @@ public class SCParser implements SceneParser {
                 Shader shader = (Shader) ClassBodyEvaluator.createFastClassBodyEvaluator(new Scanner(null, new StringReader(code)), Shader.class, ClassLoader.getSystemClassLoader());
                 api.shader(name, shader);
             } catch (CompileException e) {
-                UI.printInfo("[API] Compiling: %s", code);
+                UI.printDetailed("[API] Compiling: %s", code);
                 UI.printError("[API] %s", e.getMessage());
                 e.printStackTrace();
                 return false;
             } catch (ParseException e) {
-                UI.printInfo("[API] Compiling: %s", code);
+                UI.printDetailed("[API] Compiling: %s", code);
                 UI.printError("[API] %s", e.getMessage());
                 e.printStackTrace();
                 return false;
             } catch (ScanException e) {
-                UI.printInfo("[API] Compiling: %s", code);
+                UI.printDetailed("[API] Compiling: %s", code);
                 UI.printError("[API] %s", e.getMessage());
                 e.printStackTrace();
                 return false;
             } catch (IOException e) {
-                UI.printInfo("[API] Compiling: %s", code);
+                UI.printDetailed("[API] Compiling: %s", code);
                 UI.printError("[API] %s", e.getMessage());
                 e.printStackTrace();
                 return false;
@@ -814,6 +817,65 @@ public class SCParser implements SceneParser {
             p.checkNextToken("points");
             api.parameter("points", "point", "vertex", parseFloatArray(p.getNextInt()));
             api.geometry(name, new Hair());
+            api.parameter("shaders", shaders);
+            if (transform != null)
+                api.parameter("transform", transform);
+            api.instance(name + ".instance", name);
+        } else if (p.peekNextToken("janino-tesselatable")) {
+            p.checkNextToken("name");
+            String name = p.getNextToken();
+            UI.printInfo("[API] Reading procedural primitive: %s ... ", name);
+            String code = p.getNextCodeBlock();
+            try {
+                Tesselatable tess = (Tesselatable) ClassBodyEvaluator.createFastClassBodyEvaluator(new Scanner(null, new StringReader(code)), Tesselatable.class, ClassLoader.getSystemClassLoader());
+                api.geometry(name, tess);
+            } catch (CompileException e) {
+                UI.printDetailed("[API] Compiling: %s", code);
+                UI.printError("[API] %s", e.getMessage());
+                e.printStackTrace();
+                name = null;
+            } catch (ParseException e) {
+                UI.printDetailed("[API] Compiling: %s", code);
+                UI.printError("[API] %s", e.getMessage());
+                e.printStackTrace();
+                name = null;
+            } catch (ScanException e) {
+                UI.printDetailed("[API] Compiling: %s", code);
+                UI.printError("[API] %s", e.getMessage());
+                e.printStackTrace();
+                name = null;
+            } catch (IOException e) {
+                UI.printDetailed("[API] Compiling: %s", code);
+                UI.printError("[API] %s", e.getMessage());
+                e.printStackTrace();
+                name = null;
+            }
+            if (name != null) {
+                api.parameter("shaders", shaders);
+                if (transform != null)
+                    api.parameter("transform", transform);
+                api.instance(name + ".instance", name);
+            }
+        } else if (p.peekNextToken("teapot")) {
+            String name = api.getUniqueName("teapot");
+            UI.printInfo("[API] Reading teapot: %s ... ", name);
+            if (p.peekNextToken("subdivs"))
+                api.parameter("subdivs", p.getNextInt());
+            if (p.peekNextToken("smooth"))
+                api.parameter("smooth", p.getNextBoolean());
+            api.geometry(name, new Teapot());
+            api.parameter("shaders", shaders);
+            if (transform != null)
+                api.parameter("transform", transform);
+            api.instance(name + ".instance", name);
+        } else if (p.peekNextToken("gumbo")) {
+            String name = api.getUniqueName("gumbo");
+            UI.printInfo("[API] Reading teapot: %s ... ", name);
+            if (p.peekNextToken("subdivs"))
+                api.parameter("subdivs", p.getNextInt());
+            if (p.peekNextToken("smooth"))
+                api.parameter("smooth", p.getNextBoolean());
+            api.geometry(name, new Gumbo());
             api.parameter("shaders", shaders);
             if (transform != null)
                 api.parameter("transform", transform);

@@ -28,6 +28,7 @@ import org.sunflow.core.RenderObject;
 import org.sunflow.core.Scene;
 import org.sunflow.core.SceneParser;
 import org.sunflow.core.Shader;
+import org.sunflow.core.Tesselatable;
 import org.sunflow.core.ParameterList.InterpolationType;
 import org.sunflow.core.accel.BoundingIntervalHierarchy;
 import org.sunflow.core.accel.KDTree;
@@ -94,6 +95,11 @@ public class SunflowAPI {
         private RenderObjectHandle(Shader shader) {
             obj = shader;
             type = RenderObjectType.SHADER;
+        }
+
+        private RenderObjectHandle(Tesselatable tesselatable) {
+            obj = new Geometry(tesselatable);
+            type = RenderObjectType.GEOMETRY;
         }
 
         private RenderObjectHandle(PrimitiveList prims) {
@@ -650,6 +656,29 @@ public class SunflowAPI {
                 return;
             }
             renderObjects.put(name, new RenderObjectHandle(primitives));
+        }
+        if (lookupGeometry(name) != null)
+            update(name);
+        else
+            UI.printError("[API] Unable to update geometry \"%s\" - geometry object was not found", name);
+    }
+
+    /**
+     * Defines a geometry with a given name. The geometry is built from the
+     * specified {@link Tesselatable}. If the object is <code>null</code>,
+     * the geometry with the given name will be updated (if it exists).
+     * 
+     * @param name a unique name given to the geometry
+     * @param tesselatable the tesselatable object to create the geometry from
+     */
+    public final void geometry(String name, Tesselatable tesselatable) {
+        if (tesselatable != null) {
+            // we are declaring a geometry for the first time
+            if (renderObjects.containsKey(name)) {
+                UI.printError("[API] Unable to declare geometry \"%s\", name is already in use", name);
+                return;
+            }
+            renderObjects.put(name, new RenderObjectHandle(tesselatable));
         }
         if (lookupGeometry(name) != null)
             update(name);
