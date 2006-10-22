@@ -1,4 +1,8 @@
 v0.07.0
+* Added Teapot and Gumbo primitives, both using bezier patch descriptions
+* Added Bezier patch mesh, which generates a triangle mesh at runtime
+* Added janino-tesselatable primitive
+* Added on demand tesselation of primitives
 * Added a parser for hair curve data as export by Shave and Haircut (http://www.joealter.com)
 * Added a hair curve primitive
 * Implemented parameter system for all render object creation
