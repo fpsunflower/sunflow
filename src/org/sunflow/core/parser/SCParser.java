@@ -857,7 +857,11 @@ public class SCParser implements SceneParser {
                 api.instance(name + ".instance", name);
             }
         } else if (p.peekNextToken("teapot")) {
-            String name = api.getUniqueName("teapot");
+            String name;
+            if (p.peekNextToken("name"))
+                name = p.getNextToken();
+            else
+                name = api.getUniqueName("teapot");
             UI.printInfo("[API] Reading teapot: %s ... ", name);
             if (p.peekNextToken("subdivs"))
                 api.parameter("subdivs", p.getNextInt());
@@ -869,8 +873,12 @@ public class SCParser implements SceneParser {
                 api.parameter("transform", transform);
             api.instance(name + ".instance", name);
         } else if (p.peekNextToken("gumbo")) {
-            String name = api.getUniqueName("gumbo");
-            UI.printInfo("[API] Reading teapot: %s ... ", name);
+            String name;
+            if (p.peekNextToken("name"))
+                name = p.getNextToken();
+            else
+                name = api.getUniqueName("gumbo");
+            UI.printInfo("[API] Reading gumbo: %s ... ", name);
             if (p.peekNextToken("subdivs"))
                 api.parameter("subdivs", p.getNextInt());
             if (p.peekNextToken("smooth"))

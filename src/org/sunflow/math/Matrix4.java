@@ -172,7 +172,7 @@ public final class Matrix4 {
         float B5 = m22 * m33 - m23 * m32;
 
         float det = A0 * B5 - A1 * B4 + A2 * B3 + A3 * B2 - A4 * B1 + A5 * B0;
-        if (Math.abs(det) <= 1e-6f)
+        if (Math.abs(det) <= 1e-9f)
             return null; // matrix is not invertible
         float invDet = 1 / det;
         Matrix4 inv = new Matrix4();
