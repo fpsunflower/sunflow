@@ -39,6 +39,7 @@ import org.sunflow.core.primitive.Background;
 import org.sunflow.core.primitive.BanchoffSurface;
 import org.sunflow.core.primitive.CornellBox;
 import org.sunflow.core.primitive.Hair;
+import org.sunflow.core.primitive.JuliaFractal;
 import org.sunflow.core.primitive.Mesh;
 import org.sunflow.core.primitive.Plane;
 import org.sunflow.core.primitive.Sphere;
@@ -884,6 +885,29 @@ public class SCParser implements SceneParser {
             if (p.peekNextToken("smooth"))
                 api.parameter("smooth", p.getNextBoolean());
             api.geometry(name, new Gumbo());
+            api.parameter("shaders", shaders);
+            if (transform != null)
+                api.parameter("transform", transform);
+            api.instance(name + ".instance", name);
+        } else if (p.peekNextToken("julia")) {
+            String name;
+            if (p.peekNextToken("name"))
+                name = p.getNextToken();
+            else
+                name = api.getUniqueName("julia");
+            UI.printInfo("[API] Reading julia fractal: %s ... ", name);
+            if (p.peekNextToken("q")) {
+                api.parameter("cw", p.getNextFloat());
+                api.parameter("cx", p.getNextFloat());
+                api.parameter("cy", p.getNextFloat());
+                api.parameter("cz", p.getNextFloat());
+            }
+            if (p.peekNextToken("iterations"))
+                api.parameter("iterations", p.getNextInt());
+            if (p.peekNextToken("epsilon"))
+                api.parameter("epsilon", p.getNextFloat());
+
+            api.geometry(name, new JuliaFractal());
             api.parameter("shaders", shaders);
             if (transform != null)
                 api.parameter("transform", transform);
