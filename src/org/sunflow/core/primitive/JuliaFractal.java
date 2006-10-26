@@ -18,7 +18,7 @@ public class JuliaFractal implements PrimitiveList {
     private static float BOUNDING_RADIUS = (float) Math.sqrt(3);
     private static float BOUNDING_RADIUS2 = 3;
     private static float ESCAPE_THRESHOLD = 1e1f;
-    private static float DELTA = 1e-5f;
+    private static float DELTA = 1e-4f;
 
     // quaternion constant
     private float cx;
@@ -35,8 +35,8 @@ public class JuliaFractal implements PrimitiveList {
         cy = .3f;
         cz = -.2f;
 
-        maxIterations = 12;
-        epsilon = 0.001f;
+        maxIterations = 15;
+        epsilon = 0.00001f;
     }
 
     public int getNumPrimitives() {
@@ -113,7 +113,7 @@ public class JuliaFractal implements PrimitiveList {
 
             }
             float normZ = (float) Math.sqrt(dotz);
-            dist = 0.5f * normZ * (float) Math.log(normZ) / (float) length(zpw, zpx, zpy, zpz);
+            dist = 0.5f * normZ * (float) Math.log(normZ) / length(zpw, zpx, zpy, zpz);
             rox += dist * r.dx;
             roy += dist * r.dy;
             roz += dist * r.dz;
@@ -216,9 +216,9 @@ public class JuliaFractal implements PrimitiveList {
                 gz2w = nw;
             }
         }
-        double gradX = length(gx2w, gx2x, gx2y, gx2z) - length(gx1w, gx1x, gx1y, gx1z);
-        double gradY = length(gy2w, gy2x, gy2y, gy2z) - length(gy1w, gy1x, gy1y, gy1z);
-        double gradZ = length(gz2w, gz2x, gz2y, gz2z) - length(gz1w, gz1x, gz1y, gz1z);
+        float gradX = length(gx2w, gx2x, gx2y, gx2z) - length(gx1w, gx1x, gx1y, gx1z);
+        float gradY = length(gy2w, gy2x, gy2y, gy2z) - length(gy1w, gy1x, gy1y, gy1z);
+        float gradZ = length(gz2w, gz2x, gz2y, gz2z) - length(gz1w, gz1x, gz1y, gz1z);
         Vector3 n = new Vector3((float) gradX, (float) gradY, (float) gradZ);
         state.getNormal().set(parent.transformNormalObjectToWorld(n));
         state.getNormal().normalize();
@@ -232,8 +232,8 @@ public class JuliaFractal implements PrimitiveList {
         state.setShader(parent.getShader(0));
     }
 
-    private static double length(float w, float x, float y, float z) {
-        return Math.sqrt(w * w + x * x + y * y + z * z);
+    private static float length(float w, float x, float y, float z) {
+        return (float) Math.sqrt(w * w + x * x + y * y + z * z);
     }
 
     public boolean update(ParameterList pl, SunflowAPI api) {
