@@ -13,6 +13,7 @@ import org.codehaus.janino.Scanner.ScanException;
 import org.sunflow.SunflowAPI;
 import org.sunflow.core.CausticPhotonMapInterface;
 import org.sunflow.core.GlobalPhotonMapInterface;
+import org.sunflow.core.PrimitiveList;
 import org.sunflow.core.SceneParser;
 import org.sunflow.core.Shader;
 import org.sunflow.core.Tesselatable;
@@ -864,11 +865,19 @@ public class SCParser implements SceneParser {
             else
                 name = api.getUniqueName("teapot");
             UI.printInfo("[API] Reading teapot: %s ... ", name);
-            if (p.peekNextToken("subdivs"))
+            boolean hasTesselationArguments = false;
+            if (p.peekNextToken("subdivs")) {
                 api.parameter("subdivs", p.getNextInt());
-            if (p.peekNextToken("smooth"))
+                hasTesselationArguments = true;
+            }
+            if (p.peekNextToken("smooth")) {
                 api.parameter("smooth", p.getNextBoolean());
-            api.geometry(name, new Teapot());
+                hasTesselationArguments = true;
+            }
+            if (hasTesselationArguments)
+                api.geometry(name, (Tesselatable) new Teapot());
+            else
+                api.geometry(name, (PrimitiveList) new Teapot());
             api.parameter("shaders", shaders);
             if (transform != null)
                 api.parameter("transform", transform);
@@ -880,11 +889,19 @@ public class SCParser implements SceneParser {
             else
                 name = api.getUniqueName("gumbo");
             UI.printInfo("[API] Reading gumbo: %s ... ", name);
-            if (p.peekNextToken("subdivs"))
+            boolean hasTesselationArguments = false;
+            if (p.peekNextToken("subdivs")) {
                 api.parameter("subdivs", p.getNextInt());
-            if (p.peekNextToken("smooth"))
+                hasTesselationArguments = true;
+            }
+            if (p.peekNextToken("smooth")) {
                 api.parameter("smooth", p.getNextBoolean());
-            api.geometry(name, new Gumbo());
+                hasTesselationArguments = true;
+            }
+            if (hasTesselationArguments)
+                api.geometry(name, (Tesselatable) new Gumbo());
+            else
+                api.geometry(name, (PrimitiveList) new Gumbo());
             api.parameter("shaders", shaders);
             if (transform != null)
                 api.parameter("transform", transform);

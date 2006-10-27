@@ -5,7 +5,8 @@ public final class IntersectionState {
     float u, v;
     Instance instance;
     int id;
-    StackNode[] stack;
+    private final StackNode[] stack;
+    private final float[] rstack;
     Instance current;
 
     public static final class StackNode {
@@ -18,6 +19,7 @@ public final class IntersectionState {
         stack = new StackNode[MAX_STACK_SIZE * 2];
         for (int i = 0; i < stack.length; i++)
             stack[i] = new StackNode();
+        rstack = new float[53 * 256];
     }
 
     public final StackNode[] getStack() {
@@ -26,6 +28,10 @@ public final class IntersectionState {
 
     public final int getStackTop() {
         return current == null ? 0 : MAX_STACK_SIZE;
+    }
+    
+    public final float[] getRobustStack() {
+        return rstack;
     }
 
     /**

@@ -1,6 +1,7 @@
 package org.sunflow;
 
 import org.sunflow.core.Display;
+import org.sunflow.core.Tesselatable;
 import org.sunflow.core.camera.PinholeCamera;
 import org.sunflow.core.display.FastDisplay;
 import org.sunflow.core.display.FileDisplay;
@@ -86,7 +87,7 @@ public class RealtimeBenchmark extends SunflowAPI {
 
         // teapot
         parameter("subdivs", 10);
-        geometry("teapot", new Teapot());
+        geometry("teapot", (Tesselatable) new Teapot());
         parameter("shaders", "default");
         Matrix4 m = Matrix4.IDENTITY;
         m = Matrix4.scale(0.075f).multiply(m);
@@ -97,7 +98,7 @@ public class RealtimeBenchmark extends SunflowAPI {
 
         // gumbo
         parameter("subdivs", 10);
-        geometry("gumbo", new Gumbo());
+        geometry("gumbo", (Tesselatable) new Gumbo());
         m = Matrix4.IDENTITY;
         m = Matrix4.scale(0.5f).multiply(m);
         m = Matrix4.rotateZ((float) Math.toRadians(25f)).multiply(m);
