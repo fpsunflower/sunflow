@@ -1,4 +1,6 @@
 v0.07.0
+* Parser now generates bezier patch primitives intead of triangles is the subdivs/smooth parameters are ommited
+* Added exact Ray/Bezier-patch intersection code
 * Added Teapot and Gumbo primitives, both using bezier patch descriptions
 * Added Bezier patch mesh, which generates a triangle mesh at runtime
 * Added janino-tesselatable primitive
