@@ -213,6 +213,7 @@ public class BezierMesh implements PrimitiveList, Tesselatable {
     public void intersectPrimitive(Ray r, int primID, IntersectionState state) {
         // ray patch intersection
         final float[] stack = state.getRobustStack();
+        final int STACKSIZE = 64;
         {
             // init patch
             float[] patch = patches[primID];
@@ -224,14 +225,10 @@ public class BezierMesh implements PrimitiveList, Tesselatable {
             stack[51] = 1; // umax
             stack[52] = 1; // vmax
         }
-        // 53 elements per stack item
         int stackpos = 0;
-        float orgX = r.ox;
-        float dirX = r.dx, invDirX = 1 / dirX;
-        float orgY = r.oy;
-        float dirY = r.dy, invDirY = 1 / dirY;
-        float orgZ = r.oz;
-        float dirZ = r.dz, invDirZ = 1 / dirZ;
+        float orgX = r.ox, invDirX = 1 / r.dx;
+        float orgY = r.oy, invDirY = 1 / r.dy;
+        float orgZ = r.oz, invDirZ = 1 / r.dz;
         float t1, t2;
         while (stackpos >= 0) {
             float intervalMin = r.getMin();
@@ -259,7 +256,7 @@ public class BezierMesh implements PrimitiveList, Tesselatable {
                     intervalMax = t1;
             }
             if (intervalMin > intervalMax) {
-                stackpos -= 53;
+                stackpos -= STACKSIZE;
                 continue;
             }
             // y-axis bbox
@@ -285,7 +282,7 @@ public class BezierMesh implements PrimitiveList, Tesselatable {
                     intervalMax = t1;
             }
             if (intervalMin > intervalMax) {
-                stackpos -= 53;
+                stackpos -= STACKSIZE;
                 continue;
             }
             // z-axis bbox
@@ -311,8 +308,9 @@ public class BezierMesh implements PrimitiveList, Tesselatable {
                 if (t1 < intervalMax)
                     intervalMax = t1;
             }
+
             if (intervalMin > intervalMax) {
-                stackpos -= 53;
+                stackpos -= STACKSIZE;
                 continue;
             }
             // intersection was found - keep going
@@ -321,13 +319,11 @@ public class BezierMesh implements PrimitiveList, Tesselatable {
                 // L1 norm is 0, we are done
                 r.setMax(intervalMin);
                 state.setIntersection(primID, stack[stackpos + 49], stack[stackpos + 50]);
-                stackpos -= 53;
+                stackpos -= STACKSIZE;
                 continue;
             }
             // not small enough yet - subdivide
-
             // lets pick a subdivision axis first:
-
             float sizeu = 0;
             float sizev = 0;
             for (int i = 0; i < 3; i++) {
@@ -344,7 +340,6 @@ public class BezierMesh implements PrimitiveList, Tesselatable {
                         float p1 = stack[stackpos + (i * 4 + 1) * 3 + axis];
                         float p2 = stack[stackpos + (i * 4 + 2) * 3 + axis];
                         float p3 = stack[stackpos + (i * 4 + 3) * 3 + axis];
-
                         // Split curve in the middle
                         float q0 = p0;
                         float q1 = (p0 + p1) * 0.5f;
@@ -354,29 +349,27 @@ public class BezierMesh implements PrimitiveList, Tesselatable {
                         float r1 = r2 * 0.5f + (p1 + p2) * 0.25f;
                         float q3 = (q2 + r1) * 0.5f;
                         float r0 = q3;
-
                         // load new curve data into the stack
                         stack[stackpos + (i * 4 + 0) * 3 + axis] = q0;
                         stack[stackpos + (i * 4 + 1) * 3 + axis] = q1;
                         stack[stackpos + (i * 4 + 2) * 3 + axis] = q2;
                         stack[stackpos + (i * 4 + 3) * 3 + axis] = q3;
-
-                        stack[stackpos + 53 + (i * 4 + 0) * 3 + axis] = r0;
-                        stack[stackpos + 53 + (i * 4 + 1) * 3 + axis] = r1;
-                        stack[stackpos + 53 + (i * 4 + 2) * 3 + axis] = r2;
-                        stack[stackpos + 53 + (i * 4 + 3) * 3 + axis] = r3;
+                        stack[stackpos + STACKSIZE + (i * 4 + 0) * 3 + axis] = r0;
+                        stack[stackpos + STACKSIZE + (i * 4 + 1) * 3 + axis] = r1;
+                        stack[stackpos + STACKSIZE + (i * 4 + 2) * 3 + axis] = r2;
+                        stack[stackpos + STACKSIZE + (i * 4 + 3) * 3 + axis] = r3;
                     }
                 }
                 // copy current bbox size
-                stack[stackpos + 48] = stack[stackpos + 53 + 48] = size;
+                stack[stackpos + 48] = stack[stackpos + STACKSIZE + 48] = size;
                 // finally - split uv ranges
                 float umin = stack[stackpos + 49];
                 float umax = stack[stackpos + 51];
                 stack[stackpos + 49] = umin;
-                stack[stackpos + 53 + 50] = stack[stackpos + 50];
-                stack[stackpos + 51] = stack[stackpos + 53 + 49] = (umin + umax) * 0.5f;
-                stack[stackpos + 53 + 51] = umax;
-                stack[stackpos + 53 + 52] = stack[stackpos + 52];
+                stack[stackpos + STACKSIZE + 50] = stack[stackpos + 50];
+                stack[stackpos + 51] = stack[stackpos + STACKSIZE + 49] = (umin + umax) * 0.5f;
+                stack[stackpos + STACKSIZE + 51] = umax;
+                stack[stackpos + STACKSIZE + 52] = stack[stackpos + 52];
             } else {
                 // split in V direction
                 for (int i = 0; i < 4; i++) {
@@ -386,7 +379,6 @@ public class BezierMesh implements PrimitiveList, Tesselatable {
                         float p1 = stack[stackpos + (1 * 4 + i) * 3 + axis];
                         float p2 = stack[stackpos + (2 * 4 + i) * 3 + axis];
                         float p3 = stack[stackpos + (3 * 4 + i) * 3 + axis];
-
                         // Split curve in the middle
                         float q0 = p0;
                         float q1 = (p0 + p1) * 0.5f;
@@ -396,31 +388,29 @@ public class BezierMesh implements PrimitiveList, Tesselatable {
                         float r1 = r2 * 0.5f + (p1 + p2) * 0.25f;
                         float q3 = (q2 + r1) * 0.5f;
                         float r0 = q3;
-
                         // load new curve data into the stack
                         stack[stackpos + (0 * 4 + i) * 3 + axis] = q0;
                         stack[stackpos + (1 * 4 + i) * 3 + axis] = q1;
                         stack[stackpos + (2 * 4 + i) * 3 + axis] = q2;
                         stack[stackpos + (3 * 4 + i) * 3 + axis] = q3;
-
-                        stack[stackpos + 53 + (0 * 4 + i) * 3 + axis] = r0;
-                        stack[stackpos + 53 + (1 * 4 + i) * 3 + axis] = r1;
-                        stack[stackpos + 53 + (2 * 4 + i) * 3 + axis] = r2;
-                        stack[stackpos + 53 + (3 * 4 + i) * 3 + axis] = r3;
+                        stack[stackpos + STACKSIZE + (0 * 4 + i) * 3 + axis] = r0;
+                        stack[stackpos + STACKSIZE + (1 * 4 + i) * 3 + axis] = r1;
+                        stack[stackpos + STACKSIZE + (2 * 4 + i) * 3 + axis] = r2;
+                        stack[stackpos + STACKSIZE + (3 * 4 + i) * 3 + axis] = r3;
                     }
                 }
                 // copy current bbox size
-                stack[stackpos + 48] = stack[stackpos + 53 + 48] = size;
+                stack[stackpos + 48] = stack[stackpos + STACKSIZE + 48] = size;
                 // finally - split uv ranges
                 float vmin = stack[stackpos + 50];
                 float vmax = stack[stackpos + 52];
-                stack[stackpos + 53 + 49] = stack[stackpos + 49];
+                stack[stackpos + STACKSIZE + 49] = stack[stackpos + 49];
                 stack[stackpos + 50] = vmin;
-                stack[stackpos + 52] = stack[stackpos + 53 + 50] = (vmin + vmax) * 0.5f;
-                stack[stackpos + 53 + 51] = stack[stackpos + 51];
-                stack[stackpos + 53 + 52] = vmax;
+                stack[stackpos + 52] = stack[stackpos + STACKSIZE + 50] = (vmin + vmax) * 0.5f;
+                stack[stackpos + STACKSIZE + 51] = stack[stackpos + 51];
+                stack[stackpos + STACKSIZE + 52] = vmax;
             }
-            stackpos += 53;
+            stackpos += STACKSIZE;
         }
     }
 
