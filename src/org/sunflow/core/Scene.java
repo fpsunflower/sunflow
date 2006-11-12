@@ -1,7 +1,5 @@
 package org.sunflow.core;
 
-import org.sunflow.core.accel.BoundingIntervalHierarchy;
-import org.sunflow.core.accel.NullAccelerator;
 import org.sunflow.core.display.FrameDisplay;
 import org.sunflow.image.Color;
 import org.sunflow.math.BoundingBox;
@@ -19,8 +17,9 @@ public class Scene {
     private InstanceList infiniteInstanceList;
     private Camera camera;
     private AccelerationStructure intAccel;
+    private String acceltype;
 
-    private boolean changedGeometry;
+    private boolean rebuildAccel;
 
     // image size
     private int imageWidth;
@@ -40,7 +39,7 @@ public class Scene {
         lightServer = new LightServer(this);
         instanceList = new InstanceList();
         infiniteInstanceList = new InstanceList();
-        intAccel = new BoundingIntervalHierarchy();
+        acceltype = "auto";
 
         camera = null;
         imageWidth = 640;
@@ -49,7 +48,7 @@ public class Scene {
         threads = 0;
         lowPriority = true;
 
-        changedGeometry = true;
+        rebuildAccel = true;
     }
 
     public void setThreads(int threads, boolean lowPriority) {
@@ -82,9 +81,9 @@ public class Scene {
      * 
      * @param accel intersection accelerator to use
      */
-    public void setIntersectionAccelerator(AccelerationStructure accel) {
-        intAccel = accel;
-        changedGeometry = true;
+    public void setIntersectionAccelerator(String name) {
+        rebuildAccel = acceltype.equals(name);
+        acceltype = name;
     }
 
     /**
@@ -97,23 +96,12 @@ public class Scene {
     }
 
     /**
-     * Add an object to the scene.
-     * 
-     * @param prim object to be added to the scene
+     * Remove all instances from the scene.
      */
-    public void addInstance(Instance instance) {
-        if (instance.getBounds() == null) {
-            // null bounds means this primitive is infinite and should be placed
-            // on a seperate list for intersection
-            infiniteInstanceList.add(instance);
-        } else {
-            if (instance.getBounds().isEmpty())
-                UI.printWarning("[API] Instance has an empty bounding box - ignoring.");
-            else {
-                instanceList.add(instance);
-                changedGeometry = true;
-            }
-        }
+    public void setInstanceLists(Instance[] instances, Instance[] infinite) {
+        infiniteInstanceList = new InstanceList(infinite);
+        instanceList = new InstanceList(instances);
+        rebuildAccel = true;
     }
 
     /**
@@ -224,15 +212,11 @@ public class Scene {
         UI.printInfo("[SCN]   * Infinite instances:  %d", infiniteInstanceList.getNumPrimitives());
         UI.printInfo("[SCN]   * Instances:           %d", instanceList.getNumPrimitives());
         UI.printInfo("[SCN]   * Primitives:          %d", numPrimitives);
-        if (changedGeometry) {
-            instanceList.trim();
-            // use special case if we have only one instance in the scene
-            if (instanceList.getNumPrimitives() < 3)
-                intAccel = new NullAccelerator();
+        if (rebuildAccel) {
+            intAccel = AccelerationStructureFactory.create(acceltype, instanceList.getNumPrimitives(), false);
             intAccel.build(instanceList);
-            changedGeometry = false;
+            rebuildAccel = false;
         }
-        infiniteInstanceList.trim();
         UI.printInfo("[SCN]   * Scene bounds:        %s", getBounds());
         UI.printInfo("[SCN]   * Scene center:        %s", getBounds().getCenter());
         UI.printInfo("[SCN]   * Scene diameter:      %.2f", getBounds().getExtents().length());

@@ -576,6 +576,7 @@ public final class ShadingState implements Iterable<LightSample> {
         }
 
         public void remove() {
+            throw new UnsupportedOperationException();
         }
     }
 }

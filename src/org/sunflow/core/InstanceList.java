@@ -6,34 +6,13 @@ import org.sunflow.math.Matrix4;
 
 final class InstanceList implements PrimitiveList {
     private Instance[] instances;
-    private int n;
 
     InstanceList() {
-        clear();
+        instances = new Instance[0];
     }
-
-    final void clear() {
-        instances = new Instance[10];
-        n = 0;
-    }
-
-    final void add(Instance instance) {
-        if (n == instances.length) {
-            Instance[] oldArray = instances;
-            instances = new Instance[(n * 3) / 2 + 1];
-            System.arraycopy(oldArray, 0, instances, 0, n);
-        }
-        instances[n] = instance;
-        n++;
-    }
-
-    final Instance[] trim() {
-        if (n < instances.length) {
-            Instance[] oldArray = instances;
-            instances = new Instance[n];
-            System.arraycopy(oldArray, 0, instances, 0, n);
-        }
-        return instances;
+    
+    InstanceList(Instance[] instances) {
+        this.instances = instances;
     }
 
     public final float getPrimitiveBound(int primID, int i) {
@@ -52,7 +31,7 @@ final class InstanceList implements PrimitiveList {
     }
 
     public final int getNumPrimitives() {
-        return n;
+        return instances.length;
     }
 
     public final int getNumPrimitives(int primID) {

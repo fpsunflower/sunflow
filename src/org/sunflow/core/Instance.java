@@ -11,33 +11,63 @@ public class Instance implements RenderObject {
     private Matrix4 o2w;
     private Matrix4 w2o;
     private BoundingBox bounds;
-    private Shader[] shaders;
     private Geometry geometry;
-
-    public Instance(Geometry geometry) {
-        this.geometry = geometry;
-        o2w = w2o = null;
-        shaders = null;
-    }
+    private Shader[] shaders;
 
     public boolean update(ParameterList pl, SunflowAPI api) {
-        String[] shaders = pl.getStringArray("shaders");
-        if (shaders != null) {
-            this.shaders = new Shader[shaders.length];
-            for (int i = 0; i < shaders.length; i++)
-                this.shaders[i] = api.lookupShader(shaders[i]);
-        }
-        o2w = pl.getMatrix("transform", o2w);
-        if (o2w != null) {
-            w2o = o2w.inverse();
-            if (w2o == null) {
-                UI.printError("[GEO] Unable to compute transform inverse");
+        String geometryName = pl.getString("geometry", null);
+        if (geometry == null || geometryName != null) {
+            if (geometryName == null) {
+                UI.printError("[GEO] geometry parameter missing - unable to create instance");
                 return false;
             }
-        } else
-            o2w = w2o = null;
-        bounds = geometry.getWorldBounds(o2w);
+            geometry = api.lookupGeometry(geometryName);
+            if (geometry == null) {
+                UI.printError("[GEO] Geometry \"%s\" was not declared yet - instance is invalid", geometryName);
+                return false;
+            }
+        }
+        String[] shaderNames = pl.getStringArray("shaders", null);
+        if (shaderNames != null) {
+            // new shader names have been provided
+            shaders = new Shader[shaderNames.length];
+            for (int i = 0; i < shaders.length; i++) {
+                shaders[i] = api.lookupShader(shaderNames[i]);
+                if (shaders[i] == null)
+                    UI.printWarning("[GEO] Shader \"%s\" was not declared yet - ignoring", shaders[i]);
+            }
+        } else {
+            // re-use existing shader array
+        }
+        Matrix4 transform = pl.getMatrix("transform", o2w);
+        if (transform != o2w) {
+            o2w = transform;
+            if (o2w != null) {
+                w2o = o2w.inverse();
+                if (w2o == null) {
+                    UI.printError("[GEO] Unable to compute transform inverse");
+                    return false;
+                }
+            } else
+                o2w = w2o = null;
+        }
         return true;
+    }
+
+    public void updateBounds() {
+        bounds = geometry.getWorldBounds(o2w);
+    }
+    
+    public boolean hasGeometry(Geometry g) {
+        return geometry == g;
+    }
+
+    public void removeShader(Shader s) {
+        if (shaders != null) {
+            for (int i = 0; i < shaders.length; i++)
+                if (shaders[i] == s)
+                    shaders[i] = null;
+        }
     }
 
     public BoundingBox getBounds() {

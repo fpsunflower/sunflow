@@ -1,10 +1,6 @@
 package org.sunflow.core;
 
 import org.sunflow.SunflowAPI;
-import org.sunflow.core.accel.BoundingIntervalHierarchy;
-import org.sunflow.core.accel.KDTree;
-import org.sunflow.core.accel.NullAccelerator;
-import org.sunflow.core.accel.UniformGrid;
 import org.sunflow.math.BoundingBox;
 import org.sunflow.math.Matrix4;
 import org.sunflow.system.UI;
@@ -14,6 +10,7 @@ public class Geometry implements RenderObject {
     private PrimitiveList primitives;
     private AccelerationStructure accel;
     private int builtAccel;
+    private String acceltype;
 
     /**
      * Create a geometry from the specified tesselatable object. The actual
@@ -26,6 +23,7 @@ public class Geometry implements RenderObject {
         primitives = null;
         accel = null;
         builtAccel = 0;
+        acceltype = null;
     }
 
     /**
@@ -41,6 +39,7 @@ public class Geometry implements RenderObject {
     }
 
     public boolean update(ParameterList pl, SunflowAPI api) {
+        acceltype = pl.getString("acel", acceltype);
         // clear up old tesselation if it exists
         if (tesselatable != null)
             primitives = null;
@@ -80,14 +79,8 @@ public class Geometry implements RenderObject {
         int n = primitives.getNumPrimitives();
         if (n >= 10)
             UI.printInfo("[GEO] Building acceleration structure for %d primitives ...", n);
-        if (n > 20000000)
-            accel = new UniformGrid();
-        else if (n > 2000000)
-            accel = new BoundingIntervalHierarchy();
-        else if (n > 2)
-            accel = new KDTree();
-        else
-            accel = new NullAccelerator();
+
+        accel = AccelerationStructureFactory.create(acceltype, n, true);
         accel.build(primitives);
         builtAccel = 1;
     }

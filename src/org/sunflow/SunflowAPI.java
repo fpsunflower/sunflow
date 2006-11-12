@@ -4,14 +4,12 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.StringReader;
-import java.util.HashMap;
 
 import org.codehaus.janino.ClassBodyEvaluator;
 import org.codehaus.janino.CompileException;
 import org.codehaus.janino.Scanner;
 import org.codehaus.janino.Parser.ParseException;
 import org.codehaus.janino.Scanner.ScanException;
-import org.sunflow.core.AccelerationStructure;
 import org.sunflow.core.BucketOrder;
 import org.sunflow.core.Camera;
 import org.sunflow.core.CausticPhotonMapInterface;
@@ -30,10 +28,6 @@ import org.sunflow.core.SceneParser;
 import org.sunflow.core.Shader;
 import org.sunflow.core.Tesselatable;
 import org.sunflow.core.ParameterList.InterpolationType;
-import org.sunflow.core.accel.BoundingIntervalHierarchy;
-import org.sunflow.core.accel.KDTree;
-import org.sunflow.core.accel.NullAccelerator;
-import org.sunflow.core.accel.UniformGrid;
 import org.sunflow.core.bucket.ColumnBucketOrder;
 import org.sunflow.core.bucket.DiagonalBucketOrder;
 import org.sunflow.core.bucket.HilbertBucketOrder;
@@ -66,6 +60,7 @@ import org.sunflow.math.Vector3;
 import org.sunflow.system.SearchPath;
 import org.sunflow.system.Timer;
 import org.sunflow.system.UI;
+import org.sunflow.util.FastHashMap;
 
 /**
  * This API gives a simple interface for creating scenes procedurally. This is
@@ -82,7 +77,8 @@ public class SunflowAPI {
     private SearchPath includeSearchPath;
     private SearchPath textureSearchPath;
     private ParameterList parameterList;
-    private HashMap<String, RenderObjectHandle> renderObjects;
+    private FastHashMap<String, RenderObjectHandle> renderObjects;
+    private boolean rebuildInstanceList;
 
     private enum RenderObjectType {
         UNKNOWN, SHADER, GEOMETRY, INSTANCE, LIGHT
@@ -160,7 +156,8 @@ public class SunflowAPI {
         includeSearchPath = new SearchPath("include");
         textureSearchPath = new SearchPath("texture");
         parameterList = new ParameterList();
-        renderObjects = new HashMap<String, RenderObjectHandle>();
+        renderObjects = new FastHashMap<String, RenderObjectHandle>();
+        rebuildInstanceList = false;
     }
 
     /**
@@ -332,9 +329,41 @@ public class SunflowAPI {
      */
     public void remove(String name) {
         RenderObjectHandle obj = renderObjects.get(name);
-        if (obj != null)
+        if (obj != null) {
+            UI.printDetailed("[API] Removing object \"%s\"", name);
             renderObjects.remove(name);
-        else
+            // scan through all objects to make sure we don't have any
+            // references to the old object still around
+            switch (obj.type) {
+                case SHADER:
+                    Shader s = obj.getShader();
+                    for (FastHashMap.Entry<String, RenderObjectHandle> e : renderObjects) {
+                        Instance i = e.getValue().getInstance();
+                        if (i != null) {
+                            UI.printWarning("[API] Removing shader \"%s\" from instance \"%s\"", name, e.getKey());
+                            i.removeShader(s);
+                        }
+                    }
+                    break;
+                case GEOMETRY: {
+                    Geometry g = obj.getGeometry();
+                    for (FastHashMap.Entry<String, RenderObjectHandle> e : renderObjects) {
+                        Instance i = e.getValue().getInstance();
+                        if (i != null && i.hasGeometry(g)) {
+                            UI.printWarning("[API] Removing instance \"%s\" because it referenced geometry \"%s\"", e.getKey(), name);
+                            remove(e.getKey());
+                        }
+                    }
+                    break;
+                }
+                case INSTANCE: {
+                    rebuildInstanceList = true;
+                }
+                default:
+                    // no dependencies
+                    break;
+            }
+        } else
             UI.printWarning("[API] Unable to remove \"%s\" - object was not defined yet");
     }
 
@@ -587,32 +616,15 @@ public class SunflowAPI {
     }
 
     /**
-     * Sets the ray intersection acceleration method to one of the built-in
-     * types. Valid names are: "uniformgrid", "null", "bvh", "kdtree",
-     * "kdtree_old". Other names are ignored.
+     * Sets the ray intersection acceleration method to be used for the
+     * top-level instances. This must be one of the built-in types. Valid names
+     * are: "auto", "uniformgrid", "null", "bih", "kdtree". Other names are
+     * ignored and will default to an automatic choice.
      * 
-     * @param accel name of a built-in intersection accelerator.
+     * @param name name of a built-in intersection accelerator.
      */
-    public final void accel(String accel) {
-        if (accel.equals("uniformgrid"))
-            accel(new UniformGrid());
-        else if (accel.equals("null"))
-            accel(new NullAccelerator());
-        else if (accel.equals("kdtree"))
-            accel(new KDTree());
-        else if (accel.equals("bih"))
-            accel(new BoundingIntervalHierarchy());
-        else
-            UI.printWarning("[API] Unrecognized intersection accelerator: \"%s\"", accel);
-    }
-
-    /**
-     * Sets the acceleration structure object directly.
-     * 
-     * @param accel intersetion accelerator to use for rendering
-     */
-    public final void accel(AccelerationStructure accel) {
-        scene.setIntersectionAccelerator(accel);
+    public final void accel(String name) {
+        scene.setIntersectionAccelerator(name);
     }
 
     /**
@@ -680,9 +692,10 @@ public class SunflowAPI {
             }
             renderObjects.put(name, new RenderObjectHandle(tesselatable));
         }
-        if (lookupGeometry(name) != null)
-            update(name);
-        else
+        if (lookupGeometry(name) != null) {
+            if (update(name))
+                rebuildInstanceList = true;
+        } else
             UI.printError("[API] Unable to update geometry \"%s\" - geometry object was not found", name);
     }
 
@@ -706,12 +719,13 @@ public class SunflowAPI {
                 UI.printError("[API] Cannot instance \"%s\" - geometry was not found", geoname);
                 return;
             }
-            Instance instance = new Instance(geo);
+            parameter("geometry", geoname);
+            Instance instance = new Instance();
             renderObjects.put(name, new RenderObjectHandle(instance));
         }
         if (lookupInstance(name) != null) {
-            if (update(name) && geoname != null)
-                scene.addInstance(renderObjects.get(name).getInstance());
+            if (update(name))
+                rebuildInstanceList = true;
         } else
             UI.printError("[API] Unable to update instance \"%s\" - instance object was not found", name);
     }
@@ -744,7 +758,7 @@ public class SunflowAPI {
      * @param name geometry name
      * @return the geometry object associated with that name
      */
-    private final Geometry lookupGeometry(String name) {
+    public final Geometry lookupGeometry(String name) {
         RenderObjectHandle handle = renderObjects.get(name);
         return (handle == null) ? null : handle.getGeometry();
     }
@@ -849,6 +863,37 @@ public class SunflowAPI {
      * @param display display object
      */
     public final void render(ImageSampler sampler, Display display) {
+        if (rebuildInstanceList) {
+            UI.printInfo("[API] Building scene instance list for rendering ...");
+            int numInfinite = 0, numInstance = 0;
+            for (FastHashMap.Entry<String, RenderObjectHandle> e : renderObjects) {
+                Instance i = e.getValue().getInstance();
+                if (i != null) {
+                    i.updateBounds();
+                    if (i.getBounds() == null)
+                        numInfinite++;
+                    else
+                        numInstance++;
+                }
+            }
+            Instance[] infinite = new Instance[numInfinite];
+            Instance[] instance = new Instance[numInstance];
+            numInfinite = numInstance = 0;
+            for (FastHashMap.Entry<String, RenderObjectHandle> e : renderObjects) {
+                Instance i = e.getValue().getInstance();
+                if (i != null) {
+                    if (i.getBounds() == null) {
+                        infinite[numInfinite] = i;
+                        numInfinite++;
+                    } else {
+                        instance[numInstance] = i;
+                        numInstance++;
+                    }
+                }
+            }
+            scene.setInstanceLists(instance, infinite);
+            rebuildInstanceList = false;
+        }
         scene.render(sampler, display);
     }
 

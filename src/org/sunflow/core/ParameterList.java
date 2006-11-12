@@ -1,14 +1,12 @@
 package org.sunflow.core;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import org.sunflow.image.Color;
 import org.sunflow.math.Matrix4;
 import org.sunflow.math.Point2;
 import org.sunflow.math.Point3;
 import org.sunflow.math.Vector3;
 import org.sunflow.system.UI;
+import org.sunflow.util.FastHashMap;
 
 /**
  * This class holds a list of "parameters". These are defined and then passed
@@ -16,7 +14,7 @@ import org.sunflow.system.UI;
  * named variables as a unified way of getting data into user objects.
  */
 public final class ParameterList {
-    private final HashMap<String, Parameter> list;
+    private final FastHashMap<String, Parameter> list;
     private int numVerts, numFaces, numFaceVerts;
 
     private enum ParameterType {
@@ -31,7 +29,7 @@ public final class ParameterList {
      * Creates an empty ParameterList.
      */
     public ParameterList() {
-        list = new HashMap<String, Parameter>();
+        list = new FastHashMap<String, Parameter>();
         numVerts = numFaces = numFaceVerts = 0;
     }
 
@@ -41,7 +39,7 @@ public final class ParameterList {
      */
     public void clear(boolean showUnused) {
         if (showUnused) {
-            for (Map.Entry<String, Parameter> e : list.entrySet()) {
+            for (FastHashMap.Entry<String, Parameter> e : list) {
                 if (!e.getValue().checked)
                     UI.printWarning("[API] Unused parameter: %s - %s", e.getKey(), e.getValue());
             }
@@ -259,11 +257,11 @@ public final class ParameterList {
         return defaultValue;
     }
 
-    public String[] getStringArray(String name) {
+    public String[] getStringArray(String name, String[] defaultValue) {
         Parameter p = list.get(name);
         if (isValidParameter(name, ParameterType.STRING, InterpolationType.NONE, -1, p))
             return p.getStrings();
-        return null;
+        return defaultValue;
     }
 
     public int getInt(String name, int defaultValue) {
