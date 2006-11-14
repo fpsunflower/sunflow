@@ -1,12 +1,12 @@
 package org.sunflow.core.camera;
 
-import org.sunflow.core.Camera;
+import org.sunflow.core.CameraLens;
 import org.sunflow.core.Ray;
 import org.sunflow.math.OrthoNormalBasis;
 import org.sunflow.math.Point3;
 import org.sunflow.math.Vector3;
 
-public abstract class MovingCamera implements Camera {
+public abstract class MovingCamera implements CameraLens {
     private float au, av;
 
     protected MovingCamera(float fov, float aspect) {

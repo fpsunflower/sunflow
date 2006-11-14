@@ -1,12 +1,12 @@
 package org.sunflow.core.camera;
 
-import org.sunflow.core.Camera;
+import org.sunflow.core.CameraLens;
 import org.sunflow.core.Ray;
 import org.sunflow.math.OrthoNormalBasis;
 import org.sunflow.math.Point3;
 import org.sunflow.math.Vector3;
 
-public class PinholeCamera implements Camera {
+public class PinholeCamera implements CameraLens {
     private Point3 eye;
 
     private OrthoNormalBasis basis;

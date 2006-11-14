@@ -15,7 +15,7 @@ public class Scene {
     private LightServer lightServer;
     private InstanceList instanceList;
     private InstanceList infiniteInstanceList;
-    private Camera camera;
+    private CameraLens camera;
     private AccelerationStructure intAccel;
     private String acceltype;
 
@@ -91,7 +91,7 @@ public class Scene {
      * 
      * @param camera camera to be used as the viewpoint for the scene
      */
-    public void addCamera(Camera camera) {
+    public void addCamera(CameraLens camera) {
         this.camera = camera;
     }
 

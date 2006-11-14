@@ -11,7 +11,7 @@ import org.codehaus.janino.Scanner;
 import org.codehaus.janino.Parser.ParseException;
 import org.codehaus.janino.Scanner.ScanException;
 import org.sunflow.core.BucketOrder;
-import org.sunflow.core.Camera;
+import org.sunflow.core.CameraLens;
 import org.sunflow.core.CausticPhotonMapInterface;
 import org.sunflow.core.Display;
 import org.sunflow.core.Filter;
@@ -830,7 +830,7 @@ public class SunflowAPI {
      * 
      * @param cam camera object
      */
-    public final void camera(Camera cam) {
+    public final void camera(CameraLens cam) {
         scene.addCamera(cam);
     }
 
