@@ -1,27 +1,34 @@
 package org.sunflow.core.camera;
 
+import org.sunflow.SunflowAPI;
 import org.sunflow.core.CameraLens;
+import org.sunflow.core.ParameterList;
 import org.sunflow.core.Ray;
-import org.sunflow.math.OrthoNormalBasis;
-import org.sunflow.math.Point3;
-import org.sunflow.math.Vector3;
 
-public class ThinLensCamera implements CameraLens {
-    private Point3 eye;
-
-    private OrthoNormalBasis basis;
-
+public class ThinLens implements CameraLens {
     private float au, av;
-
+    private float aspect, fov;
     private float focusDistance;
-
     private float lensRadius;
 
-    public ThinLensCamera(Point3 eye, Point3 target, Vector3 up, float fov, float aspect, float focusDistance, float lensRadius) {
-        this.eye = new Point3(eye);
-        this.focusDistance = focusDistance;
-        this.lensRadius = lensRadius;
-        basis = OrthoNormalBasis.makeFromWV(Point3.sub(eye, target, new Vector3()), up);
+    public ThinLens() {
+        focusDistance = 1;
+        lensRadius = 0;
+        fov = 90;
+        aspect = 1;
+    }
+
+    public boolean update(ParameterList pl, SunflowAPI api) {
+        // get parameters
+        fov = pl.getFloat("fov", fov);
+        aspect = pl.getFloat("aspect", aspect);
+        focusDistance = pl.getFloat("focusDistance", focusDistance);
+        lensRadius = pl.getFloat("lensRadius", lensRadius);
+        update();
+        return true;
+    }
+
+    private void update() {
         au = (float) Math.tan(Math.toRadians(fov * 0.5f)) * focusDistance;
         av = au / aspect;
     }
@@ -55,8 +62,15 @@ public class ThinLensCamera implements CameraLens {
             }
         }
         r *= lensRadius;
-        Vector3 l = basis.transform(new Vector3((float) (Math.cos(angle) * r), (float) (Math.sin(angle) * r), 0.0f), new Vector3());
-        Vector3 d = basis.transform(new Vector3(du, dv, -focusDistance), new Vector3());
-        return new Ray(Point3.add(eye, l, new Point3()), Vector3.sub(d, l, new Vector3()));
+        // point on the lens
+        float eyeX = (float) (Math.cos(angle) * r);
+        float eyeY = (float) (Math.sin(angle) * r);
+        float eyeZ = 0;
+        // point on the image plane
+        float dirX = du;
+        float dirY = dv;
+        float dirZ = -focusDistance;
+        // ray
+        return new Ray(eyeX, eyeY, eyeZ, dirX - eyeX, dirY - eyeY, dirZ - eyeZ);
     }
 }

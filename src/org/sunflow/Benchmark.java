@@ -8,7 +8,7 @@ import java.io.PrintStream;
 import javax.imageio.ImageIO;
 
 import org.sunflow.core.Display;
-import org.sunflow.core.camera.PinholeCamera;
+import org.sunflow.core.camera.PinholeLens;
 import org.sunflow.core.display.FrameDisplay;
 import org.sunflow.core.gi.InstantGI;
 import org.sunflow.core.light.MeshLight;
@@ -62,7 +62,9 @@ public class Benchmark extends SunflowAPI implements BenchmarkTest, UserInterfac
         UI.set(this);
         UI.printInfo("[BCH] Preparing benchmarking scene ...");
         threads(threads, true); // spawn regular priority threads
-        resolution(resolution, resolution);
+        parameter("resolutionX", resolution);
+        parameter("resolutionY", resolution);
+        options(SunflowAPI.DEFAULT_OPTIONS);
         // settings
         antiAliasing(-3, 0);
         traceDepth(4, 2, 2);
@@ -97,7 +99,7 @@ public class Benchmark extends SunflowAPI implements BenchmarkTest, UserInterfac
         // this also caches the acceleration data structures so it won't be
         // included in the kernel timing
         UI.printInfo("[BCH] Rendering warmup frame ...");
-        render(new ValidatingDisplay(generatingReference, errorThreshold));
+        render(SunflowAPI.DEFAULT_OPTIONS, new ValidatingDisplay(generatingReference, errorThreshold));
         // if the data has been just generated - write it to file for future
         // runs
         if (generatingReference) {
@@ -116,7 +118,14 @@ public class Benchmark extends SunflowAPI implements BenchmarkTest, UserInterfac
 
     private void buildCornellBox() {
         // camera
-        camera(new PinholeCamera(new Point3(0, 0, -600), new Point3(0, 0, 0), new Vector3(0, 1, 0), 45, 1));
+        parameter("eye", new Point3(0, 0, -600));
+        parameter("target", new Point3(0, 0, 0));
+        parameter("up", new Vector3(0, 1, 0));
+        parameter("fov", 45.0f);
+        String name = getUniqueName("camera");
+        camera(name, new PinholeLens());
+        parameter("camera", name);
+        options(SunflowAPI.DEFAULT_OPTIONS);
         // cornell box
         Color grey = new Color(0.70f, 0.70f, 0.70f);
         Color blue = new Color(0.25f, 0.25f, 0.80f);
@@ -184,7 +193,7 @@ public class Benchmark extends SunflowAPI implements BenchmarkTest, UserInterfac
 
     public void execute() {
         if (showGUI)
-            render(new FrameDisplay());
+            render(SunflowAPI.DEFAULT_OPTIONS, new FrameDisplay());
         // prepare the framework
         BenchmarkFramework framework = new BenchmarkFramework(50, 120);
         // run the framework
@@ -196,7 +205,7 @@ public class Benchmark extends SunflowAPI implements BenchmarkTest, UserInterfac
     }
 
     public void kernelMain() {
-        render(new ValidatingDisplay(false, errorThreshold));
+        render(SunflowAPI.DEFAULT_OPTIONS, new ValidatingDisplay(false, errorThreshold));
     }
 
     public void kernelEnd() {

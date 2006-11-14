@@ -17,9 +17,9 @@ import org.sunflow.core.PrimitiveList;
 import org.sunflow.core.SceneParser;
 import org.sunflow.core.Shader;
 import org.sunflow.core.Tesselatable;
-import org.sunflow.core.camera.PinholeCamera;
-import org.sunflow.core.camera.SphericalCamera;
-import org.sunflow.core.camera.ThinLensCamera;
+import org.sunflow.core.camera.PinholeLens;
+import org.sunflow.core.camera.SphericalLens;
+import org.sunflow.core.camera.ThinLens;
 import org.sunflow.core.filter.BlackmanHarrisFilter;
 import org.sunflow.core.filter.BoxFilter;
 import org.sunflow.core.filter.GaussianFilter;
@@ -177,7 +177,9 @@ public class SCParser implements SceneParser {
     private void parseImageBlock(SunflowAPI api) throws IOException, ParserException {
         p.checkNextToken("{");
         p.checkNextToken("resolution");
-        api.resolution(p.getNextInt(), p.getNextInt());
+        api.parameter("resolutionX", p.getNextInt());
+        api.parameter("resolutionY", p.getNextInt());
+        api.options(SunflowAPI.DEFAULT_OPTIONS);
         p.checkNextToken("aa");
         int min = p.getNextInt();
         int max = p.getNextInt();
@@ -409,48 +411,56 @@ public class SCParser implements SceneParser {
     private void parseCamera(SunflowAPI api) throws ParserException, IOException {
         p.checkNextToken("{");
         p.checkNextToken("type");
+        String name = null;
         if (p.peekNextToken("pinhole")) {
             UI.printInfo("[API] Reading pinhole camera ...");
             p.checkNextToken("eye");
-            Point3 eye = parsePoint();
+            api.parameter("eye", parsePoint());
             p.checkNextToken("target");
-            Point3 target = parsePoint();
+            api.parameter("target", parsePoint());
             p.checkNextToken("up");
-            Vector3 up = parseVector();
+            api.parameter("up", parseVector());
             p.checkNextToken("fov");
-            float fov = p.getNextFloat();
+            api.parameter("fov", p.getNextFloat());
             p.checkNextToken("aspect");
-            float aspect = p.getNextFloat();
-            api.camera(new PinholeCamera(eye, target, up, fov, aspect));
+            api.parameter("aspect", p.getNextFloat());
+            name = api.getUniqueName("camera");
+            api.camera(name, new PinholeLens());
         } else if (p.peekNextToken("thinlens")) {
             UI.printInfo("[API] Reading thinlens camera ...");
             p.checkNextToken("eye");
-            Point3 eye = parsePoint();
+            api.parameter("eye", parsePoint());
             p.checkNextToken("target");
-            Point3 target = parsePoint();
+            api.parameter("target", parsePoint());
             p.checkNextToken("up");
-            Vector3 up = parseVector();
+            api.parameter("up", parseVector());
             p.checkNextToken("fov");
-            float fov = p.getNextFloat();
+            api.parameter("fov", p.getNextFloat());
             p.checkNextToken("aspect");
-            float aspect = p.getNextFloat();
+            api.parameter("aspect", p.getNextFloat());
             p.checkNextToken("fdist");
-            float fdist = p.getNextFloat();
+            api.parameter("focusDistance", p.getNextFloat());
             p.checkNextToken("lensr");
-            float lensr = p.getNextFloat();
-            api.camera(new ThinLensCamera(eye, target, up, fov, aspect, fdist, lensr));
+            api.parameter("lensRadius", p.getNextFloat());
+            name = api.getUniqueName("camera");
+            api.camera(name, new ThinLens());
         } else if (p.peekNextToken("spherical")) {
             UI.printInfo("[API] Reading spherical camera ...");
             p.checkNextToken("eye");
-            Point3 eye = parsePoint();
+            api.parameter("eye", parsePoint());
             p.checkNextToken("target");
-            Point3 target = parsePoint();
+            api.parameter("target", parsePoint());
             p.checkNextToken("up");
-            Vector3 up = parseVector();
-            api.camera(new SphericalCamera(eye, target, up));
+            api.parameter("up", parseVector());
+            name = api.getUniqueName("camera");
+            api.camera(name, new SphericalLens());
         } else
             UI.printWarning("[API] Unrecognized camera type: %s", p.getNextToken());
         p.checkNextToken("}");
+        if (name != null) {
+            api.parameter("camera", name);
+            api.options(SunflowAPI.DEFAULT_OPTIONS);
+        }
     }
 
     private boolean parseShader(SunflowAPI api) throws ParserException, IOException {

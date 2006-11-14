@@ -2,7 +2,7 @@ package org.sunflow;
 
 import org.sunflow.core.Display;
 import org.sunflow.core.Tesselatable;
-import org.sunflow.core.camera.PinholeCamera;
+import org.sunflow.core.camera.PinholeLens;
 import org.sunflow.core.display.FastDisplay;
 import org.sunflow.core.display.FileDisplay;
 import org.sunflow.core.gi.FakeGIEngine;
@@ -25,7 +25,9 @@ public class RealtimeBenchmark extends SunflowAPI {
         Display display = showGUI ? new FastDisplay() : new FileDisplay(false);
         UI.printInfo("[BCH] Preparing benchmarking scene ...");
         threads(threads, true); // spawn regular priority threads
-        resolution(512, 512);
+        parameter("resolutionX", 512);
+        parameter("resolutionY", 512);
+        options(SunflowAPI.DEFAULT_OPTIONS);
         // settings
         antiAliasing(-3, 0);
         traceDepth(1, 1, 0);
@@ -36,14 +38,21 @@ public class RealtimeBenchmark extends SunflowAPI {
         Point3 eye = new Point3(30, 0, 10.967f);
         Point3 target = new Point3(0, 0, 5.4f);
         Vector3 up = new Vector3(0, 0, 1);
-        camera(new PinholeCamera(eye, target, up, 45, 1));
+        parameter("eye", eye);
+        parameter("target", target);
+        parameter("up", up);
+        parameter("fov", 45.0f);
+        String name = getUniqueName("camera");
+        camera(name, new PinholeLens());
+        parameter("camera", name);
+        options(SunflowAPI.DEFAULT_OPTIONS);
         // geometry
         createGeometry();
         // this first render is not timed, it caches the acceleration data
         // structures and tesselations so they won't be
         // included in the main timing
         UI.printInfo("[BCH] Rendering warmup frame ...");
-        render(display);
+        render(SunflowAPI.DEFAULT_OPTIONS, display);
         // now disable all output - and run the benchmark
         UI.set(null);
         Timer t = new Timer();
@@ -55,8 +64,12 @@ public class RealtimeBenchmark extends SunflowAPI {
             eye.y = 30 * (float) Math.sin(phi);
             phi += Math.PI / 30;
             frames++;
-            camera(new PinholeCamera(eye, target, up, 45, 1));
-            render(display);
+            // update camera
+            parameter("eye", eye);
+            parameter("target", target);
+            parameter("up", up);
+            camera(name, null);
+            render(SunflowAPI.DEFAULT_OPTIONS, display);
 
         }
         t.end();

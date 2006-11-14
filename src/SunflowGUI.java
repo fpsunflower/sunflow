@@ -295,8 +295,11 @@ public class SunflowGUI extends javax.swing.JFrame implements UserInterface {
                 System.exit(1);
             if (noRender)
                 System.exit(0);
-            if (resolutionW > 0 && resolutionH > 0)
-                api.resolution(resolutionW, resolutionH);
+            if (resolutionW > 0 && resolutionH > 0) {
+                api.parameter("resolutionX", resolutionW);
+                api.parameter("resolutionY", resolutionH);
+                api.options(SunflowAPI.DEFAULT_OPTIONS);
+            }
             if (bucketSize > 0)
                 api.bucketSize(bucketSize);
             if (bucketOrder != null)
@@ -325,7 +328,9 @@ public class SunflowGUI extends javax.swing.JFrame implements UserInterface {
                 api.shader("ambocc", shaderOverride);
                 api.shaderOverride("ambocc", true);
             }
-            api.render(sampler, display);
+            api.parameter("sampler", sampler);
+            api.options(SunflowAPI.DEFAULT_OPTIONS);
+            api.render(SunflowAPI.DEFAULT_OPTIONS, display);
         } else {
             MetalLookAndFeel.setCurrentTheme(new DefaultMetalTheme());
             SunflowGUI gui = new SunflowGUI();
@@ -918,9 +923,11 @@ public class SunflowGUI extends javax.swing.JFrame implements UserInterface {
                 setEnableInterface(false);
                 if (clearLogMenuItem.isSelected())
                     clearConsole();
-                if (api != null)
-                    api.render(imagePanel);
-                else
+                if (api != null) {
+                    api.parameter("sampler", "bucket");
+                    api.options(SunflowAPI.DEFAULT_OPTIONS);
+                    api.render(SunflowAPI.DEFAULT_OPTIONS, imagePanel);
+                } else
                     UI.printError("[GUI] Nothing to render!");
                 setEnableInterface(true);
             }
@@ -933,9 +940,11 @@ public class SunflowGUI extends javax.swing.JFrame implements UserInterface {
                 setEnableInterface(false);
                 if (clearLogMenuItem.isSelected())
                     clearConsole();
-                if (api != null)
-                    api.progressiveRender(imagePanel);
-                else
+                if (api != null) {
+                    api.parameter("sampler", "ipr");
+                    api.options(SunflowAPI.DEFAULT_OPTIONS);
+                    api.render(SunflowAPI.DEFAULT_OPTIONS, imagePanel);
+                } else
                     UI.printError("[GUI] Nothing to IPR!");
                 setEnableInterface(true);
             }

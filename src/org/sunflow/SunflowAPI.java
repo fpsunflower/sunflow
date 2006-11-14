@@ -11,6 +11,7 @@ import org.codehaus.janino.Scanner;
 import org.codehaus.janino.Parser.ParseException;
 import org.codehaus.janino.Scanner.ScanException;
 import org.sunflow.core.BucketOrder;
+import org.sunflow.core.Camera;
 import org.sunflow.core.CameraLens;
 import org.sunflow.core.CausticPhotonMapInterface;
 import org.sunflow.core.Display;
@@ -20,6 +21,7 @@ import org.sunflow.core.Geometry;
 import org.sunflow.core.ImageSampler;
 import org.sunflow.core.Instance;
 import org.sunflow.core.LightSource;
+import org.sunflow.core.Options;
 import org.sunflow.core.ParameterList;
 import org.sunflow.core.PrimitiveList;
 import org.sunflow.core.RenderObject;
@@ -70,6 +72,7 @@ import org.sunflow.util.FastHashMap;
  */
 public class SunflowAPI {
     public static final String VERSION = "0.07.0";
+    public static final String DEFAULT_OPTIONS = "::options";
 
     private Scene scene;
     private BucketRenderer bucketRenderer;
@@ -81,7 +84,7 @@ public class SunflowAPI {
     private boolean rebuildInstanceList;
 
     private enum RenderObjectType {
-        UNKNOWN, SHADER, GEOMETRY, INSTANCE, LIGHT
+        UNKNOWN, SHADER, GEOMETRY, INSTANCE, LIGHT, CAMERA, OPTIONS
     }
 
     private static final class RenderObjectHandle {
@@ -113,6 +116,16 @@ public class SunflowAPI {
             type = RenderObjectType.LIGHT;
         }
 
+        private RenderObjectHandle(Camera camera) {
+            obj = camera;
+            type = RenderObjectType.CAMERA;
+        }
+
+        private RenderObjectHandle(Options options) {
+            obj = options;
+            type = RenderObjectType.OPTIONS;
+        }
+
         private boolean update(ParameterList pl, SunflowAPI api) {
             return obj.update(pl, api);
         }
@@ -135,6 +148,14 @@ public class SunflowAPI {
 
         private LightSource getLight() {
             return (type == RenderObjectType.LIGHT) ? (LightSource) obj : null;
+        }
+
+        private Camera getCamera() {
+            return (type == RenderObjectType.CAMERA) ? (Camera) obj : null;
+        }
+
+        private Options getOptions() {
+            return (type == RenderObjectType.OPTIONS) ? (Options) obj : null;
         }
     }
 
@@ -435,16 +456,6 @@ public class SunflowAPI {
      */
     public final void threads(int threads, boolean lowPriority) {
         scene.setThreads(threads, lowPriority);
-    }
-
-    /**
-     * Sets the desired image resolution in pixels.
-     * 
-     * @param w width of the final image in pixels
-     * @param h height of the final image in pixels
-     */
-    public final void resolution(int w, int h) {
-        scene.setResolution(w, h);
     }
 
     /**
@@ -752,6 +763,48 @@ public class SunflowAPI {
     }
 
     /**
+     * Defines a camera with a given name. The camera is built from the
+     * specified {@link CameraLens}. If the lens object is <code>null</code>,
+     * the camera with the given name will be updated (if it exists).
+     * 
+     * @param name camera name
+     * @param lens camera lens to use
+     */
+    public final void camera(String name, CameraLens lens) {
+        if (lens != null) {
+            // we are declaring this camera for the first time
+            if (renderObjects.containsKey(name)) {
+                UI.printError("[API] Unable to declare camera \"%s\", name is already in use", name);
+                return;
+            }
+            renderObjects.put(name, new RenderObjectHandle(new Camera(lens)));
+        }
+        // update existing shader (only if it is valid)
+        if (lookupCamera(name) != null)
+            update(name);
+        else
+            UI.printError("[API] Unable to update camera \"%s\" - camera object was not found", name);
+    }
+
+    /**
+     * Defines an option object to hold the current parameters. If the object
+     * already exists, the values will simply override previous ones.
+     * 
+     * @param name
+     */
+    public final void options(String name) {
+        if (lookupOptions(name) == null) {
+            if (renderObjects.containsKey(name)) {
+                UI.printError("[API] Unable to declare options \"%s\", name is already in use", name);
+                return;
+            }
+            renderObjects.put(name, new RenderObjectHandle(new Options()));
+        }
+        assert lookupOptions(name) != null;
+        update(name);
+    }
+
+    /**
      * Retrieve a geometry object by its name, or <code>null</code> if no
      * geometry was found, or if the specified object is not a geometry.
      * 
@@ -759,6 +812,7 @@ public class SunflowAPI {
      * @return the geometry object associated with that name
      */
     public final Geometry lookupGeometry(String name) {
+        if (name == null) return null;
         RenderObjectHandle handle = renderObjects.get(name);
         return (handle == null) ? null : handle.getGeometry();
     }
@@ -771,8 +825,28 @@ public class SunflowAPI {
      * @return the instance object associated with that name
      */
     private final Instance lookupInstance(String name) {
+        if (name == null) return null;
         RenderObjectHandle handle = renderObjects.get(name);
         return (handle == null) ? null : handle.getInstance();
+    }
+
+    /**
+     * Retrieve a shader object by its name, or <code>null</code> if no shader
+     * was found, or if the specified object is not a shader.
+     * 
+     * @param name camera name
+     * @return the camera object associate with that name
+     */
+    private final Camera lookupCamera(String name) {
+        if (name == null) return null;
+        RenderObjectHandle handle = renderObjects.get(name);
+        return (handle == null) ? null : handle.getCamera();
+    }
+
+    public final Options lookupOptions(String name) {
+        if (name == null) return null;
+        RenderObjectHandle handle = renderObjects.get(name);
+        return (handle == null) ? null : handle.getOptions();
     }
 
     /**
@@ -783,6 +857,7 @@ public class SunflowAPI {
      * @return the shader object associated with that name
      */
     public final Shader lookupShader(String name) {
+        if (name == null) return null;
         RenderObjectHandle handle = renderObjects.get(name);
         return (handle == null) ? null : handle.getShader();
     }
@@ -795,6 +870,7 @@ public class SunflowAPI {
      * @return the light object associated with that name
      */
     private final LightSource lookupLight(String name) {
+        if (name == null) return null;
         RenderObjectHandle handle = renderObjects.get(name);
         return (handle == null) ? null : handle.getLight();
     }
@@ -826,43 +902,13 @@ public class SunflowAPI {
     }
 
     /**
-     * Sets the current camera for the scene
-     * 
-     * @param cam camera object
-     */
-    public final void camera(CameraLens cam) {
-        scene.addCamera(cam);
-    }
-
-    /**
-     * Render the scene with the specified built-in image sampler to the
-     * specified display. Valid sampler names are "bucket", "ipr", "fast".
-     * Attempts to use an unknown sampler are ignored.
-     * 
-     * @param sampler built-in sampler name
-     * @param display display object
-     */
-    public final void render(String sampler, Display display) {
-        if (sampler == null || sampler.equals("none") || sampler.equals("null"))
-            render((ImageSampler) null, display);
-        else if (sampler.equals("bucket"))
-            render(bucketRenderer, display);
-        else if (sampler.equals("ipr"))
-            render(progressiveRenderer, display);
-        else if (sampler.equals("fast"))
-            render(new SimpleRenderer(), display);
-        else
-            UI.printError("[API] Unknown sampler type: %s - aborting", sampler);
-    }
-
-    /**
      * Render using the specified image sampler object and the specified
      * display.
      * 
      * @param sampler image sampler
      * @param display display object
      */
-    public final void render(ImageSampler sampler, Display display) {
+    public final void render(String optionsName, Display display) {
         if (rebuildInstanceList) {
             UI.printInfo("[API] Building scene instance list for rendering ...");
             int numInfinite = 0, numInstance = 0;
@@ -894,25 +940,25 @@ public class SunflowAPI {
             scene.setInstanceLists(instance, infinite);
             rebuildInstanceList = false;
         }
-        scene.render(sampler, display);
-    }
-
-    /**
-     * Render using the bucket sampler to the specified display.
-     * 
-     * @param display display object
-     */
-    public final void render(Display display) {
-        render(bucketRenderer, display);
-    }
-
-    /**
-     * Render using the progressive sampler to the specified display.
-     * 
-     * @param display display object
-     */
-    public final void progressiveRender(Display display) {
-        render(progressiveRenderer, display);
+        Options opt = lookupOptions(optionsName);
+        if (opt == null)
+            opt = new Options();
+        scene.setCamera(lookupCamera(opt.getString("camera", null)));
+        String samplerName = opt.getString("sampler", "bucket");
+        ImageSampler sampler = null;
+        if (samplerName.equals("none") || samplerName.equals("null"))
+            sampler = null;
+        else if (samplerName.equals("bucket"))
+            sampler = bucketRenderer;
+        else if (samplerName.equals("ipr"))
+            sampler = progressiveRenderer;
+        else if (samplerName.equals("fast"))
+            sampler = new SimpleRenderer();
+        else {
+            UI.printError("[API] Unknown sampler type: %s - aborting", samplerName);
+            return;
+        }
+        scene.render(opt, sampler, display);
     }
 
     /**

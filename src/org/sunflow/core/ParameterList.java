@@ -13,8 +13,8 @@ import org.sunflow.util.FastHashMap;
  * onto rendering objects through the API. They can hold arbitrary typed and
  * named variables as a unified way of getting data into user objects.
  */
-public final class ParameterList {
-    private final FastHashMap<String, Parameter> list;
+public class ParameterList {
+    protected final FastHashMap<String, Parameter> list;
     private int numVerts, numFaces, numFaceVerts;
 
     private enum ParameterType {
@@ -410,7 +410,7 @@ public final class ParameterList {
         }
     }
 
-    private static final class Parameter {
+    protected static final class Parameter {
         private ParameterType type;
         private InterpolationType interp;
         private float[] floats;
@@ -500,6 +500,10 @@ public final class ParameterList {
                 default:
                     return -1;
             }
+        }
+        
+        protected void check() {
+            checked = true;
         }
 
         public String toString() {

@@ -21,8 +21,35 @@ public final class Ray {
 
     /**
      * Creates a new ray that points from the given origin to the given
-     * direction. The ray has infinite length. Note that the parameters are
-     * copied, so the ray has a new instance of both. The direction vector is
+     * direction. The ray has infinite length. The direction vector is
+     * normalized.
+     * 
+     * @param ox ray origin x
+     * @param oy ray origin y
+     * @param oz ray origin z
+     * @param dx ray direction x
+     * @param dy ray direction y
+     * @param dz ray direction z
+     */
+
+    public Ray(float ox, float oy, float oz, float dx, float dy, float dz) {
+        this.ox = ox;
+        this.oy = oy;
+        this.oz = oz;
+        this.dx = dx;
+        this.dy = dy;
+        this.dz = dz;
+        float in = 1.0f / (float) Math.sqrt(dx * dx + dy * dy + dz * dz);
+        this.dx *= in;
+        this.dy *= in;
+        this.dz *= in;
+        tMin = EPSILON;
+        tMax = Float.POSITIVE_INFINITY;
+    }
+
+    /**
+     * Creates a new ray that points from the given origin to the given
+     * direction. The ray has infinite length. The direction vector is
      * normalized.
      * 
      * @param o ray origin
@@ -71,18 +98,18 @@ public final class Ray {
      * Create a new ray by transforming the supplied one by the given matrix. If
      * the matrix is <code>null</code>, the original ray is returned.
      * 
-     * @param w2o
+     * @param m matrix to transform the ray by
      */
-    public Ray transform(Matrix4 w2o) {
-        if (w2o == null)
+    public Ray transform(Matrix4 m) {
+        if (m == null)
             return this;
         Ray r = new Ray();
-        r.ox = w2o.transformPX(ox, oy, oz);
-        r.oy = w2o.transformPY(ox, oy, oz);
-        r.oz = w2o.transformPZ(ox, oy, oz);
-        r.dx = w2o.transformVX(dx, dy, dz);
-        r.dy = w2o.transformVY(dx, dy, dz);
-        r.dz = w2o.transformVZ(dx, dy, dz);
+        r.ox = m.transformPX(ox, oy, oz);
+        r.oy = m.transformPY(ox, oy, oz);
+        r.oz = m.transformPZ(ox, oy, oz);
+        r.dx = m.transformVX(dx, dy, dz);
+        r.dy = m.transformVY(dx, dy, dz);
+        r.dz = m.transformVZ(dx, dy, dz);
         r.tMin = tMin;
         r.tMax = tMax;
         return r;

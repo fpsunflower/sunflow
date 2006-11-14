@@ -15,7 +15,7 @@ public class Scene {
     private LightServer lightServer;
     private InstanceList instanceList;
     private InstanceList infiniteInstanceList;
-    private CameraLens camera;
+    private Camera camera;
     private AccelerationStructure intAccel;
     private String acceltype;
 
@@ -65,17 +65,6 @@ public class Scene {
     }
 
     /**
-     * Set final image resolution in pixels
-     * 
-     * @param imageWidth width in pixels
-     * @param imageHeight height in pixels
-     */
-    public void setResolution(int imageWidth, int imageHeight) {
-        this.imageWidth = imageWidth;
-        this.imageHeight = imageHeight;
-    }
-
-    /**
      * Sets the intersetion accelerator used to accelerate raytracing. This can
      * be changed up until rendertime.
      * 
@@ -91,7 +80,7 @@ public class Scene {
      * 
      * @param camera camera to be used as the viewpoint for the scene
      */
-    public void addCamera(CameraLens camera) {
+    public void setCamera(Camera camera) {
         this.camera = camera;
     }
 
@@ -166,7 +155,7 @@ public class Scene {
 
     public ShadingState getRadiance(IntersectionState istate, float rx, float ry, double lensU, double lensV, double time, int instance) {
         Ray r = camera.getRay(rx, ry, imageWidth, imageHeight, lensU, lensV, time);
-        return lightServer.getRadiance(rx, ry, instance, r, istate);
+        return r != null ? lightServer.getRadiance(rx, ry, instance, r, istate) : null;
     }
 
     public Filter getFilter() {
@@ -193,13 +182,16 @@ public class Scene {
         return state.hit() ? Color.WHITE : Color.BLACK;
     }
 
-    public void render(ImageSampler sampler, Display display) {
+    public void render(Options options, ImageSampler sampler, Display display) {
         if (display == null)
             display = new FrameDisplay();
         if (camera == null) {
             UI.printError("[SCN] No camera found");
             return;
         }
+        // read from options
+        imageWidth = options.getInt("resolutionX", imageWidth);
+        imageHeight = options.getInt("resolutionY", imageHeight);
         // limit resolution to 16k
         imageWidth = MathUtils.clamp(imageWidth, 1, 1 << 14);
         imageHeight = MathUtils.clamp(imageHeight, 1, 1 << 14);

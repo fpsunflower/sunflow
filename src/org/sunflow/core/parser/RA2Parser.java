@@ -11,7 +11,7 @@ import java.nio.channels.FileChannel;
 
 import org.sunflow.SunflowAPI;
 import org.sunflow.core.SceneParser;
-import org.sunflow.core.camera.PinholeCamera;
+import org.sunflow.core.camera.PinholeLens;
 import org.sunflow.core.primitive.Mesh;
 import org.sunflow.core.shader.SimpleShader;
 import org.sunflow.math.Point3;
@@ -79,8 +79,15 @@ public class RA2Parser implements SceneParser {
                     up.set(0, 0, 1);
                     break;
             }
-            api.camera(new PinholeCamera(eye, to, up, 80.0f, 1.0f));
-            api.resolution(1024, 1024);
+            api.parameter("eye", eye);
+            api.parameter("target", to);
+            api.parameter("up", up);
+            String name = api.getUniqueName("camera");
+            api.parameter("fov", 80);
+            api.camera(name, new PinholeLens());
+            api.parameter("resolutionX", 1024);
+            api.parameter("resolutionY", 1024);
+            api.options(SunflowAPI.DEFAULT_OPTIONS);
             p.close();
         } catch (FileNotFoundException e) {
             UI.printWarning("[RA2] Camera file not found");

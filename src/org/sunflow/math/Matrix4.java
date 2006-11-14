@@ -534,4 +534,27 @@ public final class Matrix4 {
         m.m33 = 1;
         return m;
     }
+
+    /**
+     * Creates a rotation matrix from an OrthonormalBasis.
+     * 
+     * @param basis
+     */
+    public final static Matrix4 fromBasis(OrthoNormalBasis basis) {
+        Matrix4 m = new Matrix4();
+        Vector3 u = basis.transform(new Vector3(1, 0, 0));
+        Vector3 v = basis.transform(new Vector3(0, 1, 0));
+        Vector3 w = basis.transform(new Vector3(0, 0, 1));
+        m.m00 = u.x;
+        m.m01 = v.x;
+        m.m02 = w.x;
+        m.m10 = u.y;
+        m.m11 = v.y;
+        m.m12 = w.y;
+        m.m20 = u.z;
+        m.m21 = v.z;
+        m.m22 = w.z;
+        m.m33 = 1;
+        return m;
+    }
 }

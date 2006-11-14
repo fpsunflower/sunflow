@@ -4,7 +4,7 @@ package org.sunflow.core;
  * Represents a mapping from the 3D scene onto the final image. A camera is
  * responsible for determining what ray to cast through each pixel.
  */
-public interface CameraLens {
+public interface CameraLens extends RenderObject {
     /**
      * Create a new {@link Ray ray}to be cast through pixel (x,y) on the image
      * plane. Two sampling parameters are provided for lens sampling. They are
