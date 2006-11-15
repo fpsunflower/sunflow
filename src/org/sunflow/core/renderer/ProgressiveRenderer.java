@@ -5,12 +5,14 @@ import java.util.concurrent.PriorityBlockingQueue;
 import org.sunflow.core.Display;
 import org.sunflow.core.ImageSampler;
 import org.sunflow.core.IntersectionState;
+import org.sunflow.core.Options;
 import org.sunflow.core.Scene;
 import org.sunflow.core.ShadingState;
 import org.sunflow.image.Color;
 import org.sunflow.math.QMC;
 import org.sunflow.system.Timer;
 import org.sunflow.system.UI;
+import org.sunflow.system.UI.Module;
 
 public class ProgressiveRenderer implements ImageSampler {
     private Scene scene;
@@ -27,7 +29,7 @@ public class ProgressiveRenderer implements ImageSampler {
         smallBucketQueue = null;
     }
 
-    public boolean prepare(Scene scene, int w, int h) {
+    public boolean prepare(Options options, Scene scene, int w, int h) {
         this.scene = scene;
         imageWidth = w;
         imageHeight = h;
@@ -63,12 +65,12 @@ public class ProgressiveRenderer implements ImageSampler {
             try {
                 renderThreads[i].join();
             } catch (InterruptedException e) {
-                UI.printError("[IPR] Thread %d of %d was interrupted", i + 1, renderThreads.length);
+                UI.printError(Module.IPR, "Thread %d of %d was interrupted", i + 1, renderThreads.length);
             }
         }
         UI.taskStop();
         t.end();
-        UI.printInfo("[IPR] Rendering time: %s", t.toString());
+        UI.printInfo(Module.IPR, "Rendering time: %s", t.toString());
         display.imageEnd();
     }
 

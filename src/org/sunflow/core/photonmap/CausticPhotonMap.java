@@ -12,6 +12,7 @@ import org.sunflow.math.Point3;
 import org.sunflow.math.Vector3;
 import org.sunflow.system.Timer;
 import org.sunflow.system.UI;
+import org.sunflow.system.UI.Module;
 
 public final class CausticPhotonMap implements CausticPhotonMapInterface {
     private ArrayList<Photon> photonList;
@@ -194,18 +195,18 @@ public final class CausticPhotonMap implements CausticPhotonMapInterface {
     }
 
     public void init() {
-        UI.printInfo("[CPM] Balancing caustics photon map ...");
+        UI.printInfo(Module.LIGHT, "Balancing caustics photon map ...");
         Timer t = new Timer();
         t.start();
         balance();
         t.end();
-        UI.printInfo("[CPM] Caustic photon map:");
-        UI.printInfo("[CPM]   * Photons stored:   %d", storedPhotons);
-        UI.printInfo("[CPM]   * Photons/estimate: %d", gatherNum);
+        UI.printInfo(Module.LIGHT, "Caustic photon map:");
+        UI.printInfo(Module.LIGHT, "  * Photons stored:   %d", storedPhotons);
+        UI.printInfo(Module.LIGHT, "  * Photons/estimate: %d", gatherNum);
         maxRadius = 1.4f * (float) Math.sqrt(maxPower * gatherNum);
-        UI.printInfo("[CPM]   * Estimate radius:  %.3f", gatherRadius);
-        UI.printInfo("[CPM]   * Maximum radius:   %.3f", maxRadius);
-        UI.printInfo("[CPM]   * Balancing time:   %s", t.toString());
+        UI.printInfo(Module.LIGHT, "  * Estimate radius:  %.3f", gatherRadius);
+        UI.printInfo(Module.LIGHT, "  * Maximum radius:   %.3f", maxRadius);
+        UI.printInfo(Module.LIGHT, "  * Balancing time:   %s", t.toString());
         if (gatherRadius > maxRadius)
             gatherRadius = maxRadius;
     }

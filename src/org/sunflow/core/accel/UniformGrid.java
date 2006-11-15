@@ -9,6 +9,7 @@ import org.sunflow.math.MathUtils;
 import org.sunflow.math.Vector3;
 import org.sunflow.system.Timer;
 import org.sunflow.system.UI;
+import org.sunflow.system.UI.Module;
 import org.sunflow.util.IntArray;
 
 public final class UniformGrid implements AccelerationStructure {
@@ -47,7 +48,7 @@ public final class UniformGrid implements AccelerationStructure {
         invVoxelwx = 1 / voxelwx;
         invVoxelwy = 1 / voxelwy;
         invVoxelwz = 1 / voxelwz;
-        UI.printDetailed("[ACC] Creating grid: %dx%dx%d ...", nx, ny, nz);
+        UI.printDetailed(Module.ACCEL, "Creating grid: %dx%dx%d ...", nx, ny, nz);
         IntArray[] buildCells = new IntArray[nx * ny * nz];
         // add all objects into the grid cells they overlap
         int[] imin = new int[3];
@@ -68,7 +69,7 @@ public final class UniformGrid implements AccelerationStructure {
                 }
             }
         }
-        UI.printDetailed("[ACC] Building cells ...");
+        UI.printDetailed(Module.ACCEL, "Building cells ...");
         int numEmpty = 0;
         int numInFull = 0;
         cells = new int[nx * ny * nz][];
@@ -87,15 +88,15 @@ public final class UniformGrid implements AccelerationStructure {
             i++;
         }
         t.end();
-        UI.printDetailed("[ACC] Uniform grid statistics:");
-        UI.printDetailed("[ACC]   * Grid cells:          %d", cells.length);
-        UI.printDetailed("[ACC]   * Used cells:          %d", cells.length - numEmpty);
-        UI.printDetailed("[ACC]   * Empty cells:         %d", numEmpty);
-        UI.printDetailed("[ACC]   * Occupancy:           %.2f%%", 100.0 * (cells.length - numEmpty) / cells.length);
-        UI.printDetailed("[ACC]   * Objects/Cell:        %.2f", (double) numInFull / (double) cells.length);
-        UI.printDetailed("[ACC]   * Objects/Used Cell:   %.2f", (double) numInFull / (double) (cells.length - numEmpty));
-        UI.printDetailed("[ACC]   * Cells/Object:        %.2f", (double) numCellsPerObject / (double) n);
-        UI.printDetailed("[ACC]   * Build time:          %s", t.toString());
+        UI.printDetailed(Module.ACCEL, "Uniform grid statistics:");
+        UI.printDetailed(Module.ACCEL, "  * Grid cells:          %d", cells.length);
+        UI.printDetailed(Module.ACCEL, "  * Used cells:          %d", cells.length - numEmpty);
+        UI.printDetailed(Module.ACCEL, "  * Empty cells:         %d", numEmpty);
+        UI.printDetailed(Module.ACCEL, "  * Occupancy:           %.2f%%", 100.0 * (cells.length - numEmpty) / cells.length);
+        UI.printDetailed(Module.ACCEL, "  * Objects/Cell:        %.2f", (double) numInFull / (double) cells.length);
+        UI.printDetailed(Module.ACCEL, "  * Objects/Used Cell:   %.2f", (double) numInFull / (double) (cells.length - numEmpty));
+        UI.printDetailed(Module.ACCEL, "  * Cells/Object:        %.2f", (double) numCellsPerObject / (double) n);
+        UI.printDetailed(Module.ACCEL, "  * Build time:          %s", t.toString());
     }
 
     public void intersect(Ray r, IntersectionState state) {

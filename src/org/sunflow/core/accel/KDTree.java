@@ -13,6 +13,7 @@ import org.sunflow.math.Point3;
 import org.sunflow.system.Memory;
 import org.sunflow.system.Timer;
 import org.sunflow.system.UI;
+import org.sunflow.system.UI.Module;
 import org.sunflow.util.IntArray;
 
 public class KDTree implements AccelerationStructure {
@@ -106,22 +107,22 @@ public class KDTree implements AccelerationStructure {
         }
 
         void printStats() {
-            UI.printDetailed("[KDT] KDTree stats:");
-            UI.printDetailed("[KDT]   * Nodes:          %d", numNodes);
-            UI.printDetailed("[KDT]   * Leaves:         %d", numLeaves);
-            UI.printDetailed("[KDT]   * Objects: min    %d", minObjects);
-            UI.printDetailed("[KDT]              avg    %.2f", (float) sumObjects / numLeaves);
-            UI.printDetailed("[KDT]            avg(n>0) %.2f", (float) sumObjects / (numLeaves - numLeaves0));
-            UI.printDetailed("[KDT]              max    %d", maxObjects);
-            UI.printDetailed("[KDT]   * Depth:   min    %d", minDepth);
-            UI.printDetailed("[KDT]              avg    %.2f", (float) sumDepth / numLeaves);
-            UI.printDetailed("[KDT]              max    %d", maxDepth);
-            UI.printDetailed("[KDT]   * Leaves w/: N=0  %3d%%", 100 * numLeaves0 / numLeaves);
-            UI.printDetailed("[KDT]                N=1  %3d%%", 100 * numLeaves1 / numLeaves);
-            UI.printDetailed("[KDT]                N=2  %3d%%", 100 * numLeaves2 / numLeaves);
-            UI.printDetailed("[KDT]                N=3  %3d%%", 100 * numLeaves3 / numLeaves);
-            UI.printDetailed("[KDT]                N=4  %3d%%", 100 * numLeaves4 / numLeaves);
-            UI.printDetailed("[KDT]                N>4  %3d%%", 100 * numLeaves4p / numLeaves);
+            UI.printDetailed(Module.ACCEL, "KDTree stats:");
+            UI.printDetailed(Module.ACCEL, "  * Nodes:          %d", numNodes);
+            UI.printDetailed(Module.ACCEL, "  * Leaves:         %d", numLeaves);
+            UI.printDetailed(Module.ACCEL, "  * Objects: min    %d", minObjects);
+            UI.printDetailed(Module.ACCEL, "             avg    %.2f", (float) sumObjects / numLeaves);
+            UI.printDetailed(Module.ACCEL, "           avg(n>0) %.2f", (float) sumObjects / (numLeaves - numLeaves0));
+            UI.printDetailed(Module.ACCEL, "             max    %d", maxObjects);
+            UI.printDetailed(Module.ACCEL, "  * Depth:   min    %d", minDepth);
+            UI.printDetailed(Module.ACCEL, "             avg    %.2f", (float) sumDepth / numLeaves);
+            UI.printDetailed(Module.ACCEL, "             max    %d", maxDepth);
+            UI.printDetailed(Module.ACCEL, "  * Leaves w/: N=0  %3d%%", 100 * numLeaves0 / numLeaves);
+            UI.printDetailed(Module.ACCEL, "               N=1  %3d%%", 100 * numLeaves1 / numLeaves);
+            UI.printDetailed(Module.ACCEL, "               N=2  %3d%%", 100 * numLeaves2 / numLeaves);
+            UI.printDetailed(Module.ACCEL, "               N=3  %3d%%", 100 * numLeaves3 / numLeaves);
+            UI.printDetailed(Module.ACCEL, "               N=4  %3d%%", 100 * numLeaves4 / numLeaves);
+            UI.printDetailed(Module.ACCEL, "               N>4  %3d%%", 100 * numLeaves4p / numLeaves);
         }
     }
 
@@ -131,13 +132,13 @@ public class KDTree implements AccelerationStructure {
     }
 
     public void build(PrimitiveList primitives) {
-        UI.printDetailed("[KDT] KDTree settings");
-        UI.printDetailed("[KDT]   * Max Leaf Size:  %d", maxPrims);
-        UI.printDetailed("[KDT]   * Max Depth:      %d", MAX_DEPTH);
-        UI.printDetailed("[KDT]   * Traversal cost: %.2f", TRAVERSAL_COST);
-        UI.printDetailed("[KDT]   * Intersect cost: %.2f", INTERSECT_COST);
-        UI.printDetailed("[KDT]   * Empty bonus:    %.2f", EMPTY_BONUS);
-        UI.printDetailed("[KDT]   * Dump leaves:    %s", dump ? "enabled" : "disabled");
+        UI.printDetailed(Module.ACCEL, "KDTree settings");
+        UI.printDetailed(Module.ACCEL, "  * Max Leaf Size:  %d", maxPrims);
+        UI.printDetailed(Module.ACCEL, "  * Max Depth:      %d", MAX_DEPTH);
+        UI.printDetailed(Module.ACCEL, "  * Traversal cost: %.2f", TRAVERSAL_COST);
+        UI.printDetailed(Module.ACCEL, "  * Intersect cost: %.2f", INTERSECT_COST);
+        UI.printDetailed(Module.ACCEL, "  * Empty bonus:    %.2f", EMPTY_BONUS);
+        UI.printDetailed(Module.ACCEL, "  * Dump leaves:    %s", dump ? "enabled" : "disabled");
         Timer total = new Timer();
         total.start();
         this.primitiveList = primitives;
@@ -189,15 +190,15 @@ public class KDTree implements AccelerationStructure {
         total.end();
         // display some extra info
         stats.printStats();
-        UI.printDetailed("[KDT]   * Node memory:    %s", Memory.sizeof(tree));
-        UI.printDetailed("[KDT]   * Object memory:  %s", Memory.sizeof(this.primitives));
-        UI.printDetailed("[KDT]   * Prepare time:   %s", prepare);
-        UI.printDetailed("[KDT]   * Sorting time:   %s", sorting);
-        UI.printDetailed("[KDT]   * Tree creation:  %s", t);
-        UI.printDetailed("[KDT]   * Build time:     %s", total);
+        UI.printDetailed(Module.ACCEL, "  * Node memory:    %s", Memory.sizeof(tree));
+        UI.printDetailed(Module.ACCEL, "  * Object memory:  %s", Memory.sizeof(this.primitives));
+        UI.printDetailed(Module.ACCEL, "  * Prepare time:   %s", prepare);
+        UI.printDetailed(Module.ACCEL, "  * Sorting time:   %s", sorting);
+        UI.printDetailed(Module.ACCEL, "  * Tree creation:  %s", t);
+        UI.printDetailed(Module.ACCEL, "  * Build time:     %s", total);
         if (dump) {
             try {
-                UI.printInfo("[KDT] Dumping mtls to %s.mtl ...", dumpPrefix);
+                UI.printInfo(Module.ACCEL, "Dumping mtls to %s.mtl ...", dumpPrefix);
                 FileWriter mtlFile = new FileWriter(dumpPrefix + ".mtl");
                 int maxN = stats.maxObjects;
                 for (int n = 0; n <= maxN; n++) {
@@ -218,7 +219,7 @@ public class KDTree implements AccelerationStructure {
                     mtlFile.write("illum 1\n\n");
                 }
                 FileWriter objFile = new FileWriter(dumpPrefix + ".obj");
-                UI.printInfo("[KDT] Dumping tree to %s.obj ...", dumpPrefix);
+                UI.printInfo(Module.ACCEL, "Dumping tree to %s.obj ...", dumpPrefix);
                 dumpObj(0, 0, maxN, new BoundingBox(bounds), objFile, mtlFile);
                 objFile.close();
                 mtlFile.close();
@@ -519,7 +520,7 @@ public class KDTree implements AccelerationStructure {
                 int numLeft = nl[axis];
                 int numRight = nr[axis];
                 if (numLeft != task.numObjects || numRight != 0)
-                    UI.printError("[KDT] Didn't scan full range of objects @depth=%d. Left overs for axis %d: [L: %d] [R: %d]", depth, axis, numLeft, numRight);
+                    UI.printError(Module.ACCEL, "Didn't scan full range of objects @depth=%d. Left overs for axis %d: [L: %d] [R: %d]", depth, axis, numLeft, numRight);
             }
             // found best split?
             if (bestAxis != -1) {
@@ -632,7 +633,7 @@ public class KDTree implements AccelerationStructure {
         }
         stats.updateLeaf(depth, n);
         if (n != task.numObjects)
-            UI.printError("[KDT] Error creating leaf node - expecting %d found %d", task.numObjects, n);
+            UI.printError(Module.ACCEL, "Error creating leaf node - expecting %d found %d", task.numObjects, n);
         tempTree.set(offset + 0, (3 << 30) | listOffset);
         tempTree.set(offset + 1, task.numObjects);
         // free some memory

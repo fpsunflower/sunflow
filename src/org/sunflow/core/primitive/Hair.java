@@ -17,6 +17,7 @@ import org.sunflow.math.Matrix4;
 import org.sunflow.math.OrthoNormalBasis;
 import org.sunflow.math.Vector3;
 import org.sunflow.system.UI;
+import org.sunflow.system.UI.Module;
 
 public class Hair implements PrimitiveList, Shader {
     private int numSegments;
@@ -193,19 +194,19 @@ public class Hair implements PrimitiveList, Shader {
     public boolean update(ParameterList pl, SunflowAPI api) {
         numSegments = pl.getInt("segments", numSegments);
         if (numSegments < 1) {
-            UI.printError("[HAR] Invalid number of segments: %d", numSegments);
+            UI.printError(Module.HAIR, "Invalid number of segments: %d", numSegments);
             return false;
         }
         FloatParameter pointsP = pl.getPointArray("points");
         if (pointsP != null) {
             if (pointsP.interp != InterpolationType.VERTEX)
-                UI.printError("[HAR] Point interpolation type must be set to \"vertex\" - was \"%s\"", pointsP.interp.name().toLowerCase());
+                UI.printError(Module.HAIR, "Point interpolation type must be set to \"vertex\" - was \"%s\"", pointsP.interp.name().toLowerCase());
             else {
                 points = pointsP.data;
             }
         }
         if (points == null) {
-            UI.printError("[HAR] Unabled to update hair - vertices are missing");
+            UI.printError(Module.HAIR, "Unabled to update hair - vertices are missing");
             return false;
         }
 
@@ -215,7 +216,7 @@ public class Hair implements PrimitiveList, Shader {
             if (widthsP.interp == InterpolationType.NONE || widthsP.interp == InterpolationType.VERTEX)
                 widths = widthsP;
             else
-                UI.printWarning("[HAR] Width interpolation type %s is not supported -- ignoring", widthsP.interp.name().toLowerCase());
+                UI.printWarning(Module.HAIR, "Width interpolation type %s is not supported -- ignoring", widthsP.interp.name().toLowerCase());
         }
         return true;
     }

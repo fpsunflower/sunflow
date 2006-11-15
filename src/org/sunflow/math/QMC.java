@@ -1,6 +1,7 @@
 package org.sunflow.math;
 
 import org.sunflow.system.UI;
+import org.sunflow.system.UI.Module;
 
 public final class QMC {
     private static final int NUM = 128;
@@ -8,7 +9,7 @@ public final class QMC {
     private static final int[] PRIMES = new int[NUM];
 
     static {
-        UI.printInfo("[QMC] Initializing Faure scrambling tables ...");
+        UI.printInfo(Module.QMC, "Initializing Faure scrambling tables ...");
         // build table of first primes
         PRIMES[0] = 2;
         for (int i = 1; i < PRIMES.length; i++)

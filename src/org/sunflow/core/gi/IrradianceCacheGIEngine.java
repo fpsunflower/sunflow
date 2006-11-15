@@ -13,6 +13,7 @@ import org.sunflow.math.OrthoNormalBasis;
 import org.sunflow.math.Point3;
 import org.sunflow.math.Vector3;
 import org.sunflow.system.UI;
+import org.sunflow.system.UI.Module;
 
 public class IrradianceCacheGIEngine implements GIEngine {
     private int samples;
@@ -41,13 +42,13 @@ public class IrradianceCacheGIEngine implements GIEngine {
         minSpacing = Math.max(0.001f, minSpacing);
         maxSpacing = Math.max(0.001f, maxSpacing);
         // display settings
-        UI.printInfo("[IRC] Irradiance cache settings:");
-        UI.printInfo("[IRC]   * Samples: %d", samples);
+        UI.printInfo(Module.LIGHT, "Irradiance cache settings:");
+        UI.printInfo(Module.LIGHT, "  * Samples: %d", samples);
         if (tolerance <= 0)
-            UI.printInfo("[IRC]   * Tolerance: off");
+            UI.printInfo(Module.LIGHT, "  * Tolerance: off");
         else
-            UI.printInfo("[IRC]   * Tolerance: %.3f", tolerance);
-        UI.printInfo("[IRC]   * Spacing: %.3f to %.3f", minSpacing, maxSpacing);
+            UI.printInfo(Module.LIGHT, "  * Tolerance: %.3f", tolerance);
+        UI.printInfo(Module.LIGHT, "  * Spacing: %.3f to %.3f", minSpacing, maxSpacing);
         // prepare root node
         Vector3 ext = scene.getBounds().getExtents();
         root = new Node(scene.getBounds().getCenter(), 1.0001f * MathUtils.max(ext.x, ext.y, ext.z));

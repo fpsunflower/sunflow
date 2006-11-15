@@ -9,6 +9,7 @@ import org.sunflow.core.primitive.Hair;
 import org.sunflow.system.Parser;
 import org.sunflow.system.UI;
 import org.sunflow.system.Parser.ParserException;
+import org.sunflow.system.UI.Module;
 import org.sunflow.util.FloatArray;
 import org.sunflow.util.IntArray;
 
@@ -27,7 +28,7 @@ public class ShaveRibParser implements SceneParser {
                     p.checkNextToken("DelayedReadArchive");
                     p.checkNextToken("[");
                     String f = p.getNextToken();
-                    UI.printInfo("[RIB} Reading voxel: \"%s\" ...", f);
+                    UI.printInfo(Module.USER, "RIB - Reading voxel: \"%s\" ...", f);
                     api.parse(f);
                     p.checkNextToken("]");
                     while (true) {
@@ -67,13 +68,13 @@ public class ShaveRibParser implements SceneParser {
                 int[] nverts = parseIntArray(p);
                 for (int i = 1; i < nverts.length; i++) {
                     if (nverts[0] != nverts[i]) {
-                        UI.printError("[RIB] Found variable number of hair segments");
+                        UI.printError(Module.USER, "RIB - Found variable number of hair segments");
                         return false;
                     }
                 }
                 int nhairs = nverts.length;
 
-                UI.printInfo("[RIB] Parsed %d hair curves", nhairs);
+                UI.printInfo(Module.USER, "RIB - Parsed %d hair curves", nhairs);
 
                 api.parameter("segments", nverts[0] - 1);
 
@@ -81,29 +82,29 @@ public class ShaveRibParser implements SceneParser {
                 p.checkNextToken("P");
                 float[] points = parseFloatArray(p);
                 if (points.length != 3 * nhairs * nverts[0]) {
-                    UI.printError("[RIB] Invalid number of points - expecting %d - found %d", nhairs * nverts[0], points.length / 3);
+                    UI.printError(Module.USER, "RIB - Invalid number of points - expecting %d - found %d", nhairs * nverts[0], points.length / 3);
                     return false;
                 }
                 api.parameter("points", "point", "vertex", points);
 
-                UI.printInfo("[RIB] Parsed %d hair vertices", points.length / 3);
+                UI.printInfo(Module.USER, "RIB - Parsed %d hair vertices", points.length / 3);
 
                 p.checkNextToken("width");
                 float[] w = parseFloatArray(p);
                 if (w.length != nhairs * nverts[0]) {
-                    UI.printError("[RIB] Invalid number of hair widths - expecting %d - found %d", nhairs * nverts[0], w.length);
+                    UI.printError(Module.USER, "RIB - Invalid number of hair widths - expecting %d - found %d", nhairs * nverts[0], w.length);
                     return false;
                 }
                 api.parameter("widths", "float", "vertex", w);
 
-                UI.printInfo("[RIB] Parsed %d hair widths", w.length);
+                UI.printInfo(Module.USER, "RIB - Parsed %d hair widths", w.length);
 
                 String name = String.format("%s[%d]", filename, index);
-                UI.printInfo("[RIB] Creating hair object \"%s\"", name);
+                UI.printInfo(Module.USER, "RIB - Creating hair object \"%s\"", name);
                 api.geometry(name, new Hair());
                 api.instance(name + ".instance", name);
 
-                UI.printInfo("[RIB] Searching for next curve group ...");
+                UI.printInfo(Module.USER, "RIB - Searching for next curve group ...");
                 while (true) {
                     String t = p.getNextToken();
                     if (t == null || t.equals("TransformEnd")) {
@@ -114,17 +115,17 @@ public class ShaveRibParser implements SceneParser {
                 }
                 index++;
             } while (!done);
-            UI.printInfo("[RIB] Finished reading rib file");
+            UI.printInfo(Module.USER, "RIB - Finished reading rib file");
         } catch (FileNotFoundException e) {
-            UI.printError("[RIB] File not found: %s", filename);
+            UI.printError(Module.USER, "RIB - File not found: %s", filename);
             e.printStackTrace();
             return false;
         } catch (ParserException e) {
-            UI.printError("[RIB] Parser exception: %s", e);
+            UI.printError(Module.USER, "RIB - Parser exception: %s", e);
             e.printStackTrace();
             return false;
         } catch (IOException e) {
-            UI.printError("[RIB] I/O exception: %s", e);
+            UI.printError(Module.USER, "RIB - I/O exception: %s", e);
             e.printStackTrace();
             return false;
         }

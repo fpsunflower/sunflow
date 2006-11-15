@@ -18,11 +18,12 @@ import org.sunflow.math.Point3;
 import org.sunflow.math.Vector3;
 import org.sunflow.system.Parser;
 import org.sunflow.system.UI;
+import org.sunflow.system.UI.Module;
 
 public class RA2Parser implements SceneParser {
     public boolean parse(String filename, SunflowAPI api) {
         try {
-            UI.printInfo("[RA2] Reading geometry: \"%s\" ...", filename);
+            UI.printInfo(Module.USER, "RA2 - Reading geometry: \"%s\" ...", filename);
             File file = new File(filename);
             FileInputStream stream = new FileInputStream(filename);
             MappedByteBuffer map = stream.getChannel().map(FileChannel.MapMode.READ_ONLY, 0, file.length());
@@ -53,7 +54,7 @@ public class RA2Parser implements SceneParser {
         }
         try {
             filename = filename.replace(".ra2", ".txt");
-            UI.printInfo("[RA2] Reading camera  : \"%s\" ...", filename);
+            UI.printInfo(Module.USER, "RA2 - Reading camera  : \"%s\" ...", filename);
             Parser p = new Parser(filename);
             Point3 eye = new Point3();
             eye.x = p.getNextFloat();
@@ -75,7 +76,7 @@ public class RA2Parser implements SceneParser {
                     up.set(0, 0, 1);
                     break;
                 default:
-                    UI.printWarning("[RA2] Invalid up vector specification - using Z axis");
+                    UI.printWarning(Module.USER, "RA2 - Invalid up vector specification - using Z axis");
                     up.set(0, 0, 1);
                     break;
             }
@@ -90,7 +91,7 @@ public class RA2Parser implements SceneParser {
             api.options(SunflowAPI.DEFAULT_OPTIONS);
             p.close();
         } catch (FileNotFoundException e) {
-            UI.printWarning("[RA2] Camera file not found");
+            UI.printWarning(Module.USER, "RA2 - Camera file not found");
         } catch (IOException e) {
             e.printStackTrace();
             return false;

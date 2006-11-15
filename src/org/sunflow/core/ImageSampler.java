@@ -12,7 +12,7 @@ public interface ImageSampler {
      * @param w width of the image
      * @param h height of the image
      */
-    public boolean prepare(Scene scene, int w, int h);
+    public boolean prepare(Options options, Scene scene, int w, int h);
 
     /**
      * Render the image to the specified display. The sampler can assume the

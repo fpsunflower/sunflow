@@ -10,6 +10,7 @@ import org.sunflow.math.MathUtils;
 import org.sunflow.math.Point3;
 import org.sunflow.math.Vector3;
 import org.sunflow.system.UI;
+import org.sunflow.system.UI.Module;
 
 public class GridPhotonMap implements GlobalPhotonMapInterface {
     private int numGather;
@@ -44,14 +45,14 @@ public class GridPhotonMap implements GlobalPhotonMapInterface {
         ny = (int) Math.max(((w.y / gatherRadius) + 0.5f), 1);
         nz = (int) Math.max(((w.z / gatherRadius) + 0.5f), 1);
         int numCells = nx * ny * nz;
-        UI.printInfo("[GPM] Initializing grid photon map:");
-        UI.printInfo("[GPM]   * Resolution:  %dx%dx%d", nx, ny, nz);
-        UI.printInfo("[GPM]   * Total cells: %d", numCells);
+        UI.printInfo(Module.LIGHT, "Initializing grid photon map:");
+        UI.printInfo(Module.LIGHT, "  * Resolution:  %dx%dx%d", nx, ny, nz);
+        UI.printInfo(Module.LIGHT, "  * Total cells: %d", numCells);
         for (hashPrime = 0; hashPrime < PRIMES.length; hashPrime++)
             if (PRIMES[hashPrime] > (numCells / 5))
                 break;
         cellHash = new PhotonGroup[PRIMES[hashPrime]];
-        UI.printInfo("[GPM]   * Initial hash size: %d", cellHash.length);
+        UI.printInfo(Module.LIGHT, "  * Initial hash size: %d", cellHash.length);
     }
 
     public int size() {
@@ -109,9 +110,9 @@ public class GridPhotonMap implements GlobalPhotonMapInterface {
     }
 
     public void init() {
-        UI.printInfo("[GPM] Initializing photon grid ...");
-        UI.printInfo("[GPM]   * Photon hits:      %d", numStoredPhotons);
-        UI.printInfo("[GPM]   * Final hash size:  %d", cellHash.length);
+        UI.printInfo(Module.LIGHT, "Initializing photon grid ...");
+        UI.printInfo(Module.LIGHT, "  * Photon hits:      %d", numStoredPhotons);
+        UI.printInfo(Module.LIGHT, "  * Final hash size:  %d", cellHash.length);
         int cells = 0;
         for (int i = 0; i < cellHash.length; i++) {
             for (PhotonGroup g = cellHash[i]; g != null; g = g.next) {
@@ -119,7 +120,7 @@ public class GridPhotonMap implements GlobalPhotonMapInterface {
                 cells++;
             }
         }
-        UI.printInfo("[GPM]   * Num photon cells: %d", cells);
+        UI.printInfo(Module.LIGHT, "  * Num photon cells: %d", cells);
     }
 
     public void precomputeRadiance(boolean includeDirect, boolean includeCaustics) {

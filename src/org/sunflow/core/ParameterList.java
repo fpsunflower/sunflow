@@ -6,6 +6,7 @@ import org.sunflow.math.Point2;
 import org.sunflow.math.Point3;
 import org.sunflow.math.Vector3;
 import org.sunflow.system.UI;
+import org.sunflow.system.UI.Module;
 import org.sunflow.util.FastHashMap;
 
 /**
@@ -41,7 +42,7 @@ public class ParameterList {
         if (showUnused) {
             for (FastHashMap.Entry<String, Parameter> e : list) {
                 if (!e.getValue().checked)
-                    UI.printWarning("[API] Unused parameter: %s - %s", e.getKey(), e.getValue());
+                    UI.printWarning(Module.API, "Unused parameter: %s - %s", e.getKey(), e.getValue());
             }
         }
         list.clear();
@@ -172,7 +173,7 @@ public class ParameterList {
      */
     public void addFloats(String name, InterpolationType interp, float[] data) {
         if (data == null) {
-            UI.printError("[API]] Cannot create float parameter %s -- invalid data length", name);
+            UI.printError(Module.API, "Cannot create float parameter %s -- invalid data length", name);
             return;
         }
         add(name, new Parameter(ParameterType.FLOAT, interp, data));
@@ -188,7 +189,7 @@ public class ParameterList {
      */
     public void addPoints(String name, InterpolationType interp, float[] data) {
         if (data == null || data.length % 3 != 0) {
-            UI.printError("[API]] Cannot create point parameter %s -- invalid data length", name);
+            UI.printError(Module.API, "Cannot create point parameter %s -- invalid data length", name);
             return;
         }
         add(name, new Parameter(ParameterType.POINT, interp, data));
@@ -205,7 +206,7 @@ public class ParameterList {
 
     public void addVectors(String name, InterpolationType interp, float[] data) {
         if (data == null || data.length % 3 != 0) {
-            UI.printError("[API]] Cannot create vector parameter %s -- invalid data length", name);
+            UI.printError(Module.API, "Cannot create vector parameter %s -- invalid data length", name);
             return;
         }
         add(name, new Parameter(ParameterType.VECTOR, interp, data));
@@ -221,7 +222,7 @@ public class ParameterList {
      */
     public void addTexCoords(String name, InterpolationType interp, float[] data) {
         if (data == null || data.length % 2 != 0) {
-            UI.printError("[API]] Cannot create texcoord parameter %s -- invalid data length", name);
+            UI.printError(Module.API, "Cannot create texcoord parameter %s -- invalid data length", name);
             return;
         }
         add(name, new Parameter(ParameterType.TEXCOORD, interp, data));
@@ -237,7 +238,7 @@ public class ParameterList {
      */
     public void addMatrices(String name, InterpolationType interp, float[] data) {
         if (data == null || data.length % 16 != 0) {
-            UI.printError("[API]] Cannot create matrix parameter %s -- invalid data length", name);
+            UI.printError(Module.API, "Cannot create matrix parameter %s -- invalid data length", name);
             return;
         }
         add(name, new Parameter(ParameterType.MATRIX, interp, data));
@@ -245,9 +246,9 @@ public class ParameterList {
 
     private void add(String name, Parameter param) {
         if (name == null)
-            UI.printError("[API] Cannot declare parameter with null name");
+            UI.printError(Module.API, "Cannot declare parameter with null name");
         else if (list.put(name, param) != null)
-            UI.printWarning("[API] Parameter %s was already defined -- overwriting", name);
+            UI.printWarning(Module.API, "Parameter %s was already defined -- overwriting", name);
     }
 
     public String getString(String name, String defaultValue) {
@@ -351,15 +352,15 @@ public class ParameterList {
         if (p == null)
             return false;
         if (p.type != type) {
-            UI.printWarning("[API] Parameter %s requested as a %s - declared as %s", name, type.name().toLowerCase(), p.type.name().toLowerCase());
+            UI.printWarning(Module.API, "Parameter %s requested as a %s - declared as %s", name, type.name().toLowerCase(), p.type.name().toLowerCase());
             return false;
         }
         if (p.interp != interp) {
-            UI.printWarning("[API] Parameter %s requested as a %s - declared as %s", name, interp.name().toLowerCase(), p.interp.name().toLowerCase());
+            UI.printWarning(Module.API, "Parameter %s requested as a %s - declared as %s", name, interp.name().toLowerCase(), p.interp.name().toLowerCase());
             return false;
         }
         if (requestedSize > 0 && p.size() != requestedSize) {
-            UI.printWarning("[API] Parameter %s requires %d %s - declared with %d", name, requestedSize, requestedSize == 1 ? "value" : "values", p.size());
+            UI.printWarning(Module.API, "Parameter %s requires %d %s - declared with %d", name, requestedSize, requestedSize == 1 ? "value" : "values", p.size());
             return false;
         }
         p.checked = true;
@@ -413,66 +414,62 @@ public class ParameterList {
     protected static final class Parameter {
         private ParameterType type;
         private InterpolationType interp;
-        private float[] floats;
-        private int[] ints;
-        private String[] strs;
-        private Color color;
-        private boolean bool;
+        private Object obj;
         private boolean checked;
 
         private Parameter(String value) {
             type = ParameterType.STRING;
             interp = InterpolationType.NONE;
-            strs = new String[] { value };
+            obj = new String[] { value };
             checked = false;
         }
 
         private Parameter(int value) {
             type = ParameterType.INT;
             interp = InterpolationType.NONE;
-            ints = new int[] { value };
+            obj = new int[] { value };
             checked = false;
         }
 
         private Parameter(boolean value) {
             type = ParameterType.BOOL;
             interp = InterpolationType.NONE;
-            bool = value;
+            obj = value;
             checked = false;
         }
 
         private Parameter(float value) {
             type = ParameterType.FLOAT;
             interp = InterpolationType.NONE;
-            floats = new float[] { value };
+            obj = new float[] { value };
             checked = false;
         }
 
         private Parameter(int[] array) {
             type = ParameterType.INT;
             interp = InterpolationType.NONE;
-            ints = array;
+            obj = array;
             checked = false;
         }
 
         private Parameter(String[] array) {
             type = ParameterType.STRING;
             interp = InterpolationType.NONE;
-            strs = array;
+            obj = array;
             checked = false;
         }
 
         private Parameter(Color c) {
             type = ParameterType.COLOR;
             interp = InterpolationType.NONE;
-            color = c;
+            obj = c;
             checked = false;
         }
 
         private Parameter(ParameterType type, InterpolationType interp, float[] data) {
             this.type = type;
             this.interp = interp;
-            floats = data;
+            obj = data;
             checked = false;
         }
 
@@ -480,21 +477,21 @@ public class ParameterList {
             // number of elements
             switch (type) {
                 case STRING:
-                    return strs.length;
+                    return ((String[]) obj).length;
                 case INT:
-                    return ints.length;
+                    return ((int[]) obj).length;
                 case BOOL:
                     return 1;
                 case FLOAT:
-                    return floats.length;
+                    return ((float[]) obj).length;
                 case POINT:
-                    return floats.length / 3;
+                    return ((float[]) obj).length / 3;
                 case VECTOR:
-                    return floats.length / 3;
+                    return ((float[]) obj).length / 3;
                 case TEXCOORD:
-                    return floats.length / 2;
+                    return ((float[]) obj).length / 2;
                 case MATRIX:
-                    return floats.length / 16;
+                    return ((float[]) obj).length / 16;
                 case COLOR:
                     return 1;
                 default:
@@ -511,51 +508,55 @@ public class ParameterList {
         }
 
         private String getStringValue() {
-            return strs[0];
+            return ((String[]) obj)[0];
         }
 
         private boolean getBoolValue() {
-            return bool;
+            return (Boolean) obj;
         }
 
         private int getIntValue() {
-            return ints[0];
+            return ((int[]) obj)[0];
         }
 
         private int[] getInts() {
-            return ints;
+            return (int[]) obj;
         }
 
         private String[] getStrings() {
-            return strs;
+            return (String[]) obj;
         }
 
         private float getFloatValue() {
-            return floats[0];
+            return ((float[]) obj)[0];
         }
 
         private FloatParameter getFloats() {
-            return new FloatParameter(interp, floats);
+            return new FloatParameter(interp, (float[]) obj);
         }
 
         private Point3 getPoint() {
+            float[] floats = (float[]) obj;
             return new Point3(floats[0], floats[1], floats[2]);
         }
 
         private Vector3 getVector() {
+            float[] floats = (float[]) obj;
             return new Vector3(floats[0], floats[1], floats[2]);
         }
 
         private Point2 getTexCoord() {
+            float[] floats = (float[]) obj;
             return new Point2(floats[0], floats[1]);
         }
 
         private Matrix4 getMatrix() {
+            float[] floats = (float[]) obj;
             return new Matrix4(floats, true);
         }
 
         private Color getColor() {
-            return color;
+            return (Color) obj;
         }
     }
 }

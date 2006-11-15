@@ -73,6 +73,7 @@ import org.sunflow.system.Parser;
 import org.sunflow.system.Timer;
 import org.sunflow.system.UI;
 import org.sunflow.system.Parser.ParserException;
+import org.sunflow.system.UI.Module;
 
 /**
  * This class provides a static method for loading files in the Sunflow scene
@@ -90,7 +91,7 @@ public class SCParser implements SceneParser {
         numLightSamples = 1;
         Timer timer = new Timer();
         timer.start();
-        UI.printInfo("[API] Parsing \"%s\" ...", filename);
+        UI.printInfo(Module.API, "Parsing \"%s\" ...", filename);
         try {
             p = new Parser(filename);
             while (true) {
@@ -98,35 +99,36 @@ public class SCParser implements SceneParser {
                 if (token == null)
                     break;
                 if (token.equals("image")) {
-                    UI.printInfo("[API] Reading image settings ...");
+                    UI.printInfo(Module.API, "Reading image settings ...");
                     parseImageBlock(api);
                 } else if (token.equals("background")) {
-                    UI.printInfo("[API] Reading background ...");
+                    UI.printInfo(Module.API, "Reading background ...");
                     parseBackgroundBlock(api);
                 } else if (token.equals("accel")) {
-                    UI.printInfo("[API] Reading accelerator type ...");
+                    UI.printInfo(Module.API, "Reading accelerator type ...");
                     api.accel(p.getNextToken());
                 } else if (token.equals("filter")) {
-                    UI.printInfo("[API] Reading image filter type ...");
+                    UI.printInfo(Module.API, "Reading image filter type ...");
                     parseFilter(api);
                 } else if (token.equals("bucket")) {
-                    UI.printInfo("[API] Reading bucket settings ...");
-                    api.bucketSize(p.getNextInt());
-                    api.bucketOrder(p.getNextToken());
+                    UI.printInfo(Module.API, "Reading bucket settings ...");
+                    api.parameter("bucket.size", p.getNextInt());
+                    api.parameter("bucket.order", p.getNextToken());
+                    api.options(SunflowAPI.DEFAULT_OPTIONS);
                 } else if (token.equals("photons")) {
-                    UI.printInfo("[API] Reading photon settings ...");
+                    UI.printInfo(Module.API, "Reading photon settings ...");
                     parsePhotonBlock(api);
                 } else if (token.equals("gi")) {
-                    UI.printInfo("[API] Reading global illumination settings ...");
+                    UI.printInfo(Module.API, "Reading global illumination settings ...");
                     parseGIBlock(api);
                 } else if (token.equals("lightserver")) {
-                    UI.printInfo("[API] Reading light server settings ...");
+                    UI.printInfo(Module.API, "Reading light server settings ...");
                     parseLightserverBlock(api);
                 } else if (token.equals("trace-depths")) {
-                    UI.printInfo("[API] Reading trace depths ...");
+                    UI.printInfo(Module.API, "Reading trace depths ...");
                     parseTraceBlock(api);
                 } else if (token.equals("camera")) {
-                    UI.printInfo("[API] Reading camera ...");
+                    UI.printInfo(Module.API, "Reading camera ...");
                     parseCamera(api);
                 } else if (token.equals("shader")) {
                     if (!parseShader(api))
@@ -151,26 +153,26 @@ public class SCParser implements SceneParser {
                     api.addIncludeSearchPath(path);
                 } else if (token.equals("include")) {
                     String file = p.getNextToken();
-                    UI.printInfo("[API] Including: \"%s\" ...", file);
+                    UI.printInfo(Module.API, "Including: \"%s\" ...", file);
                     api.parse(file);
                 } else
-                    UI.printWarning("[API] Unrecognized token %s", token);
+                    UI.printWarning(Module.API, "Unrecognized token %s", token);
             }
             p.close();
         } catch (ParserException e) {
-            UI.printError("[API] %s", e.getMessage());
+            UI.printError(Module.API, "%s", e.getMessage());
             e.printStackTrace();
             return false;
         } catch (FileNotFoundException e) {
-            UI.printError("[API] %s", e.getMessage());
+            UI.printError(Module.API, "%s", e.getMessage());
             return false;
         } catch (IOException e) {
-            UI.printError("[API] %s", e.getMessage());
+            UI.printError(Module.API, "%s", e.getMessage());
             return false;
         }
         timer.end();
-        UI.printInfo("[API] Done parsing.");
-        UI.printInfo("[API] Parsing time: %s", timer.toString());
+        UI.printInfo(Module.API, "Done parsing.");
+        UI.printInfo(Module.API, "Parsing time: %s", timer.toString());
         return true;
     }
 
@@ -179,23 +181,22 @@ public class SCParser implements SceneParser {
         p.checkNextToken("resolution");
         api.parameter("resolutionX", p.getNextInt());
         api.parameter("resolutionY", p.getNextInt());
-        api.options(SunflowAPI.DEFAULT_OPTIONS);
         p.checkNextToken("aa");
-        int min = p.getNextInt();
-        int max = p.getNextInt();
-        api.antiAliasing(min, max);
-        if (p.peekNextToken("samples")) {
-            int n = p.getNextInt();
-            api.antiAliasing(min, max, n);
-        }
+        api.parameter("aa.min", p.getNextInt());
+        api.parameter("aa.max", p.getNextInt());
+        if (p.peekNextToken("samples"))
+            api.parameter("aa.samples", p.getNextInt());
+        if (p.peekNextToken("contrast"))
+            api.parameter("aa.contrast", p.getNextFloat());
         if (p.peekNextToken("show-aa")) {
-            UI.printWarning("[API] Deprecated: show-aa ignored");
+            UI.printWarning(Module.API, "Deprecated: show-aa ignored");
             p.getNextBoolean();
         }
         if (p.peekNextToken("output")) {
-            UI.printWarning("[API] Deprecated: output statement ignored");
+            UI.printWarning(Module.API, "Deprecated: output statement ignored");
             p.getNextToken();
         }
+        api.options(SunflowAPI.DEFAULT_OPTIONS);
         p.checkNextToken("}");
     }
 
@@ -248,12 +249,12 @@ public class SCParser implements SceneParser {
         boolean globalEmit = false;
         p.checkNextToken("{");
         if (p.peekNextToken("emit")) {
-            UI.printWarning("[API] Shared photon emit values are deprectated - specify number of photons to emit per map");
+            UI.printWarning(Module.API, "Shared photon emit values are deprectated - specify number of photons to emit per map");
             numEmit = p.getNextInt();
             globalEmit = true;
         }
         if (p.peekNextToken("global")) {
-            UI.printWarning("[API] Global photon map setting belonds inside the gi block - ignoring");
+            UI.printWarning(Module.API, "Global photon map setting belonds inside the gi block - ignoring");
             if (!globalEmit)
                 p.getNextInt();
             p.getNextToken();
@@ -272,7 +273,7 @@ public class SCParser implements SceneParser {
         else if (type.equals("none"))
             cmap = null;
         else
-            UI.printWarning("[API] Unrecognized caustic photon map type: %s", type);
+            UI.printWarning(Module.API, "Unrecognized caustic photon map type: %s", type);
         api.photons(cmap);
         p.checkNextToken("}");
     }
@@ -302,14 +303,14 @@ public class SCParser implements SceneParser {
                 else if (type.equals("none"))
                     gmap = null;
                 else
-                    UI.printWarning("[API] Unrecognized global photon map type: %s", type);
+                    UI.printWarning(Module.API, "Unrecognized global photon map type: %s", type);
             }
             api.giEngine(new IrradianceCacheGIEngine(samples, tolerance, min, max, gmap));
         } else if (p.peekNextToken("path")) {
             p.checkNextToken("samples");
             int samples = p.getNextInt();
             if (p.peekNextToken("bounces")) {
-                UI.printWarning("[API] Deprecated setting: bounces - use diffuse trace depth instead");
+                UI.printWarning(Module.API, "Deprecated setting: bounces - use diffuse trace depth instead");
                 p.getNextInt();
             }
             api.giEngine(new PathTracingGIEngine(samples));
@@ -346,31 +347,34 @@ public class SCParser implements SceneParser {
             // disable GI
             api.giEngine(null);
         } else
-            UI.printWarning("[API] Unrecognized gi engine type: %s", p.getNextToken());
+            UI.printWarning(Module.API, "Unrecognized gi engine type: %s", p.getNextToken());
         p.checkNextToken("}");
     }
 
     private void parseLightserverBlock(SunflowAPI api) throws ParserException, IOException {
         p.checkNextToken("{");
         if (p.peekNextToken("shadows")) {
-            UI.printWarning("[API] Deprecated: shadows setting ignored");
+            UI.printWarning(Module.API, "Deprecated: shadows setting ignored");
             p.getNextBoolean();
         }
         if (p.peekNextToken("direct-samples")) {
-            UI.printWarning("[API] Deprecated: use samples keyword in area light definitions");
+            UI.printWarning(Module.API, "Deprecated: use samples keyword in area light definitions");
             numLightSamples = p.getNextInt();
         }
         if (p.peekNextToken("glossy-samples")) {
-            UI.printWarning("[API] Deprecated: use samples keyword in glossy shader definitions");
+            UI.printWarning(Module.API, "Deprecated: use samples keyword in glossy shader definitions");
             p.getNextInt();
         }
         if (p.peekNextToken("max-depth")) {
-            UI.printWarning("[API] Deprecated: max-depth setting - use trace-depths block instead");
+            UI.printWarning(Module.API, "Deprecated: max-depth setting - use trace-depths block instead");
             int d = p.getNextInt();
-            api.traceDepth(1, d - 1, 0);
+            api.parameter("depths.diffuse", 1);
+            api.parameter("depths.reflection", d - 1);
+            api.parameter("depths.refraction", 0);
+            api.options(SunflowAPI.DEFAULT_OPTIONS);
         }
         if (p.peekNextToken("global")) {
-            UI.printWarning("[API] Deprecated: global settings ignored - use photons block instead");
+            UI.printWarning(Module.API, "Deprecated: global settings ignored - use photons block instead");
             p.getNextBoolean();
             p.getNextInt();
             p.getNextInt();
@@ -378,7 +382,7 @@ public class SCParser implements SceneParser {
             p.getNextFloat();
         }
         if (p.peekNextToken("caustics")) {
-            UI.printWarning("[API] Deprecated: caustics settings ignored - use photons block instead");
+            UI.printWarning(Module.API, "Deprecated: caustics settings ignored - use photons block instead");
             p.getNextBoolean();
             p.getNextInt();
             p.getNextFloat();
@@ -386,7 +390,7 @@ public class SCParser implements SceneParser {
             p.getNextFloat();
         }
         if (p.peekNextToken("irr-cache")) {
-            UI.printWarning("[API] Deprecated: irradiance cache settings ignored - use gi block instead");
+            UI.printWarning(Module.API, "Deprecated: irradiance cache settings ignored - use gi block instead");
             p.getNextInt();
             p.getNextFloat();
             p.getNextFloat();
@@ -396,16 +400,15 @@ public class SCParser implements SceneParser {
     }
 
     private void parseTraceBlock(SunflowAPI api) throws ParserException, IOException {
-        int diff = 0, refl = 0, refr = 0;
         p.checkNextToken("{");
         if (p.peekNextToken("diff"))
-            diff = p.getNextInt();
+            api.parameter("depths.diffuse", p.getNextInt());
         if (p.peekNextToken("refl"))
-            refl = p.getNextInt();
+            api.parameter("depths.reflection", p.getNextInt());
         if (p.peekNextToken("refr"))
-            refr = p.getNextInt();
+            api.parameter("depths.refraction", p.getNextInt());
         p.checkNextToken("}");
-        api.traceDepth(diff, refl, refr);
+        api.options(SunflowAPI.DEFAULT_OPTIONS);
     }
 
     private void parseCamera(SunflowAPI api) throws ParserException, IOException {
@@ -413,7 +416,7 @@ public class SCParser implements SceneParser {
         p.checkNextToken("type");
         String name = null;
         if (p.peekNextToken("pinhole")) {
-            UI.printInfo("[API] Reading pinhole camera ...");
+            UI.printInfo(Module.API, "Reading pinhole camera ...");
             p.checkNextToken("eye");
             api.parameter("eye", parsePoint());
             p.checkNextToken("target");
@@ -427,7 +430,7 @@ public class SCParser implements SceneParser {
             name = api.getUniqueName("camera");
             api.camera(name, new PinholeLens());
         } else if (p.peekNextToken("thinlens")) {
-            UI.printInfo("[API] Reading thinlens camera ...");
+            UI.printInfo(Module.API, "Reading thinlens camera ...");
             p.checkNextToken("eye");
             api.parameter("eye", parsePoint());
             p.checkNextToken("target");
@@ -445,7 +448,7 @@ public class SCParser implements SceneParser {
             name = api.getUniqueName("camera");
             api.camera(name, new ThinLens());
         } else if (p.peekNextToken("spherical")) {
-            UI.printInfo("[API] Reading spherical camera ...");
+            UI.printInfo(Module.API, "Reading spherical camera ...");
             p.checkNextToken("eye");
             api.parameter("eye", parsePoint());
             p.checkNextToken("target");
@@ -455,7 +458,7 @@ public class SCParser implements SceneParser {
             name = api.getUniqueName("camera");
             api.camera(name, new SphericalLens());
         } else
-            UI.printWarning("[API] Unrecognized camera type: %s", p.getNextToken());
+            UI.printWarning(Module.API, "Unrecognized camera type: %s", p.getNextToken());
         p.checkNextToken("}");
         if (name != null) {
             api.parameter("camera", name);
@@ -467,7 +470,7 @@ public class SCParser implements SceneParser {
         p.checkNextToken("{");
         p.checkNextToken("name");
         String name = p.getNextToken();
-        UI.printInfo("[API] Reading shader: %s ...", name);
+        UI.printInfo(Module.API, "Reading shader: %s ...", name);
         p.checkNextToken("type");
         if (p.peekNextToken("diffuse")) {
             if (p.peekNextToken("diff")) {
@@ -477,7 +480,7 @@ public class SCParser implements SceneParser {
                 api.parameter("texture", p.getNextToken());
                 api.shader(name, new TexturedDiffuseShader());
             } else
-                UI.printWarning("[API] Unrecognized option in diffuse shader block: %s", p.getNextToken());
+                UI.printWarning(Module.API, "Unrecognized option in diffuse shader block: %s", p.getNextToken());
         } else if (p.peekNextToken("phong")) {
             String tex = null;
             if (p.peekNextToken("texture"))
@@ -572,23 +575,23 @@ public class SCParser implements SceneParser {
                 Shader shader = (Shader) ClassBodyEvaluator.createFastClassBodyEvaluator(new Scanner(null, new StringReader(code)), Shader.class, ClassLoader.getSystemClassLoader());
                 api.shader(name, shader);
             } catch (CompileException e) {
-                UI.printDetailed("[API] Compiling: %s", code);
-                UI.printError("[API] %s", e.getMessage());
+                UI.printDetailed(Module.API, "Compiling: %s", code);
+                UI.printError(Module.API, "%s", e.getMessage());
                 e.printStackTrace();
                 return false;
             } catch (ParseException e) {
-                UI.printDetailed("[API] Compiling: %s", code);
-                UI.printError("[API] %s", e.getMessage());
+                UI.printDetailed(Module.API, "Compiling: %s", code);
+                UI.printError(Module.API, "%s", e.getMessage());
                 e.printStackTrace();
                 return false;
             } catch (ScanException e) {
-                UI.printDetailed("[API] Compiling: %s", code);
-                UI.printError("[API] %s", e.getMessage());
+                UI.printDetailed(Module.API, "Compiling: %s", code);
+                UI.printError(Module.API, "%s", e.getMessage());
                 e.printStackTrace();
                 return false;
             } catch (IOException e) {
-                UI.printDetailed("[API] Compiling: %s", code);
-                UI.printError("[API] %s", e.getMessage());
+                UI.printDetailed(Module.API, "Compiling: %s", code);
+                UI.printError(Module.API, "%s", e.getMessage());
                 e.printStackTrace();
                 return false;
             }
@@ -605,7 +608,7 @@ public class SCParser implements SceneParser {
             }
             api.shader(name, new UberShader());
         } else
-            UI.printWarning("[API] Unrecognized shader type: %s", p.getNextToken());
+            UI.printWarning(Module.API, "Unrecognized shader type: %s", p.getNextToken());
         p.checkNextToken("}");
         return true;
     }
@@ -629,10 +632,10 @@ public class SCParser implements SceneParser {
             transform = parseMatrix();
         p.checkNextToken("type");
         if (p.peekNextToken("mesh")) {
-            UI.printWarning("[API] Deprecated object type: mesh");
+            UI.printWarning(Module.API, "Deprecated object type: mesh");
             p.checkNextToken("name");
             String name = p.getNextToken();
-            UI.printInfo("[API] Reading mesh: %s ...", name);
+            UI.printInfo(Module.API, "Reading mesh: %s ...", name);
             int numVertices = p.getNextInt();
             int numTriangles = p.getNextInt();
             float[] points = new float[numVertices * 3];
@@ -668,10 +671,10 @@ public class SCParser implements SceneParser {
                 api.parameter("transform", transform);
             api.instance(name + ".instance", name);
         } else if (p.peekNextToken("flat-mesh")) {
-            UI.printWarning("[API] Deprecated object type: flat-mesh");
+            UI.printWarning(Module.API, "Deprecated object type: flat-mesh");
             p.checkNextToken("name");
             String name = p.getNextToken();
-            UI.printInfo("[API] Reading flat mesh: %s ...", name);
+            UI.printInfo(Module.API, "Reading flat mesh: %s ...", name);
             int numVertices = p.getNextInt();
             int numTriangles = p.getNextInt();
             float[] points = new float[numVertices * 3];
@@ -706,7 +709,7 @@ public class SCParser implements SceneParser {
                 api.parameter("transform", transform);
             api.instance(name + ".instance", name);
         } else if (p.peekNextToken("sphere")) {
-            UI.printInfo("[API] Reading sphere ...");
+            UI.printInfo(Module.API, "Reading sphere ...");
             String name = api.getUniqueName("sphere");
             api.geometry(name, new Sphere());
             if (transform != null)
@@ -723,14 +726,14 @@ public class SCParser implements SceneParser {
             api.parameter("shaders", shaders);
             api.instance(name + ".instance", name);
         } else if (p.peekNextToken("banchoff")) {
-            UI.printInfo("[API] Reading banchoff ...");
+            UI.printInfo(Module.API, "Reading banchoff ...");
             String name = api.getUniqueName("banchoff");
             api.geometry(name, new BanchoffSurface());
             api.parameter("transform", transform);
             api.parameter("shaders", shaders);
             api.instance(name + ".instance", name);
         } else if (p.peekNextToken("torus")) {
-            UI.printInfo("[API] Reading torus ...");
+            UI.printInfo(Module.API, "Reading torus ...");
             p.checkNextToken("r");
             api.parameter("radiusInner", p.getNextFloat());
             api.parameter("radiusOuter", p.getNextFloat());
@@ -740,7 +743,7 @@ public class SCParser implements SceneParser {
             api.parameter("shaders", shaders);
             api.instance(name + ".instance", name);
         } else if (p.peekNextToken("plane")) {
-            UI.printInfo("[API] Reading plane ...");
+            UI.printInfo(Module.API, "Reading plane ...");
             p.checkNextToken("p");
             api.parameter("center", parsePoint());
             if (p.peekNextToken("n")) {
@@ -758,9 +761,9 @@ public class SCParser implements SceneParser {
                 api.parameter("transform", transform);
             api.instance(name + ".instance", name);
         } else if (p.peekNextToken("cornellbox")) {
-            UI.printInfo("[API] Reading cornell box ...");
+            UI.printInfo(Module.API, "Reading cornell box ...");
             if (transform != null)
-                UI.printWarning("[API] Instancing is not supported on cornell box -- ignoring transform");
+                UI.printWarning(Module.API, "Instancing is not supported on cornell box -- ignoring transform");
             p.checkNextToken("corner0");
             api.parameter("corner0", parsePoint());
             p.checkNextToken("corner1");
@@ -784,7 +787,7 @@ public class SCParser implements SceneParser {
         } else if (p.peekNextToken("generic-mesh")) {
             p.checkNextToken("name");
             String name = p.getNextToken();
-            UI.printInfo("[API] Reading generic mesh: %s ... ", name);
+            UI.printInfo(Module.API, "Reading generic mesh: %s ... ", name);
             // parse vertices
             p.checkNextToken("points");
             int np = p.getNextInt();
@@ -821,7 +824,7 @@ public class SCParser implements SceneParser {
         } else if (p.peekNextToken("hair")) {
             p.checkNextToken("name");
             String name = p.getNextToken();
-            UI.printInfo("[API] Reading hair curves: %s ... ", name);
+            UI.printInfo(Module.API, "Reading hair curves: %s ... ", name);
             p.checkNextToken("segments");
             api.parameter("segments", p.getNextInt());
             p.checkNextToken("width");
@@ -836,29 +839,29 @@ public class SCParser implements SceneParser {
         } else if (p.peekNextToken("janino-tesselatable")) {
             p.checkNextToken("name");
             String name = p.getNextToken();
-            UI.printInfo("[API] Reading procedural primitive: %s ... ", name);
+            UI.printInfo(Module.API, "Reading procedural primitive: %s ... ", name);
             String code = p.getNextCodeBlock();
             try {
                 Tesselatable tess = (Tesselatable) ClassBodyEvaluator.createFastClassBodyEvaluator(new Scanner(null, new StringReader(code)), Tesselatable.class, ClassLoader.getSystemClassLoader());
                 api.geometry(name, tess);
             } catch (CompileException e) {
-                UI.printDetailed("[API] Compiling: %s", code);
-                UI.printError("[API] %s", e.getMessage());
+                UI.printDetailed(Module.API, "Compiling: %s", code);
+                UI.printError(Module.API, "%s", e.getMessage());
                 e.printStackTrace();
                 name = null;
             } catch (ParseException e) {
-                UI.printDetailed("[API] Compiling: %s", code);
-                UI.printError("[API] %s", e.getMessage());
+                UI.printDetailed(Module.API, "Compiling: %s", code);
+                UI.printError(Module.API, "%s", e.getMessage());
                 e.printStackTrace();
                 name = null;
             } catch (ScanException e) {
-                UI.printDetailed("[API] Compiling: %s", code);
-                UI.printError("[API] %s", e.getMessage());
+                UI.printDetailed(Module.API, "Compiling: %s", code);
+                UI.printError(Module.API, "%s", e.getMessage());
                 e.printStackTrace();
                 name = null;
             } catch (IOException e) {
-                UI.printDetailed("[API] Compiling: %s", code);
-                UI.printError("[API] %s", e.getMessage());
+                UI.printDetailed(Module.API, "Compiling: %s", code);
+                UI.printError(Module.API, "%s", e.getMessage());
                 e.printStackTrace();
                 name = null;
             }
@@ -874,7 +877,7 @@ public class SCParser implements SceneParser {
                 name = p.getNextToken();
             else
                 name = api.getUniqueName("teapot");
-            UI.printInfo("[API] Reading teapot: %s ... ", name);
+            UI.printInfo(Module.API, "Reading teapot: %s ... ", name);
             boolean hasTesselationArguments = false;
             if (p.peekNextToken("subdivs")) {
                 api.parameter("subdivs", p.getNextInt());
@@ -898,7 +901,7 @@ public class SCParser implements SceneParser {
                 name = p.getNextToken();
             else
                 name = api.getUniqueName("gumbo");
-            UI.printInfo("[API] Reading gumbo: %s ... ", name);
+            UI.printInfo(Module.API, "Reading gumbo: %s ... ", name);
             boolean hasTesselationArguments = false;
             if (p.peekNextToken("subdivs")) {
                 api.parameter("subdivs", p.getNextInt());
@@ -922,7 +925,7 @@ public class SCParser implements SceneParser {
                 name = p.getNextToken();
             else
                 name = api.getUniqueName("julia");
-            UI.printInfo("[API] Reading julia fractal: %s ... ", name);
+            UI.printInfo(Module.API, "Reading julia fractal: %s ... ", name);
             if (p.peekNextToken("q")) {
                 api.parameter("cw", p.getNextFloat());
                 api.parameter("cx", p.getNextFloat());
@@ -940,7 +943,7 @@ public class SCParser implements SceneParser {
                 api.parameter("transform", transform);
             api.instance(name + ".instance", name);
         } else
-            UI.printWarning("[API] Unrecognized object type: %s", p.getNextToken());
+            UI.printWarning(Module.API, "Unrecognized object type: %s", p.getNextToken());
         p.checkNextToken("}");
     }
 
@@ -948,7 +951,7 @@ public class SCParser implements SceneParser {
         p.checkNextToken("{");
         p.checkNextToken("name");
         String name = p.getNextToken();
-        UI.printInfo("Reading instance: %s ...", name);
+        UI.printInfo(Module.API, "Reading instance: %s ...", name);
         p.checkNextToken("geometry");
         String geoname = p.getNextToken();
         p.checkNextToken("transform");
@@ -972,17 +975,17 @@ public class SCParser implements SceneParser {
         p.checkNextToken("{");
         p.checkNextToken("type");
         if (p.peekNextToken("mesh")) {
-            UI.printWarning("[API] Deprecated light type: mesh");
+            UI.printWarning(Module.API, "Deprecated light type: mesh");
             p.checkNextToken("name");
             String name = p.getNextToken();
-            UI.printInfo("[API] Reading light mesh: %s ...", name);
+            UI.printInfo(Module.API, "Reading light mesh: %s ...", name);
             p.checkNextToken("emit");
             api.parameter("radiance", parseColor());
             int samples = numLightSamples;
             if (p.peekNextToken("samples"))
                 samples = p.getNextInt();
             else
-                UI.printWarning("[API] Samples keyword not found - defaulting to %d", samples);
+                UI.printWarning(Module.API, "Samples keyword not found - defaulting to %d", samples);
             api.parameter("samples", samples);
             int numVertices = p.getNextInt();
             int numTriangles = p.getNextInt();
@@ -1011,7 +1014,7 @@ public class SCParser implements SceneParser {
             MeshLight mesh = new MeshLight();
             mesh.init(name, api);
         } else if (p.peekNextToken("point")) {
-            UI.printInfo("[API] Reading point light ...");
+            UI.printInfo(Module.API, "Reading point light ...");
             Color pow;
             if (p.peekNextToken("color")) {
                 pow = parseColor();
@@ -1019,7 +1022,7 @@ public class SCParser implements SceneParser {
                 float po = p.getNextFloat();
                 pow.mul(po);
             } else {
-                UI.printWarning("[API] Deprecated color specification - please use color and power instead");
+                UI.printWarning(Module.API, "Deprecated color specification - please use color and power instead");
                 p.checkNextToken("power");
                 pow = parseColor();
             }
@@ -1029,7 +1032,7 @@ public class SCParser implements SceneParser {
             float pz = p.getNextFloat();
             api.pointLight(api.getUniqueName("pointLight"), px, py, pz, pow);
         } else if (p.peekNextToken("directional")) {
-            UI.printInfo("[API] Reading directional light ...");
+            UI.printInfo(Module.API, "Reading directional light ...");
             p.checkNextToken("source");
             Point3 s = parsePoint();
             api.parameter("source", s);
@@ -1044,11 +1047,11 @@ public class SCParser implements SceneParser {
                 float i = p.getNextFloat();
                 e.mul(i);
             } else
-                UI.printWarning("[API] Deprecated color specification - please use emit and intensity instead");
+                UI.printWarning(Module.API, "Deprecated color specification - please use emit and intensity instead");
             api.parameter("radiance", e);
             api.light(api.getUniqueName("dirlight"), new DirectionalSpotlight());
         } else if (p.peekNextToken("ibl")) {
-            UI.printInfo("[API] Reading image based light ...");
+            UI.printInfo(Module.API, "Reading image based light ...");
             p.checkNextToken("image");
             api.parameter("texture", p.getNextToken());
             p.checkNextToken("center");
@@ -1061,27 +1064,27 @@ public class SCParser implements SceneParser {
             if (p.peekNextToken("samples"))
                 samples = p.getNextInt();
             else
-                UI.printWarning("[API] Samples keyword not found - defaulting to %d", samples);
+                UI.printWarning(Module.API, "Samples keyword not found - defaulting to %d", samples);
             api.parameter("samples", samples);
             ImageBasedLight ibl = new ImageBasedLight();
             ibl.init(api.getUniqueName("ibl"), api);
         } else if (p.peekNextToken("meshlight")) {
             p.checkNextToken("name");
             String name = p.getNextToken();
-            UI.printInfo("[API] Reading meshlight: %s ...", name);
+            UI.printInfo(Module.API, "Reading meshlight: %s ...", name);
             p.checkNextToken("emit");
             Color e = parseColor();
             if (p.peekNextToken("radiance")) {
                 float r = p.getNextFloat();
                 e.mul(r);
             } else
-                UI.printWarning("[API] Deprecated color specification - please use emit and radiance instead");
+                UI.printWarning(Module.API, "Deprecated color specification - please use emit and radiance instead");
             api.parameter("radiance", e);
             int samples = numLightSamples;
             if (p.peekNextToken("samples"))
                 samples = p.getNextInt();
             else
-                UI.printWarning("[API] Samples keyword not found - defaulting to %d", samples);
+                UI.printWarning(Module.API, "Samples keyword not found - defaulting to %d", samples);
             api.parameter("samples", samples);
             // parse vertices
             p.checkNextToken("points");
@@ -1094,7 +1097,7 @@ public class SCParser implements SceneParser {
             MeshLight mesh = new MeshLight();
             mesh.init(name, api);
         } else
-            UI.printWarning("[API] Unrecognized object type: %s", p.getNextToken());
+            UI.printWarning(Module.API, "Unrecognized object type: %s", p.getNextToken());
         p.checkNextToken("}");
     }
 
@@ -1114,7 +1117,7 @@ public class SCParser implements SceneParser {
                 float b = p.getNextFloat();
                 c = new Color(r, g, b);
             } else
-                UI.printWarning("[API] Unrecognized color space: %s", space);
+                UI.printWarning(Module.API, "Unrecognized color space: %s", space);
             p.checkNextToken("}");
             return c;
         } else {
@@ -1192,7 +1195,7 @@ public class SCParser implements SceneParser {
                     float angle = p.getNextFloat();
                     t = Matrix4.rotate(x, y, z, (float) Math.toRadians(angle));
                 } else
-                    UI.printWarning("[API] Unrecognized transformation type: %s", p.getNextToken());
+                    UI.printWarning(Module.API, "Unrecognized transformation type: %s", p.getNextToken());
                 if (t != null)
                     m = t.multiply(m);
             }

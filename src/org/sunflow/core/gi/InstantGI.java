@@ -13,6 +13,7 @@ import org.sunflow.math.OrthoNormalBasis;
 import org.sunflow.math.Point3;
 import org.sunflow.math.Vector3;
 import org.sunflow.system.UI;
+import org.sunflow.system.UI.Module;
 
 public class InstantGI implements GIEngine {
     private int numPhotons;
@@ -52,11 +53,11 @@ public class InstantGI implements GIEngine {
     public boolean init(Scene scene) {
         if (numSets < 1)
             numSets = 1;
-        UI.printInfo("[IGI] Instant Global Illumination settings:");
-        UI.printInfo("[IGI]   * Samples:     %d", numPhotons);
-        UI.printInfo("[IGI]   * Sets:        %d", numSets);
-        UI.printInfo("[IGI]   * Bias bound:  %.3f", c);
-        UI.printInfo("[IGI]   * Bias rays:   %d", numBias);
+        UI.printInfo(Module.LIGHT, "Instant Global Illumination settings:");
+        UI.printInfo(Module.LIGHT, "  * Samples:     %d", numPhotons);
+        UI.printInfo(Module.LIGHT, "  * Sets:        %d", numSets);
+        UI.printInfo(Module.LIGHT, "  * Bias bound:  %.3f", c);
+        UI.printInfo(Module.LIGHT, "  * Bias rays:   %d", numBias);
         virtualLights = new PointLight[numSets][];
         if (numPhotons > 0) {
             for (int i = 0, seed = 0; i < virtualLights.length; i++, seed += numPhotons) {
@@ -64,7 +65,7 @@ public class InstantGI implements GIEngine {
                 if (!scene.calculatePhotons(map, "virtual", seed))
                     return false;
                 virtualLights[i] = map.virtualLights.toArray(new PointLight[map.virtualLights.size()]);
-                UI.printInfo("[IGI] Stored %d virtual point lights for set %d of %d", virtualLights[i].length, i + 1, numSets);
+                UI.printInfo(Module.LIGHT, "Stored %d virtual point lights for set %d of %d", virtualLights[i].length, i + 1, numSets);
             }
         } else {
             // create an empty array

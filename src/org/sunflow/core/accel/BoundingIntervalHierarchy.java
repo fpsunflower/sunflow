@@ -8,6 +8,7 @@ import org.sunflow.math.BoundingBox;
 import org.sunflow.system.Memory;
 import org.sunflow.system.Timer;
 import org.sunflow.system.UI;
+import org.sunflow.system.UI.Module;
 import org.sunflow.util.IntArray;
 
 public class BoundingIntervalHierarchy implements AccelerationStructure {
@@ -24,12 +25,12 @@ public class BoundingIntervalHierarchy implements AccelerationStructure {
     public void build(PrimitiveList primitives) {
         this.primitives = primitives;
         int n = primitives.getNumPrimitives();
-        UI.printDetailed("[BIH] Getting bounding box ...");
+        UI.printDetailed(Module.ACCEL, "Getting bounding box ...");
         bounds = primitives.getWorldBounds(null);
         objects = new int[n];
         for (int i = 0; i < n; i++)
             objects[i] = i;
-        UI.printDetailed("[BIH] Creating tree ...");
+        UI.printDetailed(Module.ACCEL, "Creating tree ...");
         int initialSize = 3 * (2 * 6 * n + 1);
         IntArray tempTree = new IntArray((initialSize + 3) / 4);
         BuildStats stats = new BuildStats();
@@ -37,14 +38,14 @@ public class BoundingIntervalHierarchy implements AccelerationStructure {
         t.start();
         buildHierarchy(tempTree, objects, stats);
         t.end();
-        UI.printDetailed("[BIH] Trimming tree ...");
+        UI.printDetailed(Module.ACCEL, "Trimming tree ...");
         tree = tempTree.trim();
         // display stats
         stats.printStats();
-        UI.printDetailed("[BIH]   * Creation time:  %s", t);
-        UI.printDetailed("[BIH]   * Usage of init:  %3d%%", 100 * tree.length / initialSize);
-        UI.printDetailed("[BIH]   * Tree memory:    %s", Memory.sizeof(tree));
-        UI.printDetailed("[BIH]   * Indices memory: %s", Memory.sizeof(objects));
+        UI.printDetailed(Module.ACCEL, "  * Creation time:  %s", t);
+        UI.printDetailed(Module.ACCEL, "  * Usage of init:  %3d%%", 100 * tree.length / initialSize);
+        UI.printDetailed(Module.ACCEL, "  * Tree memory:    %s", Memory.sizeof(tree));
+        UI.printDetailed(Module.ACCEL, "  * Indices memory: %s", Memory.sizeof(objects));
     }
 
     private static class BuildStats {
@@ -120,23 +121,23 @@ public class BoundingIntervalHierarchy implements AccelerationStructure {
         }
 
         void printStats() {
-            UI.printDetailed("[BIH] Tree stats:");
-            UI.printDetailed("[BIH]   * Nodes:          %d", numNodes);
-            UI.printDetailed("[BIH]   * Leaves:         %d", numLeaves);
-            UI.printDetailed("[BIH]   * Objects: min    %d", minObjects);
-            UI.printDetailed("[BIH]              avg    %.2f", (float) sumObjects / numLeaves);
-            UI.printDetailed("[BIH]            avg(n>0) %.2f", (float) sumObjects / (numLeaves - numLeaves0));
-            UI.printDetailed("[BIH]              max    %d", maxObjects);
-            UI.printDetailed("[BIH]   * Depth:   min    %d", minDepth);
-            UI.printDetailed("[BIH]              avg    %.2f", (float) sumDepth / numLeaves);
-            UI.printDetailed("[BIH]              max    %d", maxDepth);
-            UI.printDetailed("[BIH]   * Leaves w/: N=0  %3d%%", 100 * numLeaves0 / numLeaves);
-            UI.printDetailed("[BIH]                N=1  %3d%%", 100 * numLeaves1 / numLeaves);
-            UI.printDetailed("[BIH]                N=2  %3d%%", 100 * numLeaves2 / numLeaves);
-            UI.printDetailed("[BIH]                N=3  %3d%%", 100 * numLeaves3 / numLeaves);
-            UI.printDetailed("[BIH]                N=4  %3d%%", 100 * numLeaves4 / numLeaves);
-            UI.printDetailed("[BIH]                N>4  %3d%%", 100 * numLeaves4p / numLeaves);
-            UI.printDetailed("[BIH]   * BVH2 nodes:     %d (%3d%%)", numBVH2, 100 * numBVH2 / (numNodes + numLeaves - 2 * numBVH2));
+            UI.printDetailed(Module.ACCEL, "Tree stats:");
+            UI.printDetailed(Module.ACCEL, "  * Nodes:          %d", numNodes);
+            UI.printDetailed(Module.ACCEL, "  * Leaves:         %d", numLeaves);
+            UI.printDetailed(Module.ACCEL, "  * Objects: min    %d", minObjects);
+            UI.printDetailed(Module.ACCEL, "             avg    %.2f", (float) sumObjects / numLeaves);
+            UI.printDetailed(Module.ACCEL, "           avg(n>0) %.2f", (float) sumObjects / (numLeaves - numLeaves0));
+            UI.printDetailed(Module.ACCEL, "             max    %d", maxObjects);
+            UI.printDetailed(Module.ACCEL, "  * Depth:   min    %d", minDepth);
+            UI.printDetailed(Module.ACCEL, "             avg    %.2f", (float) sumDepth / numLeaves);
+            UI.printDetailed(Module.ACCEL, "             max    %d", maxDepth);
+            UI.printDetailed(Module.ACCEL, "  * Leaves w/: N=0  %3d%%", 100 * numLeaves0 / numLeaves);
+            UI.printDetailed(Module.ACCEL, "               N=1  %3d%%", 100 * numLeaves1 / numLeaves);
+            UI.printDetailed(Module.ACCEL, "               N=2  %3d%%", 100 * numLeaves2 / numLeaves);
+            UI.printDetailed(Module.ACCEL, "               N=3  %3d%%", 100 * numLeaves3 / numLeaves);
+            UI.printDetailed(Module.ACCEL, "               N=4  %3d%%", 100 * numLeaves4 / numLeaves);
+            UI.printDetailed(Module.ACCEL, "               N>4  %3d%%", 100 * numLeaves4p / numLeaves);
+            UI.printDetailed(Module.ACCEL, "  * BVH2 nodes:     %d (%3d%%)", numBVH2, 100 * numBVH2 / (numNodes + numLeaves - 2 * numBVH2));
         }
     }
 
@@ -181,7 +182,7 @@ public class BoundingIntervalHierarchy implements AccelerationStructure {
                 throw new IllegalStateException("negative node extents");
             for (int i = 0; i < 3; i++) {
                 if (nodeBox[2 * i + 1] < gridBox[2 * i] || nodeBox[2 * i] > gridBox[2 * i + 1]) {
-                    UI.printError("[BIH] Reached tree area in error - discarding node with: %d objects", right - left + 1);
+                    UI.printError(Module.ACCEL, "Reached tree area in error - discarding node with: %d objects", right - left + 1);
                     throw new IllegalStateException("invalid node overlap");
                 }
             }

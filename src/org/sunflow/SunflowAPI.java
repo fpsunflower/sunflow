@@ -4,13 +4,13 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.StringReader;
+import java.util.ArrayList;
 
 import org.codehaus.janino.ClassBodyEvaluator;
 import org.codehaus.janino.CompileException;
 import org.codehaus.janino.Scanner;
 import org.codehaus.janino.Parser.ParseException;
 import org.codehaus.janino.Scanner.ScanException;
-import org.sunflow.core.BucketOrder;
 import org.sunflow.core.Camera;
 import org.sunflow.core.CameraLens;
 import org.sunflow.core.CausticPhotonMapInterface;
@@ -30,13 +30,6 @@ import org.sunflow.core.SceneParser;
 import org.sunflow.core.Shader;
 import org.sunflow.core.Tesselatable;
 import org.sunflow.core.ParameterList.InterpolationType;
-import org.sunflow.core.bucket.ColumnBucketOrder;
-import org.sunflow.core.bucket.DiagonalBucketOrder;
-import org.sunflow.core.bucket.HilbertBucketOrder;
-import org.sunflow.core.bucket.InvertedBucketOrder;
-import org.sunflow.core.bucket.RandomBucketOrder;
-import org.sunflow.core.bucket.RowBucketOrder;
-import org.sunflow.core.bucket.SpiralBucketOrder;
 import org.sunflow.core.filter.BlackmanHarrisFilter;
 import org.sunflow.core.filter.BoxFilter;
 import org.sunflow.core.filter.CatmullRomFilter;
@@ -62,6 +55,7 @@ import org.sunflow.math.Vector3;
 import org.sunflow.system.SearchPath;
 import org.sunflow.system.Timer;
 import org.sunflow.system.UI;
+import org.sunflow.system.UI.Module;
 import org.sunflow.util.FastHashMap;
 
 /**
@@ -82,6 +76,7 @@ public class SunflowAPI {
     private ParameterList parameterList;
     private FastHashMap<String, RenderObjectHandle> renderObjects;
     private boolean rebuildInstanceList;
+    private boolean rebuildLightList;
 
     private enum RenderObjectType {
         UNKNOWN, SHADER, GEOMETRY, INSTANCE, LIGHT, CAMERA, OPTIONS
@@ -179,6 +174,7 @@ public class SunflowAPI {
         parameterList = new ParameterList();
         renderObjects = new FastHashMap<String, RenderObjectHandle>();
         rebuildInstanceList = false;
+        rebuildLightList = false;
     }
 
     /**
@@ -326,7 +322,7 @@ public class SunflowAPI {
         try {
             interp = InterpolationType.valueOf(interpolation.toUpperCase());
         } catch (IllegalArgumentException e) {
-            UI.printError("[API] Unknown interpolation type: %s -- ignoring parameter \"%s\"", interpolation, name);
+            UI.printError(Module.API, "Unknown interpolation type: %s -- ignoring parameter \"%s\"", interpolation, name);
             return;
         }
         if (type.equals("float"))
@@ -340,7 +336,7 @@ public class SunflowAPI {
         else if (type.equals("matrix"))
             parameterList.addMatrices(name, interp, data);
         else
-            UI.printError("[API] Unknown parameter type: %s -- ignoring parameter \"%s\"", type, name);
+            UI.printError(Module.API, "Unknown parameter type: %s -- ignoring parameter \"%s\"", type, name);
     }
 
     /**
@@ -351,7 +347,7 @@ public class SunflowAPI {
     public void remove(String name) {
         RenderObjectHandle obj = renderObjects.get(name);
         if (obj != null) {
-            UI.printDetailed("[API] Removing object \"%s\"", name);
+            UI.printDetailed(Module.API, "Removing object \"%s\"", name);
             renderObjects.remove(name);
             // scan through all objects to make sure we don't have any
             // references to the old object still around
@@ -361,7 +357,7 @@ public class SunflowAPI {
                     for (FastHashMap.Entry<String, RenderObjectHandle> e : renderObjects) {
                         Instance i = e.getValue().getInstance();
                         if (i != null) {
-                            UI.printWarning("[API] Removing shader \"%s\" from instance \"%s\"", name, e.getKey());
+                            UI.printWarning(Module.API, "Removing shader \"%s\" from instance \"%s\"", name, e.getKey());
                             i.removeShader(s);
                         }
                     }
@@ -371,21 +367,24 @@ public class SunflowAPI {
                     for (FastHashMap.Entry<String, RenderObjectHandle> e : renderObjects) {
                         Instance i = e.getValue().getInstance();
                         if (i != null && i.hasGeometry(g)) {
-                            UI.printWarning("[API] Removing instance \"%s\" because it referenced geometry \"%s\"", e.getKey(), name);
+                            UI.printWarning(Module.API, "Removing instance \"%s\" because it referenced geometry \"%s\"", e.getKey(), name);
                             remove(e.getKey());
                         }
                     }
                     break;
                 }
-                case INSTANCE: {
+                case INSTANCE:
                     rebuildInstanceList = true;
-                }
+                    break;
+                case LIGHT:
+                    rebuildLightList = true;
+                    break;
                 default:
                     // no dependencies
                     break;
             }
         } else
-            UI.printWarning("[API] Unable to remove \"%s\" - object was not defined yet");
+            UI.printWarning(Module.API, "Unable to remove \"%s\" - object was not defined yet");
     }
 
     /**
@@ -401,13 +400,13 @@ public class SunflowAPI {
         RenderObjectHandle obj = renderObjects.get(name);
         boolean success;
         if (obj == null) {
-            UI.printError("[API] Unable to update \"%s\" - object was not defined yet", name);
+            UI.printError(Module.API, "Unable to update \"%s\" - object was not defined yet", name);
             success = false;
         } else {
-            UI.printDetailed("[API] Updating %s object \"%s\"", obj.typeName(), name);
+            UI.printDetailed(Module.API, "Updating %s object \"%s\"", obj.typeName(), name);
             success = obj.update(parameterList, this);
             if (!success) {
-                UI.printError("[API] Unable to update \"%s\" - removing", name);
+                UI.printError(Module.API, "Unable to update \"%s\" - removing", name);
                 remove(name);
             }
         }
@@ -446,114 +445,6 @@ public class SunflowAPI {
     }
 
     /**
-     * Sets the number of threads to use for all multi-threadable processes.
-     * 
-     * @param threads Number of threads, 0 means autodect the number of
-     *            available cpu cores.
-     * @param lowPriority Create low priority threads, this improves the
-     *            responsiveness of the GUI while slightly reducing performance
-     *            if the machine has many background tasks.
-     */
-    public final void threads(int threads, boolean lowPriority) {
-        scene.setThreads(threads, lowPriority);
-    }
-
-    /**
-     * Sets the bucket size in pixels to be used by the bucket renderer.
-     * 
-     * @param size bucket size in pixels
-     */
-    public final void bucketSize(int size) {
-        bucketRenderer.setBucketSize(size);
-    }
-
-    /**
-     * Sets the bucket ordering scheme for the bucket renderer. This version
-     * instantiates built-in bucket oreders by their short string name: "row",
-     * "column", "diagonal", "spiral", "hilbert", "random". Invalid strings are
-     * ignored.
-     * 
-     * @param order name of a built-in bucket order
-     */
-    public final void bucketOrder(String order) {
-        boolean flip = false;
-        if (order.startsWith("inverse") || order.startsWith("invert") || order.startsWith("reverse")) {
-            String[] tokens = order.split("\\s+");
-            if (tokens.length == 2) {
-                order = tokens[1];
-                flip = true;
-            }
-        }
-        BucketOrder o = null;
-        if (order.equals("row"))
-            o = new RowBucketOrder();
-        else if (order.equals("column"))
-            o = new ColumnBucketOrder();
-        else if (order.equals("diagonal"))
-            o = new DiagonalBucketOrder();
-        else if (order.equals("spiral"))
-            o = new SpiralBucketOrder();
-        else if (order.equals("hilbert"))
-            o = new HilbertBucketOrder();
-        else if (order.equals("random"))
-            o = new RandomBucketOrder();
-        if (o == null)
-            UI.printWarning("[API] Unrecognized bucket ordering: \"%s\"", order);
-        else {
-            if (flip)
-                o = new InvertedBucketOrder(o);
-            bucketOrder(o);
-        }
-    }
-
-    /**
-     * Sets the bucket order object for the bucket renderer explicitly.
-     * 
-     * @param order bucket order object
-     */
-    public final void bucketOrder(BucketOrder order) {
-        bucketRenderer.setBuckerOrder(order);
-    }
-
-    /**
-     * Sets the anti-aliasing depths for the bucket renderer. This version of
-     * the method sets the number of super samples (for depth-of-field and
-     * motion blur) to 1.
-     * 
-     * @param minDepth minimum AA depth
-     * @param maxDepth maximum AA depth
-     */
-    public final void antiAliasing(int minDepth, int maxDepth) {
-        antiAliasing(minDepth, maxDepth, 1);
-    }
-
-    /**
-     * Sets the anti-aliasing depths for the bucket renderer as well as the
-     * number of super samples per (sub)pixel. These are used to refine
-     * depth-of-field and motion blur independently of spatial anti-aliasing.
-     * 
-     * @param minDepth minimum AA depth
-     * @param maxDepth maximum AA depth
-     * @param superSample number of samples per (sub)pixel.
-     */
-    public final void antiAliasing(int minDepth, int maxDepth, int superSample) {
-        bucketRenderer.setAA(minDepth, maxDepth, superSample);
-    }
-
-    /**
-     * Sets the diagnostic mode which displays a greyscale image of
-     * anti-aliasing quality. This is mainly meant as a debugging tool though it
-     * may be usefull to diagnose long rendering times. Properly tuned AA depths
-     * should result in a mostly grey image in which only the visually
-     * significant edges are white.
-     * 
-     * @param displayAA display AA density
-     */
-    public final void displayAA(boolean displayAA) {
-        bucketRenderer.setDisplayAA(displayAA);
-    }
-
-    /**
      * Sets the image filter to be used. The filter is created with optimal
      * dimensions. Only built-in filters are supported by this method. Valid
      * names are: "box", "gaussian", "mitchell", "catmull-rom",
@@ -581,7 +472,7 @@ public class SunflowAPI {
         } else if (filter.equals("triangle")) {
             filter(new TriangleFilter(2));
         } else
-            UI.printWarning("[API] Unrecognized filter type: \"%s\"", filter);
+            UI.printWarning(Module.API, "Unrecognized filter type: \"%s\"", filter);
     }
 
     /**
@@ -591,19 +482,6 @@ public class SunflowAPI {
      */
     public final void filter(Filter filter) {
         scene.setFilter(filter);
-    }
-
-    /**
-     * Set the ray-tracing depth per bounce type. Diffuse depth controls all
-     * global illumination algorithms while reflection and refraction depths
-     * control specular reflections.
-     * 
-     * @param diffuseDepth number of allowed diffuse bounces
-     * @param reflectionDepth number of reflection levels
-     * @param refractionDepth number of refraction levels
-     */
-    public final void traceDepth(int diffuseDepth, int reflectionDepth, int refractionDepth) {
-        scene.setMaxDepth(diffuseDepth, reflectionDepth, refractionDepth);
     }
 
     /**
@@ -650,7 +528,7 @@ public class SunflowAPI {
         if (shader != null) {
             // we are declaring a shader for the first time
             if (renderObjects.containsKey(name)) {
-                UI.printError("[API] Unable to declare shader \"%s\", name is already in use", name);
+                UI.printError(Module.API, "Unable to declare shader \"%s\", name is already in use", name);
                 return;
             }
             renderObjects.put(name, new RenderObjectHandle(shader));
@@ -659,7 +537,7 @@ public class SunflowAPI {
         if (lookupShader(name) != null)
             update(name);
         else
-            UI.printError("[API] Unable to update shader \"%s\" - shader object was not found", name);
+            UI.printError(Module.API, "Unable to update shader \"%s\" - shader object was not found", name);
     }
 
     /**
@@ -675,7 +553,7 @@ public class SunflowAPI {
         if (primitives != null) {
             // we are declaring a geometry for the first time
             if (renderObjects.containsKey(name)) {
-                UI.printError("[API] Unable to declare geometry \"%s\", name is already in use", name);
+                UI.printError(Module.API, "Unable to declare geometry \"%s\", name is already in use", name);
                 return;
             }
             renderObjects.put(name, new RenderObjectHandle(primitives));
@@ -683,7 +561,7 @@ public class SunflowAPI {
         if (lookupGeometry(name) != null)
             update(name);
         else
-            UI.printError("[API] Unable to update geometry \"%s\" - geometry object was not found", name);
+            UI.printError(Module.API, "Unable to update geometry \"%s\" - geometry object was not found", name);
     }
 
     /**
@@ -698,7 +576,7 @@ public class SunflowAPI {
         if (tesselatable != null) {
             // we are declaring a geometry for the first time
             if (renderObjects.containsKey(name)) {
-                UI.printError("[API] Unable to declare geometry \"%s\", name is already in use", name);
+                UI.printError(Module.API, "Unable to declare geometry \"%s\", name is already in use", name);
                 return;
             }
             renderObjects.put(name, new RenderObjectHandle(tesselatable));
@@ -707,7 +585,7 @@ public class SunflowAPI {
             if (update(name))
                 rebuildInstanceList = true;
         } else
-            UI.printError("[API] Unable to update geometry \"%s\" - geometry object was not found", name);
+            UI.printError(Module.API, "Unable to update geometry \"%s\" - geometry object was not found", name);
     }
 
     /**
@@ -722,12 +600,12 @@ public class SunflowAPI {
         if (geoname != null) {
             // we are declaring this instance for the first time
             if (renderObjects.containsKey(name)) {
-                UI.printError("[API] Unable to declare instance \"%s\", name is already in use", name);
+                UI.printError(Module.API, "Unable to declare instance \"%s\", name is already in use", name);
                 return;
             }
             Geometry geo = lookupGeometry(geoname);
             if (geo == null) {
-                UI.printError("[API] Cannot instance \"%s\" - geometry was not found", geoname);
+                UI.printError(Module.API, "Cannot instance \"%s\" - geometry was not found", geoname);
                 return;
             }
             parameter("geometry", geoname);
@@ -738,7 +616,7 @@ public class SunflowAPI {
             if (update(name))
                 rebuildInstanceList = true;
         } else
-            UI.printError("[API] Unable to update instance \"%s\" - instance object was not found", name);
+            UI.printError(Module.API, "Unable to update instance \"%s\" - instance object was not found", name);
     }
 
     /**
@@ -750,16 +628,16 @@ public class SunflowAPI {
         if (light != null) {
             // we are declaring this light for the first time
             if (renderObjects.containsKey(name)) {
-                UI.printError("[API] Unable to declare light \"%s\", name is already in use", name);
+                UI.printError(Module.API, "Unable to declare light \"%s\", name is already in use", name);
                 return;
             }
             renderObjects.put(name, new RenderObjectHandle(light));
         }
         if (lookupLight(name) != null) {
-            if (update(name) && light != null)
-                scene.addLight(light);
+            if (update(name))
+                rebuildLightList = true;
         } else
-            UI.printError("[API] Unable to update instance \"%s\" - instance object was not found", name);
+            UI.printError(Module.API, "Unable to update instance \"%s\" - instance object was not found", name);
     }
 
     /**
@@ -774,7 +652,7 @@ public class SunflowAPI {
         if (lens != null) {
             // we are declaring this camera for the first time
             if (renderObjects.containsKey(name)) {
-                UI.printError("[API] Unable to declare camera \"%s\", name is already in use", name);
+                UI.printError(Module.API, "Unable to declare camera \"%s\", name is already in use", name);
                 return;
             }
             renderObjects.put(name, new RenderObjectHandle(new Camera(lens)));
@@ -783,7 +661,7 @@ public class SunflowAPI {
         if (lookupCamera(name) != null)
             update(name);
         else
-            UI.printError("[API] Unable to update camera \"%s\" - camera object was not found", name);
+            UI.printError(Module.API, "Unable to update camera \"%s\" - camera object was not found", name);
     }
 
     /**
@@ -795,7 +673,7 @@ public class SunflowAPI {
     public final void options(String name) {
         if (lookupOptions(name) == null) {
             if (renderObjects.containsKey(name)) {
-                UI.printError("[API] Unable to declare options \"%s\", name is already in use", name);
+                UI.printError(Module.API, "Unable to declare options \"%s\", name is already in use", name);
                 return;
             }
             renderObjects.put(name, new RenderObjectHandle(new Options()));
@@ -812,7 +690,8 @@ public class SunflowAPI {
      * @return the geometry object associated with that name
      */
     public final Geometry lookupGeometry(String name) {
-        if (name == null) return null;
+        if (name == null)
+            return null;
         RenderObjectHandle handle = renderObjects.get(name);
         return (handle == null) ? null : handle.getGeometry();
     }
@@ -825,7 +704,8 @@ public class SunflowAPI {
      * @return the instance object associated with that name
      */
     private final Instance lookupInstance(String name) {
-        if (name == null) return null;
+        if (name == null)
+            return null;
         RenderObjectHandle handle = renderObjects.get(name);
         return (handle == null) ? null : handle.getInstance();
     }
@@ -838,13 +718,15 @@ public class SunflowAPI {
      * @return the camera object associate with that name
      */
     private final Camera lookupCamera(String name) {
-        if (name == null) return null;
+        if (name == null)
+            return null;
         RenderObjectHandle handle = renderObjects.get(name);
         return (handle == null) ? null : handle.getCamera();
     }
 
     public final Options lookupOptions(String name) {
-        if (name == null) return null;
+        if (name == null)
+            return null;
         RenderObjectHandle handle = renderObjects.get(name);
         return (handle == null) ? null : handle.getOptions();
     }
@@ -857,7 +739,8 @@ public class SunflowAPI {
      * @return the shader object associated with that name
      */
     public final Shader lookupShader(String name) {
-        if (name == null) return null;
+        if (name == null)
+            return null;
         RenderObjectHandle handle = renderObjects.get(name);
         return (handle == null) ? null : handle.getShader();
     }
@@ -870,7 +753,8 @@ public class SunflowAPI {
      * @return the light object associated with that name
      */
     private final LightSource lookupLight(String name) {
-        if (name == null) return null;
+        if (name == null)
+            return null;
         RenderObjectHandle handle = renderObjects.get(name);
         return (handle == null) ? null : handle.getLight();
     }
@@ -910,7 +794,7 @@ public class SunflowAPI {
      */
     public final void render(String optionsName, Display display) {
         if (rebuildInstanceList) {
-            UI.printInfo("[API] Building scene instance list for rendering ...");
+            UI.printInfo(Module.API, "Building scene instance list for rendering ...");
             int numInfinite = 0, numInstance = 0;
             for (FastHashMap.Entry<String, RenderObjectHandle> e : renderObjects) {
                 Instance i = e.getValue().getInstance();
@@ -940,6 +824,18 @@ public class SunflowAPI {
             scene.setInstanceLists(instance, infinite);
             rebuildInstanceList = false;
         }
+        if (rebuildLightList) {
+            UI.printInfo(Module.API, "Building scene light list for rendering ...");
+            ArrayList<LightSource> lightList = new ArrayList<LightSource>();
+            for (FastHashMap.Entry<String, RenderObjectHandle> e : renderObjects) {
+                LightSource light = e.getValue().getLight();
+                if (light != null)
+                    lightList.add(light);
+                
+            }
+            scene.setLightList(lightList.toArray(new LightSource[lightList.size()]));
+            rebuildLightList = false;
+        }
         Options opt = lookupOptions(optionsName);
         if (opt == null)
             opt = new Options();
@@ -955,7 +851,7 @@ public class SunflowAPI {
         else if (samplerName.equals("fast"))
             sampler = new SimpleRenderer();
         else {
-            UI.printError("[API] Unknown sampler type: %s - aborting", samplerName);
+            UI.printError(Module.API, "Unknown sampler type: %s - aborting", samplerName);
             return;
         }
         scene.render(opt, sampler, display);
@@ -987,7 +883,7 @@ public class SunflowAPI {
         else if (filename.endsWith(".rib"))
             parser = new ShaveRibParser();
         else {
-            UI.printError("[API] Unable to find a suitable parser for: \"%s\"", filename);
+            UI.printError(Module.API, "Unable to find a suitable parser for: \"%s\"", filename);
             return false;
         }
         String currentFolder = new File(filename).getAbsoluteFile().getParentFile().getAbsolutePath();
@@ -1025,36 +921,36 @@ public class SunflowAPI {
         SunflowAPI api = null;
         if (filename.endsWith(".java")) {
             Timer t = new Timer();
-            UI.printInfo("[API] Compiling \"" + filename + "\" ...");
+            UI.printInfo(Module.API, "Compiling \"" + filename + "\" ...");
             t.start();
             try {
                 FileInputStream stream = new FileInputStream(filename);
                 api = (SunflowAPI) ClassBodyEvaluator.createFastClassBodyEvaluator(new Scanner(filename, stream), SunflowAPI.class, ClassLoader.getSystemClassLoader());
                 stream.close();
             } catch (CompileException e) {
-                UI.printError("[API] Could not compile: \"%s\"", filename);
-                UI.printError("[API] %s", e.getMessage());
+                UI.printError(Module.API, "Could not compile: \"%s\"", filename);
+                UI.printError(Module.API, "%s", e.getMessage());
                 return null;
             } catch (ParseException e) {
-                UI.printError("[API] Could not compile: \"%s\"", filename);
-                UI.printError("[API] %s", e.getMessage());
+                UI.printError(Module.API, "Could not compile: \"%s\"", filename);
+                UI.printError(Module.API, "%s", e.getMessage());
                 return null;
             } catch (ScanException e) {
-                UI.printError("[API] Could not compile: \"%s\"", filename);
-                UI.printError("[API] %s", e.getMessage());
+                UI.printError(Module.API, "Could not compile: \"%s\"", filename);
+                UI.printError(Module.API, "%s", e.getMessage());
                 return null;
             } catch (IOException e) {
-                UI.printError("[API] Could not compile: \"%s\"", filename);
-                UI.printError("[API] %s", e.getMessage());
+                UI.printError(Module.API, "Could not compile: \"%s\"", filename);
+                UI.printError(Module.API, "%s", e.getMessage());
                 return null;
             }
             t.end();
-            UI.printInfo("[API] Compile time: " + t.toString());
-            UI.printInfo("[API] Build script running ...");
+            UI.printInfo(Module.API, "Compile time: " + t.toString());
+            UI.printInfo(Module.API, "Build script running ...");
             t.start();
             api.build();
             t.end();
-            UI.printInfo("[API] Build script time: %s", t.toString());
+            UI.printInfo(Module.API, "Build script time: %s", t.toString());
         } else {
             api = new SunflowAPI();
             api = api.parse(filename) ? api : null;
@@ -1077,19 +973,19 @@ public class SunflowAPI {
             t.start();
             SunflowAPI api = (SunflowAPI) ClassBodyEvaluator.createFastClassBodyEvaluator(new Scanner(null, new StringReader(code)), SunflowAPI.class, (ClassLoader) null);
             t.end();
-            UI.printInfo("[API] Compile time: %s", t.toString());
+            UI.printInfo(Module.API, "Compile time: %s", t.toString());
             return api;
         } catch (CompileException e) {
-            UI.printError("[API] %s", e.getMessage());
+            UI.printError(Module.API, "%s", e.getMessage());
             return null;
         } catch (ParseException e) {
-            UI.printError("[API] %s", e.getMessage());
+            UI.printError(Module.API, "%s", e.getMessage());
             return null;
         } catch (ScanException e) {
-            UI.printError("[API] %s", e.getMessage());
+            UI.printError(Module.API, "%s", e.getMessage());
             return null;
         } catch (IOException e) {
-            UI.printError("[API] %s", e.getMessage());
+            UI.printError(Module.API, "%s", e.getMessage());
             return null;
         }
     }

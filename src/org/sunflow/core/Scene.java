@@ -5,6 +5,7 @@ import org.sunflow.image.Color;
 import org.sunflow.math.BoundingBox;
 import org.sunflow.math.MathUtils;
 import org.sunflow.system.UI;
+import org.sunflow.system.UI.Module;
 
 /**
  * Represents a entire scene, defined as a collection of objects viewed by a
@@ -51,15 +52,20 @@ public class Scene {
         rebuildAccel = true;
     }
 
-    public void setThreads(int threads, boolean lowPriority) {
-        this.threads = threads;
-        this.lowPriority = lowPriority;
-    }
-
+    /**
+     * Get number of allowed threads for multi-threaded operations.
+     * 
+     * @return number of threads that can be started
+     */
     public int getThreads() {
         return threads <= 0 ? Runtime.getRuntime().availableProcessors() : threads;
     }
 
+    /**
+     * Get the priority level to assign to multi-threaded operations.
+     * 
+     * @return thread priority
+     */
     public int getThreadPriority() {
         return lowPriority ? Thread.MIN_PRIORITY : Thread.NORM_PRIORITY;
     }
@@ -85,7 +91,10 @@ public class Scene {
     }
 
     /**
-     * Remove all instances from the scene.
+     * Update the instance lists for this scene.
+     * 
+     * @param instances regular instances
+     * @param infinite infinite instances (no bounds)
      */
     public void setInstanceLists(Instance[] instances, Instance[] infinite) {
         infiniteInstanceList = new InstanceList(infinite);
@@ -94,14 +103,12 @@ public class Scene {
     }
 
     /**
-     * Adds a light source to the scene. Note that for area light sources you
-     * will need to call {@link #addPrimitive(Primitive)}in order to make the
-     * light source visible to the raytracer.
+     * Update the light list for this scene.
      * 
-     * @param light light to be added to the scene
+     * @param lights array of light source objects
      */
-    public void addLight(LightSource light) {
-        lightServer.registerLight(light);
+    public void setLightList(LightSource[] lights) {
+        lightServer.setLights(lights);
     }
 
     /**
@@ -112,17 +119,6 @@ public class Scene {
      */
     public void setFilter(Filter f) {
         filter = f;
-    }
-
-    /**
-     * Sets the maximum raytracing depths per bounce type.
-     * 
-     * @param diffuseDepth maximum diffuse trace depth
-     * @param reflectionDepth maximum reflection trace depth
-     * @param refractionDepth maximum refraction trace depth
-     */
-    public void setMaxDepth(int diffuseDepth, int reflectionDepth, int refractionDepth) {
-        lightServer.setMaxDepth(diffuseDepth, reflectionDepth, refractionDepth);
     }
 
     /**
@@ -186,10 +182,12 @@ public class Scene {
         if (display == null)
             display = new FrameDisplay();
         if (camera == null) {
-            UI.printError("[SCN] No camera found");
+            UI.printError(Module.SCENE, "No camera found");
             return;
         }
         // read from options
+        threads = options.getInt("threads", threads);
+        lowPriority = options.getBoolean("threads.lowPriority", lowPriority);
         imageWidth = options.getInt("resolutionX", imageWidth);
         imageHeight = options.getInt("resolutionY", imageHeight);
         // limit resolution to 16k
@@ -200,28 +198,28 @@ public class Scene {
         long numPrimitives = 0;
         for (int i = 0; i < instanceList.getNumPrimitives(); i++)
             numPrimitives += instanceList.getNumPrimitives(i);
-        UI.printInfo("[SCN] Scene stats:");
-        UI.printInfo("[SCN]   * Infinite instances:  %d", infiniteInstanceList.getNumPrimitives());
-        UI.printInfo("[SCN]   * Instances:           %d", instanceList.getNumPrimitives());
-        UI.printInfo("[SCN]   * Primitives:          %d", numPrimitives);
+        UI.printInfo(Module.SCENE, "Scene stats:");
+        UI.printInfo(Module.SCENE, "  * Infinite instances:  %d", infiniteInstanceList.getNumPrimitives());
+        UI.printInfo(Module.SCENE, "  * Instances:           %d", instanceList.getNumPrimitives());
+        UI.printInfo(Module.SCENE, "  * Primitives:          %d", numPrimitives);
         if (rebuildAccel) {
             intAccel = AccelerationStructureFactory.create(acceltype, instanceList.getNumPrimitives(), false);
             intAccel.build(instanceList);
             rebuildAccel = false;
         }
-        UI.printInfo("[SCN]   * Scene bounds:        %s", getBounds());
-        UI.printInfo("[SCN]   * Scene center:        %s", getBounds().getCenter());
-        UI.printInfo("[SCN]   * Scene diameter:      %.2f", getBounds().getExtents().length());
+        UI.printInfo(Module.SCENE, "  * Scene bounds:        %s", getBounds());
+        UI.printInfo(Module.SCENE, "  * Scene center:        %s", getBounds().getCenter());
+        UI.printInfo(Module.SCENE, "  * Scene diameter:      %.2f", getBounds().getExtents().length());
         if (sampler == null)
             return;
-        if (!lightServer.build())
+        if (!lightServer.build(options))
             return;
         // render
-        UI.printInfo("[SCN] Rendering ...");
-        sampler.prepare(this, imageWidth, imageHeight);
+        UI.printInfo(Module.SCENE, "Rendering ...");
+        sampler.prepare(options, this, imageWidth, imageHeight);
         sampler.render(display);
         lightServer.showStats();
-        UI.printInfo("[SCN] Done.");
+        UI.printInfo(Module.SCENE, "Done.");
     }
 
     public boolean calculatePhotons(PhotonStore map, String type, int seed) {

@@ -4,6 +4,7 @@ import org.sunflow.SunflowAPI;
 import org.sunflow.math.BoundingBox;
 import org.sunflow.math.Matrix4;
 import org.sunflow.system.UI;
+import org.sunflow.system.UI.Module;
 
 public class Geometry implements RenderObject {
     private Tesselatable tesselatable;
@@ -72,13 +73,13 @@ public class Geometry implements RenderObject {
             return;
 
         if (tesselatable != null) {
-            UI.printInfo("[GEO] Tesselating geometry ...");
+            UI.printInfo(Module.GEOM, "Tesselating geometry ...");
             primitives = tesselatable.tesselate();
         }
 
         int n = primitives.getNumPrimitives();
         if (n >= 10)
-            UI.printInfo("[GEO] Building acceleration structure for %d primitives ...", n);
+            UI.printInfo(Module.GEOM, "Building acceleration structure for %d primitives ...", n);
 
         accel = AccelerationStructureFactory.create(acceltype, n, true);
         accel.build(primitives);

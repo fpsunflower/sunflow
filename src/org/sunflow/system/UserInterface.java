@@ -1,38 +1,21 @@
 package org.sunflow.system;
 
+import org.sunflow.system.UI.Module;
+import org.sunflow.system.UI.PrintLevel;
+
 public interface UserInterface {
     /**
-     * Displays some information which would be considered detailed and not
-     * needed during typical runs.
+     * Displays some information to the user from the specified module with the
+     * specified print level. A user interface is free to show or ignore any
+     * message. Level filtering is done in the core and shouldn't be
+     * re-implemented by the user interface. All messages will be short enough
+     * to fit on one line.
      * 
+     * @param m module the message came from
+     * @param level seriousness of the message
      * @param s string to display
      */
-    void printDetailed(String s);
-
-    /**
-     * Displays an informative string to the user. It is assumed the string
-     * corresponds to one line only.
-     * 
-     * @param s string to display
-     */
-    void printInfo(String s);
-
-    /**
-     * Displays a warning to the user. It is assumed the string corresponds to
-     * one line only.
-     * 
-     * @param s string to display
-     */
-
-    void printWarning(String s);
-
-    /**
-     * Displays an error message to the user. It is assumed the string
-     * corresponds to one line only.
-     * 
-     * @param s string to display
-     */
-    void printError(String s);
+    void print(Module m, PrintLevel level, String s);
 
     /**
      * Prepare a progress bar representing a lengthy task. The actual progress

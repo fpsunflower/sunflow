@@ -5,6 +5,7 @@ import org.sunflow.core.accel.KDTree;
 import org.sunflow.core.accel.NullAccelerator;
 import org.sunflow.core.accel.UniformGrid;
 import org.sunflow.system.UI;
+import org.sunflow.system.UI.Module;
 
 class AccelerationStructureFactory {
     static final AccelerationStructure create(String name, int n, boolean primitives) {
@@ -33,7 +34,7 @@ class AccelerationStructureFactory {
         else if (name.equals("bih"))
             return new BoundingIntervalHierarchy();
         else {
-            UI.printWarning("[API] Unrecognized intersection accelerator: \"%s\"", name);
+            UI.printWarning(Module.ACCEL, "Unrecognized intersection accelerator: \"%s\"", name);
             return create(null, n, primitives);
         }
     }

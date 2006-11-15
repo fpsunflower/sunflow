@@ -3,11 +3,13 @@ package org.sunflow.core.renderer;
 import org.sunflow.core.Display;
 import org.sunflow.core.ImageSampler;
 import org.sunflow.core.IntersectionState;
+import org.sunflow.core.Options;
 import org.sunflow.core.Scene;
 import org.sunflow.core.ShadingState;
 import org.sunflow.image.Color;
 import org.sunflow.system.Timer;
 import org.sunflow.system.UI;
+import org.sunflow.system.UI.Module;
 
 public class SimpleRenderer implements ImageSampler {
     private Scene scene;
@@ -16,7 +18,7 @@ public class SimpleRenderer implements ImageSampler {
     private int numBucketsX, numBucketsY;
     private int bucketCounter, numBuckets;
 
-    public boolean prepare(Scene scene, int w, int h) {
+    public boolean prepare(Options options, Scene scene, int w, int h) {
         this.scene = scene;
         imageWidth = w;
         imageHeight = h;
@@ -43,11 +45,11 @@ public class SimpleRenderer implements ImageSampler {
             try {
                 renderThreads[i].join();
             } catch (InterruptedException e) {
-                UI.printError("[BKT] Bucket processing thread %d of %d was interrupted", i + 1, renderThreads.length);
+                UI.printError(Module.BCKT, "Bucket processing thread %d of %d was interrupted", i + 1, renderThreads.length);
             }
         }
         timer.end();
-        UI.printInfo("[BKT] Render time: %s", timer.toString());
+        UI.printInfo(Module.BCKT, "Render time: %s", timer.toString());
         display.imageEnd();
     }
 

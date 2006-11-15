@@ -9,6 +9,7 @@ import org.sunflow.core.Display;
 import org.sunflow.image.Color;
 import org.sunflow.system.ByteUtil;
 import org.sunflow.system.UI;
+import org.sunflow.system.UI.Module;
 
 /**
  * This display outputs a tiled OpenEXR file with RGB information.
@@ -55,7 +56,7 @@ public class OpenExrDisplay implements Display {
         else if (compression.equals("zip"))
             this.compression = ZIP_COMPRESSION;
         else {
-            UI.printWarning("[EXR] Compression type was not recognized - defaulting to zip");
+            UI.printWarning(Module.DISP, "EXR - Compression type was not recognized - defaulting to zip");
             this.compression = ZIP_COMPRESSION;
         }
         if (channelType != null && channelType.equals("float")) {
@@ -65,14 +66,14 @@ public class OpenExrDisplay implements Display {
             this.channelType = HALF;
             this.channelSize = HALF_SIZE;
         } else {
-            UI.printWarning("[EXR] Channel type was not recognized - defaulting to float");
+            UI.printWarning(Module.DISP, "EXR - Channel type was not recognized - defaulting to float");
             this.channelType = FLOAT;
             this.channelSize = FLOAT_SIZE;
         }
     }
 
     public void setGamma(float gamma) {
-        UI.printWarning("[EXR] Gamma correction unsupported - ignoring");
+        UI.printWarning(Module.DISP, "EXR - Gamma correction unsupported - ignoring");
     }
 
     public void imageBegin(int w, int h, int bucketSize) {
@@ -83,7 +84,7 @@ public class OpenExrDisplay implements Display {
                 throw new Exception("Can't use OpenEXR display without buckets.");
             writeRGBHeader(w, h, bucketSize);
         } catch (Exception e) {
-            UI.printError("[EXR] %s", e.getMessage());
+            UI.printError(Module.DISP, "EXR - %s", e.getMessage());
             e.printStackTrace();
         }
     }
@@ -98,7 +99,7 @@ public class OpenExrDisplay implements Display {
             int ty = y / tileSize;
             writeTile(tx, ty, w, h, data);
         } catch (IOException e) {
-            UI.printError("[EXR] %s", e.getMessage());
+            UI.printError(Module.DISP, "EXR - %s", e.getMessage());
             e.printStackTrace();
         }
     }
@@ -111,7 +112,7 @@ public class OpenExrDisplay implements Display {
             writeTileOffsets();
             file.close();
         } catch (IOException e) {
-            UI.printError("[EXR] %s", e.getMessage());
+            UI.printError(Module.DISP, "EXR - %s", e.getMessage());
             e.printStackTrace();
         }
     }

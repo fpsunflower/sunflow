@@ -1,6 +1,9 @@
 package org.sunflow.system.ui;
 
+import org.sunflow.system.UI;
 import org.sunflow.system.UserInterface;
+import org.sunflow.system.UI.Module;
+import org.sunflow.system.UI.PrintLevel;
 
 /**
  * Basic console implementation of a user interface.
@@ -15,20 +18,8 @@ public class ConsoleInterface implements UserInterface {
     public ConsoleInterface() {
     }
 
-    public void printDetailed(String s) {
-        System.out.println(s);
-    }
-    
-    public void printInfo(String s) {
-        System.out.println(s);
-    }
-
-    public void printWarning(String s) {
-        System.out.println("WARNING: " + s);
-    }
-
-    public void printError(String s) {
-        System.out.println("ERROR: " + s);
+    public void print(Module m, PrintLevel level, String s) {
+        System.out.println(UI.formatOutput(m, level, s));
     }
 
     public void taskStart(String s, int min, int max) {

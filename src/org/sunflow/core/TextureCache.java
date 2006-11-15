@@ -3,6 +3,7 @@ package org.sunflow.core;
 import java.util.HashMap;
 
 import org.sunflow.system.UI;
+import org.sunflow.system.UI.Module;
 
 /**
  * Maintains a cache of all loaded texture maps. This is usefull if the same
@@ -25,17 +26,17 @@ public final class TextureCache {
      */
     public synchronized static Texture getTexture(String filename) {
         if (textures.containsKey(filename)) {
-            UI.printInfo("[TEX] Using cached file \"%s\" ...", filename);
+            UI.printInfo(Module.TEX, "Using cached file \"%s\" ...", filename);
             return textures.get(filename);
         }
-        UI.printInfo("[TEX] Loading file \"%s\" ...", filename);
+        UI.printInfo(Module.TEX, "Loading file \"%s\" ...", filename);
         Texture t = new Texture(filename);
         textures.put(filename, t);
         return t;
     }
 
     public synchronized static void flush() {
-        UI.printInfo("[TEX] Flushing texture cache");
+        UI.printInfo(Module.TEX, "Flushing texture cache");
         textures.clear();
     }
 }

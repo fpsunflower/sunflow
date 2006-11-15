@@ -8,6 +8,7 @@ import org.sunflow.image.Color;
 import org.sunflow.math.OrthoNormalBasis;
 import org.sunflow.math.Vector3;
 import org.sunflow.system.UI;
+import org.sunflow.system.UI.Module;
 
 public class PathTracingGIEngine implements GIEngine {
     private int samples;
@@ -22,8 +23,8 @@ public class PathTracingGIEngine implements GIEngine {
 
     public boolean init(Scene scene) {
         samples = Math.max(0, samples);
-        UI.printInfo("[PTH] Path tracer settings:");
-        UI.printInfo("[PTH]   * Samples: %d", samples);
+        UI.printInfo(Module.LIGHT, "Path tracer settings:");
+        UI.printInfo(Module.LIGHT, "  * Samples: %d", samples);
         return true;
     }
 

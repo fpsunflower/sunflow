@@ -10,6 +10,7 @@ import java.io.IOException;
 import javax.imageio.ImageIO;
 
 import org.sunflow.system.UI;
+import org.sunflow.system.UI.Module;
 
 public class Bitmap {
     private int[] pixels;
@@ -228,7 +229,7 @@ public class Bitmap {
                     }
                     break;
                 default:
-                    UI.printWarning("[IMG] Unsupported TGA datatype: %s", datatype);
+                    UI.printWarning(Module.IMG, "Unsupported TGA datatype: %s", datatype);
                     break;
             }
             if ((imgdscr & 32) == 32) {

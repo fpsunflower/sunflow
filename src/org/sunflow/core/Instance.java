@@ -6,6 +6,7 @@ import org.sunflow.math.Matrix4;
 import org.sunflow.math.Point3;
 import org.sunflow.math.Vector3;
 import org.sunflow.system.UI;
+import org.sunflow.system.UI.Module;
 
 public class Instance implements RenderObject {
     private Matrix4 o2w;
@@ -18,12 +19,12 @@ public class Instance implements RenderObject {
         String geometryName = pl.getString("geometry", null);
         if (geometry == null || geometryName != null) {
             if (geometryName == null) {
-                UI.printError("[GEO] geometry parameter missing - unable to create instance");
+                UI.printError(Module.GEOM, "geometry parameter missing - unable to create instance");
                 return false;
             }
             geometry = api.lookupGeometry(geometryName);
             if (geometry == null) {
-                UI.printError("[GEO] Geometry \"%s\" was not declared yet - instance is invalid", geometryName);
+                UI.printError(Module.GEOM, "Geometry \"%s\" was not declared yet - instance is invalid", geometryName);
                 return false;
             }
         }
@@ -34,7 +35,7 @@ public class Instance implements RenderObject {
             for (int i = 0; i < shaders.length; i++) {
                 shaders[i] = api.lookupShader(shaderNames[i]);
                 if (shaders[i] == null)
-                    UI.printWarning("[GEO] Shader \"%s\" was not declared yet - ignoring", shaders[i]);
+                    UI.printWarning(Module.GEOM, "Shader \"%s\" was not declared yet - ignoring", shaders[i]);
             }
         } else {
             // re-use existing shader array
@@ -45,7 +46,7 @@ public class Instance implements RenderObject {
             if (o2w != null) {
                 w2o = o2w.inverse();
                 if (w2o == null) {
-                    UI.printError("[GEO] Unable to compute transform inverse");
+                    UI.printError(Module.GEOM, "Unable to compute transform inverse");
                     return false;
                 }
             } else

@@ -7,6 +7,7 @@ import org.sunflow.image.Color;
 import org.sunflow.math.OrthoNormalBasis;
 import org.sunflow.math.Vector3;
 import org.sunflow.system.UI;
+import org.sunflow.system.UI.Module;
 
 /**
  * Represents a 2D texture, typically used by {@link Shader shaders}.
@@ -30,12 +31,12 @@ public class Texture {
         if (loaded != 0)
             return;
         try {
-            UI.printInfo("[TEX] Reading texture bitmap from: \"%s\" ...", filename);
+            UI.printInfo(Module.TEX, "Reading texture bitmap from: \"%s\" ...", filename);
             bitmap = new Bitmap(filename);
             if (bitmap.getWidth() == 0 || bitmap.getHeight() == 0)
                 bitmap = null;
         } catch (IOException e) {
-            UI.printError("[TEX] %s", e.getMessage());
+            UI.printError(Module.TEX, "%s", e.getMessage());
         }
         loaded = 1;
     }

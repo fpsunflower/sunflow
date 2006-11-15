@@ -16,11 +16,12 @@ import org.sunflow.core.Shader;
 import org.sunflow.core.primitive.Mesh;
 import org.sunflow.core.shader.SimpleShader;
 import org.sunflow.system.UI;
+import org.sunflow.system.UI.Module;
 
 public class RA3Parser implements SceneParser {
     public boolean parse(String filename, SunflowAPI api) {
         try {
-            UI.printInfo("[RA3] Reading geometry: \"%s\" ...", filename);
+            UI.printInfo(Module.USER, "RA3 - Reading geometry: \"%s\" ...", filename);
             File file = new File(filename);
             FileInputStream stream = new FileInputStream(filename);
             MappedByteBuffer map = stream.getChannel().map(FileChannel.MapMode.READ_ONLY, 0, file.length());
@@ -29,16 +30,16 @@ public class RA3Parser implements SceneParser {
             FloatBuffer buffer = map.asFloatBuffer();
             int numVerts = ints.get(0);
             int numTris = ints.get(1);
-            UI.printInfo("[RA3]   * Reading %d vertices ...", numVerts);
+            UI.printInfo(Module.USER, "RA3 -   * Reading %d vertices ...", numVerts);
             float[] verts = new float[3 * numVerts];
             for (int i = 0; i < verts.length; i++)
                 verts[i] = buffer.get(2 + i);
-            UI.printInfo("[RA3]   * Reading %d triangles ...", numTris);
+            UI.printInfo(Module.USER, "RA3 -   * Reading %d triangles ...", numTris);
             int[] tris = new int[3 * numTris];
             for (int i = 0; i < tris.length; i++)
                 tris[i] = ints.get(2 + verts.length + i);
             stream.close();
-            UI.printInfo("[RA3]   * Creating mesh ...");
+            UI.printInfo(Module.USER, "RA3 -   * Creating mesh ...");
 
             // create geometry
             api.parameter("triangles", tris);

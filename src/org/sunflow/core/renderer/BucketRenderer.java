@@ -6,16 +6,18 @@ import org.sunflow.core.Filter;
 import org.sunflow.core.ImageSampler;
 import org.sunflow.core.Instance;
 import org.sunflow.core.IntersectionState;
+import org.sunflow.core.Options;
 import org.sunflow.core.Scene;
 import org.sunflow.core.Shader;
 import org.sunflow.core.ShadingState;
-import org.sunflow.core.bucket.HilbertBucketOrder;
+import org.sunflow.core.bucket.BucketOrderFactory;
 import org.sunflow.core.filter.BoxFilter;
 import org.sunflow.image.Color;
 import org.sunflow.math.MathUtils;
 import org.sunflow.math.QMC;
 import org.sunflow.system.Timer;
 import org.sunflow.system.UI;
+import org.sunflow.system.UI.Module;
 
 public class BucketRenderer implements ImageSampler {
     private Scene scene;
@@ -24,6 +26,7 @@ public class BucketRenderer implements ImageSampler {
     private int imageWidth;
     private int imageHeight;
     // bucketing
+    private String bucketOrderName;
     private BucketOrder bucketOrder;
     private int bucketSize;
     private int bucketCounter;
@@ -33,14 +36,16 @@ public class BucketRenderer implements ImageSampler {
     private int minAADepth;
     private int maxAADepth;
     private int superSampling;
+    private float contrastThreshold;
+    private boolean displayAA;
+
+    // derived quantities
     private double invSuperSampling;
     private int subPixelSize;
     private int minStepSize;
     private int maxStepSize;
     private int[] sigma;
-    private float contrastThreshold;
     private float thresh;
-    private boolean displayAA;
 
     // filtering
     private Filter filter;
@@ -49,38 +54,30 @@ public class BucketRenderer implements ImageSampler {
 
     public BucketRenderer() {
         bucketSize = 32;
-        bucketOrder = new HilbertBucketOrder();
+        bucketOrderName = "hilbert";
         displayAA = false;
         contrastThreshold = 0.1f;
     }
 
-    public void setDisplayAA(boolean displayAA) {
-        this.displayAA = displayAA;
-    }
-
-    public void setBuckerOrder(BucketOrder order) {
-        bucketOrder = order;
-    }
-
-    public void setBucketSize(int size) {
-        bucketSize = size;
-    }
-
-    public void setAA(int min, int max, int n) {
-        minAADepth = min;
-        maxAADepth = max;
-        superSampling = n;
-    }
-
-    public boolean prepare(Scene scene, int w, int h) {
+    public boolean prepare(Options options, Scene scene, int w, int h) {
         this.scene = scene;
-
         imageWidth = w;
         imageHeight = h;
+
+        // fetch options
+        bucketSize = options.getInt("bucket.size", bucketSize);
+        bucketOrderName = options.getString("bucket.order", bucketOrderName);
+        minAADepth = options.getInt("aa.min", minAADepth);
+        maxAADepth = options.getInt("aa.max", maxAADepth);
+        superSampling = options.getInt("aa.samples", superSampling);
+        displayAA = options.getBoolean("aa.display", displayAA);
+        contrastThreshold = options.getFloat("aa.contrast", contrastThreshold);
+
         // limit bucket size and compute number of buckets in each direction
         bucketSize = MathUtils.clamp(bucketSize, 16, 512);
         int numBucketsX = (imageWidth + bucketSize - 1) / bucketSize;
         int numBucketsY = (imageHeight + bucketSize - 1) / bucketSize;
+        bucketOrder = BucketOrderFactory.create(bucketOrderName);
         bucketCoords = bucketOrder.getBucketSequence(numBucketsX, numBucketsY);
         // validate AA options
         minAADepth = MathUtils.clamp(minAADepth, -4, 5);
@@ -94,7 +91,8 @@ public class BucketRenderer implements ImageSampler {
             maxStepSize = minStepSize;
         else
             maxStepSize = minAADepth > 0 ? 1 << minAADepth : subPixelSize << (-minAADepth);
-        // sample image adaptively
+        // compute anti-aliasing contrast thresholds
+        contrastThreshold = MathUtils.clamp(contrastThreshold, 0, 1);
         thresh = contrastThreshold * (float) Math.pow(2.0f, minAADepth);
         // read filter settings from scene
         filter = scene.getFilter();
@@ -106,15 +104,16 @@ public class BucketRenderer implements ImageSampler {
 
         // prepare QMC sampling
         sigma = QMC.generateSigmaTable(subPixelSize << 7);
-        UI.printInfo("[BKT] Bucket renderer settings:");
-        UI.printInfo("[BKT]   * Resolution:        %dx%d", imageWidth, imageHeight);
-        UI.printInfo("[BKT]   * Bucket size:       %d", bucketSize);
-        UI.printInfo("[BKT]   * Number of buckets: %dx%d", numBucketsX, numBucketsY);
+        UI.printInfo(Module.BCKT, "Bucket renderer settings:");
+        UI.printInfo(Module.BCKT, "  * Resolution:         %dx%d", imageWidth, imageHeight);
+        UI.printInfo(Module.BCKT, "  * Bucket size:        %d", bucketSize);
+        UI.printInfo(Module.BCKT, "  * Number of buckets:  %dx%d", numBucketsX, numBucketsY);
         int pixelMinAA = (minAADepth) < 0 ? -(1 << (-minAADepth)) : (1 << minAADepth);
         int pixelMaxAA = (maxAADepth) < 0 ? -(1 << (-maxAADepth)) : (1 << maxAADepth);
-        UI.printInfo("[BKT]   * Anti-aliasing:     [%dx%d] -> [%dx%d]", pixelMinAA, pixelMinAA, pixelMaxAA, pixelMaxAA);
-        UI.printInfo("[BKT]   * Rays per sample:   %d", superSampling);
-        UI.printInfo("[BKT]   * Filter size:       %.2f pixels", filter.getSize());
+        UI.printInfo(Module.BCKT, "  * Anti-aliasing:      [%dx%d] -> [%dx%d]", pixelMinAA, pixelMinAA, pixelMaxAA, pixelMaxAA);
+        UI.printInfo(Module.BCKT, "  * Rays per sample:    %d", superSampling);
+        UI.printInfo(Module.BCKT, "  * Contrast threshold: %.2f", contrastThreshold);
+        UI.printInfo(Module.BCKT, "  * Filter size:        %.2f pixels", filter.getSize());
         return true;
     }
 
@@ -137,12 +136,12 @@ public class BucketRenderer implements ImageSampler {
             try {
                 renderThreads[i].join();
             } catch (InterruptedException e) {
-                UI.printError("[BKT] Bucket processing thread %d of %d was interrupted", i + 1, renderThreads.length);
+                UI.printError(Module.BCKT, "Bucket processing thread %d of %d was interrupted", i + 1, renderThreads.length);
             }
         }
         UI.taskStop();
         timer.end();
-        UI.printInfo("[BKT] Render time: %s", timer.toString());
+        UI.printInfo(Module.BCKT, "Render time: %s", timer.toString());
         display.imageEnd();
     }
 

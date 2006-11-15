@@ -1,5 +1,7 @@
 package org.sunflow.system;
 
+import org.sunflow.system.UI.Module;
+
 /**
  * This class provides a very simple framework for running a BenchmarkTest
  * kernel several times and time the results.
@@ -20,7 +22,7 @@ public class BenchmarkFramework {
         // loop for the specified number of iterations or until the time limit
         long startTime = System.nanoTime();
         for (int i = 0; i < timers.length && ((System.nanoTime() - startTime) / 1000000000) < timeLimit; i++) {
-            UI.printInfo("[BCH] Running iteration %d", (i + 1));
+            UI.printInfo(Module.BENCH, "Running iteration %d", (i + 1));
             timers[i] = new Timer();
             test.kernelBegin();
             timers[i].start();
@@ -53,11 +55,11 @@ public class BenchmarkFramework {
             stdDev += (s - avg) * (s - avg);
         }
         stdDev = Math.sqrt(stdDev / n);
-        UI.printInfo("[BCH] Benchmark results:");
-        UI.printInfo("[BCH]   * Iterations: %d", n);
-        UI.printInfo("[BCH]   * Average:    %s", Timer.toString(avg));
-        UI.printInfo("[BCH]   * Fastest:    %s", Timer.toString(min));
-        UI.printInfo("[BCH]   * Longest:    %s", Timer.toString(max));
-        UI.printInfo("[BCH]   * Deviation:  %s", Timer.toString(stdDev));
+        UI.printInfo(Module.BENCH, "Benchmark results:");
+        UI.printInfo(Module.BENCH, "  * Iterations: %d", n);
+        UI.printInfo(Module.BENCH, "  * Average:    %s", Timer.toString(avg));
+        UI.printInfo(Module.BENCH, "  * Fastest:    %s", Timer.toString(min));
+        UI.printInfo(Module.BENCH, "  * Longest:    %s", Timer.toString(max));
+        UI.printInfo(Module.BENCH, "  * Deviation:  %s", Timer.toString(stdDev));
     }
 }

@@ -16,6 +16,7 @@ import org.sunflow.math.OrthoNormalBasis;
 import org.sunflow.math.Point3;
 import org.sunflow.math.Vector3;
 import org.sunflow.system.UI;
+import org.sunflow.system.UI.Module;
 
 public class Mesh implements PrimitiveList {
     private static boolean smallTriangles = false;
@@ -28,9 +29,9 @@ public class Mesh implements PrimitiveList {
 
     public static void setSmallTriangles(boolean smallTriangles) {
         if (smallTriangles)
-            UI.printInfo("[TRI] Activating small mesh mode");
+            UI.printInfo(Module.GEOM, "TRI - Activating small mesh mode");
         else
-            UI.printInfo("[TRI] Disabling small mesh mode");
+            UI.printInfo(Module.GEOM, "TRI - Disabling small mesh mode");
         Mesh.smallTriangles = smallTriangles;
     }
 
@@ -51,24 +52,24 @@ public class Mesh implements PrimitiveList {
             }
         }
         if (triangles == null) {
-            UI.printError("[TRI] Unable to update mesh - triangle indices are missing");
+            UI.printError(Module.GEOM, "TRI - Unable to update mesh - triangle indices are missing");
             return false;
         }
         if (triangles.length % 3 != 0)
-            UI.printWarning("[TRI] Triangle index data is not a multiple of 3 - triangles may be missing");
+            UI.printWarning(Module.GEOM, "TRI - Triangle index data is not a multiple of 3 - triangles may be missing");
         pl.setFaceCount(triangles.length / 3);
         {
             FloatParameter pointsP = pl.getPointArray("points");
             if (pointsP != null)
                 if (pointsP.interp != InterpolationType.VERTEX)
-                    UI.printError("[TRI] Point interpolation type must be set to \"vertex\" - was \"%s\"", pointsP.interp.name().toLowerCase());
+                    UI.printError(Module.GEOM, "TRI - Point interpolation type must be set to \"vertex\" - was \"%s\"", pointsP.interp.name().toLowerCase());
                 else {
                     points = pointsP.data;
                     updatedTopology = true;
                 }
         }
         if (points == null) {
-            UI.printError("[TRI] Unabled to update mesh - vertices are missing");
+            UI.printError(Module.GEOM, "TRI - Unabled to update mesh - vertices are missing");
             return false;
         }
         pl.setVertexCount(points.length / 3);
@@ -85,7 +86,7 @@ public class Mesh implements PrimitiveList {
             for (int i = 0; i < faceShaders.length; i++) {
                 int v = faceShaders[i];
                 if (v > 255)
-                    UI.printWarning("[TRI] Shader index too large on triangle %d", i);
+                    UI.printWarning(Module.GEOM, "TRI - Shader index too large on triangle %d", i);
                 this.faceShaders[i] = (byte) (v & 0xFF);
             }
         }
@@ -482,7 +483,7 @@ public class Mesh implements PrimitiveList {
         if (!smallTriangles) {
             // too many triangles? -- don't generate triaccel to save memory
             if (nt > 2000000) {
-                UI.printWarning("[TRI] Too many triangles -- triaccel generation skipped");
+                UI.printWarning(Module.GEOM, "TRI - Too many triangles -- triaccel generation skipped");
                 return;
             }
             triaccel = new WaldTriangle[nt];

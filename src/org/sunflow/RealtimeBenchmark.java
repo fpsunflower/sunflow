@@ -18,21 +18,27 @@ import org.sunflow.math.Point3;
 import org.sunflow.math.Vector3;
 import org.sunflow.system.Timer;
 import org.sunflow.system.UI;
+import org.sunflow.system.UI.Module;
 import org.sunflow.system.ui.ConsoleInterface;
 
 public class RealtimeBenchmark extends SunflowAPI {
     public RealtimeBenchmark(boolean showGUI, int threads) {
         Display display = showGUI ? new FastDisplay() : new FileDisplay(false);
-        UI.printInfo("[BCH] Preparing benchmarking scene ...");
-        threads(threads, true); // spawn regular priority threads
+        UI.printInfo(Module.BENCH, "Preparing benchmarking scene ...");
+        // settings
+        parameter("threads", threads);
+        // spawn regular priority threads
+        parameter("threads.lowPriority", false);
         parameter("resolutionX", 512);
         parameter("resolutionY", 512);
+        parameter("aa.min", -3);
+        parameter("aa.max", 0);
+        parameter("depths.diffuse", 1);
+        parameter("depths.reflection", 1);
+        parameter("depths.refraction", 0);
+        parameter("bucket.order", "hilbert");
+        parameter("bucket.size", 32);
         options(SunflowAPI.DEFAULT_OPTIONS);
-        // settings
-        antiAliasing(-3, 0);
-        traceDepth(1, 1, 0);
-        bucketOrder("hilbert");
-        bucketSize(32);
         accel("bih");
         // camera
         Point3 eye = new Point3(30, 0, 10.967f);
@@ -51,7 +57,7 @@ public class RealtimeBenchmark extends SunflowAPI {
         // this first render is not timed, it caches the acceleration data
         // structures and tesselations so they won't be
         // included in the main timing
-        UI.printInfo("[BCH] Rendering warmup frame ...");
+        UI.printInfo(Module.BENCH, "Rendering warmup frame ...");
         render(SunflowAPI.DEFAULT_OPTIONS, display);
         // now disable all output - and run the benchmark
         UI.set(null);
@@ -74,9 +80,9 @@ public class RealtimeBenchmark extends SunflowAPI {
         }
         t.end();
         UI.set(new ConsoleInterface());
-        UI.printInfo("[BCH] Benchmark results:");
-        UI.printInfo("[BCH]   * FPS:                 %.2f", frames / t.seconds());
-        UI.printInfo("[BCH]   * Total time:          %s", t);
+        UI.printInfo(Module.BENCH, "Benchmark results:");
+        UI.printInfo(Module.BENCH, "  * FPS:                 %.2f", frames / t.seconds());
+        UI.printInfo(Module.BENCH, "  * Total time:          %s", t);
     }
 
     private void createGeometry() {

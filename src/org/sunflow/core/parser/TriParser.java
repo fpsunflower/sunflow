@@ -15,11 +15,12 @@ import org.sunflow.core.primitive.Mesh;
 import org.sunflow.core.shader.SimpleShader;
 import org.sunflow.system.Parser;
 import org.sunflow.system.UI;
+import org.sunflow.system.UI.Module;
 
 public class TriParser implements SceneParser {
     public boolean parse(String filename, SunflowAPI api) {
         try {
-            UI.printInfo("[TRI] Reading geometry: \"%s\" ...", filename);
+            UI.printInfo(Module.USER, "TRI - Reading geometry: \"%s\" ...", filename);
             Parser p = new Parser(filename);
             float[] verts = new float[3 * p.getNextInt()];
             for (int v = 0; v < verts.length; v += 3) {

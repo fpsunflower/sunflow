@@ -10,6 +10,7 @@ import org.sunflow.math.Point3;
 import org.sunflow.math.Vector3;
 import org.sunflow.system.Timer;
 import org.sunflow.system.UI;
+import org.sunflow.system.UI.Module;
 
 public final class GlobalPhotonMap implements GlobalPhotonMapInterface {
     private ArrayList<Photon> photonList;
@@ -250,28 +251,28 @@ public final class GlobalPhotonMap implements GlobalPhotonMapInterface {
     }
 
     public void init() {
-        UI.printInfo("[GPM] Balancing global photon map ...");
+        UI.printInfo(Module.LIGHT, "Balancing global photon map ...");
         UI.taskStart("Balancing global photon map", 0, 1);
         Timer t = new Timer();
         t.start();
         balance();
         t.end();
         UI.taskStop();
-        UI.printInfo("[GPM] Global photon map:");
-        UI.printInfo("[GPM]   * Photons stored:   %d", storedPhotons);
-        UI.printInfo("[GPM]   * Photons/estimate: %d", numGather);
-        UI.printInfo("[GPM]   * Estimate radius:  %.3f", gatherRadius);
+        UI.printInfo(Module.LIGHT, "Global photon map:");
+        UI.printInfo(Module.LIGHT, "  * Photons stored:   %d", storedPhotons);
+        UI.printInfo(Module.LIGHT, "  * Photons/estimate: %d", numGather);
+        UI.printInfo(Module.LIGHT, "  * Estimate radius:  %.3f", gatherRadius);
         maxRadius = 1.4f * (float) Math.sqrt(maxPower * numGather);
-        UI.printInfo("[GPM]   * Maximum radius:   %.3f", maxRadius);
-        UI.printInfo("[GPM]   * Balancing time:   %s", t.toString());
+        UI.printInfo(Module.LIGHT, "  * Maximum radius:   %.3f", maxRadius);
+        UI.printInfo(Module.LIGHT, "  * Balancing time:   %s", t.toString());
         if (gatherRadius > maxRadius)
             gatherRadius = maxRadius;
         t.start();
         precomputeRadiance();
         t.end();
-        UI.printInfo("[GPM]   * Precompute time:  %s", t.toString());
-        UI.printInfo("[GPM]   * Radiance photons: %d", storedPhotons);
-        UI.printInfo("[GPM]   * Search radius:    %.3f", gatherRadius);
+        UI.printInfo(Module.LIGHT, "  * Precompute time:  %s", t.toString());
+        UI.printInfo(Module.LIGHT, "  * Radiance photons: %d", storedPhotons);
+        UI.printInfo(Module.LIGHT, "  * Search radius:    %.3f", gatherRadius);
     }
 
     public void precomputeRadiance() {

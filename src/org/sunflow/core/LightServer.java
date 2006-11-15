@@ -1,20 +1,18 @@
 package org.sunflow.core;
 
-import java.util.ArrayList;
-
 import org.sunflow.image.Color;
 import org.sunflow.math.Point3;
 import org.sunflow.math.QMC;
 import org.sunflow.math.Vector3;
 import org.sunflow.system.Timer;
 import org.sunflow.system.UI;
+import org.sunflow.system.UI.Module;
 
 class LightServer {
     // parent
     private Scene scene;
 
     // lighting
-    private ArrayList<LightSource> lightList;
     private LightSource[] lights;
 
     // shading override
@@ -56,8 +54,7 @@ class LightServer {
 
     LightServer(Scene scene) {
         this.scene = scene;
-        lightList = new ArrayList<LightSource>();
-        lights = null;
+        lights = new LightSource[0];
         causticPhotonMap = null;
 
         shaderOverride = null;
@@ -72,6 +69,10 @@ class LightServer {
 
         shadingCache(0);
     }
+    
+    void setLights(LightSource[] lights) {
+        this.lights = lights;
+    }
 
     void shadingCache(float shadingRate) {
         shadingCache = shadingRate > 0 ? new CacheEntry[4096] : null;
@@ -80,12 +81,6 @@ class LightServer {
 
     Scene getScene() {
         return scene;
-    }
-
-    void setMaxDepth(int maxDiffuseDepth, int maxReflectionDepth, int maxRefractionDepth) {
-        this.maxDiffuseDepth = maxDiffuseDepth;
-        this.maxReflectionDepth = maxReflectionDepth;
-        this.maxRefractionDepth = maxRefractionDepth;
     }
 
     void photons(CausticPhotonMapInterface cmap) {
@@ -101,11 +96,12 @@ class LightServer {
         giEngine = engine;
     }
 
-    void registerLight(LightSource light) {
-        lightList.add(light);
-    }
-
-    boolean build() {
+    boolean build(Options options) {
+        // read options
+        maxDiffuseDepth = options.getInt("depths.diffuse", maxDiffuseDepth);
+        maxReflectionDepth = options.getInt("depths.reflection", maxReflectionDepth);
+        maxRefractionDepth = options.getInt("depths.refraction", maxRefractionDepth);
+        
         // validate options
         maxDiffuseDepth = Math.max(0, maxDiffuseDepth);
         maxReflectionDepth = Math.max(0, maxReflectionDepth);
@@ -113,7 +109,6 @@ class LightServer {
 
         Timer t = new Timer();
         t.start();
-        lights = lightList.toArray(new LightSource[lightList.size()]);
         // count total number of light samples
         int numLightSamples = 0;
         for (int i = 0; i < lights.length; i++) {
@@ -139,17 +134,17 @@ class LightServer {
             for (int i = 0; i < shadingCache.length; i++)
                 shadingCache[i] = null;
         }
-        UI.printInfo("[LSV] Light Server stats:");
-        UI.printInfo("[LSV]   * Light sources found: %d", lights.length);
-        UI.printInfo("[LSV]   * Light samples:       %d", numLightSamples);
-        UI.printInfo("[LSV]   * Max raytrace depth:");
-        UI.printInfo("[LSV]       - Diffuse          %d", maxDiffuseDepth);
-        UI.printInfo("[LSV]       - Reflection       %d", maxReflectionDepth);
-        UI.printInfo("[LSV]       - Refraction       %d", maxRefractionDepth);
-        UI.printInfo("[LSV]   * Shader override:     %b", shaderOverride);
-        UI.printInfo("[LSV]   * Photon override:     %b", shaderOverridePhotons);
-        UI.printInfo("[LSV]   * Shading cache:       %s", shadingCache == null ? "off" : "on");
-        UI.printInfo("[LSV]   * Build time:          %s", t.toString());
+        UI.printInfo(Module.LIGHT, "Light Server stats:");
+        UI.printInfo(Module.LIGHT, "  * Light sources found: %d", lights.length);
+        UI.printInfo(Module.LIGHT, "  * Light samples:       %d", numLightSamples);
+        UI.printInfo(Module.LIGHT, "  * Max raytrace depth:");
+        UI.printInfo(Module.LIGHT, "      - Diffuse          %d", maxDiffuseDepth);
+        UI.printInfo(Module.LIGHT, "      - Reflection       %d", maxReflectionDepth);
+        UI.printInfo(Module.LIGHT, "      - Refraction       %d", maxRefractionDepth);
+        UI.printInfo(Module.LIGHT, "  * Shader override:     %b", shaderOverride);
+        UI.printInfo(Module.LIGHT, "  * Photon override:     %b", shaderOverridePhotons);
+        UI.printInfo(Module.LIGHT, "  * Shading cache:       %s", shadingCache == null ? "off" : "on");
+        UI.printInfo(Module.LIGHT, "  * Build time:          %s", t.toString());
         return true;
     }
 
@@ -159,31 +154,31 @@ class LightServer {
         int numUsedEntries = 0;
         for (CacheEntry e : shadingCache)
             numUsedEntries += (e != null) ? 1 : 0;
-        UI.printInfo("[LSV] Shading cache stats:");
-        UI.printInfo("[LSV]   * Used entries:        %d (%d%%)", numUsedEntries, (100 * numUsedEntries) / shadingCache.length);
-        UI.printInfo("[LSV]   * Lookups:             %d", cacheLookups);
-        UI.printInfo("[LSV]   * Hits:                %d", cacheHits);
-        UI.printInfo("[LSV]   * Hit rate:            %d%%", (100 * cacheHits) / cacheLookups);
-        UI.printInfo("[LSV]   * Empty entry misses:  %d", cacheEmptyEntryMisses);
-        UI.printInfo("[LSV]   * Wrong entry misses:  %d", cacheWrongEntryMisses);
-        UI.printInfo("[LSV]   * Entry adds:          %d", cacheEntryAdditions);
+        UI.printInfo(Module.LIGHT, "Shading cache stats:");
+        UI.printInfo(Module.LIGHT, "  * Used entries:        %d (%d%%)", numUsedEntries, (100 * numUsedEntries) / shadingCache.length);
+        UI.printInfo(Module.LIGHT, "  * Lookups:             %d", cacheLookups);
+        UI.printInfo(Module.LIGHT, "  * Hits:                %d", cacheHits);
+        UI.printInfo(Module.LIGHT, "  * Hit rate:            %d%%", (100 * cacheHits) / cacheLookups);
+        UI.printInfo(Module.LIGHT, "  * Empty entry misses:  %d", cacheEmptyEntryMisses);
+        UI.printInfo(Module.LIGHT, "  * Wrong entry misses:  %d", cacheWrongEntryMisses);
+        UI.printInfo(Module.LIGHT, "  * Entry adds:          %d", cacheEntryAdditions);
     }
 
     boolean calculatePhotons(final PhotonStore map, String type, final int seed) {
         if (map == null)
             return true;
         if (lights.length == 0) {
-            UI.printError("[LSV] Unable to trace %s photons, no lights in scene", type);
+            UI.printError(Module.LIGHT, "Unable to trace %s photons, no lights in scene", type);
             return false;
         }
         final float[] histogram = new float[lights.length];
         histogram[0] = lights[0].getPower();
         for (int i = 1; i < lights.length; i++)
             histogram[i] = histogram[i - 1] + lights[i].getPower();
-        UI.printInfo("[LSV] Tracing %s photons ...", type);
+        UI.printInfo(Module.LIGHT, "Tracing %s photons ...", type);
         int numEmittedPhotons = map.numEmit();
         if (numEmittedPhotons <= 0 || histogram[histogram.length - 1] <= 0) {
-            UI.printError("[LSV] Photon mapping enabled, but no %s photons to emit", type);
+            UI.printError(Module.LIGHT, "Photon mapping enabled, but no %s photons to emit", type);
             return false;
         }
         map.prepare(scene.getBounds());
@@ -242,7 +237,7 @@ class LightServer {
             try {
                 photonThreads[i].join();
             } catch (InterruptedException e) {
-                UI.printError("[LSV] Photon thread %d of %d was interrupted", i + 1, photonThreads.length);
+                UI.printError(Module.LIGHT, "Photon thread %d of %d was interrupted", i + 1, photonThreads.length);
                 return false;
             }
         }
@@ -252,7 +247,7 @@ class LightServer {
         }
         photonTimer.end();
         UI.taskStop();
-        UI.printInfo("[LSV] Tracing time for %s photons: %s", type, photonTimer.toString());
+        UI.printInfo(Module.LIGHT, "Tracing time for %s photons: %s", type, photonTimer.toString());
         map.init();
         return true;
     }

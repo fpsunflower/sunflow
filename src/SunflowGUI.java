@@ -60,6 +60,8 @@ import org.sunflow.system.ImagePanel;
 import org.sunflow.system.Timer;
 import org.sunflow.system.UI;
 import org.sunflow.system.UserInterface;
+import org.sunflow.system.UI.Module;
+import org.sunflow.system.UI.PrintLevel;
 
 @SuppressWarnings("serial")
 public class SunflowGUI extends javax.swing.JFrame implements UserInterface {
@@ -298,14 +300,15 @@ public class SunflowGUI extends javax.swing.JFrame implements UserInterface {
             if (resolutionW > 0 && resolutionH > 0) {
                 api.parameter("resolutionX", resolutionW);
                 api.parameter("resolutionY", resolutionH);
-                api.options(SunflowAPI.DEFAULT_OPTIONS);
             }
             if (bucketSize > 0)
-                api.bucketSize(bucketSize);
+                api.parameter("bucket.size", bucketSize);
             if (bucketOrder != null)
-                api.bucketOrder(bucketOrder);
-            api.displayAA(showAA);
-            api.threads(threads, lowPriority);
+                api.parameter("bucket.order", bucketOrder);
+            api.parameter("aa.display", showAA);
+            api.parameter("threads", threads);
+            api.parameter("threads.lowPriority", lowPriority);
+            api.options(SunflowAPI.DEFAULT_OPTIONS);
             if (accel != null)
                 api.accel(accel);
             if (noGI)
@@ -812,21 +815,21 @@ public class SunflowGUI extends javax.swing.JFrame implements UserInterface {
                 try {
                     api = SunflowAPI.compile(editorTextArea.getText());
                 } catch (NoClassDefFoundError e) {
-                    UI.printError("[GUI] Janino library not found. Please check command line.");
+                    UI.printError(Module.GUI, "Janino library not found. Please check command line.");
                     api = null;
                 }
                 if (api != null) {
                     try {
                         api.build();
                     } catch (Exception e) {
-                        UI.printError("[GUI] Build terminated abnormally: %s", e.getMessage());
+                        UI.printError(Module.GUI, "Build terminated abnormally: %s", e.getMessage());
                         for (StackTraceElement elt : e.getStackTrace()) {
-                            UI.printInfo("[GUI]        at %s", elt.toString());
+                            UI.printInfo(Module.GUI, "       at %s", elt.toString());
                         }
                         e.printStackTrace();
                     }
                     t.end();
-                    UI.printInfo("[GUI] Build time: %s", t.toString());
+                    UI.printInfo(Module.GUI, "Build time: %s", t.toString());
                 }
                 setEnableInterface(true);
             }
@@ -857,21 +860,10 @@ public class SunflowGUI extends javax.swing.JFrame implements UserInterface {
         iprButton.setEnabled(enabled);
     }
 
-    public void printDetailed(String s) {
-        println(s);
-    }
-
-    public void printInfo(String s) {
-        println(s);
-    }
-
-    public void printWarning(String s) {
-        println("Warning: " + s);
-    }
-
-    public void printError(String s) {
-        JOptionPane.showMessageDialog(SunflowGUI.this, s, "Error", JOptionPane.ERROR_MESSAGE);
-        println("Error: " + s);
+    public void print(Module m, PrintLevel level, String s) {
+        if (level == PrintLevel.ERROR)
+            JOptionPane.showMessageDialog(SunflowGUI.this, s, String.format("Error - %s", m.name()), JOptionPane.ERROR_MESSAGE);
+        println(UI.formatOutput(m, level, s));
     }
 
     public void taskStart(String s, int min, int max) {
@@ -928,7 +920,7 @@ public class SunflowGUI extends javax.swing.JFrame implements UserInterface {
                     api.options(SunflowAPI.DEFAULT_OPTIONS);
                     api.render(SunflowAPI.DEFAULT_OPTIONS, imagePanel);
                 } else
-                    UI.printError("[GUI] Nothing to render!");
+                    UI.printError(Module.GUI, "Nothing to render!");
                 setEnableInterface(true);
             }
         }.start();
@@ -945,7 +937,7 @@ public class SunflowGUI extends javax.swing.JFrame implements UserInterface {
                     api.options(SunflowAPI.DEFAULT_OPTIONS);
                     api.render(SunflowAPI.DEFAULT_OPTIONS, imagePanel);
                 } else
-                    UI.printError("[GUI] Nothing to IPR!");
+                    UI.printError(Module.GUI, "Nothing to IPR!");
                 setEnableInterface(true);
             }
         }.start();
@@ -999,9 +991,9 @@ public class SunflowGUI extends javax.swing.JFrame implements UserInterface {
             file.close();
             // update current filename
             currentFile = filename;
-            UI.printInfo("[GUI] Saved current script to \"%s\"", filename);
+            UI.printInfo(Module.GUI, "Saved current script to \"%s\"", filename);
         } catch (IOException e) {
-            UI.printError("[GUI] Unable to save: \"%s\"", filename);
+            UI.printError(Module.GUI, "Unable to save: \"%s\"", filename);
             e.printStackTrace();
         }
     }
@@ -1059,23 +1051,23 @@ public class SunflowGUI extends javax.swing.JFrame implements UserInterface {
                 file.close();
                 editorTextArea.setText(code);
             } catch (FileNotFoundException e) {
-                UI.printError("[GUI] Unable to load: \"%s\"", filename);
+                UI.printError(Module.GUI, "Unable to load: \"%s\"", filename);
                 return;
             } catch (IOException e) {
-                UI.printError("[GUI] Unable to load: \"%s\"", filename);
+                UI.printError(Module.GUI, "Unable to load: \"%s\"", filename);
                 return;
             }
             // loade went ok, use filename as current
             currentFile = filename;
-            UI.printInfo("[GUI] Loaded script: \"%s\"", filename);
+            UI.printInfo(Module.GUI, "Loaded script: \"%s\"", filename);
         } else if (filename.endsWith(".sc")) {
             String template = "import org.sunflow.core.*;\nimport org.sunflow.core.accel.*;\nimport org.sunflow.core.camera.*;\nimport org.sunflow.core.primitive.*;\nimport org.sunflow.core.shader.*;\nimport org.sunflow.image.Color;\nimport org.sunflow.math.*;\n\npublic void build() {\n  parse(\"" + filename.replace("\\", "\\\\") + "\");\n}\n";
             editorTextArea.setText(template);
             // no java file associated
             currentFile = null;
-            UI.printInfo("[GUI] Created template for \"%s\"", filename);
+            UI.printInfo(Module.GUI, "Created template for \"%s\"", filename);
         } else {
-            UI.printError("[GUI] Unknown file format selected");
+            UI.printError(Module.GUI, "Unknown file format selected");
             return;
         }
         editorTextArea.setCaretPosition(0);
