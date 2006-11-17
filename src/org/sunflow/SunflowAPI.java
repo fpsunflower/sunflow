@@ -4,7 +4,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.StringReader;
-import java.util.ArrayList;
 
 import org.codehaus.janino.ClassBodyEvaluator;
 import org.codehaus.janino.CompileException;
@@ -24,7 +23,6 @@ import org.sunflow.core.LightSource;
 import org.sunflow.core.Options;
 import org.sunflow.core.ParameterList;
 import org.sunflow.core.PrimitiveList;
-import org.sunflow.core.RenderObject;
 import org.sunflow.core.Scene;
 import org.sunflow.core.SceneParser;
 import org.sunflow.core.Shader;
@@ -56,7 +54,6 @@ import org.sunflow.system.SearchPath;
 import org.sunflow.system.Timer;
 import org.sunflow.system.UI;
 import org.sunflow.system.UI.Module;
-import org.sunflow.util.FastHashMap;
 
 /**
  * This API gives a simple interface for creating scenes procedurally. This is
@@ -74,85 +71,8 @@ public class SunflowAPI {
     private SearchPath includeSearchPath;
     private SearchPath textureSearchPath;
     private ParameterList parameterList;
-    private FastHashMap<String, RenderObjectHandle> renderObjects;
-    private boolean rebuildInstanceList;
-    private boolean rebuildLightList;
+    private RenderObjectMap renderObjects;
 
-    private enum RenderObjectType {
-        UNKNOWN, SHADER, GEOMETRY, INSTANCE, LIGHT, CAMERA, OPTIONS
-    }
-
-    private static final class RenderObjectHandle {
-        private final RenderObject obj;
-        private final RenderObjectType type;
-
-        private RenderObjectHandle(Shader shader) {
-            obj = shader;
-            type = RenderObjectType.SHADER;
-        }
-
-        private RenderObjectHandle(Tesselatable tesselatable) {
-            obj = new Geometry(tesselatable);
-            type = RenderObjectType.GEOMETRY;
-        }
-
-        private RenderObjectHandle(PrimitiveList prims) {
-            obj = new Geometry(prims);
-            type = RenderObjectType.GEOMETRY;
-        }
-
-        private RenderObjectHandle(Instance instance) {
-            obj = instance;
-            type = RenderObjectType.INSTANCE;
-        }
-
-        private RenderObjectHandle(LightSource light) {
-            obj = light;
-            type = RenderObjectType.LIGHT;
-        }
-
-        private RenderObjectHandle(Camera camera) {
-            obj = camera;
-            type = RenderObjectType.CAMERA;
-        }
-
-        private RenderObjectHandle(Options options) {
-            obj = options;
-            type = RenderObjectType.OPTIONS;
-        }
-
-        private boolean update(ParameterList pl, SunflowAPI api) {
-            return obj.update(pl, api);
-        }
-
-        private String typeName() {
-            return type.name().toLowerCase();
-        }
-
-        private Shader getShader() {
-            return (type == RenderObjectType.SHADER) ? (Shader) obj : null;
-        }
-
-        private Geometry getGeometry() {
-            return (type == RenderObjectType.GEOMETRY) ? (Geometry) obj : null;
-        }
-
-        private Instance getInstance() {
-            return (type == RenderObjectType.INSTANCE) ? (Instance) obj : null;
-        }
-
-        private LightSource getLight() {
-            return (type == RenderObjectType.LIGHT) ? (LightSource) obj : null;
-        }
-
-        private Camera getCamera() {
-            return (type == RenderObjectType.CAMERA) ? (Camera) obj : null;
-        }
-
-        private Options getOptions() {
-            return (type == RenderObjectType.OPTIONS) ? (Options) obj : null;
-        }
-    }
 
     /**
      * The default constructor is only available to sub-classes.
@@ -172,9 +92,7 @@ public class SunflowAPI {
         includeSearchPath = new SearchPath("include");
         textureSearchPath = new SearchPath("texture");
         parameterList = new ParameterList();
-        renderObjects = new FastHashMap<String, RenderObjectHandle>();
-        rebuildInstanceList = false;
-        rebuildLightList = false;
+        renderObjects = new RenderObjectMap();
     }
 
     /**
@@ -191,7 +109,7 @@ public class SunflowAPI {
         do {
             name = String.format("%s_%d", prefix, counter);
             counter++;
-        } while (renderObjects.containsKey(name));
+        } while (renderObjects.has(name));
         return name;
     }
 
@@ -345,46 +263,7 @@ public class SunflowAPI {
      * @param name name of the object to remove
      */
     public void remove(String name) {
-        RenderObjectHandle obj = renderObjects.get(name);
-        if (obj != null) {
-            UI.printDetailed(Module.API, "Removing object \"%s\"", name);
-            renderObjects.remove(name);
-            // scan through all objects to make sure we don't have any
-            // references to the old object still around
-            switch (obj.type) {
-                case SHADER:
-                    Shader s = obj.getShader();
-                    for (FastHashMap.Entry<String, RenderObjectHandle> e : renderObjects) {
-                        Instance i = e.getValue().getInstance();
-                        if (i != null) {
-                            UI.printWarning(Module.API, "Removing shader \"%s\" from instance \"%s\"", name, e.getKey());
-                            i.removeShader(s);
-                        }
-                    }
-                    break;
-                case GEOMETRY: {
-                    Geometry g = obj.getGeometry();
-                    for (FastHashMap.Entry<String, RenderObjectHandle> e : renderObjects) {
-                        Instance i = e.getValue().getInstance();
-                        if (i != null && i.hasGeometry(g)) {
-                            UI.printWarning(Module.API, "Removing instance \"%s\" because it referenced geometry \"%s\"", e.getKey(), name);
-                            remove(e.getKey());
-                        }
-                    }
-                    break;
-                }
-                case INSTANCE:
-                    rebuildInstanceList = true;
-                    break;
-                case LIGHT:
-                    rebuildLightList = true;
-                    break;
-                default:
-                    // no dependencies
-                    break;
-            }
-        } else
-            UI.printWarning(Module.API, "Unable to remove \"%s\" - object was not defined yet");
+        renderObjects.remove(name);
     }
 
     /**
@@ -397,19 +276,7 @@ public class SunflowAPI {
      *         <code>false</code> if the update failed
      */
     public boolean update(String name) {
-        RenderObjectHandle obj = renderObjects.get(name);
-        boolean success;
-        if (obj == null) {
-            UI.printError(Module.API, "Unable to update \"%s\" - object was not defined yet", name);
-            success = false;
-        } else {
-            UI.printDetailed(Module.API, "Updating %s object \"%s\"", obj.typeName(), name);
-            success = obj.update(parameterList, this);
-            if (!success) {
-                UI.printError(Module.API, "Unable to update \"%s\" - removing", name);
-                remove(name);
-            }
-        }
+        boolean success = renderObjects.update(name, parameterList, this);
         parameterList.clear(success);
         return success;
     }
@@ -527,11 +394,11 @@ public class SunflowAPI {
     public final void shader(String name, Shader shader) {
         if (shader != null) {
             // we are declaring a shader for the first time
-            if (renderObjects.containsKey(name)) {
+            if (renderObjects.has(name)) {
                 UI.printError(Module.API, "Unable to declare shader \"%s\", name is already in use", name);
                 return;
             }
-            renderObjects.put(name, new RenderObjectHandle(shader));
+            renderObjects.put(name, shader);
         }
         // update existing shader (only if it is valid)
         if (lookupShader(name) != null)
@@ -552,11 +419,11 @@ public class SunflowAPI {
     public final void geometry(String name, PrimitiveList primitives) {
         if (primitives != null) {
             // we are declaring a geometry for the first time
-            if (renderObjects.containsKey(name)) {
+            if (renderObjects.has(name)) {
                 UI.printError(Module.API, "Unable to declare geometry \"%s\", name is already in use", name);
                 return;
             }
-            renderObjects.put(name, new RenderObjectHandle(primitives));
+            renderObjects.put(name, primitives);
         }
         if (lookupGeometry(name) != null)
             update(name);
@@ -575,16 +442,15 @@ public class SunflowAPI {
     public final void geometry(String name, Tesselatable tesselatable) {
         if (tesselatable != null) {
             // we are declaring a geometry for the first time
-            if (renderObjects.containsKey(name)) {
+            if (renderObjects.has(name)) {
                 UI.printError(Module.API, "Unable to declare geometry \"%s\", name is already in use", name);
                 return;
             }
-            renderObjects.put(name, new RenderObjectHandle(tesselatable));
+            renderObjects.put(name, tesselatable);
         }
-        if (lookupGeometry(name) != null) {
-            if (update(name))
-                rebuildInstanceList = true;
-        } else
+        if (lookupGeometry(name) != null)
+            update(name);
+        else
             UI.printError(Module.API, "Unable to update geometry \"%s\" - geometry object was not found", name);
     }
 
@@ -599,23 +465,16 @@ public class SunflowAPI {
     public final void instance(String name, String geoname) {
         if (geoname != null) {
             // we are declaring this instance for the first time
-            if (renderObjects.containsKey(name)) {
+            if (renderObjects.has(name)) {
                 UI.printError(Module.API, "Unable to declare instance \"%s\", name is already in use", name);
                 return;
             }
-            Geometry geo = lookupGeometry(geoname);
-            if (geo == null) {
-                UI.printError(Module.API, "Cannot instance \"%s\" - geometry was not found", geoname);
-                return;
-            }
             parameter("geometry", geoname);
-            Instance instance = new Instance();
-            renderObjects.put(name, new RenderObjectHandle(instance));
+            renderObjects.put(name, new Instance());
         }
-        if (lookupInstance(name) != null) {
-            if (update(name))
-                rebuildInstanceList = true;
-        } else
+        if (lookupInstance(name) != null)
+            update(name);
+        else
             UI.printError(Module.API, "Unable to update instance \"%s\" - instance object was not found", name);
     }
 
@@ -627,16 +486,15 @@ public class SunflowAPI {
     public final void light(String name, LightSource light) {
         if (light != null) {
             // we are declaring this light for the first time
-            if (renderObjects.containsKey(name)) {
+            if (renderObjects.has(name)) {
                 UI.printError(Module.API, "Unable to declare light \"%s\", name is already in use", name);
                 return;
             }
-            renderObjects.put(name, new RenderObjectHandle(light));
+            renderObjects.put(name, light);
         }
-        if (lookupLight(name) != null) {
-            if (update(name))
-                rebuildLightList = true;
-        } else
+        if (lookupLight(name) != null)
+            update(name);
+        else
             UI.printError(Module.API, "Unable to update instance \"%s\" - instance object was not found", name);
     }
 
@@ -651,11 +509,11 @@ public class SunflowAPI {
     public final void camera(String name, CameraLens lens) {
         if (lens != null) {
             // we are declaring this camera for the first time
-            if (renderObjects.containsKey(name)) {
+            if (renderObjects.has(name)) {
                 UI.printError(Module.API, "Unable to declare camera \"%s\", name is already in use", name);
                 return;
             }
-            renderObjects.put(name, new RenderObjectHandle(new Camera(lens)));
+            renderObjects.put(name, new Camera(lens));
         }
         // update existing shader (only if it is valid)
         if (lookupCamera(name) != null)
@@ -672,11 +530,11 @@ public class SunflowAPI {
      */
     public final void options(String name) {
         if (lookupOptions(name) == null) {
-            if (renderObjects.containsKey(name)) {
+            if (renderObjects.has(name)) {
                 UI.printError(Module.API, "Unable to declare options \"%s\", name is already in use", name);
                 return;
             }
-            renderObjects.put(name, new RenderObjectHandle(new Options()));
+            renderObjects.put(name, new Options());
         }
         assert lookupOptions(name) != null;
         update(name);
@@ -690,10 +548,7 @@ public class SunflowAPI {
      * @return the geometry object associated with that name
      */
     public final Geometry lookupGeometry(String name) {
-        if (name == null)
-            return null;
-        RenderObjectHandle handle = renderObjects.get(name);
-        return (handle == null) ? null : handle.getGeometry();
+        return renderObjects.lookupGeometry(name);
     }
 
     /**
@@ -704,10 +559,7 @@ public class SunflowAPI {
      * @return the instance object associated with that name
      */
     private final Instance lookupInstance(String name) {
-        if (name == null)
-            return null;
-        RenderObjectHandle handle = renderObjects.get(name);
-        return (handle == null) ? null : handle.getInstance();
+        return renderObjects.lookupInstance(name);
     }
 
     /**
@@ -718,17 +570,11 @@ public class SunflowAPI {
      * @return the camera object associate with that name
      */
     private final Camera lookupCamera(String name) {
-        if (name == null)
-            return null;
-        RenderObjectHandle handle = renderObjects.get(name);
-        return (handle == null) ? null : handle.getCamera();
+        return renderObjects.lookupCamera(name);
     }
 
-    public final Options lookupOptions(String name) {
-        if (name == null)
-            return null;
-        RenderObjectHandle handle = renderObjects.get(name);
-        return (handle == null) ? null : handle.getOptions();
+    private final Options lookupOptions(String name) {
+        return renderObjects.lookupOptions(name);
     }
 
     /**
@@ -739,10 +585,7 @@ public class SunflowAPI {
      * @return the shader object associated with that name
      */
     public final Shader lookupShader(String name) {
-        if (name == null)
-            return null;
-        RenderObjectHandle handle = renderObjects.get(name);
-        return (handle == null) ? null : handle.getShader();
+        return renderObjects.lookupShader(name);
     }
 
     /**
@@ -753,10 +596,7 @@ public class SunflowAPI {
      * @return the light object associated with that name
      */
     private final LightSource lookupLight(String name) {
-        if (name == null)
-            return null;
-        RenderObjectHandle handle = renderObjects.get(name);
-        return (handle == null) ? null : handle.getLight();
+        return renderObjects.lookupLight(name);
     }
 
     /**
@@ -793,49 +633,7 @@ public class SunflowAPI {
      * @param display display object
      */
     public final void render(String optionsName, Display display) {
-        if (rebuildInstanceList) {
-            UI.printInfo(Module.API, "Building scene instance list for rendering ...");
-            int numInfinite = 0, numInstance = 0;
-            for (FastHashMap.Entry<String, RenderObjectHandle> e : renderObjects) {
-                Instance i = e.getValue().getInstance();
-                if (i != null) {
-                    i.updateBounds();
-                    if (i.getBounds() == null)
-                        numInfinite++;
-                    else
-                        numInstance++;
-                }
-            }
-            Instance[] infinite = new Instance[numInfinite];
-            Instance[] instance = new Instance[numInstance];
-            numInfinite = numInstance = 0;
-            for (FastHashMap.Entry<String, RenderObjectHandle> e : renderObjects) {
-                Instance i = e.getValue().getInstance();
-                if (i != null) {
-                    if (i.getBounds() == null) {
-                        infinite[numInfinite] = i;
-                        numInfinite++;
-                    } else {
-                        instance[numInstance] = i;
-                        numInstance++;
-                    }
-                }
-            }
-            scene.setInstanceLists(instance, infinite);
-            rebuildInstanceList = false;
-        }
-        if (rebuildLightList) {
-            UI.printInfo(Module.API, "Building scene light list for rendering ...");
-            ArrayList<LightSource> lightList = new ArrayList<LightSource>();
-            for (FastHashMap.Entry<String, RenderObjectHandle> e : renderObjects) {
-                LightSource light = e.getValue().getLight();
-                if (light != null)
-                    lightList.add(light);
-                
-            }
-            scene.setLightList(lightList.toArray(new LightSource[lightList.size()]));
-            rebuildLightList = false;
-        }
+        renderObjects.updateScene(scene);
         Options opt = lookupOptions(optionsName);
         if (opt == null)
             opt = new Options();
