@@ -91,7 +91,7 @@ public class FastHashMap<K, V> implements Iterable<FastHashMap.Entry<K, V>> {
             hash += t;
         }
     }
-    
+
     public boolean containsKey(K k) {
         int hash = k.hashCode(), t = 0;
         for (;;) {

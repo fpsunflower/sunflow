@@ -58,7 +58,7 @@ public class Instance implements RenderObject {
     public void updateBounds() {
         bounds = geometry.getWorldBounds(o2w);
     }
-    
+
     public boolean hasGeometry(Geometry g) {
         return geometry == g;
     }

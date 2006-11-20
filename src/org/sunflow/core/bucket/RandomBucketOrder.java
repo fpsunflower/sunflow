@@ -31,12 +31,12 @@ public class RandomBucketOrder implements BucketOrder {
 
         return coords;
     }
-    
+
     private int mod(int a, int b) {
         int m = a % b;
         return (m < 0) ? m + b : m;
     }
-    
+
     private long xorshift(long y) {
         y = y ^ (y << 13);
         y = y ^ (y >>> 17); // unsigned

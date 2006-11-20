@@ -118,7 +118,8 @@ public class OpenExrDisplay implements Display {
     }
 
     public void writeRGBHeader(int w, int h, int tileSize) throws Exception {
-        byte[] chanOut = { 0, channelType, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0 };
+        byte[] chanOut = { 0, channelType, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1,
+                0, 0, 0 };
 
         file.write(ByteUtil.get4Bytes(OE_MAGIC));
 

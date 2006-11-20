@@ -56,7 +56,7 @@ public class RA3Parser implements SceneParser {
                 // reuse existing shader
                 api.parameter("shaders", "ra3shader");
             }
-            
+
             // create instance
             api.instance(filename + ".instance", filename);
         } catch (FileNotFoundException e) {

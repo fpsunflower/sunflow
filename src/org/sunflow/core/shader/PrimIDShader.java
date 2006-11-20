@@ -8,7 +8,8 @@ import org.sunflow.image.Color;
 import org.sunflow.math.Vector3;
 
 public class PrimIDShader implements Shader {
-    private static final Color[] BORDERS = { Color.RED, Color.GREEN, Color.BLUE, Color.YELLOW, Color.CYAN, Color.MAGENTA };
+    private static final Color[] BORDERS = { Color.RED, Color.GREEN,
+            Color.BLUE, Color.YELLOW, Color.CYAN, Color.MAGENTA };
 
     public boolean update(ParameterList pl, SunflowAPI api) {
         return true;

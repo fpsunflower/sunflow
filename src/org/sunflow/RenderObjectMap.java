@@ -147,13 +147,13 @@ final class RenderObjectMap {
                 LightSource light = e.getValue().getLight();
                 if (light != null)
                     lightList.add(light);
-                
+
             }
             scene.setLightList(lightList.toArray(new LightSource[lightList.size()]));
             rebuildLightList = false;
         }
     }
-    
+
     final void put(String name, Shader shader) {
         renderObjects.put(name, new RenderObjectHandle(shader));
     }

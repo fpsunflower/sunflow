@@ -10,7 +10,7 @@ final class InstanceList implements PrimitiveList {
     InstanceList() {
         instances = new Instance[0];
     }
-    
+
     InstanceList(Instance[] instances) {
         this.instances = instances;
     }

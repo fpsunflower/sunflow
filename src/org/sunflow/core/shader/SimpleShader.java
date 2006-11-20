@@ -10,7 +10,7 @@ public class SimpleShader implements Shader {
     public boolean update(ParameterList pl, SunflowAPI api) {
         return true;
     }
-    
+
     public Color getRadiance(ShadingState state) {
         return new Color(Math.abs(state.getRay().dot(state.getNormal())));
     }

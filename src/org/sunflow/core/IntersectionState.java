@@ -29,7 +29,7 @@ public final class IntersectionState {
     public final int getStackTop() {
         return current == null ? 0 : MAX_STACK_SIZE;
     }
-    
+
     public final float[] getRobustStack() {
         return rstack;
     }

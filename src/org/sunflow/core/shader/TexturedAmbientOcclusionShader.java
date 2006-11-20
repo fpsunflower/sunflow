@@ -13,7 +13,7 @@ public class TexturedAmbientOcclusionShader extends AmbientOcclusionShader {
     public TexturedAmbientOcclusionShader() {
         tex = null;
     }
-    
+
     public boolean update(ParameterList pl, SunflowAPI api) {
         String filename = pl.getString("texture", null);
         if (filename != null)

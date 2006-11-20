@@ -1,10 +1,10 @@
 package org.sunflow.core.primitive;
 
 import org.sunflow.SunflowAPI;
-import org.sunflow.core.ParameterList;
-import org.sunflow.core.PrimitiveList;
 import org.sunflow.core.Instance;
 import org.sunflow.core.IntersectionState;
+import org.sunflow.core.ParameterList;
+import org.sunflow.core.PrimitiveList;
 import org.sunflow.core.Ray;
 import org.sunflow.core.ShadingState;
 import org.sunflow.math.BoundingBox;

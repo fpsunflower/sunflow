@@ -46,7 +46,7 @@ class LightServer {
     private static class Sample {
         Instance i;
         Shader s;
-        //int prim;
+        // int prim;
         float nx, ny, nz;
         Color c;
         Sample next; // linked list
@@ -69,7 +69,7 @@ class LightServer {
 
         shadingCache(0);
     }
-    
+
     void setLights(LightSource[] lights) {
         this.lights = lights;
     }
@@ -101,7 +101,7 @@ class LightServer {
         maxDiffuseDepth = options.getInt("depths.diffuse", maxDiffuseDepth);
         maxReflectionDepth = options.getInt("depths.reflection", maxReflectionDepth);
         maxRefractionDepth = options.getInt("depths.refraction", maxRefractionDepth);
-        
+
         // validate options
         maxDiffuseDepth = Math.max(0, maxDiffuseDepth);
         maxReflectionDepth = Math.max(0, maxReflectionDepth);
@@ -337,9 +337,9 @@ class LightServer {
     }
 
     private static final int hash(int x, int y) {
-//        long bits = java.lang.Double.doubleToLongBits(x);
-//        bits ^= java.lang.Double.doubleToLongBits(y) * 31;
-//        return (((int) bits) ^ ((int) (bits >> 32)));
+        // long bits = java.lang.Double.doubleToLongBits(x);
+        // bits ^= java.lang.Double.doubleToLongBits(y) * 31;
+        // return (((int) bits) ^ ((int) (bits >> 32)));
         return x ^ y;
     }
 
@@ -361,8 +361,8 @@ class LightServer {
             for (Sample s = e.first; s != null; s = s.next) {
                 if (s.i != state.getInstance())
                     continue;
-//                if (s.prim != state.getPrimitiveID())
-//                    continue;
+                // if (s.prim != state.getPrimitiveID())
+                // continue;
                 if (s.s != shader)
                     continue;
                 if (state.getNormal().dot(s.nx, s.ny, s.nz) < 0.95f)
@@ -390,7 +390,7 @@ class LightServer {
             e = shadingCache[h] = new CacheEntry();
         Sample s = new Sample();
         s.i = state.getInstance();
-//        s.prim = state.getPrimitiveID();
+        // s.prim = state.getPrimitiveID();
         s.s = shader;
         s.c = c;
         s.nx = state.getNormal().x;

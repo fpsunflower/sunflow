@@ -15,11 +15,11 @@ public final class Color {
     public static final Color GREY = new Color(0.5f, 0.5f, 0.5f);
 
     public static Color black() {
-        return new Color(0, 0, 0);
+        return new Color(0);
     }
 
     public static Color white() {
-        return new Color(1, 1, 1);
+        return new Color(1);
     }
 
     private static final float[] EXPONENT = new float[256];
@@ -42,8 +42,8 @@ public final class Color {
     }
 
     static {
-        float inv = 1.0f / 255.0f;
-        for (int i = 0; i < SRGB_CURVE.length; i++) {
+        float inv = 1.0f / 255;
+        for (int i = 0; i < 255; i++) {
             float c = i * inv;
             SRGB_CURVE[i] = MathUtils.clamp((int) (sRGBCurve(c) * 255 + 0.5f), 0, 255);
             SRGB_CURVE_INV[i] = MathUtils.clamp((int) (sRGBCurveInverse(c) * 255 + 0.5f), 0, 255);

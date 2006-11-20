@@ -179,7 +179,8 @@ public class RenderGlobalsPanel extends JTabbedPane {
                             jLabel5.setText("Min:");
                         }
                         {
-                            ComboBoxModel minSamplingComboBoxModel = new DefaultComboBoxModel(new String[] { "Item One", "Item Two" });
+                            ComboBoxModel minSamplingComboBoxModel = new DefaultComboBoxModel(new String[] {
+                                    "Item One", "Item Two" });
                             minSamplingComboBox = new JComboBox();
                             samplingPanel.add(minSamplingComboBox);
                             minSamplingComboBox.setModel(minSamplingComboBoxModel);
@@ -190,7 +191,8 @@ public class RenderGlobalsPanel extends JTabbedPane {
                             jLabel6.setText("Max:");
                         }
                         {
-                            ComboBoxModel maxSamplingComboxBoxModel = new DefaultComboBoxModel(new String[] { "Item One", "Item Two" });
+                            ComboBoxModel maxSamplingComboxBoxModel = new DefaultComboBoxModel(new String[] {
+                                    "Item One", "Item Two" });
                             maxSamplingComboxBox = new JComboBox();
                             samplingPanel.add(maxSamplingComboxBox);
                             maxSamplingComboxBox.setModel(maxSamplingComboxBoxModel);

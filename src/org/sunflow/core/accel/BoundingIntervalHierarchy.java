@@ -149,8 +149,12 @@ public class BoundingIntervalHierarchy implements AccelerationStructure {
         if (objects.length == 0)
             return;
         // seed bbox
-        float[] gridBox = { bounds.getMinimum().x, bounds.getMaximum().x, bounds.getMinimum().y, bounds.getMaximum().y, bounds.getMinimum().z, bounds.getMaximum().z };
-        float[] nodeBox = { bounds.getMinimum().x, bounds.getMaximum().x, bounds.getMinimum().y, bounds.getMaximum().y, bounds.getMinimum().z, bounds.getMaximum().z };
+        float[] gridBox = { bounds.getMinimum().x, bounds.getMaximum().x,
+                bounds.getMinimum().y, bounds.getMaximum().y,
+                bounds.getMinimum().z, bounds.getMaximum().z };
+        float[] nodeBox = { bounds.getMinimum().x, bounds.getMaximum().x,
+                bounds.getMinimum().y, bounds.getMaximum().y,
+                bounds.getMinimum().z, bounds.getMaximum().z };
         // seed subdivide function
         subdivide(0, objects.length - 1, tempTree, indices, gridBox, nodeBox, 0, 1, stats);
     }
@@ -177,7 +181,8 @@ public class BoundingIntervalHierarchy implements AccelerationStructure {
             prevAxis = axis;
             prevSplit = split;
             // perform quick consistency checks
-            float d[] = { gridBox[1] - gridBox[0], gridBox[3] - gridBox[2], gridBox[5] - gridBox[4] };
+            float d[] = { gridBox[1] - gridBox[0], gridBox[3] - gridBox[2],
+                    gridBox[5] - gridBox[4] };
             if (d[0] < 0 || d[1] < 0 || d[2] < 0)
                 throw new IllegalStateException("negative node extents");
             for (int i = 0; i < 3; i++) {

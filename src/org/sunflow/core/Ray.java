@@ -115,6 +115,13 @@ public final class Ray {
         return r;
     }
 
+    public void normalize() {
+        float in = 1.0f / (float) Math.sqrt(dx * dx + dy * dy + dz * dz);
+        dx *= in;
+        dy *= in;
+        dz *= in;
+    }
+
     /**
      * Gets the minimum distance along the ray. Usually a small epsilon above 0.
      * 

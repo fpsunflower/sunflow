@@ -236,7 +236,7 @@ public class Hair implements PrimitiveList, Shader {
             Vector3 l = ls.getShadowRay().getDirection();
             float dotTL = Vector3.dot(t, l);
             float sinTL = (float) Math.sqrt(1 - dotTL * dotTL);
-            //float dotVL = Vector3.dot(v, l);
+            // float dotVL = Vector3.dot(v, l);
             diff.madd(sinTL, ls.getDiffuseRadiance());
             Vector3.add(v, l, h);
             h.normalize();
@@ -246,7 +246,7 @@ public class Hair implements PrimitiveList, Shader {
             spec.madd(s, ls.getSpecularRadiance());
         }
         Color c = Color.add(diff, spec, new Color());
-        // transparency 
+        // transparency
         return Color.blend(c, state.traceTransparency(), state.getV(), new Color());
     }
 

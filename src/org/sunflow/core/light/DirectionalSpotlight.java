@@ -38,7 +38,7 @@ public class DirectionalSpotlight implements LightSource {
         radiance = pl.getColor("radiance", radiance);
         return true;
     }
-    
+
     public int getNumSamples() {
         return 1;
     }

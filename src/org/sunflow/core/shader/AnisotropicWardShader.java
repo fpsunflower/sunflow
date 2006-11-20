@@ -33,7 +33,7 @@ public class AnisotropicWardShader implements Shader {
         numRays = pl.getInt("samples", numRays);
         return true;
     }
-    
+
     protected Color getDiffuse(ShadingState state) {
         return rhoD;
     }

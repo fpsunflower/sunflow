@@ -17,7 +17,9 @@ import org.sunflow.image.Color;
 
 @SuppressWarnings("serial")
 public class ImagePanel extends JPanel implements Display {
-    private static final int[] BORDERS = { Color.RED.toRGB(), Color.GREEN.toRGB(), Color.BLUE.toRGB(), Color.YELLOW.toRGB(), Color.CYAN.toRGB(), Color.MAGENTA.toRGB() };
+    private static final int[] BORDERS = { Color.RED.toRGB(),
+            Color.GREEN.toRGB(), Color.BLUE.toRGB(), Color.YELLOW.toRGB(),
+            Color.CYAN.toRGB(), Color.MAGENTA.toRGB() };
     private BufferedImage image;
     private float xo, yo;
     private float w, h;

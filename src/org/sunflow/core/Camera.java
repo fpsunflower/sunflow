@@ -33,8 +33,11 @@ public class Camera implements RenderObject {
 
     public Ray getRay(float x, float y, int imageWidth, int imageHeight, double lensX, double lensY, double time) {
         Ray r = lens.getRay(x, y, imageWidth, imageHeight, lensX, lensY, time);
-        if (r != null && c2w != null)
+        if (r != null && c2w != null) {
             r = r.transform(c2w);
+            // renormalize to account for scale factors embeded in the transform
+            r.normalize();
+        }
         return r;
     }
 }

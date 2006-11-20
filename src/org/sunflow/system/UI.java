@@ -15,7 +15,7 @@ public final class UI {
     public enum Module {
         API, GEOM, HAIR, ACCEL, BCKT, IPR, LIGHT, GUI, SCENE, BENCH, TEX, IMG, DISP, QMC, SYS, USER,
     }
-    
+
     public enum PrintLevel {
         ERROR, WARN, INFO, DETAIL
     }
@@ -43,7 +43,7 @@ public final class UI {
     public final static String formatOutput(Module m, PrintLevel level, String s) {
         return String.format("%-5s  %-6s: %s", m.name(), level.name().toLowerCase(), s);
     }
-    
+
     public final static synchronized void printDetailed(Module m, String s, Object... args) {
         if (verbosity > 3)
             ui.print(m, PrintLevel.DETAIL, String.format(s, args));

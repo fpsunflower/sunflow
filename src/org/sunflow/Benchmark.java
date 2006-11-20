@@ -146,8 +146,11 @@ public class Benchmark extends SunflowAPI implements BenchmarkTest, UserInterfac
         float minZ = -250;
         float maxZ = 200;
 
-        float[] verts = new float[] { minX, minY, minZ, maxX, minY, minZ, maxX, minY, maxZ, minX, minY, maxZ, minX, maxY, minZ, maxX, maxY, minZ, maxX, maxY, maxZ, minX, maxY, maxZ, };
-        int[] indices = new int[] { 0, 1, 2, 2, 3, 0, 4, 5, 6, 6, 7, 4, 1, 2, 5, 5, 6, 2, 2, 3, 6, 6, 7, 3, 0, 3, 4, 4, 7, 3 };
+        float[] verts = new float[] { minX, minY, minZ, maxX, minY, minZ, maxX,
+                minY, maxZ, minX, minY, maxZ, minX, maxY, minZ, maxX, maxY,
+                minZ, maxX, maxY, maxZ, minX, maxY, maxZ, };
+        int[] indices = new int[] { 0, 1, 2, 2, 3, 0, 4, 5, 6, 6, 7, 4, 1, 2,
+                5, 5, 6, 2, 2, 3, 6, 6, 7, 3, 0, 3, 4, 4, 7, 3 };
 
         parameter("diffuse", grey);
         shader("grey_shader", new DiffuseShader());
@@ -163,11 +166,13 @@ public class Benchmark extends SunflowAPI implements BenchmarkTest, UserInterfac
         geometry("walls", new Mesh());
 
         // instance walls
-        parameter("shaders", new String[] { "grey_shader", "red_shader", "blue_shader" });
+        parameter("shaders", new String[] { "grey_shader", "red_shader",
+                "blue_shader" });
         instance("walls.instance", "walls");
 
         // create mesh light
-        parameter("points", "point", "vertex", new float[] { -50, maxY - 1, -50, 50, maxY - 1, -50, 50, maxY - 1, 50, -50, maxY - 1, 50 });
+        parameter("points", "point", "vertex", new float[] { -50, maxY - 1,
+                -50, 50, maxY - 1, -50, 50, maxY - 1, 50, -50, maxY - 1, 50 });
         parameter("triangles", new int[] { 0, 1, 2, 2, 3, 0 });
         parameter("radiance", emit);
         parameter("samples", 16);

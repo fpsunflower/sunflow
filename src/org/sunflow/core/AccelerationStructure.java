@@ -1,6 +1,5 @@
 package org.sunflow.core;
 
-
 public interface AccelerationStructure {
     /**
      * Construct an acceleration structure for the specified primitive list.

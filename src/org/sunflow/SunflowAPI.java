@@ -73,7 +73,6 @@ public class SunflowAPI {
     private ParameterList parameterList;
     private RenderObjectMap renderObjects;
 
-
     /**
      * The default constructor is only available to sub-classes.
      */
@@ -176,7 +175,8 @@ public class SunflowAPI {
      * @param value parameter value
      */
     public final void parameter(String name, Point3 value) {
-        parameterList.addPoints(name, InterpolationType.NONE, new float[] { value.x, value.y, value.z });
+        parameterList.addPoints(name, InterpolationType.NONE, new float[] {
+                value.x, value.y, value.z });
     }
 
     /**
@@ -187,7 +187,8 @@ public class SunflowAPI {
      * @param value parameter value
      */
     public final void parameter(String name, Vector3 value) {
-        parameterList.addVectors(name, InterpolationType.NONE, new float[] { value.x, value.y, value.z });
+        parameterList.addVectors(name, InterpolationType.NONE, new float[] {
+                value.x, value.y, value.z });
     }
 
     /**
