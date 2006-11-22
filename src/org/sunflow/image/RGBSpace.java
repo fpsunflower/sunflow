@@ -96,6 +96,14 @@ public final class RGBSpace {
         return new Color(r, g, b);
     }
 
+    public final void convertRGBtoXYZ(Color c) {
+        float[] rgb = c.getRGB();
+        float X = (xr * rgb[0]) + (xg * rgb[1]) + (xb * rgb[2]);
+        float Y = (yr * rgb[0]) + (yg * rgb[1]) + (yb * rgb[2]);
+        float Z = (zr * rgb[0]) + (zg * rgb[1]) + (zb * rgb[2]);
+        // TODO: define XYZ color type
+    }
+
     public final boolean insideGamut(float r, float g, float b) {
         return r >= 0 && g >= 0 && b >= 0;
     }
@@ -124,11 +132,11 @@ public final class RGBSpace {
 
     public final String toString() {
         String info = "Gamma function parameters:\n";
-        info += String.format("  * Gamma          = %7.4f\n", gamma);
-        info += String.format("  * Breakpoint     = %7.4f\n", breakPoint);
-        info += String.format("  * Slope          = %7.4f\n", slope);
-        info += String.format("  * Slope Match    = %7.4f\n", slopeMatch);
-        info += String.format("  * Segment Offset = %7.4f\n", segmentOffset);
+        info += String.format("  * Gamma:          %7.4f\n", gamma);
+        info += String.format("  * Breakpoint:     %7.4f\n", breakPoint);
+        info += String.format("  * Slope:          %7.4f\n", slope);
+        info += String.format("  * Slope Match:    %7.4f\n", slopeMatch);
+        info += String.format("  * Segment Offset: %7.4f\n", segmentOffset);
         info += "XYZ -> RGB Matrix:\n";
         info += String.format("| %7.4f %7.4f %7.4f|\n", rx, ry, rz);
         info += String.format("| %7.4f %7.4f %7.4f|\n", gx, gy, gz);
