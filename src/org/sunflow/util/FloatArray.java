@@ -41,6 +41,16 @@ public final class FloatArray {
     }
 
     /**
+     * Read value from the array.
+     * 
+     * @param index index into the array
+     * @return value at the specified index
+     */
+    public final float get(int index) {
+        return array[index];
+    }
+
+    /**
      * Returns the number of elements added to the array.
      * 
      * @return

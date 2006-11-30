@@ -41,6 +41,16 @@ public final class IntArray {
     }
 
     /**
+     * Read value from the array.
+     * 
+     * @param index index into the array
+     * @return value at the specified index
+     */
+    public final int get(int index) {
+        return array[index];
+    }
+
+    /**
      * Returns the number of elements added to the array.
      * 
      * @return
