@@ -1,12 +1,15 @@
-import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.FloatBuffer;
+import java.nio.MappedByteBuffer;
+import java.nio.channels.FileChannel;
 
 import org.sunflow.SunflowAPI;
+import org.sunflow.core.Display;
 import org.sunflow.core.PrimitiveList;
 import org.sunflow.core.Ray;
 import org.sunflow.core.camera.PinholeLens;
@@ -33,6 +36,7 @@ public class DLASimulator {
         final float size = 5;
         final float radius = 0.03f;
         final int numFrames = 24 * 16;
+        Display display = null;
         if (args.length == 0) {
             final int numParticles = 1000000;
             DLAParticleGrid grid = new DLAParticleGrid(new BoundingBox(size), numParticles, radius);
@@ -160,20 +164,23 @@ public class DLASimulator {
             api.parameter("num", grid.particles.getSize() / 3);
             api.parameter("radius", radius);
             api.geometry("particles.geo", new DLASurface());
-        } else if (args.length == 2) {
+            display = new FrameDisplay();
+        } else if (args.length == 2 || args.length == 3) {
             String filename = args[0];
             int frameNumber = Integer.parseInt(args[1]);
             UI.printInfo(Module.USER, "Loading particle file: %s", filename);
             int numParticles = (int) (new File(filename).length() / 12);
             int n = Math.min((numParticles + numFrames - 1) / numFrames * frameNumber, numParticles);
             try {
-                FileInputStream file = new FileInputStream(filename);
-                DataInputStream stream = new DataInputStream(file);
-                float[] particles = new float[3 * n];
-                for (int i = 0; i < particles.length; i++)
-                    particles[i] = stream.readFloat();
-                file.close();
-                api.parameter("particles", "point", "vertex", particles);
+                File file = new File(filename);
+                FileInputStream stream = new FileInputStream(filename);
+                MappedByteBuffer map = stream.getChannel().map(FileChannel.MapMode.READ_ONLY, 0, file.length());
+                FloatBuffer buffer = map.asFloatBuffer();
+                float[] data = new float[buffer.capacity()];
+                for (int i = 0; i < data.length; i++)
+                    data[i] = buffer.get(i);
+                stream.close();
+                api.parameter("particles", "point", "vertex", data);
                 api.parameter("num", n);
                 api.parameter("radius", radius);
                 api.geometry("particles.geo", new DLASurface());
@@ -181,18 +188,25 @@ public class DLASimulator {
                 e.printStackTrace();
                 System.exit(1);
             }
+            if (args.length > 2)
+                display = new FileDisplay(args[2]);
+            else
+                display = new FrameDisplay();
         } else if (args.length == 1) {
             String filename = args[0];
             UI.printInfo(Module.USER, "Loading particle file: %s", filename);
             int numParticles = (int) (new File(filename).length() / 12);
+            UI.printInfo(Module.USER, "Found %d particles ...", numParticles);
             try {
-                FileInputStream file = new FileInputStream(filename);
-                DataInputStream stream = new DataInputStream(file);
-                float[] particles = new float[3 * numParticles];
-                for (int i = 0; i < particles.length; i++)
-                    particles[i] = stream.readFloat();
-                file.close();
-                api.parameter("particles", "point", "vertex", particles);
+                File file = new File(filename);
+                FileInputStream stream = new FileInputStream(filename);
+                MappedByteBuffer map = stream.getChannel().map(FileChannel.MapMode.READ_ONLY, 0, file.length());
+                FloatBuffer buffer = map.asFloatBuffer();
+                float[] data = new float[buffer.capacity()];
+                for (int i = 0; i < data.length; i++)
+                    data[i] = buffer.get(i);
+                stream.close();
+                api.parameter("particles", "point", "vertex", data);
                 api.parameter("num", 1);
                 api.parameter("radius", radius);
                 api.geometry("particles.geo", new DLASurface());
@@ -201,7 +215,7 @@ public class DLASimulator {
                 System.exit(1);
             }
             api.shader("quick", new SimpleShader());
-            api.parameter("shaders", new String[] { "ao" });
+            api.parameter("shaders", new String[] { "quick" });
             api.instance("particles.instance", "particles.geo");
             api.parameter("target", new Point3(0, 0, 0));
             api.parameter("eye", new Point3(0, 0, -size * 2));
@@ -219,9 +233,11 @@ public class DLASimulator {
             for (int frameNumber = 1; frameNumber <= numFrames; frameNumber++) {
                 int n = Math.min((numParticles + numFrames - 1) / numFrames * frameNumber, numParticles);
                 api.parameter("num", n);
-                api.geometry("particles.geo", (PrimitiveList) null); //update
+                api.geometry("particles.geo", (PrimitiveList) null); // update
                 api.render(SunflowAPI.DEFAULT_OPTIONS, new FileDisplay(String.format("%s/file.%04d.png", new File(filename).getAbsoluteFile().getParent(), frameNumber)));
             }
+        } else {
+            System.exit(1);
         }
         api.parameter("shaders", new String[] { "ao" });
         api.instance("particles.instance", "particles.geo");
@@ -238,7 +254,7 @@ public class DLASimulator {
         api.parameter("resolutionY", 1024);
         api.parameter("camera", "cam");
         api.options(SunflowAPI.DEFAULT_OPTIONS);
-        api.render(SunflowAPI.DEFAULT_OPTIONS, new FrameDisplay());
+        api.render(SunflowAPI.DEFAULT_OPTIONS, display);
     }
 
     private static class DLAParticleGrid {
