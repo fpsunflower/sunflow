@@ -15,6 +15,7 @@ import org.sunflow.core.Ray;
 import org.sunflow.core.camera.PinholeLens;
 import org.sunflow.core.display.FileDisplay;
 import org.sunflow.core.display.FrameDisplay;
+import org.sunflow.core.display.OpenExrDisplay;
 import org.sunflow.core.primitive.DLASurface;
 import org.sunflow.core.shader.AmbientOcclusionShader;
 import org.sunflow.math.BoundingBox;
@@ -207,6 +208,8 @@ public class DLASimulator {
                 stream.close();
                 api.parameter("particles", "point", "vertex", data);
                 api.parameter("num", n);
+                if (n >= 10000000)
+                    api.parameter("accel", "uniformgrid");
                 api.parameter("radius", radius);
                 api.geometry("particles.geo", new DLASurface());
             } catch (IOException e) {
@@ -214,7 +217,7 @@ public class DLASimulator {
                 System.exit(1);
             }
             if (args.length > 2)
-                display = new FileDisplay(args[2]);
+                display = args[2].endsWith(".exr") ? new OpenExrDisplay(args[2], "zip", "float") : new FileDisplay(args[2]);
             else
                 display = new FrameDisplay();
             api.parameter("shaders", new String[] { "ao" });
@@ -222,7 +225,7 @@ public class DLASimulator {
             api.parameter("target", new Point3(0, 0, 0));
             api.parameter("eye", new Point3(0, 0, -size * 4));
             api.parameter("up", new Vector3(0, 1, 0));
-            api.parameter("fov", 30f);
+            api.parameter("fov", 40f);
             api.parameter("aspect", 1.0f);
             api.camera("cam", new PinholeLens());
             api.parameter("aa.min", 0);
@@ -231,7 +234,7 @@ public class DLASimulator {
             api.parameter("resolutionX", 1024);
             api.parameter("resolutionY", 1024);
             api.parameter("camera", "cam");
-            // api.parameter("sampler", "ipr");
+            //api.parameter("sampler", "ipr");
             api.options(SunflowAPI.DEFAULT_OPTIONS);
             api.render(SunflowAPI.DEFAULT_OPTIONS, display);
         }
