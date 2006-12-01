@@ -11,14 +11,12 @@ import java.nio.channels.FileChannel;
 
 import org.sunflow.SunflowAPI;
 import org.sunflow.core.Display;
-import org.sunflow.core.PrimitiveList;
 import org.sunflow.core.Ray;
 import org.sunflow.core.camera.PinholeLens;
 import org.sunflow.core.display.FileDisplay;
 import org.sunflow.core.display.FrameDisplay;
 import org.sunflow.core.primitive.DLASurface;
 import org.sunflow.core.shader.AmbientOcclusionShader;
-import org.sunflow.core.shader.SimpleShader;
 import org.sunflow.math.BoundingBox;
 import org.sunflow.math.MathUtils;
 import org.sunflow.math.Point3;
@@ -33,6 +31,7 @@ public class DLASimulator {
     private static long seed = 2463534242L;
 
     public static void main(String[] args) {
+        UI.verbosity(4);
         SunflowAPI api = SunflowAPI.create(null);
         api.shader("ao", new AmbientOcclusionShader());
         final float size = 5;
@@ -42,7 +41,25 @@ public class DLASimulator {
         if (args.length == 0) {
             final int numParticles = 40000000;
             DLAParticleGrid grid = new DLAParticleGrid(new BoundingBox(size), numParticles, radius);
-            grid.addParticle(0, 0, 0); // add a particle right in the center
+            File f = new File("particles.dla");
+            if (f.exists()) {
+                try {
+                    // start from existing simulation
+                    UI.printInfo(Module.USER, "Resuming previous simulation ...");
+                    FileInputStream stream = new FileInputStream("particles.dla");
+                    MappedByteBuffer map = stream.getChannel().map(FileChannel.MapMode.READ_ONLY, 0, f.length());
+                    FloatBuffer buffer = map.asFloatBuffer();
+                    for (int i = 0; i < (buffer.capacity() / 3) * 3; i += 3)
+                        grid.addParticle(buffer.get(i), buffer.get(i + 1), buffer.get(i + 2));
+                    stream.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                    System.exit(1);
+                }
+            } else {
+                UI.printInfo(Module.USER, "Starting new simulation ...");
+                grid.addParticle(0, 0, 0); // add a particle to seed the simulation
+            }
             Timer timer = new Timer();
             timer.start();
             int delta = 10;
@@ -173,13 +190,7 @@ public class DLASimulator {
             }
             timer.end();
             UI.printInfo(Module.USER, "Writing particles to file took: %s", timer);
-            System.exit(0);
-            api.parameter("particles", "point", "vertex", grid.particles.trim());
-            api.parameter("num", grid.particles.getSize() / 3);
-            api.parameter("radius", radius);
-            api.geometry("particles.geo", new DLASurface());
-            display = new FrameDisplay();
-        } else if (args.length == 2 || args.length == 3) {
+        } else if (args.length >= 2) {
             String filename = args[0];
             int frameNumber = Integer.parseInt(args[1]);
             UI.printInfo(Module.USER, "Loading particle file: %s", filename);
@@ -197,7 +208,6 @@ public class DLASimulator {
                 api.parameter("particles", "point", "vertex", data);
                 api.parameter("num", n);
                 api.parameter("radius", radius);
-                //api.parameter("accel", "bih");
                 api.geometry("particles.geo", new DLASurface());
             } catch (IOException e) {
                 e.printStackTrace();
@@ -207,70 +217,24 @@ public class DLASimulator {
                 display = new FileDisplay(args[2]);
             else
                 display = new FrameDisplay();
-        } else if (args.length == 1) {
-            String filename = args[0];
-            UI.printInfo(Module.USER, "Loading particle file: %s", filename);
-            int numParticles = (int) (new File(filename).length() / 12);
-            UI.printInfo(Module.USER, "Found %d particles ...", numParticles);
-            try {
-                File file = new File(filename);
-                FileInputStream stream = new FileInputStream(filename);
-                MappedByteBuffer map = stream.getChannel().map(FileChannel.MapMode.READ_ONLY, 0, file.length());
-                FloatBuffer buffer = map.asFloatBuffer();
-                float[] data = new float[buffer.capacity()];
-                for (int i = 0; i < data.length; i++)
-                    data[i] = buffer.get(i);
-                stream.close();
-                api.parameter("particles", "point", "vertex", data);
-                api.parameter("num", 1);
-                api.parameter("radius", radius);
-                api.geometry("particles.geo", new DLASurface());
-            } catch (IOException e) {
-                e.printStackTrace();
-                System.exit(1);
-            }
-            api.shader("quick", new SimpleShader());
-            api.parameter("shaders", new String[] { "quick" });
+            api.parameter("shaders", new String[] { "ao" });
             api.instance("particles.instance", "particles.geo");
             api.parameter("target", new Point3(0, 0, 0));
-            api.parameter("eye", new Point3(0, 0, -size * 2));
+            api.parameter("eye", new Point3(0, 0, -size * 4));
             api.parameter("up", new Vector3(0, 1, 0));
-            api.parameter("fov", 90.0f);
+            api.parameter("fov", 30f);
             api.parameter("aspect", 1.0f);
             api.camera("cam", new PinholeLens());
             api.parameter("aa.min", 0);
             api.parameter("aa.max", 2);
-            api.filter("mitchell");
+            api.filter("gaussian");
             api.parameter("resolutionX", 1024);
             api.parameter("resolutionY", 1024);
             api.parameter("camera", "cam");
+            // api.parameter("sampler", "ipr");
             api.options(SunflowAPI.DEFAULT_OPTIONS);
-            for (int frameNumber = 1; frameNumber <= numFrames; frameNumber++) {
-                int n = Math.min((numParticles + numFrames - 1) / numFrames * frameNumber, numParticles);
-                api.parameter("num", n);
-                api.geometry("particles.geo", (PrimitiveList) null); // update
-                api.render(SunflowAPI.DEFAULT_OPTIONS, new FileDisplay(String.format("%s/file.%04d.png", new File(filename).getAbsoluteFile().getParent(), frameNumber)));
-            }
-        } else {
-            System.exit(1);
+            api.render(SunflowAPI.DEFAULT_OPTIONS, display);
         }
-        api.parameter("shaders", new String[] { "ao" });
-        api.instance("particles.instance", "particles.geo");
-        api.parameter("target", new Point3(0, 0, 0));
-        api.parameter("eye", new Point3(0, 0, -size * 4));
-        api.parameter("up", new Vector3(0, 1, 0));
-        api.parameter("fov", 30f);
-        api.parameter("aspect", 1.0f);
-        api.camera("cam", new PinholeLens());
-        api.parameter("aa.min", 0);
-        api.parameter("aa.max", 2);
-        api.filter("gaussian");
-        api.parameter("resolutionX", 1024);
-        api.parameter("resolutionY", 1024);
-        api.parameter("camera", "cam");
-        // api.parameter("sampler", "ipr");
-        api.options(SunflowAPI.DEFAULT_OPTIONS);
-        api.render(SunflowAPI.DEFAULT_OPTIONS, display);
     }
 
     private static long xorshift(long y) {
