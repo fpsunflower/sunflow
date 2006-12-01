@@ -22,7 +22,6 @@ import org.sunflow.core.shader.SimpleShader;
 import org.sunflow.math.BoundingBox;
 import org.sunflow.math.MathUtils;
 import org.sunflow.math.Point3;
-import org.sunflow.math.Solvers;
 import org.sunflow.math.Vector3;
 import org.sunflow.system.Timer;
 import org.sunflow.system.UI;
@@ -98,9 +97,9 @@ public class DLASimulator {
 
                     double rx = -oy;
                     double ry = ox;
-//                    in = 1 / Math.sqrt((rx * rx) + (ry * ry));
-//                    rx *= in;
-//                    ry *= in;
+                    // in = 1 / Math.sqrt((rx * rx) + (ry * ry));
+                    // rx *= in;
+                    // ry *= in;
 
                     // mix into new direction
                     dx += fx + rx;
@@ -198,7 +197,7 @@ public class DLASimulator {
                 api.parameter("particles", "point", "vertex", data);
                 api.parameter("num", n);
                 api.parameter("radius", radius);
-                api.parameter("accel", "bih");
+                //api.parameter("accel", "bih");
                 api.geometry("particles.geo", new DLASurface());
             } catch (IOException e) {
                 e.printStackTrace();
@@ -264,7 +263,7 @@ public class DLASimulator {
         api.parameter("aspect", 1.0f);
         api.camera("cam", new PinholeLens());
         api.parameter("aa.min", 0);
-        api.parameter("aa.max", 1);
+        api.parameter("aa.max", 2);
         api.filter("gaussian");
         api.parameter("resolutionX", 1024);
         api.parameter("resolutionY", 1024);
@@ -287,7 +286,7 @@ public class DLASimulator {
         return (double) seed / (double) (0xFFFFFFFFL + 1);
     }
 
-    private static class DLAParticleGrid {
+    private static final class DLAParticleGrid {
         private IntArray[] voxels;
         private FloatArray particles;
         private float r, r2; // particle radius
@@ -300,7 +299,7 @@ public class DLASimulator {
         private float miny, maxy;
         private float minz, maxz;
 
-        DLAParticleGrid(BoundingBox bounds, int np, float radius) {
+        public DLAParticleGrid(BoundingBox bounds, int np, float radius) {
             this.bounds = bounds;
             bounds.enlargeUlps();
             Vector3 w = bounds.getExtents();
@@ -323,11 +322,11 @@ public class DLASimulator {
 
         }
 
-        boolean isInside(float x, float y, float z) {
+        public final boolean isInside(float x, float y, float z) {
             return bounds.contains(x, y, z);
         }
 
-        boolean checkParticle(float x, float y, float z) {
+        public final boolean checkParticle(float x, float y, float z) {
             if (!pbounds.contains(x, y, z))
                 return false;
             int[] imin = new int[3];
@@ -355,7 +354,7 @@ public class DLASimulator {
             return false;
         }
 
-        void addParticle(float x, float y, float z) {
+        public final void addParticle(float x, float y, float z) {
             // add particle to list
             int pid = particles.getSize() / 3;
             particles.add(x);
@@ -390,7 +389,7 @@ public class DLASimulator {
             }
         }
 
-        public float intersect(Ray r) {
+        public final float intersect(Ray r) {
             float intervalMin = r.getMin();
             float intervalMax = r.getMax();
             float orgX = r.ox;
@@ -530,27 +529,7 @@ public class DLASimulator {
             for (;;) {
                 if (tnextX < tnextY && tnextX < tnextZ) {
                     if (voxels[cell] != null) {
-                        boolean hit = false;
-                        for (int i = 0; i < voxels[cell].getSize(); i++) {
-                            int i3 = 3 * voxels[cell].get(i);
-                            float ocx = r.ox - particles.get(i3 + 0);
-                            float ocy = r.oy - particles.get(i3 + 1);
-                            float ocz = r.oz - particles.get(i3 + 2);
-                            float qa = r.dx * r.dx + r.dy * r.dy + r.dz * r.dz;
-                            float qb = 2 * ((r.dx * ocx) + (r.dy * ocy) + (r.dz * ocz));
-                            float qc = ((ocx * ocx) + (ocy * ocy) + (ocz * ocz)) - r2;
-                            double[] t = Solvers.solveQuadric(qa, qb, qc);
-                            if (t != null) {
-                                // early rejection
-                                if (t[0] >= r.getMax() || t[1] <= r.getMin())
-                                    continue;
-                                if (t[0] > r.getMin())
-                                    r.setMax((float) t[0]);
-                                else
-                                    r.setMax((float) t[1]);
-                                hit = true;
-                            }
-                        }
+                        boolean hit = intersectCell(r, cell);
                         if (hit && (r.getMax() < tnextX && r.getMax() < intervalMax))
                             return r.getMax();
                     }
@@ -564,27 +543,7 @@ public class DLASimulator {
                     cell += cellstepX;
                 } else if (tnextY < tnextZ) {
                     if (voxels[cell] != null) {
-                        boolean hit = false;
-                        for (int i = 0; i < voxels[cell].getSize(); i++) {
-                            int i3 = 3 * voxels[cell].get(i);
-                            float ocx = r.ox - particles.get(i3 + 0);
-                            float ocy = r.oy - particles.get(i3 + 1);
-                            float ocz = r.oz - particles.get(i3 + 2);
-                            float qa = r.dx * r.dx + r.dy * r.dy + r.dz * r.dz;
-                            float qb = 2 * ((r.dx * ocx) + (r.dy * ocy) + (r.dz * ocz));
-                            float qc = ((ocx * ocx) + (ocy * ocy) + (ocz * ocz)) - r2;
-                            double[] t = Solvers.solveQuadric(qa, qb, qc);
-                            if (t != null) {
-                                // early rejection
-                                if (t[0] >= r.getMax() || t[1] <= r.getMin())
-                                    continue;
-                                if (t[0] > r.getMin())
-                                    r.setMax((float) t[0]);
-                                else
-                                    r.setMax((float) t[1]);
-                                hit = true;
-                            }
-                        }
+                        boolean hit = intersectCell(r, cell);
                         if (hit && (r.getMax() < tnextY && r.getMax() < intervalMax))
                             return r.getMax();
                     }
@@ -598,27 +557,7 @@ public class DLASimulator {
                     cell += cellstepY;
                 } else {
                     if (voxels[cell] != null) {
-                        boolean hit = false;
-                        for (int i = 0; i < voxels[cell].getSize(); i++) {
-                            int i3 = 3 * voxels[cell].get(i);
-                            float ocx = r.ox - particles.get(i3 + 0);
-                            float ocy = r.oy - particles.get(i3 + 1);
-                            float ocz = r.oz - particles.get(i3 + 2);
-                            float qa = r.dx * r.dx + r.dy * r.dy + r.dz * r.dz;
-                            float qb = 2 * ((r.dx * ocx) + (r.dy * ocy) + (r.dz * ocz));
-                            float qc = ((ocx * ocx) + (ocy * ocy) + (ocz * ocz)) - r2;
-                            double[] t = Solvers.solveQuadric(qa, qb, qc);
-                            if (t != null) {
-                                // early rejection
-                                if (t[0] >= r.getMax() || t[1] <= r.getMin())
-                                    continue;
-                                if (t[0] > r.getMin())
-                                    r.setMax((float) t[0]);
-                                else
-                                    r.setMax((float) t[1]);
-                                hit = true;
-                            }
-                        }
+                        boolean hit = intersectCell(r, cell);
                         if (hit && (r.getMax() < tnextZ && r.getMax() < intervalMax))
                             return r.getMax();
                     }
@@ -634,7 +573,36 @@ public class DLASimulator {
             }
         }
 
-        private void getGridIndex(float x, float y, float z, int[] i) {
+        private final boolean intersectCell(Ray r, int cell) {
+            IntArray c = voxels[cell];
+            boolean hit = false;
+            for (int i = 0; i < c.getSize(); i++) {
+                int i3 = 3 * c.get(i);
+                float ocx = r.ox - particles.get(i3 + 0);
+                float ocy = r.oy - particles.get(i3 + 1);
+                float ocz = r.oz - particles.get(i3 + 2);
+                float qb = (r.dx * ocx) + (r.dy * ocy) + (r.dz * ocz);
+                float qc = ((ocx * ocx) + (ocy * ocy) + (ocz * ocz)) - r2;
+                float det = (qb * qb) - qc;
+                if (det >= 0.0) {
+                    det = (float) Math.sqrt(det);
+                    float t = -det - qb;
+                    if (r.isInside(t)) {
+                        r.setMax(t);
+                        hit = true;
+                    } else {
+                        t = det - qb;
+                        if (r.isInside(t)) {
+                            r.setMax(t);
+                            hit = true;
+                        }
+                    }
+                }
+            }
+            return hit;
+        }
+
+        private final void getGridIndex(float x, float y, float z, int[] i) {
             i[0] = MathUtils.clamp((int) ((x - bounds.getMinimum().x) * invVoxelwx), 0, nx - 1);
             i[1] = MathUtils.clamp((int) ((y - bounds.getMinimum().y) * invVoxelwy), 0, ny - 1);
             i[2] = MathUtils.clamp((int) ((z - bounds.getMinimum().z) * invVoxelwz), 0, nz - 1);
