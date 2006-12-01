@@ -39,7 +39,7 @@ public class DLASimulator {
         final int numFrames = 24 * 16;
         Display display = null;
         if (args.length == 0) {
-            final int numParticles = 40000000;
+            final int numParticles = 10000000;
             DLAParticleGrid grid = new DLAParticleGrid(new BoundingBox(size), numParticles, radius);
             File f = new File("particles.dla");
             if (f.exists()) {
