@@ -41,7 +41,7 @@ public class DLASimulator {
         final int numFrames = 24 * 16;
         Display display = null;
         if (args.length == 0) {
-            final int numParticles = 1000000;
+            final int numParticles = 40000000;
             DLAParticleGrid grid = new DLAParticleGrid(new BoundingBox(size), numParticles, radius);
             grid.addParticle(0, 0, 0); // add a particle right in the center
             Timer timer = new Timer();
@@ -98,9 +98,9 @@ public class DLASimulator {
 
                     double rx = -oy;
                     double ry = ox;
-                    //in = 1 / Math.sqrt((rx * rx) + (ry * ry));
-                    //rx *= in;
-                    //ry *= in;
+//                    in = 1 / Math.sqrt((rx * rx) + (ry * ry));
+//                    rx *= in;
+//                    ry *= in;
 
                     // mix into new direction
                     dx += fx + rx;
@@ -133,7 +133,7 @@ public class DLASimulator {
                     r.setMax(1);
                     float t = grid.intersect(r);
                     if (t > 0 && t < 1) {
-                        t -= radius;
+                        t -= 0.5f * radius;
                         // found a hit! we can store the particle
                         float px = (float) (ox + t * dx);
                         float py = (float) (oy + t * dy);
@@ -146,11 +146,12 @@ public class DLASimulator {
                         oy += dy;
                         oz += dz;
                     }
-//                    if (grid.checkParticle((float) ox, (float) oy, (float) oz)) {
-//                        grid.addParticle((float) ox, (float) oy, (float) oz);
-//                        stored = true;
-//                        break;
-//                    }
+                    // if (grid.checkParticle((float) ox, (float) oy, (float)
+                    // oz)) {
+                    // grid.addParticle((float) ox, (float) oy, (float) oz);
+                    // stored = true;
+                    // break;
+                    // }
                 }
                 if (!stored)
                     UI.printWarning(Module.USER, "Particle %d couldn't be stored", i);
@@ -268,7 +269,7 @@ public class DLASimulator {
         api.parameter("resolutionX", 1024);
         api.parameter("resolutionY", 1024);
         api.parameter("camera", "cam");
-//        api.parameter("sampler", "ipr");
+        // api.parameter("sampler", "ipr");
         api.options(SunflowAPI.DEFAULT_OPTIONS);
         api.render(SunflowAPI.DEFAULT_OPTIONS, display);
     }
@@ -304,9 +305,9 @@ public class DLASimulator {
             bounds.enlargeUlps();
             Vector3 w = bounds.getExtents();
             double s = Math.pow((w.x * w.y * w.z) / (np / 10), 1 / 3.0);
-            nx = MathUtils.clamp((int) ((w.x / s) + 0.5), 1, 256);
-            ny = MathUtils.clamp((int) ((w.y / s) + 0.5), 1, 256);
-            nz = MathUtils.clamp((int) ((w.z / s) + 0.5), 1, 256);
+            nx = MathUtils.clamp((int) ((w.x / s) + 0.5), 1, 100);
+            ny = MathUtils.clamp((int) ((w.y / s) + 0.5), 1, 100);
+            nz = MathUtils.clamp((int) ((w.z / s) + 0.5), 1, 100);
             voxelwx = w.x / nx;
             voxelwy = w.y / ny;
             voxelwz = w.z / nz;
