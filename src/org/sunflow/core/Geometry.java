@@ -40,7 +40,7 @@ public class Geometry implements RenderObject {
     }
 
     public boolean update(ParameterList pl, SunflowAPI api) {
-        acceltype = pl.getString("acel", acceltype);
+        acceltype = pl.getString("accel", acceltype);
         // clear up old tesselation if it exists
         if (tesselatable != null)
             primitives = null;

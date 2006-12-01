@@ -1,3 +1,4 @@
+import java.io.BufferedOutputStream;
 import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -30,11 +31,13 @@ import org.sunflow.util.FloatArray;
 import org.sunflow.util.IntArray;
 
 public class DLASimulator {
+    private static long seed = 2463534242L;
+
     public static void main(String[] args) {
         SunflowAPI api = SunflowAPI.create(null);
         api.shader("ao", new AmbientOcclusionShader());
         final float size = 5;
-        final float radius = 0.03f;
+        final float radius = 0.015f;
         final int numFrames = 24 * 16;
         Display display = null;
         if (args.length == 0) {
@@ -43,7 +46,7 @@ public class DLASimulator {
             grid.addParticle(0, 0, 0); // add a particle right in the center
             Timer timer = new Timer();
             timer.start();
-            int delta = 100;
+            int delta = 10;
             double last = 0;
             for (int i = 1; i < numParticles; i++) {
                 if (i % delta == 0) {
@@ -56,57 +59,59 @@ public class DLASimulator {
                     UI.printInfo(Module.USER, "Simulating particle %8d (%s elapsed - %s remaining)...", i, timer, Timer.toString(sec));
                 }
                 // start with a random seed on the boundary of the surface
-                double rx = Math.random();
-                double ry = Math.random();
-                int side = (int) (rx * 6);
-                rx = rx * 6 - side;
-                float ox, oy, oz;
-                switch (side) {
-                    case 0:
-                        ox = -size;
-                        oy = (float) (2 * size * rx - size);
-                        oz = (float) (2 * size * ry - size);
-                        break;
-                    case 1:
-                        ox = +size;
-                        oy = (float) (2 * size * rx - size);
-                        oz = (float) (2 * size * ry - size);
-                        break;
-                    case 2:
-                        oy = -size;
-                        oz = (float) (2 * size * rx - size);
-                        ox = (float) (2 * size * ry - size);
-                        break;
-                    case 3:
-                        oy = +size;
-                        oz = (float) (2 * size * rx - size);
-                        ox = (float) (2 * size * ry - size);
-                        break;
-                    case 4:
-                        oz = -size;
-                        ox = (float) (2 * size * rx - size);
-                        oy = (float) (2 * size * ry - size);
-                        break;
-                    case 5:
-                    default:
-                        oz = +size;
-                        ox = (float) (2 * size * rx - size);
-                        oy = (float) (2 * size * ry - size);
-                        break;
-                }
+                double s, a;
+                double ox, oy, oz;
+                do {
+                    ox = -1 + 2 * random();
+                    oy = -1 + 2 * random();
+                    s = (ox) * (ox) + (oy) * (oy);
+                } while (s > 1.0);
+                oz = -1 + 2 * s;
+                a = 2 * Math.sqrt(1 - s);
+                ox *= a;
+                oy *= a;
+                ox *= size;
+                oy *= size;
+                oz *= size;
                 boolean stored = false;
                 for (int iter = 0; iter < 1000000; iter++) {
-                    double s, a;
+                    // pick a random direction
                     double dx, dy, dz;
                     do {
-                        dx = -1 + 2 * Math.random();
-                        dy = -1 + 2 * Math.random();
+                        dx = -1 + 2 * random();
+                        dy = -1 + 2 * random();
                         s = (dx) * (dx) + (dy) * (dy);
                     } while (s > 1.0);
                     dz = -1 + 2 * s;
                     a = 2 * Math.sqrt(1 - s);
                     dx *= a;
                     dy *= a;
+
+                    // compute external forces
+                    double fx = -ox;
+                    double fy = -oy;
+                    double fz = -oz;
+                    double in = 0.5 / Math.sqrt((fx * fx) + (fy * fy) + (fz * fz));
+                    fx *= in;
+                    fy *= in;
+                    fz *= in;
+
+                    double rx = -oy;
+                    double ry = ox;
+                    //in = 1 / Math.sqrt((rx * rx) + (ry * ry));
+                    //rx *= in;
+                    //ry *= in;
+
+                    // mix into new direction
+                    dx += fx + rx;
+                    dy += fy + ry;
+                    dz += fz;
+
+                    // normalize to particle diameter
+                    in = 1 / Math.sqrt((dx * dx) + (dy * dy) + (dz * dz));
+                    dx *= in;
+                    dy *= in;
+                    dz *= in;
 
                     // bounce backwards off the bounds
                     if (ox + dx < -size || ox + dx > +size)
@@ -124,10 +129,11 @@ public class DLASimulator {
                         break;
                     }
 
-                    Ray r = new Ray(ox, oy, oz, (float) dx, (float) dy, (float) dz);
+                    Ray r = new Ray((float) ox, (float) oy, (float) oz, (float) dx, (float) dy, (float) dz);
                     r.setMax(1);
                     float t = grid.intersect(r);
                     if (t > 0 && t < 1) {
+                        t -= radius;
                         // found a hit! we can store the particle
                         float px = (float) (ox + t * dx);
                         float py = (float) (oy + t * dy);
@@ -140,26 +146,34 @@ public class DLASimulator {
                         oy += dy;
                         oz += dz;
                     }
+//                    if (grid.checkParticle((float) ox, (float) oy, (float) oz)) {
+//                        grid.addParticle((float) ox, (float) oy, (float) oz);
+//                        stored = true;
+//                        break;
+//                    }
                 }
                 if (!stored)
                     UI.printWarning(Module.USER, "Particle %d couldn't be stored", i);
             }
             timer.end();
             UI.printInfo(Module.USER, "Particle tracing took: %s", timer);
+            timer.start();
             UI.printInfo(Module.USER, "Writing particles to file ...");
-
             try {
-                FileOutputStream file = new FileOutputStream("/home/ckulla/Desktop/particles.dla");
-                DataOutputStream stream = new DataOutputStream(file);
+                FileOutputStream file = new FileOutputStream("particles.dla");
+                DataOutputStream stream = new DataOutputStream(new BufferedOutputStream(file));
                 for (float p : grid.particles.trim())
                     stream.writeFloat(p);
-                file.close();
+                stream.flush();
+                stream.close();
             } catch (FileNotFoundException e) {
                 e.printStackTrace();
             } catch (IOException e) {
                 e.printStackTrace();
             }
-            UI.printInfo(Module.USER, "Writing particles to file done.");
+            timer.end();
+            UI.printInfo(Module.USER, "Writing particles to file took: %s", timer);
+            System.exit(0);
             api.parameter("particles", "point", "vertex", grid.particles.trim());
             api.parameter("num", grid.particles.getSize() / 3);
             api.parameter("radius", radius);
@@ -183,6 +197,7 @@ public class DLASimulator {
                 api.parameter("particles", "point", "vertex", data);
                 api.parameter("num", n);
                 api.parameter("radius", radius);
+                api.parameter("accel", "bih");
                 api.geometry("particles.geo", new DLASurface());
             } catch (IOException e) {
                 e.printStackTrace();
@@ -242,19 +257,33 @@ public class DLASimulator {
         api.parameter("shaders", new String[] { "ao" });
         api.instance("particles.instance", "particles.geo");
         api.parameter("target", new Point3(0, 0, 0));
-        api.parameter("eye", new Point3(0, 0, -size * 2));
+        api.parameter("eye", new Point3(0, 0, -size * 4));
         api.parameter("up", new Vector3(0, 1, 0));
-        api.parameter("fov", 90.0f);
+        api.parameter("fov", 30f);
         api.parameter("aspect", 1.0f);
         api.camera("cam", new PinholeLens());
         api.parameter("aa.min", 0);
-        api.parameter("aa.max", 2);
-        api.filter("mitchell");
+        api.parameter("aa.max", 1);
+        api.filter("gaussian");
         api.parameter("resolutionX", 1024);
         api.parameter("resolutionY", 1024);
         api.parameter("camera", "cam");
+//        api.parameter("sampler", "ipr");
         api.options(SunflowAPI.DEFAULT_OPTIONS);
         api.render(SunflowAPI.DEFAULT_OPTIONS, display);
+    }
+
+    private static long xorshift(long y) {
+        y = y ^ (y << 13);
+        y = y ^ (y >>> 17); // unsigned
+        y = y ^ (y << 5);
+        y = y & 0xFFFFFFFFL;
+        return y;
+    }
+
+    private static double random() {
+        seed = xorshift(seed);
+        return (double) seed / (double) (0xFFFFFFFFL + 1);
     }
 
     private static class DLAParticleGrid {
@@ -262,15 +291,19 @@ public class DLASimulator {
         private FloatArray particles;
         private float r, r2; // particle radius
         private BoundingBox bounds;
+        private BoundingBox pbounds;
         private int nx, ny, nz;
         private float voxelwx, voxelwy, voxelwz;
         private float invVoxelwx, invVoxelwy, invVoxelwz;
+        private float minx, maxx;
+        private float miny, maxy;
+        private float minz, maxz;
 
         DLAParticleGrid(BoundingBox bounds, int np, float radius) {
             this.bounds = bounds;
             bounds.enlargeUlps();
             Vector3 w = bounds.getExtents();
-            double s = Math.pow((w.x * w.y * w.z) / np, 1 / 3.0);
+            double s = Math.pow((w.x * w.y * w.z) / (np / 10), 1 / 3.0);
             nx = MathUtils.clamp((int) ((w.x / s) + 0.5), 1, 256);
             ny = MathUtils.clamp((int) ((w.y / s) + 0.5), 1, 256);
             nz = MathUtils.clamp((int) ((w.z / s) + 0.5), 1, 256);
@@ -282,13 +315,43 @@ public class DLASimulator {
             invVoxelwz = 1 / voxelwz;
             r = radius;
             r2 = r * r;
+            UI.printInfo(Module.USER, "Creating grid: %dx%dx%d ...", nx, ny, nz);
             voxels = new IntArray[nx * ny * nz];
             particles = new FloatArray(np * 3);
+            pbounds = new BoundingBox();
 
         }
 
         boolean isInside(float x, float y, float z) {
             return bounds.contains(x, y, z);
+        }
+
+        boolean checkParticle(float x, float y, float z) {
+            if (!pbounds.contains(x, y, z))
+                return false;
+            int[] imin = new int[3];
+            int[] imax = new int[3];
+            getGridIndex(x - r, y - r, z - r, imin);
+            getGridIndex(x + r, y + r, z + r, imax);
+            for (int ix = imin[0]; ix <= imax[0]; ix++) {
+                for (int iy = imin[1]; iy <= imax[1]; iy++) {
+                    for (int iz = imin[2]; iz <= imax[2]; iz++) {
+                        int idx = ix + (nx * iy) + (nx * ny * iz);
+                        // TODO: add sphere/box intersection test
+                        if (voxels[idx] != null) {
+                            for (int i = 0; i < voxels[idx].getSize(); i++) {
+                                int i3 = 3 * voxels[idx].get(i);
+                                float dx = x - particles.get(i3 + 0);
+                                float dy = y - particles.get(i3 + 1);
+                                float dz = z - particles.get(i3 + 2);
+                                if (dx * dx + dy * dy + dz * dz <= 4 * r2)
+                                    return true;
+                            }
+                        }
+                    }
+                }
+            }
+            return false;
         }
 
         void addParticle(float x, float y, float z) {
@@ -297,6 +360,17 @@ public class DLASimulator {
             particles.add(x);
             particles.add(y);
             particles.add(z);
+
+            // enlarge bounds
+            pbounds.include(x - r, y - r, z - r);
+            pbounds.include(x + r, y + r, z + r);
+            minx = Math.max(bounds.getMinimum().x, pbounds.getMinimum().x);
+            miny = Math.max(bounds.getMinimum().y, pbounds.getMinimum().y);
+            minz = Math.max(bounds.getMinimum().z, pbounds.getMinimum().z);
+            maxx = Math.min(bounds.getMaximum().x, pbounds.getMaximum().x);
+            maxy = Math.min(bounds.getMaximum().y, pbounds.getMaximum().y);
+            maxz = Math.min(bounds.getMaximum().z, pbounds.getMaximum().z);
+
             // add particle to grid
             int[] imin = new int[3];
             int[] imax = new int[3];
@@ -308,7 +382,7 @@ public class DLASimulator {
                         int idx = ix + (nx * iy) + (nx * ny * iz);
                         // TODO: add sphere/box intersection test
                         if (voxels[idx] == null)
-                            voxels[idx] = new IntArray(4);
+                            voxels[idx] = new IntArray();
                         voxels[idx].add(pid);
                     }
                 }
@@ -321,8 +395,8 @@ public class DLASimulator {
             float orgX = r.ox;
             float dirX = r.dx, invDirX = 1 / dirX;
             float t1, t2;
-            t1 = (bounds.getMinimum().x - orgX) * invDirX;
-            t2 = (bounds.getMaximum().x - orgX) * invDirX;
+            t1 = (minx - orgX) * invDirX;
+            t2 = (maxx - orgX) * invDirX;
             if (invDirX > 0) {
                 if (t1 > intervalMin)
                     intervalMin = t1;
@@ -338,8 +412,8 @@ public class DLASimulator {
                 return 0;
             float orgY = r.oy;
             float dirY = r.dy, invDirY = 1 / dirY;
-            t1 = (bounds.getMinimum().y - orgY) * invDirY;
-            t2 = (bounds.getMaximum().y - orgY) * invDirY;
+            t1 = (miny - orgY) * invDirY;
+            t2 = (maxy - orgY) * invDirY;
             if (invDirY > 0) {
                 if (t1 > intervalMin)
                     intervalMin = t1;
@@ -355,8 +429,8 @@ public class DLASimulator {
                 return 0;
             float orgZ = r.oz;
             float dirZ = r.dz, invDirZ = 1 / dirZ;
-            t1 = (bounds.getMinimum().z - orgZ) * invDirZ;
-            t2 = (bounds.getMaximum().z - orgZ) * invDirZ;
+            t1 = (minz - orgZ) * invDirZ;
+            t2 = (maxz - orgZ) * invDirZ;
             if (invDirZ > 0) {
                 if (t1 > intervalMin)
                     intervalMin = t1;
