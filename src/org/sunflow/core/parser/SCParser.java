@@ -1,9 +1,13 @@
 package org.sunflow.core.parser;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.StringReader;
+import java.nio.FloatBuffer;
+import java.nio.MappedByteBuffer;
+import java.nio.channels.FileChannel;
 
 import org.codehaus.janino.ClassBodyEvaluator;
 import org.codehaus.janino.CompileException;
@@ -39,6 +43,7 @@ import org.sunflow.core.photonmap.GridPhotonMap;
 import org.sunflow.core.primitive.Background;
 import org.sunflow.core.primitive.BanchoffSurface;
 import org.sunflow.core.primitive.CornellBox;
+import org.sunflow.core.primitive.DLASurface;
 import org.sunflow.core.primitive.Hair;
 import org.sunflow.core.primitive.JuliaFractal;
 import org.sunflow.core.primitive.Mesh;
@@ -630,6 +635,8 @@ public class SCParser implements SceneParser {
         Matrix4 transform = null;
         if (p.peekNextToken("transform"))
             transform = parseMatrix();
+        if (p.peekNextToken("accel"))
+            api.parameter("accel", p.getNextToken());
         p.checkNextToken("type");
         if (p.peekNextToken("mesh")) {
             UI.printWarning(Module.API, "Deprecated object type: mesh");
@@ -938,6 +945,36 @@ public class SCParser implements SceneParser {
                 api.parameter("epsilon", p.getNextFloat());
 
             api.geometry(name, new JuliaFractal());
+            api.parameter("shaders", shaders);
+            if (transform != null)
+                api.parameter("transform", transform);
+            api.instance(name + ".instance", name);
+        } else if (p.peekNextToken("dlasurface")) {
+            String name;
+            if (p.peekNextToken("name"))
+                name = p.getNextToken();
+            else
+                name = api.getUniqueName("dlasurface");
+            p.checkNextToken("filename");
+            String filename = p.getNextToken();
+            UI.printInfo(Module.USER, "Loading particle file: %s", filename);
+            File file = new File(filename);
+            FileInputStream stream = new FileInputStream(filename);
+            MappedByteBuffer map = stream.getChannel().map(FileChannel.MapMode.READ_ONLY, 0, file.length());
+            FloatBuffer buffer = map.asFloatBuffer();
+            float[] data = new float[buffer.capacity()];
+            for (int i = 0; i < data.length; i++)
+                data[i] = buffer.get(i);
+            stream.close();
+            api.parameter("particles", "point", "vertex", data);
+
+            if (p.peekNextToken("num"))
+                api.parameter("num", p.getNextInt());
+            else
+                api.parameter("num", data.length / 3);
+            p.checkNextToken("radius");
+            api.parameter("radius", p.getNextFloat());
+            api.geometry(name, new DLASurface());
             api.parameter("shaders", shaders);
             if (transform != null)
                 api.parameter("transform", transform);

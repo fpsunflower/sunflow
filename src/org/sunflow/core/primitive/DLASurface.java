@@ -76,24 +76,13 @@ public class DLASurface implements PrimitiveList {
         state.getNormal().set(localPoint.x, localPoint.y, localPoint.z);
         state.getNormal().normalize();
 
-        float phi = (float) Math.atan2(state.getNormal().y, state.getNormal().x);
-        if (phi < 0)
-            phi += 2 * Math.PI;
-        float theta = (float) Math.acos(state.getNormal().z);
-        state.getUV().y = theta / (float) Math.PI;
-        state.getUV().x = phi / (float) (2 * Math.PI);
-        Vector3 v = new Vector3();
-        v.x = -2 * (float) Math.PI * state.getNormal().y;
-        v.y = 2 * (float) Math.PI * state.getNormal().x;
-        v.z = 0;
         state.setShader(state.getInstance().getShader(0));
         // into object space
         Vector3 worldNormal = state.getInstance().transformNormalObjectToWorld(state.getNormal());
-        v = state.getInstance().transformVectorObjectToWorld(v);
         state.getNormal().set(worldNormal);
         state.getNormal().normalize();
         state.getGeoNormal().set(state.getNormal());
-        state.setBasis(OrthoNormalBasis.makeFromWV(state.getNormal(), v));
+        state.setBasis(OrthoNormalBasis.makeFromW(state.getNormal()));
     }
 
     public boolean update(ParameterList pl, SunflowAPI api) {

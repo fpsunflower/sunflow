@@ -43,7 +43,7 @@ public final class Color {
 
     static {
         float inv = 1.0f / 255;
-        for (int i = 0; i < 255; i++) {
+        for (int i = 0; i < 256; i++) {
             float c = i * inv;
             SRGB_CURVE[i] = MathUtils.clamp((int) (sRGBCurve(c) * 255 + 0.5f), 0, 255);
             SRGB_CURVE_INV[i] = MathUtils.clamp((int) (sRGBCurveInverse(c) * 255 + 0.5f), 0, 255);

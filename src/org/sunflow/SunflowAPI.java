@@ -745,6 +745,11 @@ public class SunflowAPI {
             }
             t.end();
             UI.printInfo(Module.API, "Compile time: " + t.toString());
+            if (api != null) {
+                String currentFolder = new File(filename).getAbsoluteFile().getParentFile().getAbsolutePath();
+                api.includeSearchPath.addSearchPath(currentFolder);
+                api.textureSearchPath.addSearchPath(currentFolder);
+            }
             UI.printInfo(Module.API, "Build script running ...");
             t.start();
             api.build();
