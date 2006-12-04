@@ -73,6 +73,7 @@ import org.sunflow.core.tesselatable.Teapot;
 import org.sunflow.image.Color;
 import org.sunflow.math.Matrix4;
 import org.sunflow.math.Point3;
+import org.sunflow.math.QMC;
 import org.sunflow.math.Vector3;
 import org.sunflow.system.Parser;
 import org.sunflow.system.Timer;
@@ -183,12 +184,14 @@ public class SCParser implements SceneParser {
 
     private void parseImageBlock(SunflowAPI api) throws IOException, ParserException {
         p.checkNextToken("{");
-        p.checkNextToken("resolution");
-        api.parameter("resolutionX", p.getNextInt());
-        api.parameter("resolutionY", p.getNextInt());
-        p.checkNextToken("aa");
-        api.parameter("aa.min", p.getNextInt());
-        api.parameter("aa.max", p.getNextInt());
+        if (p.peekNextToken("resolution")) {
+            api.parameter("resolutionX", p.getNextInt());
+            api.parameter("resolutionY", p.getNextInt());
+        }
+        if (p.peekNextToken("aa")) {
+            api.parameter("aa.min", p.getNextInt());
+            api.parameter("aa.max", p.getNextInt());
+        }
         if (p.peekNextToken("samples"))
             api.parameter("aa.samples", p.getNextInt());
         if (p.peekNextToken("contrast"))
@@ -1068,6 +1071,31 @@ public class SCParser implements SceneParser {
             float py = p.getNextFloat();
             float pz = p.getNextFloat();
             api.pointLight(api.getUniqueName("pointLight"), px, py, pz, pow);
+        } else if (p.peekNextToken("spherical")) {
+            UI.printInfo(Module.API, "Reading spherical light ...");
+            p.checkNextToken("color");
+            Color pow = parseColor();
+            p.checkNextToken("radiance");
+            pow.mul(p.getNextFloat());
+            p.checkNextToken("center");
+            float cx = p.getNextFloat();
+            float cy = p.getNextFloat();
+            float cz = p.getNextFloat();
+            p.checkNextToken("radius");
+            float r = p.getNextFloat();
+            p.checkNextToken("samples");
+            int n = p.getNextInt();
+            pow.mul(1.0f / n);
+            for (int i = 0; i < n; i++) {
+                // apply method from the lightcuts paper
+                float r1 = (float) i / (float) n;
+                float r2 = (float) QMC.halton(0, i);
+                float r3 = (float) QMC.halton(1, i);
+                float px = (float) (r * Math.sqrt(r1) * Math.cos(2 * Math.PI * r2));
+                float py = (float) (r * Math.sqrt(r1) * Math.sin(2 * Math.PI * r2));
+                float pz = (float) (Math.sqrt(r * r - px * px - py * py) * Math.sin(Math.PI * (r3 - 0.5)));
+                api.pointLight(api.getUniqueName("pointLight"), cx + px, cy + py, cz + pz, pow);
+            }
         } else if (p.peekNextToken("directional")) {
             UI.printInfo(Module.API, "Reading directional light ...");
             p.checkNextToken("source");

@@ -39,7 +39,7 @@ Download the latest JDK (5.0 at the time of this writing) if you don't have it a
 
 Create a main directory to hold the code (for example, "sunflow") and unzip the contents of the source package into it, preserving sub-directories. Create the "classes" subdirectory if your unzip program did not. You may now compile the software from the main directory by running:
 
->> javac -classpath janino.jar -sourcepath src -d classes -g:none -O src/SunflowGUI.java
+>> javac -classpath janino.jar -sourcepath src -d classes -g:none -O src/*.java
 
 once the compiling is complete, run the code with:
 

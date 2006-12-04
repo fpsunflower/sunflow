@@ -1,4 +1,10 @@
 v0.07.0
+* SCParser: Made all the options in the image block optional
+* Added fake spherical lights (approximated by point lights - using the trick from the Lightcuts paper)
+* Bug fix to RA2Parser (was passing fov argument to camera incorectly)
+* Added a method to dump Mesh objects to .obj files (usefull for procedural geometry debugging)
+* Added DLASurface for efficient rendering of large sets of spheres
+* Upgraded to Janino 2.5.1
 * Upgraded to Janino 2.5.0
 * Parser now generates bezier patch primitives intead of triangles is the subdivs/smooth parameters are ommited
 * Added exact Ray/Bezier-patch intersection code

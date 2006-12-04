@@ -84,8 +84,9 @@ public class RA2Parser implements SceneParser {
             api.parameter("target", to);
             api.parameter("up", up);
             String name = api.getUniqueName("camera");
-            api.parameter("fov", 80);
+            api.parameter("fov", 80f);
             api.camera(name, new PinholeLens());
+            api.parameter("camera", name);
             api.parameter("resolutionX", 1024);
             api.parameter("resolutionY", 1024);
             api.options(SunflowAPI.DEFAULT_OPTIONS);
