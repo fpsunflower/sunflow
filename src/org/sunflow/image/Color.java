@@ -15,11 +15,11 @@ public final class Color {
     public static final Color GREY = new Color(0.5f, 0.5f, 0.5f);
 
     public static Color black() {
-        return new Color(0);
+        return new Color(0f);
     }
 
     public static Color white() {
-        return new Color(1);
+        return new Color(1f);
     }
 
     private static final float[] EXPONENT = new float[256];
@@ -113,12 +113,6 @@ public final class Color {
         r = c.r;
         g = c.g;
         b = c.b;
-    }
-
-    public Color(int rgb) {
-        r = ((rgb >> 16) & 0xFF) / 255.0f;
-        g = ((rgb >> 8) & 0xFF) / 255.0f;
-        b = (rgb & 0xFF) / 255.0f;
     }
 
     public Color copy() {
