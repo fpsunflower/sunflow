@@ -330,6 +330,14 @@ class LightServer {
             return null;
     }
 
+    void shadeBakeResult(ShadingState state) {
+        Shader shader = getShader(state);
+        if (shader != null)
+            state.setResult(shader.getRadiance(state));
+        else
+            state.setResult(Color.BLACK);
+    }
+
     Color shadeHit(ShadingState state) {
         state.getInstance().prepareShadingState(state);
         Shader shader = getShader(state);

@@ -40,4 +40,14 @@ public class Camera implements RenderObject {
         }
         return r;
     }
+
+    /**
+     * Generate a ray from the origin of camera space toward the specified point
+     * 
+     * @param p point in world space
+     * @return ray from the origin of camera space to the specified point
+     */
+    Ray getRay(Point3 p) {
+        return new Ray(c2w.transformP(new Point3(0, 0, 0)), p);
+    }
 }

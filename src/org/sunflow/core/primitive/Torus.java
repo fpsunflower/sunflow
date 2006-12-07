@@ -126,4 +126,8 @@ public class Torus implements PrimitiveList {
             }
         }
     }
+
+    public PrimitiveList getBakingPrimitives() {
+        return null;
+    }
 }

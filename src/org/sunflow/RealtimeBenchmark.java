@@ -76,12 +76,11 @@ public class RealtimeBenchmark extends SunflowAPI {
             parameter("up", up);
             camera(name, null);
             render(SunflowAPI.DEFAULT_OPTIONS, display);
-
         }
         t.end();
         UI.set(new ConsoleInterface());
         UI.printInfo(Module.BENCH, "Benchmark results:");
-        UI.printInfo(Module.BENCH, "  * FPS:                 %.2f", frames / t.seconds());
+        UI.printInfo(Module.BENCH, "  * Average FPS:         %.2f", frames / t.seconds());
         UI.printInfo(Module.BENCH, "  * Total time:          %s", t);
     }
 

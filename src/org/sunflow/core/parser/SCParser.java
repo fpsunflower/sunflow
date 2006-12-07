@@ -43,7 +43,7 @@ import org.sunflow.core.photonmap.GridPhotonMap;
 import org.sunflow.core.primitive.Background;
 import org.sunflow.core.primitive.BanchoffSurface;
 import org.sunflow.core.primitive.CornellBox;
-import org.sunflow.core.primitive.DLASurface;
+import org.sunflow.core.primitive.ParticleSurface;
 import org.sunflow.core.primitive.Hair;
 import org.sunflow.core.primitive.JuliaFractal;
 import org.sunflow.core.primitive.Mesh;
@@ -977,7 +977,7 @@ public class SCParser implements SceneParser {
                 api.parameter("num", data.length / 3);
             p.checkNextToken("radius");
             api.parameter("radius", p.getNextFloat());
-            api.geometry(name, new DLASurface());
+            api.geometry(name, new ParticleSurface());
             api.parameter("shaders", shaders);
             if (transform != null)
                 api.parameter("transform", transform);

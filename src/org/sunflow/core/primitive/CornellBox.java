@@ -445,4 +445,8 @@ public class CornellBox implements PrimitiveList, Shader, LightSource {
             return bounds;
         return o2w.transform(bounds);
     }
+    
+    public PrimitiveList getBakingPrimitives() {
+        return null;
+    }
 }

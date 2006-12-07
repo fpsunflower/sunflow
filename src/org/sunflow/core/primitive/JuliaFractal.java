@@ -245,4 +245,8 @@ public class JuliaFractal implements PrimitiveList {
         cz = pl.getFloat("cz", cz);
         return true;
     }
+
+    public PrimitiveList getBakingPrimitives() {
+        return null;
+    }
 }

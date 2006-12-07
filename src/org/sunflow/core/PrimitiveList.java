@@ -57,4 +57,14 @@ public interface PrimitiveList extends RenderObject {
      * @param state shading state to fill in
      */
     public void prepareShadingState(ShadingState state);
+
+    /**
+     * Create a new {@link PrimitiveList} object suitable for baking lightmaps.
+     * This usually means a set of primitives laid out in the unit square UV
+     * space. This method is optional, object which do not support it should
+     * simply return <code>null</code>.
+     * 
+     * @return a baking {@link PrimitiveList}
+     */
+    public PrimitiveList getBakingPrimitives();
 }

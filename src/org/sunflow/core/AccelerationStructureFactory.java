@@ -34,7 +34,7 @@ class AccelerationStructureFactory {
         else if (name.equals("bih"))
             return new BoundingIntervalHierarchy();
         else {
-            UI.printWarning(Module.ACCEL, "Unrecognized intersection accelerator: \"%s\"", name);
+            UI.printWarning(Module.ACCEL, "Unrecognized intersection accelerator \"%s\" - using auto", name);
             return create(null, n, primitives);
         }
     }

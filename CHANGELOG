@@ -1,9 +1,15 @@
 v0.07.0
+* Added XYZColor class to represent colors with CIE coordinates
+* Rengereated golden images for Benchmark data
+* Fixed a subtle problem with float/int constructors for the Color class
+* Added lightmap baking - only triangular meshes are supported at the moment
+* Renamed DLASurface to ParticleSurface
 * SCParser: Made all the options in the image block optional
 * Added fake spherical lights (approximated by point lights - using the trick from the Lightcuts paper)
 * Bug fix to RA2Parser (was passing fov argument to camera incorectly)
 * Added a method to dump Mesh objects to .obj files (usefull for procedural geometry debugging)
 * Added DLASurface for efficient rendering of large sets of spheres
+* Split Camera into CameraLens (which is an interface to generate rays in camera space) and an internal Camera class which rotates the rays into world space
 * Upgraded to Janino 2.5.1
 * Upgraded to Janino 2.5.0
 * Parser now generates bezier patch primitives intead of triangles is the subdivs/smooth parameters are ommited

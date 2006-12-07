@@ -120,4 +120,8 @@ public class Instance implements RenderObject {
     public Vector3 transformVectorWorldToObject(Vector3 v) {
         return o2w == null ? new Vector3(v) : w2o.transformV(v);
     }
+
+    public PrimitiveList getBakingPrimitives() {
+        return geometry.getBakingPrimitives();
+    }
 }

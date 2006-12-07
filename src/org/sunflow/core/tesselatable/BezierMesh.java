@@ -433,4 +433,8 @@ public class BezierMesh implements PrimitiveList, Tesselatable {
         // FIXME: use actual derivatives to create basis
         state.setBasis(OrthoNormalBasis.makeFromW(state.getNormal()));
     }
+    
+    public PrimitiveList getBakingPrimitives() {
+        return null;
+    }
 }

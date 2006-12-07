@@ -89,6 +89,10 @@ public final class RGBSpace {
         this.zb = s * (this.rx * this.gy - this.ry * this.gx);
     }
 
+    public final Color convertXYZtoRGB(XYZColor c) {
+        return convertXYZtoRGB(c.getX(), c.getY(), c.getZ());
+    }
+
     public final Color convertXYZtoRGB(float X, float Y, float Z) {
         float r = (rx * X) + (ry * Y) + (rz * Z);
         float g = (gx * X) + (gy * Y) + (gz * Z);
@@ -96,12 +100,12 @@ public final class RGBSpace {
         return new Color(r, g, b);
     }
 
-    public final void convertRGBtoXYZ(Color c) {
+    public final XYZColor convertRGBtoXYZ(Color c) {
         float[] rgb = c.getRGB();
         float X = (xr * rgb[0]) + (xg * rgb[1]) + (xb * rgb[2]);
         float Y = (yr * rgb[0]) + (yg * rgb[1]) + (yb * rgb[2]);
         float Z = (zr * rgb[0]) + (zg * rgb[1]) + (zb * rgb[2]);
-        // TODO: define XYZ color type
+        return new XYZColor(X, Y, Z);
     }
 
     public final boolean insideGamut(float r, float g, float b) {

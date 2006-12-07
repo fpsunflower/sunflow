@@ -46,4 +46,8 @@ final class InstanceList implements PrimitiveList {
         // TODO: build accelstructure into this (?)
         return true;
     }
+
+    public PrimitiveList getBakingPrimitives() {
+        return null;
+    }
 }

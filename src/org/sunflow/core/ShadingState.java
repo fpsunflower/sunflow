@@ -120,6 +120,10 @@ public final class ShadingState implements Iterable<LightSample> {
         result = null;
     }
 
+    final void setRay(Ray r) {
+        this.r = r;
+    }
+
     public final void init() {
         // prepare variables needed for shading
         p = new Point3();

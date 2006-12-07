@@ -82,4 +82,8 @@ public class BanchoffSurface implements PrimitiveList {
             }
         }
     }
+
+    public PrimitiveList getBakingPrimitives() {
+        return null;
+    }
 }

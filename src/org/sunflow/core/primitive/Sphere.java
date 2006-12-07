@@ -81,4 +81,8 @@ public class Sphere implements PrimitiveList {
             state.setIntersection(0, 0, 0);
         }
     }
+    
+    public PrimitiveList getBakingPrimitives() {
+        return null;
+    }
 }

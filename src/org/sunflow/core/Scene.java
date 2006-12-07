@@ -20,6 +20,11 @@ public class Scene {
     private AccelerationStructure intAccel;
     private String acceltype;
 
+    // baking
+    private Instance bakingInstance;
+    private PrimitiveList bakingPrimitives;
+    private AccelerationStructure bakingAccel;
+
     private boolean rebuildAccel;
 
     // image size
@@ -149,9 +154,32 @@ public class Scene {
         lightServer.giEngine(engine);
     }
 
+    /**
+     * The provided instance will be considered for lightmap baking. If the
+     * specified instance is <code>null</code>, lightmap baking will be
+     * disabled and normal rendering will occur.
+     * 
+     * @param instance instance to bake
+     */
+    public void setBakingInstance(Instance instance) {
+        bakingInstance = instance;
+    }
+
     public ShadingState getRadiance(IntersectionState istate, float rx, float ry, double lensU, double lensV, double time, int instance) {
-        Ray r = camera.getRay(rx, ry, imageWidth, imageHeight, lensU, lensV, time);
-        return r != null ? lightServer.getRadiance(rx, ry, instance, r, istate) : null;
+        if (bakingPrimitives == null) {
+            Ray r = camera.getRay(rx, ry, imageWidth, imageHeight, lensU, lensV, time);
+            return r != null ? lightServer.getRadiance(rx, ry, instance, r, istate) : null;
+        } else {
+            Ray r = new Ray(rx / imageWidth, ry / imageHeight, -1, 0, 0, 1);
+            traceBake(r, istate);
+            if (!istate.hit())
+                return null;
+            ShadingState state = ShadingState.createState(istate, rx, ry, r, instance, lightServer);
+            bakingPrimitives.prepareShadingState(state);
+            state.setRay(camera.getRay(state.getPoint()));
+            lightServer.shadeBakeResult(state);
+            return state;
+        }
     }
 
     public Filter getFilter() {
@@ -178,6 +206,14 @@ public class Scene {
         return state.hit() ? Color.WHITE : Color.BLACK;
     }
 
+    void traceBake(Ray r, IntersectionState state) {
+        // set the instance as if tracing a regular instanced object
+        state.current = bakingInstance;
+        // reset object
+        state.instance = null;
+        bakingAccel.intersect(r, state);
+    }
+
     public void render(Options options, ImageSampler sampler, Display display) {
         if (display == null)
             display = new FrameDisplay();
@@ -185,6 +221,23 @@ public class Scene {
             UI.printError(Module.SCENE, "No camera found");
             return;
         }
+
+        if (bakingInstance != null) {
+            UI.printDetailed(Module.SCENE, "Creating primitives for lightmapping ...");
+            bakingPrimitives = bakingInstance.getBakingPrimitives();
+            if (bakingPrimitives == null) {
+                UI.printError(Module.SCENE, "Lightmap baking is not supported for the given instance.");
+                return;
+            }
+            int n = bakingPrimitives.getNumPrimitives();
+            UI.printInfo(Module.SCENE, "Building acceleration structure for lightmapping (%d num primitives) ...", n);
+            bakingAccel = AccelerationStructureFactory.create("auto", n, true);
+            bakingAccel.build(bakingPrimitives);
+        } else {
+            bakingPrimitives = null;
+            bakingAccel = null;
+        }
+
         // read from options
         threads = options.getInt("threads", threads);
         lowPriority = options.getBoolean("threads.lowPriority", lowPriority);
@@ -219,6 +272,9 @@ public class Scene {
         sampler.prepare(options, this, imageWidth, imageHeight);
         sampler.render(display);
         lightServer.showStats();
+        // discard baking tesselation/accel structure
+        bakingPrimitives = null;
+        bakingAccel = null;
         UI.printInfo(Module.SCENE, "Done.");
     }
 

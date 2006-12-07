@@ -89,4 +89,10 @@ public class Geometry implements RenderObject {
     void prepareShadingState(ShadingState state) {
         primitives.prepareShadingState(state);
     }
+    
+    public PrimitiveList getBakingPrimitives() {
+        if (builtAccel != 0)
+            build();
+        return primitives.getBakingPrimitives();
+    }
 }

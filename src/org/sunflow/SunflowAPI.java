@@ -639,6 +639,19 @@ public class SunflowAPI {
         if (opt == null)
             opt = new Options();
         scene.setCamera(lookupCamera(opt.getString("camera", null)));
+
+        // baking
+        String bakingInstanceName = opt.getString("baking.instance", null);
+        if (bakingInstanceName != null) {
+            Instance bakingInstance = lookupInstance(bakingInstanceName);
+            if (bakingInstance == null) {
+                UI.printError(Module.API, "Unable to bake instance \"%s\" - not found", bakingInstanceName);
+                return;
+            }
+            scene.setBakingInstance(bakingInstance);
+        } else
+            scene.setBakingInstance(null);
+
         String samplerName = opt.getString("sampler", "bucket");
         ImageSampler sampler = null;
         if (samplerName.equals("none") || samplerName.equals("null"))

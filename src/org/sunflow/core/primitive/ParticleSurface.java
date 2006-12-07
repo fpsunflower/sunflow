@@ -14,12 +14,12 @@ import org.sunflow.math.Point3;
 import org.sunflow.math.Solvers;
 import org.sunflow.math.Vector3;
 
-public class DLASurface implements PrimitiveList {
+public class ParticleSurface implements PrimitiveList {
     private float[] particles;
     private float r, r2;
     private int n;
 
-    public DLASurface() {
+    public ParticleSurface() {
         particles = null;
         r = r2 = 1;
         n = 0;
@@ -93,5 +93,9 @@ public class DLASurface implements PrimitiveList {
         r2 = r * r;
         n = pl.getInt("num", n);
         return particles != null && n <= (particles.length / 3);
+    }
+
+    public PrimitiveList getBakingPrimitives() {
+        return null;
     }
 }

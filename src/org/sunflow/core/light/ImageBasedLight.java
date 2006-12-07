@@ -160,6 +160,10 @@ public class ImageBasedLight implements PrimitiveList, LightSource, Shader {
         return null;
     }
 
+    public PrimitiveList getBakingPrimitives() {
+        return null;
+    }
+
     public int getNumSamples() {
         return numSamples;
     }
