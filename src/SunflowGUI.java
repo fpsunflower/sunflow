@@ -150,6 +150,7 @@ public class SunflowGUI extends javax.swing.JFrame implements UserInterface {
             System.out.println("  -resolution w h  Changes the render resolution to the specified width and height (in pixels)");
             System.out.println("  -bucket n order  Changes the default bucket size to n pixels and the default order");
             System.out.println("  -bake name       Bakes a lightmap for the specified instance");
+            System.out.println("  -bakedir dir     Selects the type of lightmap baking: dir=view or ortho");
             System.out.println("  -bench           Run several built-in scenes for benchmark purposes");
             System.out.println("  -rtbench         Run realtime ray-tracing benchmark");
             System.out.println("  -v verbosity     Set the verbosity level: 0=none,1=errors,2=warnings,3=info,4=detailed");
@@ -176,6 +177,7 @@ public class SunflowGUI extends javax.swing.JFrame implements UserInterface {
             int bucketSize = 0;
             String bucketOrder = null;
             String bakingName = null;
+            boolean bakeViewdep = false;
             boolean runBenchmark = false;
             boolean runRTBenchmark = false;
             while (i < args.length) {
@@ -269,6 +271,17 @@ public class SunflowGUI extends javax.swing.JFrame implements UserInterface {
                         usage(false);
                     bakingName = args[i + 1];
                     i += 2;
+                } else if (args[i].equals("-bakedir")) {
+                    if (i > args.length - 2)
+                        usage(false);
+                    String baketype = args[i + 1];
+                    if (baketype.equals("view"))
+                        bakeViewdep = true;
+                    else if (baketype.equals("ortho"))
+                        bakeViewdep = false;
+                    else
+                        usage(false);
+                    i += 2;
                 } else if (args[i].equals("-bench")) {
                     runBenchmark = true;
                     i++;
@@ -315,8 +328,10 @@ public class SunflowGUI extends javax.swing.JFrame implements UserInterface {
             api.parameter("aa.display", showAA);
             api.parameter("threads", threads);
             api.parameter("threads.lowPriority", lowPriority);
-            if (bakingName != null)
+            if (bakingName != null) {
                 api.parameter("baking.instance", bakingName);
+                api.parameter("baking.viewdep", bakeViewdep);
+            }
             api.options(SunflowAPI.DEFAULT_OPTIONS);
             if (accel != null)
                 api.accel(accel);

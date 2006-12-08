@@ -4,6 +4,8 @@ import org.sunflow.core.display.FrameDisplay;
 import org.sunflow.image.Color;
 import org.sunflow.math.BoundingBox;
 import org.sunflow.math.MathUtils;
+import org.sunflow.math.Point3;
+import org.sunflow.math.Vector3;
 import org.sunflow.system.UI;
 import org.sunflow.system.UI.Module;
 
@@ -21,6 +23,7 @@ public class Scene {
     private String acceltype;
 
     // baking
+    private boolean bakingViewDependent;
     private Instance bakingInstance;
     private PrimitiveList bakingPrimitives;
     private AccelerationStructure bakingAccel;
@@ -46,6 +49,11 @@ public class Scene {
         instanceList = new InstanceList();
         infiniteInstanceList = new InstanceList();
         acceltype = "auto";
+
+        bakingViewDependent = false;
+        bakingInstance = null;
+        bakingPrimitives = null;
+        bakingAccel = null;
 
         camera = null;
         imageWidth = 640;
@@ -176,7 +184,17 @@ public class Scene {
                 return null;
             ShadingState state = ShadingState.createState(istate, rx, ry, r, instance, lightServer);
             bakingPrimitives.prepareShadingState(state);
-            state.setRay(camera.getRay(state.getPoint()));
+            if (bakingViewDependent)
+                state.setRay(camera.getRay(state.getPoint()));
+            else {
+                Point3 p = state.getPoint();
+                Vector3 n = state.getNormal();
+                // create a ray coming from directly above the point being
+                // shaded
+                Ray incoming = new Ray(p.x + n.x, p.y + n.y, p.z + n.z, -n.x, -n.y, -n.z);
+                incoming.setMax(1);
+                state.setRay(incoming);
+            }
             lightServer.shadeBakeResult(state);
             return state;
         }
@@ -217,10 +235,6 @@ public class Scene {
     public void render(Options options, ImageSampler sampler, Display display) {
         if (display == null)
             display = new FrameDisplay();
-        if (camera == null) {
-            UI.printError(Module.SCENE, "No camera found");
-            return;
-        }
 
         if (bakingInstance != null) {
             UI.printDetailed(Module.SCENE, "Creating primitives for lightmapping ...");
@@ -236,6 +250,12 @@ public class Scene {
         } else {
             bakingPrimitives = null;
             bakingAccel = null;
+        }
+        bakingViewDependent = options.getBoolean("baking.viewdep", bakingViewDependent);
+
+        if ((bakingInstance != null && bakingViewDependent && camera == null) || (bakingInstance == null && camera == null)) {
+            UI.printError(Module.SCENE, "No camera found");
+            return;
         }
 
         // read from options
@@ -263,6 +283,7 @@ public class Scene {
         UI.printInfo(Module.SCENE, "  * Scene bounds:        %s", getBounds());
         UI.printInfo(Module.SCENE, "  * Scene center:        %s", getBounds().getCenter());
         UI.printInfo(Module.SCENE, "  * Scene diameter:      %.2f", getBounds().getExtents().length());
+        UI.printInfo(Module.SCENE, "  * Lightmap bake:       %s", bakingInstance != null ? (bakingViewDependent ? "view" : "ortho") : "off");
         if (sampler == null)
             return;
         if (!lightServer.build(options))

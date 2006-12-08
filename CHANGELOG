@@ -1,4 +1,8 @@
 v0.07.0
+* When baking a lightmap without viewdep, a camera is not required in the scene
+* Added -bakedir command line option
+* Added baking.viewdep option to control lightmap baking style
+* Lightmap baking can now either be view-dependent (to the current camera) or orthographic (perpendicular to the point being shaded)
 * Added XYZColor class to represent colors with CIE coordinates
 * Rengereated golden images for Benchmark data
 * Fixed a subtle problem with float/int constructors for the Color class
