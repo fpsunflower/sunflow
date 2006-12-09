@@ -373,18 +373,6 @@ public class SunflowAPI {
     }
 
     /**
-     * Sets the ray intersection acceleration method to be used for the
-     * top-level instances. This must be one of the built-in types. Valid names
-     * are: "auto", "uniformgrid", "null", "bih", "kdtree". Other names are
-     * ignored and will default to an automatic choice.
-     * 
-     * @param name name of a built-in intersection accelerator.
-     */
-    public final void accel(String name) {
-        scene.setIntersectionAccelerator(name);
-    }
-
-    /**
      * Defines a shader with a given name. If the shader object is
      * <code>null</code>, the shader with the given name will be updated (if
      * it exists).

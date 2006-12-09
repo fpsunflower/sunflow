@@ -77,7 +77,6 @@ public class Benchmark extends SunflowAPI implements BenchmarkTest, UserInterfac
         parameter("bucket.order", "hilbert");
         parameter("bucket.size", 32);
         options(SunflowAPI.DEFAULT_OPTIONS);
-        accel("bih");
         // geometry
         buildCornellBox();
         String referenceImageFilename = String.format("%sgolden_%04X.png", resourcePath, resolution);

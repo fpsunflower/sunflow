@@ -1,4 +1,7 @@
 v0.07.0
+* Removed -accel command line option
+* Deprecated use of accel keyword in .sc files - the default is usually best
+* Moved accel into an option parameter
 * Added -filter command line option
 * When baking a lightmap without viewdep, a camera is not required in the scene
 * Added -bakedir command line option

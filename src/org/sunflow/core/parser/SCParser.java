@@ -112,7 +112,8 @@ public class SCParser implements SceneParser {
                     parseBackgroundBlock(api);
                 } else if (token.equals("accel")) {
                     UI.printInfo(Module.API, "Reading accelerator type ...");
-                    api.accel(p.getNextToken());
+                    p.getNextToken();
+                    UI.printWarning(Module.API, "Setting accelerator type is not recommended - ignoring");
                 } else if (token.equals("filter")) {
                     UI.printInfo(Module.API, "Reading image filter type ...");
                     parseFilter(api);

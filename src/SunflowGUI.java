@@ -136,7 +136,6 @@ public class SunflowGUI extends javax.swing.JFrame implements UserInterface {
             System.out.println("  -threads n       Render using n threads");
             System.out.println("  -lopri           Set thread priority to low (default)");
             System.out.println("  -hipri           Set thread priority to high");
-            System.out.println("  -accel type      Render with specified acceleration structure");
             System.out.println("  -smallmesh       Load triangle meshes using triangles optimized for memory use");
             System.out.println("  -dumpkd          Dump KDTree to an obj file for visualization");
             System.out.println("  -buildonly       Do not call render method after loading the scene");
@@ -167,7 +166,6 @@ public class SunflowGUI extends javax.swing.JFrame implements UserInterface {
             boolean noRender = false;
             String filename = null;
             String input = null;
-            String accel = null;
             int i = 0;
             int threads = 0;
             boolean lowPriority = true;
@@ -205,11 +203,6 @@ public class SunflowGUI extends javax.swing.JFrame implements UserInterface {
                 } else if (args[i].equals("-hipri")) {
                     lowPriority = false;
                     i++;
-                } else if (args[i].equals("-accel")) {
-                    if (i > args.length - 2)
-                        usage(false);
-                    accel = args[i + 1];
-                    i += 2;
                 } else if (args[i].equals("-sampler")) {
                     if (i > args.length - 2)
                         usage(false);
@@ -342,8 +335,6 @@ public class SunflowGUI extends javax.swing.JFrame implements UserInterface {
             if (filterType != null)
                 api.filter(filterType);
             api.options(SunflowAPI.DEFAULT_OPTIONS);
-            if (accel != null)
-                api.accel(accel);
             if (noGI)
                 api.giEngine(null);
             Display display;

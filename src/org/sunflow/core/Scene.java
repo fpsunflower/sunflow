@@ -84,17 +84,6 @@ public class Scene {
     }
 
     /**
-     * Sets the intersetion accelerator used to accelerate raytracing. This can
-     * be changed up until rendertime.
-     * 
-     * @param accel intersection accelerator to use
-     */
-    public void setIntersectionAccelerator(String name) {
-        rebuildAccel = acceltype.equals(name);
-        acceltype = name;
-    }
-
-    /**
      * Sets the current camera (no support for multiple cameras yet).
      * 
      * @param camera camera to be used as the viewpoint for the scene
@@ -267,6 +256,8 @@ public class Scene {
         imageWidth = MathUtils.clamp(imageWidth, 1, 1 << 14);
         imageHeight = MathUtils.clamp(imageHeight, 1, 1 << 14);
 
+        
+        // get acceleration structure info
         // count scene primitives
         long numPrimitives = 0;
         for (int i = 0; i < instanceList.getNumPrimitives(); i++)
@@ -275,6 +266,12 @@ public class Scene {
         UI.printInfo(Module.SCENE, "  * Infinite instances:  %d", infiniteInstanceList.getNumPrimitives());
         UI.printInfo(Module.SCENE, "  * Instances:           %d", instanceList.getNumPrimitives());
         UI.printInfo(Module.SCENE, "  * Primitives:          %d", numPrimitives);
+        String accelName = options.getString("accel", null);
+        if (accelName != null) {
+            rebuildAccel = rebuildAccel || !acceltype.equals(accelName);
+            acceltype = accelName;
+        }
+        UI.printInfo(Module.SCENE, "  * Instance accel:      %s", acceltype);
         if (rebuildAccel) {
             intAccel = AccelerationStructureFactory.create(acceltype, instanceList.getNumPrimitives(), false);
             intAccel.build(instanceList);

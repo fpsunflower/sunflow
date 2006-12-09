@@ -39,7 +39,6 @@ public class RealtimeBenchmark extends SunflowAPI {
         parameter("bucket.order", "hilbert");
         parameter("bucket.size", 32);
         options(SunflowAPI.DEFAULT_OPTIONS);
-        accel("bih");
         // camera
         Point3 eye = new Point3(30, 0, 10.967f);
         Point3 target = new Point3(0, 0, 5.4f);
