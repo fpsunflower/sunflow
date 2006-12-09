@@ -151,6 +151,7 @@ public class SunflowGUI extends javax.swing.JFrame implements UserInterface {
             System.out.println("  -bucket n order  Changes the default bucket size to n pixels and the default order");
             System.out.println("  -bake name       Bakes a lightmap for the specified instance");
             System.out.println("  -bakedir dir     Selects the type of lightmap baking: dir=view or ortho");
+            System.out.println("  -filter type     Selects the image filter to use");
             System.out.println("  -bench           Run several built-in scenes for benchmark purposes");
             System.out.println("  -rtbench         Run realtime ray-tracing benchmark");
             System.out.println("  -v verbosity     Set the verbosity level: 0=none,1=errors,2=warnings,3=info,4=detailed");
@@ -178,6 +179,7 @@ public class SunflowGUI extends javax.swing.JFrame implements UserInterface {
             String bucketOrder = null;
             String bakingName = null;
             boolean bakeViewdep = false;
+            String filterType = null;
             boolean runBenchmark = false;
             boolean runRTBenchmark = false;
             while (i < args.length) {
@@ -282,6 +284,11 @@ public class SunflowGUI extends javax.swing.JFrame implements UserInterface {
                     else
                         usage(false);
                     i += 2;
+                } else if (args[i].equals("-filter")) {
+                    if (i > args.length - 2)
+                        usage(false);
+                    filterType = args[i + 1];
+                    i += 2;
                 } else if (args[i].equals("-bench")) {
                     runBenchmark = true;
                     i++;
@@ -304,7 +311,7 @@ public class SunflowGUI extends javax.swing.JFrame implements UserInterface {
             }
             if (runBenchmark) {
                 new Benchmark(showFrame).execute();
-                System.exit(0);
+                return;
             }
             if (runRTBenchmark) {
                 new RealtimeBenchmark(showFrame, threads);
@@ -316,7 +323,7 @@ public class SunflowGUI extends javax.swing.JFrame implements UserInterface {
             if (api == null)
                 System.exit(1);
             if (noRender)
-                System.exit(0);
+                return;
             if (resolutionW > 0 && resolutionH > 0) {
                 api.parameter("resolutionX", resolutionW);
                 api.parameter("resolutionY", resolutionH);
@@ -332,6 +339,8 @@ public class SunflowGUI extends javax.swing.JFrame implements UserInterface {
                 api.parameter("baking.instance", bakingName);
                 api.parameter("baking.viewdep", bakeViewdep);
             }
+            if (filterType != null)
+                api.filter(filterType);
             api.options(SunflowAPI.DEFAULT_OPTIONS);
             if (accel != null)
                 api.accel(accel);
