@@ -139,6 +139,9 @@ public class MeshLight extends Mesh implements Shader {
             p.x = w * points[index0 + 0] + u * points[index1 + 0] + v * points[index2 + 0];
             p.y = w * points[index0 + 1] + u * points[index1 + 1] + v * points[index2 + 1];
             p.z = w * points[index0 + 2] + u * points[index1 + 2] + v * points[index2 + 2];
+            p.x += 0.001f * ng.x;
+            p.y += 0.001f * ng.y;
+            p.z += 0.001f * ng.z;
 
             // compute shadow ray to the sampled point
             dest.setShadowRay(new Ray(state.getPoint(), p));
@@ -186,6 +189,9 @@ public class MeshLight extends Mesh implements Shader {
             p.x = w * points[index0 + 0] + u * points[index1 + 0] + v * points[index2 + 0];
             p.y = w * points[index0 + 1] + u * points[index1 + 1] + v * points[index2 + 1];
             p.z = w * points[index0 + 2] + u * points[index1 + 2] + v * points[index2 + 2];
+            p.x += 0.001f * ng.x;
+            p.y += 0.001f * ng.y;
+            p.z += 0.001f * ng.z;
             OrthoNormalBasis onb = OrthoNormalBasis.makeFromW(ng);
             u = (float) (2 * Math.PI * randX1);
             s = Math.sqrt(randY1);
