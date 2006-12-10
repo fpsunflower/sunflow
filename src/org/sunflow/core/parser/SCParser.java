@@ -24,11 +24,6 @@ import org.sunflow.core.Tesselatable;
 import org.sunflow.core.camera.PinholeLens;
 import org.sunflow.core.camera.SphericalLens;
 import org.sunflow.core.camera.ThinLens;
-import org.sunflow.core.filter.BlackmanHarrisFilter;
-import org.sunflow.core.filter.BoxFilter;
-import org.sunflow.core.filter.GaussianFilter;
-import org.sunflow.core.filter.SincFilter;
-import org.sunflow.core.filter.TriangleFilter;
 import org.sunflow.core.gi.AmbientOcclusionGIEngine;
 import org.sunflow.core.gi.FakeGIEngine;
 import org.sunflow.core.gi.InstantGI;
@@ -43,10 +38,10 @@ import org.sunflow.core.photonmap.GridPhotonMap;
 import org.sunflow.core.primitive.Background;
 import org.sunflow.core.primitive.BanchoffSurface;
 import org.sunflow.core.primitive.CornellBox;
-import org.sunflow.core.primitive.ParticleSurface;
 import org.sunflow.core.primitive.Hair;
 import org.sunflow.core.primitive.JuliaFractal;
 import org.sunflow.core.primitive.Mesh;
+import org.sunflow.core.primitive.ParticleSurface;
 import org.sunflow.core.primitive.Plane;
 import org.sunflow.core.primitive.Sphere;
 import org.sunflow.core.primitive.Torus;
@@ -221,33 +216,15 @@ public class SCParser implements SceneParser {
     }
 
     private void parseFilter(SunflowAPI api) throws IOException, ParserException {
-        if (p.peekNextToken("box")) {
-            float w = p.getNextFloat();
-            float h = p.getNextFloat();
-            float s = (w + h) * 0.5f;
-            api.filter(new BoxFilter(s));
-        } else if (p.peekNextToken("gaussian")) {
-            float w = p.getNextFloat();
-            float h = p.getNextFloat();
-            float s = (w + h) * 0.5f;
-            api.filter(new GaussianFilter(s));
-        } else if (p.peekNextToken("blackman-harris")) {
-            float w = p.getNextFloat();
-            float h = p.getNextFloat();
-            float s = (w + h) * 0.5f;
-            api.filter(new BlackmanHarrisFilter(s));
-        } else if (p.peekNextToken("sinc")) {
-            float w = p.getNextFloat();
-            float h = p.getNextFloat();
-            float s = (w + h) * 0.5f;
-            api.filter(new SincFilter(s));
-        } else if (p.peekNextToken("triangle")) {
-            float w = p.getNextFloat();
-            float h = p.getNextFloat();
-            float s = (w + h) * 0.5f;
-            api.filter(new TriangleFilter(s));
-        } else
-            api.filter(p.getNextToken());
+        String name = p.getNextToken();
+        api.parameter("filter", name);
+        api.options(SunflowAPI.DEFAULT_OPTIONS);
+        boolean hasSizeParams = p.peekNextToken("box") || p.peekNextToken("gaussian") || p.peekNextToken("blackman-harris") || p.peekNextToken("sinc") || p.peekNextToken("triangle");
+        if (hasSizeParams) {
+            UI.printWarning(Module.API, "Filter size specification is deprecated - ignoring (optimal size is always used)");
+            p.getNextFloat();
+            p.getNextFloat();
+        }
     }
 
     private void parsePhotonBlock(SunflowAPI api) throws ParserException, IOException {

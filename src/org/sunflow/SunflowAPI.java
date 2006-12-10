@@ -14,7 +14,6 @@ import org.sunflow.core.Camera;
 import org.sunflow.core.CameraLens;
 import org.sunflow.core.CausticPhotonMapInterface;
 import org.sunflow.core.Display;
-import org.sunflow.core.Filter;
 import org.sunflow.core.GIEngine;
 import org.sunflow.core.Geometry;
 import org.sunflow.core.ImageSampler;
@@ -28,14 +27,6 @@ import org.sunflow.core.SceneParser;
 import org.sunflow.core.Shader;
 import org.sunflow.core.Tesselatable;
 import org.sunflow.core.ParameterList.InterpolationType;
-import org.sunflow.core.filter.BlackmanHarrisFilter;
-import org.sunflow.core.filter.BoxFilter;
-import org.sunflow.core.filter.CatmullRomFilter;
-import org.sunflow.core.filter.GaussianFilter;
-import org.sunflow.core.filter.LanczosFilter;
-import org.sunflow.core.filter.MitchellFilter;
-import org.sunflow.core.filter.SincFilter;
-import org.sunflow.core.filter.TriangleFilter;
 import org.sunflow.core.light.PointLight;
 import org.sunflow.core.parser.RA2Parser;
 import org.sunflow.core.parser.RA3Parser;
@@ -310,46 +301,6 @@ public class SunflowAPI {
      */
     public final String resolveTextureFilename(String filename) {
         return textureSearchPath.resolvePath(filename);
-    }
-
-    /**
-     * Sets the image filter to be used. The filter is created with optimal
-     * dimensions. Only built-in filters are supported by this method. Valid
-     * names are: "box", "gaussian", "mitchell", "catmull-rom",
-     * "blackman-harris", "sinc", "lanczos", "triangle". Invalid names are
-     * ignored.
-     * 
-     * @param filter built-in filter name
-     */
-    public final void filter(String filter) {
-        // create filter with optimal size
-        if (filter.equals("box")) {
-            filter(new BoxFilter(1));
-        } else if (filter.equals("gaussian")) {
-            filter(new GaussianFilter(2));
-        } else if (filter.equals("mitchell")) {
-            filter(new MitchellFilter());
-        } else if (filter.equals("catmull-rom")) {
-            filter(new CatmullRomFilter());
-        } else if (filter.equals("blackman-harris")) {
-            filter(new BlackmanHarrisFilter(4));
-        } else if (filter.equals("sinc")) {
-            filter(new SincFilter(4));
-        } else if (filter.equals("lanczos")) {
-            filter(new LanczosFilter());
-        } else if (filter.equals("triangle")) {
-            filter(new TriangleFilter(2));
-        } else
-            UI.printWarning(Module.API, "Unrecognized filter type: \"%s\"", filter);
-    }
-
-    /**
-     * Sets the image filter object directly.
-     * 
-     * @param filter
-     */
-    public final void filter(Filter filter) {
-        scene.setFilter(filter);
     }
 
     /**

@@ -333,7 +333,7 @@ public class SunflowGUI extends javax.swing.JFrame implements UserInterface {
                 api.parameter("baking.viewdep", bakeViewdep);
             }
             if (filterType != null)
-                api.filter(filterType);
+                api.parameter("filter", filterType);
             api.options(SunflowAPI.DEFAULT_OPTIONS);
             if (noGI)
                 api.giEngine(null);

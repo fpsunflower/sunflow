@@ -34,9 +34,6 @@ public class Scene {
     private int imageWidth;
     private int imageHeight;
 
-    // filtering
-    private Filter filter;
-
     // global options
     private int threads;
     private boolean lowPriority;
@@ -58,7 +55,6 @@ public class Scene {
         camera = null;
         imageWidth = 640;
         imageHeight = 480;
-        filter = null;
         threads = 0;
         lowPriority = true;
 
@@ -111,16 +107,6 @@ public class Scene {
      */
     public void setLightList(LightSource[] lights) {
         lightServer.setLights(lights);
-    }
-
-    /**
-     * Sets which filter type used to filter image samples into the final.
-     * pixels.
-     * 
-     * @param f filter to be used
-     */
-    public void setFilter(Filter f) {
-        filter = f;
     }
 
     /**
@@ -187,10 +173,6 @@ public class Scene {
             lightServer.shadeBakeResult(state);
             return state;
         }
-    }
-
-    public Filter getFilter() {
-        return filter;
     }
 
     public BoundingBox getBounds() {

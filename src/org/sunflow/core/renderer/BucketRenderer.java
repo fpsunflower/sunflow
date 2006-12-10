@@ -12,6 +12,7 @@ import org.sunflow.core.Shader;
 import org.sunflow.core.ShadingState;
 import org.sunflow.core.bucket.BucketOrderFactory;
 import org.sunflow.core.filter.BoxFilter;
+import org.sunflow.core.filter.FilterFactory;
 import org.sunflow.image.Color;
 import org.sunflow.math.MathUtils;
 import org.sunflow.math.QMC;
@@ -48,6 +49,7 @@ public class BucketRenderer implements ImageSampler {
     private float thresh;
 
     // filtering
+    private String filterName;
     private Filter filter;
     private int fs;
     private float fhs;
@@ -57,6 +59,7 @@ public class BucketRenderer implements ImageSampler {
         bucketOrderName = "hilbert";
         displayAA = false;
         contrastThreshold = 0.1f;
+        filterName = "box";
     }
 
     public boolean prepare(Options options, Scene scene, int w, int h) {
@@ -95,10 +98,14 @@ public class BucketRenderer implements ImageSampler {
         contrastThreshold = MathUtils.clamp(contrastThreshold, 0, 1);
         thresh = contrastThreshold * (float) Math.pow(2.0f, minAADepth);
         // read filter settings from scene
-        filter = scene.getFilter();
+        filterName = options.getString("filter", filterName);
+        filter = FilterFactory.get(filterName);  
         // adjust filter
-        if (filter == null)
+        if (filter == null) {
+            UI.printWarning(Module.BCKT, "Unrecognized filter type: \"%s\" - defaulting to box", filterName);
             filter = new BoxFilter(1);
+            filterName = "box";
+        }
         fhs = filter.getSize() * 0.5f;
         fs = (int) Math.ceil(subPixelSize * (fhs - 0.5f));
 
@@ -113,6 +120,7 @@ public class BucketRenderer implements ImageSampler {
         UI.printInfo(Module.BCKT, "  * Anti-aliasing:      [%dx%d] -> [%dx%d]", pixelMinAA, pixelMinAA, pixelMaxAA, pixelMaxAA);
         UI.printInfo(Module.BCKT, "  * Rays per sample:    %d", superSampling);
         UI.printInfo(Module.BCKT, "  * Contrast threshold: %.2f", contrastThreshold);
+        UI.printInfo(Module.BCKT, "  * Filter type:        %s", filterName);
         UI.printInfo(Module.BCKT, "  * Filter size:        %.2f pixels", filter.getSize());
         return true;
     }
