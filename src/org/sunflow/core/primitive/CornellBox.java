@@ -370,7 +370,7 @@ public class CornellBox implements PrimitiveList, Shader, LightSource {
         Point3 p = new Point3();
         p.x = (float) (lxmin * (1 - randX) + lxmax * randX);
         p.y = (float) (lymin * (1 - randY) + lymax * randY);
-        p.z = maxZ;
+        p.z = maxZ - 0.001f;
 
         // prepare shadow ray to sampled point
         dest.setShadowRay(new Ray(state.getPoint(), p));
@@ -399,7 +399,7 @@ public class CornellBox implements PrimitiveList, Shader, LightSource {
     public void getPhoton(double randX1, double randY1, double randX2, double randY2, Point3 p, Vector3 dir, Color power) {
         p.x = (float) (lxmin * (1 - randX2) + lxmax * randX2);
         p.y = (float) (lymin * (1 - randY2) + lymax * randY2);
-        p.z = maxZ;
+        p.z = maxZ - 0.001f;
 
         double u = 2 * Math.PI * randX1;
         double s = Math.sqrt(randY1);

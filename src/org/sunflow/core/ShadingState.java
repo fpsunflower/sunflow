@@ -412,6 +412,10 @@ public final class ShadingState implements Iterable<LightSample> {
      * @return color observed along specified ray.
      */
     public final Color traceRefraction(Ray r, int i) {
+        // this assumes the refraction ray is pointing away from the normal
+        r.ox -= 0.002f * n.x;
+        r.oy -= 0.002f * n.y;
+        r.oz -= 0.002f * n.z;
         return server.traceRefraction(this, r, i);
     }
 
@@ -462,8 +466,13 @@ public final class ShadingState implements Iterable<LightSample> {
      * @param power power of the new photon
      */
     public final void traceRefractionPhoton(Ray r, Color power) {
-        if (map.allowRefractionBounced())
+        if (map.allowRefractionBounced()) {
+            // this assumes the refraction ray is pointing away from the normal
+            r.ox -= 0.002f * n.x;
+            r.oy -= 0.002f * n.y;
+            r.oz -= 0.002f * n.z;
             server.traceRefractionPhoton(this, r, power);
+        }
     }
 
     /**
