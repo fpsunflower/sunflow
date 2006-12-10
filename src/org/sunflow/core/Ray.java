@@ -14,7 +14,7 @@ public final class Ray {
     public float dx, dy, dz;
     private float tMin;
     private float tMax;
-    private static final float EPSILON = 0.01f;
+    private static final float EPSILON = 0;//0.01f;
 
     private Ray() {
     }

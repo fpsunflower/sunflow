@@ -147,6 +147,10 @@ public final class ShadingState implements Iterable<LightSample> {
             cosND = -cosND; // make sure this value is positive
             behind = true;
         }
+        // offset the shaded point away from the surface to prevent self-intersection errors
+        p.x += 0.001f * ng.x;
+        p.y += 0.001f * ng.y;
+        p.z += 0.001f * ng.z;
     }
 
     public final float getRasterX() {
