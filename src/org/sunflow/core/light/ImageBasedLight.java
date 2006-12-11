@@ -198,7 +198,7 @@ public class ImageBasedLight implements PrimitiveList, LightSource, Shader {
             float invP = (float) Math.sin(sv * Math.PI) * jacobian / (px * py);
             Vector3 dir = getDirection(su, sv);
             basis.transform(dir);
-            if (Vector3.dot(dir, state.getNormal()) > 0) {
+            if (Vector3.dot(dir, state.getGeoNormal()) > 0) {
                 dest.setShadowRay(new Ray(state.getPoint(), dir));
                 dest.getShadowRay().setMax(Float.MAX_VALUE);
                 Color radiance = texture.getPixel(su, sv);
@@ -208,7 +208,7 @@ public class ImageBasedLight implements PrimitiveList, LightSource, Shader {
                 dest.traceShadow(state);
             }
         } else {
-            if (Vector3.dot(samples[i], state.getNormal()) > 0) {
+            if (Vector3.dot(samples[i], state.getGeoNormal()) > 0 && Vector3.dot(samples[i], state.getNormal()) > 0) {
                 dest.setShadowRay(new Ray(state.getPoint(), samples[i]));
                 dest.getShadowRay().setMax(Float.MAX_VALUE);
                 dest.setRadiance(colors[i], colors[i]);

@@ -30,9 +30,8 @@ public class PointLight implements LightSource {
     }
 
     public boolean isVisible(ShadingState state) {
-        Point3 p = state.getPoint();
-        Vector3 n = state.getNormal();
-        return (Vector3.dot(Point3.sub(lightPoint, p, new Vector3()), n) > 0.0);
+        Vector3 d = Point3.sub(lightPoint, state.getPoint(), new Vector3());
+        return (Vector3.dot(d, state.getNormal()) > 0 && Vector3.dot(d, state.getGeoNormal()) > 0);
     }
 
     public void getSample(int i, ShadingState state, LightSample dest) {

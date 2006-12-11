@@ -307,67 +307,56 @@ public class Mesh implements PrimitiveList {
         }
     }
 
+    private final void intersectTriangleKensler(Ray r, int primID, IntersectionState state) {
+        int tri = 3 * primID;
+        int a = 3 * triangles[tri + 0];
+        int b = 3 * triangles[tri + 1];
+        int c = 3 * triangles[tri + 2];
+        float edge0x = points[b + 0] - points[a + 0];
+        float edge0y = points[b + 1] - points[a + 1];
+        float edge0z = points[b + 2] - points[a + 2];
+        float edge1x = points[a + 0] - points[c + 0];
+        float edge1y = points[a + 1] - points[c + 1];
+        float edge1z = points[a + 2] - points[c + 2];
+        float nx = edge0y * edge1z - edge0z * edge1y;
+        float ny = edge0z * edge1x - edge0x * edge1z;
+        float nz = edge0x * edge1y - edge0y * edge1x;
+        float v = r.dot(nx, ny, nz);
+        float iv = 1 / v;
+        float edge2x = points[a + 0] - r.ox;
+        float edge2y = points[a + 1] - r.oy;
+        float edge2z = points[a + 2] - r.oz;
+        float va = nx * edge2x + ny * edge2y + nz * edge2z;
+        float t = iv * va;
+        if (!r.isInside(t))
+            return;
+        float ix = edge2y * r.dz - edge2z * r.dy;
+        float iy = edge2z * r.dx - edge2x * r.dz;
+        float iz = edge2x * r.dy - edge2y * r.dx;
+        float v1 = ix * edge1x + iy * edge1y + iz * edge1z;
+        float beta = iv * v1;
+        if (beta < 0)
+            return;
+        float v2 = ix * edge0x + iy * edge0y + iz * edge0z;
+        if ((v1 + v2) * v > v * v)
+            return;
+        float gamma = iv * v2;
+        if (gamma < 0)
+            return;
+        r.setMax(t);
+        state.setIntersection(primID, beta, gamma);
+    }
+
     public void intersectPrimitive(Ray r, int primID, IntersectionState state) {
         // alternative test -- disabled for now
         // intersectPrimitiveRobust(r, primID, state);
-        // return;
 
         if (triaccel != null) {
             // optional fast intersection method
             triaccel[primID].intersect(r, primID, state);
             return;
         }
-        // ray-triangle intersection here
-        int tri = 3 * primID;
-        int a = 3 * triangles[tri + 0];
-        int b = 3 * triangles[tri + 1];
-        int c = 3 * triangles[tri + 2];
-        double edge1x = points[b + 0] - points[a + 0];
-        double edge1y = points[b + 1] - points[a + 1];
-        double edge1z = points[b + 2] - points[a + 2];
-        double edge2x = points[c + 0] - points[a + 0];
-        double edge2y = points[c + 1] - points[a + 1];
-        double edge2z = points[c + 2] - points[a + 2];
-        double pvecx = r.dy * edge2z - r.dz * edge2y;
-        double pvecy = r.dz * edge2x - r.dx * edge2z;
-        double pvecz = r.dx * edge2y - r.dy * edge2x;
-        double qvecx, qvecy, qvecz;
-        double u, v;
-        double det = edge1x * pvecx + edge1y * pvecy + edge1z * pvecz;
-        if (det > 0) {
-            double tvecx = r.ox - points[a + 0];
-            double tvecy = r.oy - points[a + 1];
-            double tvecz = r.oz - points[a + 2];
-            u = (tvecx * pvecx + tvecy * pvecy + tvecz * pvecz);
-            if (u < 0.0 || u > det)
-                return;
-            qvecx = tvecy * edge1z - tvecz * edge1y;
-            qvecy = tvecz * edge1x - tvecx * edge1z;
-            qvecz = tvecx * edge1y - tvecy * edge1x;
-            v = (r.dx * qvecx + r.dy * qvecy + r.dz * qvecz);
-            if (v < 0.0 || u + v > det)
-                return;
-        } else if (det < 0) {
-            double tvecx = r.ox - points[a + 0];
-            double tvecy = r.oy - points[a + 1];
-            double tvecz = r.oz - points[a + 2];
-            u = (tvecx * pvecx + tvecy * pvecy + tvecz * pvecz);
-            if (u > 0.0 || u < det)
-                return;
-            qvecx = tvecy * edge1z - tvecz * edge1y;
-            qvecy = tvecz * edge1x - tvecx * edge1z;
-            qvecz = tvecx * edge1y - tvecy * edge1x;
-            v = (r.dx * qvecx + r.dy * qvecy + r.dz * qvecz);
-            if (v > 0.0 || u + v < det)
-                return;
-        } else
-            return;
-        double inv_det = 1.0 / det;
-        float t = (float) ((edge2x * qvecx + edge2y * qvecy + edge2z * qvecz) * inv_det);
-        if (r.isInside(t)) {
-            r.setMax(t);
-            state.setIntersection(primID, (float) (u * inv_det), (float) (v * inv_det));
-        }
+        intersectTriangleKensler(r, primID, state);
     }
 
     public int getNumPrimitives() {

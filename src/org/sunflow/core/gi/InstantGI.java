@@ -56,7 +56,7 @@ public class InstantGI implements GIEngine {
         UI.printInfo(Module.LIGHT, "Instant Global Illumination settings:");
         UI.printInfo(Module.LIGHT, "  * Samples:     %d", numPhotons);
         UI.printInfo(Module.LIGHT, "  * Sets:        %d", numSets);
-        UI.printInfo(Module.LIGHT, "  * Bias bound:  %.3f", c);
+        UI.printInfo(Module.LIGHT, "  * Bias bound:  %f", c);
         UI.printInfo(Module.LIGHT, "  * Bias rays:   %d", numBias);
         virtualLights = new PointLight[numSets][];
         if (numPhotons > 0) {
@@ -150,6 +150,7 @@ public class InstantGI implements GIEngine {
         }
 
         public void store(ShadingState state, Vector3 dir, Color power, Color diffuse) {
+            state.faceforward();
             PointLight vpl = new PointLight();
             vpl.p = state.getPoint();
             vpl.n = state.getNormal();

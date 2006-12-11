@@ -95,7 +95,6 @@ public class IrradianceCacheGIEngine implements GIEngine {
             // compute new sample
             irr = Color.black();
             OrthoNormalBasis onb = state.getBasis();
-            int hits = 0;
             float invR = 0;
             float minR = Float.POSITIVE_INFINITY;
             Vector3 w = new Vector3();
@@ -116,7 +115,6 @@ public class IrradianceCacheGIEngine implements GIEngine {
                 if (temp != null) {
                     minR = Math.min(r.getMax(), minR);
                     invR += 1.0f / r.getMax();
-                    hits++;
                     temp.getInstance().prepareShadingState(temp);
                     irr.add(getGlobalRadiance(temp));
                 }

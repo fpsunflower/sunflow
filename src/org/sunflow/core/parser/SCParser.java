@@ -219,7 +219,7 @@ public class SCParser implements SceneParser {
         String name = p.getNextToken();
         api.parameter("filter", name);
         api.options(SunflowAPI.DEFAULT_OPTIONS);
-        boolean hasSizeParams = p.peekNextToken("box") || p.peekNextToken("gaussian") || p.peekNextToken("blackman-harris") || p.peekNextToken("sinc") || p.peekNextToken("triangle");
+        boolean hasSizeParams = name.equals("box") || name.equals("gaussian") || name.equals("blackman-harris") || name.equals("sinc") || name.equals("triangle");
         if (hasSizeParams) {
             UI.printWarning(Module.API, "Filter size specification is deprecated - ignoring (optimal size is always used)");
             p.getNextFloat();

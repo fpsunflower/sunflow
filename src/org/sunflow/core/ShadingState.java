@@ -138,16 +138,19 @@ public final class ShadingState implements Iterable<LightSample> {
     }
 
     public final void faceforward() {
-        cosND = -r.dot(n);
         // make sure we are on the right side of the material
-        if (cosND < 0.0) {
-            n.negate();
+        if (r.dot(ng) < 0) {
+        } else {
+            // this ensure the ray and the geomtric normal are pointing in the
+            // same direction
             ng.negate();
+            n.negate();
             basis.flipW();
-            cosND = -cosND; // make sure this value is positive
             behind = true;
         }
-        // offset the shaded point away from the surface to prevent self-intersection errors
+        cosND = Math.max(-r.dot(n), 0); // can't be negative
+        // offset the shaded point away from the surface to prevent
+        // self-intersection errors
         p.x += 0.001f * ng.x;
         p.y += 0.001f * ng.y;
         p.z += 0.001f * ng.z;
@@ -413,9 +416,9 @@ public final class ShadingState implements Iterable<LightSample> {
      */
     public final Color traceRefraction(Ray r, int i) {
         // this assumes the refraction ray is pointing away from the normal
-        r.ox -= 0.002f * n.x;
-        r.oy -= 0.002f * n.y;
-        r.oz -= 0.002f * n.z;
+        r.ox -= 0.002f * ng.x;
+        r.oy -= 0.002f * ng.y;
+        r.oz -= 0.002f * ng.z;
         return server.traceRefraction(this, r, i);
     }
 
@@ -468,9 +471,9 @@ public final class ShadingState implements Iterable<LightSample> {
     public final void traceRefractionPhoton(Ray r, Color power) {
         if (map.allowRefractionBounced()) {
             // this assumes the refraction ray is pointing away from the normal
-            r.ox -= 0.002f * n.x;
-            r.oy -= 0.002f * n.y;
-            r.oz -= 0.002f * n.z;
+            r.ox -= 0.002f * ng.x;
+            r.oy -= 0.002f * ng.y;
+            r.oz -= 0.002f * ng.z;
             server.traceRefractionPhoton(this, r, power);
         }
     }

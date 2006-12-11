@@ -44,7 +44,7 @@ public class DirectionalSpotlight implements LightSource {
     }
 
     public boolean isVisible(ShadingState state) {
-        if (Vector3.dot(dir, state.getNormal()) < 0.0) {
+        if (Vector3.dot(dir, state.getGeoNormal()) < 0.0 && Vector3.dot(dir, state.getNormal()) < 0.0) {
             // project point onto source plane
             float x = state.getPoint().x - src.x;
             float y = state.getPoint().y - src.y;
