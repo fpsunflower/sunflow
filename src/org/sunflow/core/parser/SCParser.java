@@ -33,6 +33,7 @@ import org.sunflow.core.gi.PathTracingGIEngine;
 import org.sunflow.core.light.DirectionalSpotlight;
 import org.sunflow.core.light.ImageBasedLight;
 import org.sunflow.core.light.MeshLight;
+import org.sunflow.core.light.SphereLight;
 import org.sunflow.core.photonmap.CausticPhotonMap;
 import org.sunflow.core.photonmap.GlobalPhotonMap;
 import org.sunflow.core.photonmap.GridPhotonMap;
@@ -69,7 +70,6 @@ import org.sunflow.core.tesselatable.Teapot;
 import org.sunflow.image.Color;
 import org.sunflow.math.Matrix4;
 import org.sunflow.math.Point3;
-import org.sunflow.math.QMC;
 import org.sunflow.math.Vector3;
 import org.sunflow.system.Parser;
 import org.sunflow.system.Timer;
@@ -1066,25 +1066,15 @@ public class SCParser implements SceneParser {
             Color pow = parseColor();
             p.checkNextToken("radiance");
             pow.mul(p.getNextFloat());
+            api.parameter("radiance", pow);
             p.checkNextToken("center");
-            float cx = p.getNextFloat();
-            float cy = p.getNextFloat();
-            float cz = p.getNextFloat();
+            api.parameter("center", parsePoint());
             p.checkNextToken("radius");
-            float r = p.getNextFloat();
+            api.parameter("radius", p.getNextFloat());
             p.checkNextToken("samples");
-            int n = p.getNextInt();
-            pow.mul(1.0f / n);
-            for (int i = 0; i < n; i++) {
-                // apply method from the lightcuts paper
-                float r1 = (float) i / (float) n;
-                float r2 = (float) QMC.halton(0, i);
-                float r3 = (float) QMC.halton(1, i);
-                float px = (float) (r * Math.sqrt(r1) * Math.cos(2 * Math.PI * r2));
-                float py = (float) (r * Math.sqrt(r1) * Math.sin(2 * Math.PI * r2));
-                float pz = (float) (Math.sqrt(r * r - px * px - py * py) * Math.sin(Math.PI * (r3 - 0.5)));
-                api.pointLight(api.getUniqueName("pointLight"), cx + px, cy + py, cz + pz, pow);
-            }
+            api.parameter("samples", p.getNextInt());
+            SphereLight light = new SphereLight();
+            light.init(api.getUniqueName("spherelight"), api);
         } else if (p.peekNextToken("directional")) {
             UI.printInfo(Module.API, "Reading directional light ...");
             p.checkNextToken("source");
