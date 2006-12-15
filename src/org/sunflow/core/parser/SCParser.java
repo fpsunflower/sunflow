@@ -21,6 +21,7 @@ import org.sunflow.core.PrimitiveList;
 import org.sunflow.core.SceneParser;
 import org.sunflow.core.Shader;
 import org.sunflow.core.Tesselatable;
+import org.sunflow.core.camera.FisheyeLens;
 import org.sunflow.core.camera.PinholeLens;
 import org.sunflow.core.camera.SphericalLens;
 import org.sunflow.core.camera.ThinLens;
@@ -443,6 +444,16 @@ public class SCParser implements SceneParser {
             api.parameter("up", parseVector());
             name = api.getUniqueName("camera");
             api.camera(name, new SphericalLens());
+        } else if (p.peekNextToken("fisheye")) {
+            UI.printInfo(Module.API, "Reading spherical camera ...");
+            p.checkNextToken("eye");
+            api.parameter("eye", parsePoint());
+            p.checkNextToken("target");
+            api.parameter("target", parsePoint());
+            p.checkNextToken("up");
+            api.parameter("up", parseVector());
+            name = api.getUniqueName("camera");
+            api.camera(name, new FisheyeLens());
         } else
             UI.printWarning(Module.API, "Unrecognized camera type: %s", p.getNextToken());
         p.checkNextToken("}");

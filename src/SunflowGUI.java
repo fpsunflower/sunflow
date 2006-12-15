@@ -48,6 +48,7 @@ import org.sunflow.core.TextureCache;
 import org.sunflow.core.accel.KDTree;
 import org.sunflow.core.display.FileDisplay;
 import org.sunflow.core.display.FrameDisplay;
+import org.sunflow.core.display.ImgPipeDisplay;
 import org.sunflow.core.display.OpenExrDisplay;
 import org.sunflow.core.primitive.Mesh;
 import org.sunflow.core.shader.AmbientOcclusionShader;
@@ -348,6 +349,8 @@ public class SunflowGUI extends javax.swing.JFrame implements UserInterface {
                         e.printStackTrace();
                         return;
                     }
+                } else if (filename != null && filename.equals("imgpipe")) {
+                    display = new ImgPipeDisplay();
                 } else
                     display = new FileDisplay(filename);
             }

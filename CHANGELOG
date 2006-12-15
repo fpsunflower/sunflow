@@ -1,4 +1,7 @@
 v0.07.0
+* Console display now outputs to stderr to allow stdout to be used for output redirection
+* Added fisheye lens to .sc parser
+* Added imgpipe display compatible with mental ray imgpipe protocol
 * Experimental fix to light bleeding problem
 * Removed -accel command line option
 * Deprecated use of accel keyword in .sc files - the default is usually best

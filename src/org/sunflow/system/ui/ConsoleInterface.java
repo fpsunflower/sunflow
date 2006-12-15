@@ -19,7 +19,7 @@ public class ConsoleInterface implements UserInterface {
     }
 
     public void print(Module m, PrintLevel level, String s) {
-        System.out.println(UI.formatOutput(m, level, s));
+        System.err.println(UI.formatOutput(m, level, s));
     }
 
     public void taskStart(String s, int min, int max) {
@@ -33,10 +33,10 @@ public class ConsoleInterface implements UserInterface {
     public void taskUpdate(int current) {
         int p = (min == max) ? 0 : (int) ((current - min) * invP);
         if (p != lastP)
-            System.out.print(task + " [" + (lastP = p) + "%]\r");
+            System.err.print(task + " [" + (lastP = p) + "%]\r");
     }
 
     public void taskStop() {
-        System.out.print("                                                                      \r");
+        System.err.print("                                                                      \r");
     }
 }
