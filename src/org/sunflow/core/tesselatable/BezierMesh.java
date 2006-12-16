@@ -162,10 +162,10 @@ public class BezierMesh implements PrimitiveList, Tesselatable {
                     int v01 = (i + 0) * vstride + (j + 1);
                     int v11 = (i + 1) * vstride + (j + 1);
                     if (quads) {
-                        indices[pidx + 0] = vbase + v00;
-                        indices[pidx + 1] = vbase + v01;
-                        indices[pidx + 2] = vbase + v11;
-                        indices[pidx + 3] = vbase + v10;
+                        indices[pidx + 0] = vbase + v01;
+                        indices[pidx + 1] = vbase + v00;
+                        indices[pidx + 2] = vbase + v10;
+                        indices[pidx + 3] = vbase + v11;
                         pidx += 4;
                     } else {
                         // add 2 triangles
