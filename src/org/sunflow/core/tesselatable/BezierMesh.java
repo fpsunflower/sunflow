@@ -10,6 +10,7 @@ import org.sunflow.core.ShadingState;
 import org.sunflow.core.Tesselatable;
 import org.sunflow.core.ParameterList.InterpolationType;
 import org.sunflow.core.primitive.Mesh;
+import org.sunflow.core.primitive.QuadMesh;
 import org.sunflow.math.BoundingBox;
 import org.sunflow.math.Matrix4;
 import org.sunflow.math.OrthoNormalBasis;
@@ -19,11 +20,13 @@ import org.sunflow.math.Vector3;
 public class BezierMesh implements PrimitiveList, Tesselatable {
     private int subdivs;
     private boolean smooth;
+    private boolean quads;
     private float[][] patches;
 
     public BezierMesh(float[][] patches) {
         subdivs = 8;
         smooth = true;
+        quads = false;
         // convert to single precision
         this.patches = patches;
     }
@@ -121,9 +124,9 @@ public class BezierMesh implements PrimitiveList, Tesselatable {
         float[] vertices = new float[patches.length * (subdivs + 1) * (subdivs + 1) * 3];
         float[] normals = smooth ? new float[patches.length * (subdivs + 1) * (subdivs + 1) * 3] : null;
         float[] uvs = new float[patches.length * (subdivs + 1) * (subdivs + 1) * 2];
-        int[] triangles = new int[patches.length * subdivs * subdivs * 2 * 3];
+        int[] indices = new int[patches.length * subdivs * subdivs * (quads ? 4 : (2 * 3))];
 
-        int vidx = 0, tidx = 0;
+        int vidx = 0, pidx = 0;
         float step = 1.0f / subdivs;
         int vstride = subdivs + 1;
         Point3 p = new Point3();
@@ -158,25 +161,36 @@ public class BezierMesh implements PrimitiveList, Tesselatable {
                     int v10 = (i + 1) * vstride + (j + 0);
                     int v01 = (i + 0) * vstride + (j + 1);
                     int v11 = (i + 1) * vstride + (j + 1);
-                    // add 2 triangles
-                    triangles[tidx + 0] = vbase + v00;
-                    triangles[tidx + 1] = vbase + v10;
-                    triangles[tidx + 2] = vbase + v01;
-                    triangles[tidx + 3] = vbase + v10;
-                    triangles[tidx + 4] = vbase + v11;
-                    triangles[tidx + 5] = vbase + v01;
-                    tidx += 6;
+                    if (quads) {
+                        indices[pidx + 0] = vbase + v00;
+                        indices[pidx + 1] = vbase + v01;
+                        indices[pidx + 2] = vbase + v11;
+                        indices[pidx + 3] = vbase + v10;
+                        pidx += 4;
+                    } else {
+                        // add 2 triangles
+                        indices[pidx + 0] = vbase + v00;
+                        indices[pidx + 1] = vbase + v10;
+                        indices[pidx + 2] = vbase + v01;
+                        indices[pidx + 3] = vbase + v10;
+                        indices[pidx + 4] = vbase + v11;
+                        indices[pidx + 5] = vbase + v01;
+                        pidx += 6;
+                    }
                 }
             }
             vidx += vstride * vstride * 3;
         }
         ParameterList pl = new ParameterList();
         pl.addPoints("points", InterpolationType.VERTEX, vertices);
-        pl.addIntegerArray("triangles", triangles);
+        if (quads)
+            pl.addIntegerArray("quads", indices);
+        else
+            pl.addIntegerArray("triangles", indices);
         pl.addTexCoords("uvs", InterpolationType.VERTEX, uvs);
         if (smooth)
             pl.addVectors("normals", InterpolationType.VERTEX, normals);
-        Mesh m = new Mesh();
+        PrimitiveList m = quads ? new QuadMesh() : new Mesh();
         m.update(pl, null);
         pl.clear(true);
         return m;
@@ -185,6 +199,7 @@ public class BezierMesh implements PrimitiveList, Tesselatable {
     public boolean update(ParameterList pl, SunflowAPI api) {
         subdivs = pl.getInt("subdivs", subdivs);
         smooth = pl.getBoolean("smooth", smooth);
+        quads = pl.getBoolean("quads", quads);
         return subdivs > 0;
     }
 
@@ -433,7 +448,7 @@ public class BezierMesh implements PrimitiveList, Tesselatable {
         // FIXME: use actual derivatives to create basis
         state.setBasis(OrthoNormalBasis.makeFromW(state.getNormal()));
     }
-    
+
     public PrimitiveList getBakingPrimitives() {
         return null;
     }

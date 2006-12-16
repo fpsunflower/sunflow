@@ -78,7 +78,7 @@ public class Geometry implements RenderObject {
         }
 
         int n = primitives.getNumPrimitives();
-        if (n >= 10)
+        if (n >= 1000)
             UI.printInfo(Module.GEOM, "Building acceleration structure for %d primitives ...", n);
 
         accel = AccelerationStructureFactory.create(acceltype, n, true);

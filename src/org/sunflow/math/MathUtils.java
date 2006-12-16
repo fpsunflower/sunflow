@@ -55,6 +55,17 @@ public final class MathUtils {
         return min;
     }
 
+    public static final float min(float a, float b, float c, float d) {
+        float min = a;
+        if (min > b)
+            min = b;
+        if (min > c)
+            min = c;
+        if (min > d)
+            min = d;
+        return min;
+    }
+
     public static final int max(int a, int b, int c) {
         int max = a;
         if (max < b)
@@ -79,6 +90,17 @@ public final class MathUtils {
             max = b;
         if (max < c)
             max = c;
+        return max;
+    }
+    
+    public static final float max(float a, float b, float c, float d) {
+        float max = a;
+        if (max < b)
+            max = b;
+        if (max < c)
+            max = c;
+        if (max < d)
+            max = d;
         return max;
     }
 

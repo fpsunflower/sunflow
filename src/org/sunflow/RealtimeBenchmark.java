@@ -104,6 +104,7 @@ public class RealtimeBenchmark extends SunflowAPI {
 
         // teapot
         parameter("subdivs", 10);
+        parameter("quads", true);
         geometry("teapot", (Tesselatable) new Teapot());
         parameter("shaders", "default");
         Matrix4 m = Matrix4.IDENTITY;
@@ -115,6 +116,7 @@ public class RealtimeBenchmark extends SunflowAPI {
 
         // gumbo
         parameter("subdivs", 10);
+        parameter("quads", true);
         geometry("gumbo", (Tesselatable) new Gumbo());
         m = Matrix4.IDENTITY;
         m = Matrix4.scale(0.5f).multiply(m);
