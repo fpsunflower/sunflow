@@ -50,7 +50,7 @@ import org.sunflow.core.display.FileDisplay;
 import org.sunflow.core.display.FrameDisplay;
 import org.sunflow.core.display.ImgPipeDisplay;
 import org.sunflow.core.display.OpenExrDisplay;
-import org.sunflow.core.primitive.Mesh;
+import org.sunflow.core.primitive.TriangleMesh;
 import org.sunflow.core.shader.AmbientOcclusionShader;
 import org.sunflow.core.shader.IDShader;
 import org.sunflow.core.shader.NormalShader;
@@ -210,7 +210,7 @@ public class SunflowGUI extends javax.swing.JFrame implements UserInterface {
                     sampler = args[i + 1];
                     i += 2;
                 } else if (args[i].equals("-smallmesh")) {
-                    Mesh.setSmallTriangles(true);
+                    TriangleMesh.setSmallTriangles(true);
                     i++;
                 } else if (args[i].equals("-dumpkd")) {
                     KDTree.setDumpMode(true, "kdtree");
@@ -975,7 +975,7 @@ public class SunflowGUI extends javax.swing.JFrame implements UserInterface {
     }
 
     private void smallTrianglesMenuItemActionPerformed(ActionEvent evt) {
-        Mesh.setSmallTriangles(smallTrianglesMenuItem.isSelected());
+        TriangleMesh.setSmallTriangles(smallTrianglesMenuItem.isSelected());
     }
 
     private void saveAsMenuItemActionPerformed(ActionEvent evt) {

@@ -7,13 +7,13 @@ import org.sunflow.core.ParameterList;
 import org.sunflow.core.Ray;
 import org.sunflow.core.Shader;
 import org.sunflow.core.ShadingState;
-import org.sunflow.core.primitive.Mesh;
+import org.sunflow.core.primitive.TriangleMesh;
 import org.sunflow.image.Color;
 import org.sunflow.math.OrthoNormalBasis;
 import org.sunflow.math.Point3;
 import org.sunflow.math.Vector3;
 
-public class MeshLight extends Mesh implements Shader {
+public class MeshLight extends TriangleMesh implements Shader {
     private Color radiance;
     private int numSamples;
 

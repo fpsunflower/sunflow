@@ -12,7 +12,7 @@ import org.sunflow.core.camera.PinholeLens;
 import org.sunflow.core.display.FrameDisplay;
 import org.sunflow.core.gi.InstantGI;
 import org.sunflow.core.light.MeshLight;
-import org.sunflow.core.primitive.Mesh;
+import org.sunflow.core.primitive.TriangleMesh;
 import org.sunflow.core.primitive.Sphere;
 import org.sunflow.core.shader.DiffuseShader;
 import org.sunflow.core.shader.GlassShader;
@@ -162,7 +162,7 @@ public class Benchmark extends SunflowAPI implements BenchmarkTest, UserInterfac
         parameter("triangles", indices);
         parameter("points", "point", "vertex", verts);
         parameter("faceshaders", new int[] { 0, 0, 0, 0, 1, 1, 0, 0, 2, 2 });
-        geometry("walls", new Mesh());
+        geometry("walls", new TriangleMesh());
 
         // instance walls
         parameter("shaders", new String[] { "grey_shader", "red_shader",

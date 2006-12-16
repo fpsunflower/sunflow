@@ -13,7 +13,7 @@ import java.nio.channels.FileChannel;
 import org.sunflow.SunflowAPI;
 import org.sunflow.core.SceneParser;
 import org.sunflow.core.Shader;
-import org.sunflow.core.primitive.Mesh;
+import org.sunflow.core.primitive.TriangleMesh;
 import org.sunflow.core.shader.SimpleShader;
 import org.sunflow.system.UI;
 import org.sunflow.system.UI.Module;
@@ -44,7 +44,7 @@ public class RA3Parser implements SceneParser {
             // create geometry
             api.parameter("triangles", tris);
             api.parameter("points", "point", "vertex", verts);
-            api.geometry(filename, new Mesh());
+            api.geometry(filename, new TriangleMesh());
 
             // create shader
             Shader s = api.lookupShader("ra3shader");

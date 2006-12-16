@@ -9,7 +9,7 @@ import org.sunflow.core.Ray;
 import org.sunflow.core.ShadingState;
 import org.sunflow.core.Tesselatable;
 import org.sunflow.core.ParameterList.InterpolationType;
-import org.sunflow.core.primitive.Mesh;
+import org.sunflow.core.primitive.TriangleMesh;
 import org.sunflow.core.primitive.QuadMesh;
 import org.sunflow.math.BoundingBox;
 import org.sunflow.math.Matrix4;
@@ -190,7 +190,7 @@ public class BezierMesh implements PrimitiveList, Tesselatable {
         pl.addTexCoords("uvs", InterpolationType.VERTEX, uvs);
         if (smooth)
             pl.addVectors("normals", InterpolationType.VERTEX, normals);
-        PrimitiveList m = quads ? new QuadMesh() : new Mesh();
+        PrimitiveList m = quads ? new QuadMesh() : new TriangleMesh();
         m.update(pl, null);
         pl.clear(true);
         return m;

@@ -11,7 +11,7 @@ import java.nio.channels.FileChannel.MapMode;
 
 import org.sunflow.SunflowAPI;
 import org.sunflow.core.SceneParser;
-import org.sunflow.core.primitive.Mesh;
+import org.sunflow.core.primitive.TriangleMesh;
 import org.sunflow.core.shader.SimpleShader;
 import org.sunflow.system.Parser;
 import org.sunflow.system.UI;
@@ -40,7 +40,7 @@ public class TriParser implements SceneParser {
             // create geometry
             api.parameter("triangles", triangles);
             api.parameter("points", "point", "vertex", verts);
-            api.geometry(filename, new Mesh());
+            api.geometry(filename, new TriangleMesh());
 
             // create shader
             api.shader(filename + ".shader", new SimpleShader());

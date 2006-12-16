@@ -42,7 +42,7 @@ import org.sunflow.core.primitive.BanchoffSurface;
 import org.sunflow.core.primitive.CornellBox;
 import org.sunflow.core.primitive.Hair;
 import org.sunflow.core.primitive.JuliaFractal;
-import org.sunflow.core.primitive.Mesh;
+import org.sunflow.core.primitive.TriangleMesh;
 import org.sunflow.core.primitive.ParticleSurface;
 import org.sunflow.core.primitive.Plane;
 import org.sunflow.core.primitive.Sphere;
@@ -663,7 +663,7 @@ public class SCParser implements SceneParser {
             api.parameter("points", "point", "vertex", points);
             api.parameter("normals", "vector", "vertex", normals);
             api.parameter("uvs", "texcoord", "vertex", uvs);
-            api.geometry(name, new Mesh());
+            api.geometry(name, new TriangleMesh());
             // create instance
             api.parameter("shaders", shaders);
             if (transform != null)
@@ -701,7 +701,7 @@ public class SCParser implements SceneParser {
             api.parameter("triangles", triangles);
             api.parameter("points", "point", "vertex", points);
             api.parameter("uvs", "texcoord", "vertex", uvs);
-            api.geometry(name, new Mesh());
+            api.geometry(name, new TriangleMesh());
             // create instance
             api.parameter("shaders", shaders);
             if (transform != null)
@@ -815,7 +815,7 @@ public class SCParser implements SceneParser {
                 p.checkNextToken("face_shaders");
                 api.parameter("faceshaders", parseIntArray(nt));
             }
-            api.geometry(name, new Mesh());
+            api.geometry(name, new TriangleMesh());
             api.parameter("shaders", shaders);
             if (transform != null)
                 api.parameter("transform", transform);
