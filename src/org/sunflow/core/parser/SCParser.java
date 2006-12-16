@@ -15,8 +15,6 @@ import org.codehaus.janino.Scanner;
 import org.codehaus.janino.Parser.ParseException;
 import org.codehaus.janino.Scanner.ScanException;
 import org.sunflow.SunflowAPI;
-import org.sunflow.core.CausticPhotonMapInterface;
-import org.sunflow.core.GlobalPhotonMapInterface;
 import org.sunflow.core.PrimitiveList;
 import org.sunflow.core.SceneParser;
 import org.sunflow.core.Shader;
@@ -25,28 +23,20 @@ import org.sunflow.core.camera.FisheyeLens;
 import org.sunflow.core.camera.PinholeLens;
 import org.sunflow.core.camera.SphericalLens;
 import org.sunflow.core.camera.ThinLens;
-import org.sunflow.core.gi.AmbientOcclusionGIEngine;
-import org.sunflow.core.gi.FakeGIEngine;
-import org.sunflow.core.gi.InstantGI;
-import org.sunflow.core.gi.IrradianceCacheGIEngine;
-import org.sunflow.core.gi.PathTracingGIEngine;
 import org.sunflow.core.light.DirectionalSpotlight;
 import org.sunflow.core.light.ImageBasedLight;
 import org.sunflow.core.light.MeshLight;
 import org.sunflow.core.light.SphereLight;
-import org.sunflow.core.photonmap.CausticPhotonMap;
-import org.sunflow.core.photonmap.GlobalPhotonMap;
-import org.sunflow.core.photonmap.GridPhotonMap;
 import org.sunflow.core.primitive.Background;
 import org.sunflow.core.primitive.BanchoffSurface;
 import org.sunflow.core.primitive.CornellBox;
 import org.sunflow.core.primitive.Hair;
 import org.sunflow.core.primitive.JuliaFractal;
-import org.sunflow.core.primitive.TriangleMesh;
 import org.sunflow.core.primitive.ParticleSurface;
 import org.sunflow.core.primitive.Plane;
 import org.sunflow.core.primitive.Sphere;
 import org.sunflow.core.primitive.Torus;
+import org.sunflow.core.primitive.TriangleMesh;
 import org.sunflow.core.shader.AmbientOcclusionShader;
 import org.sunflow.core.shader.AnisotropicWardShader;
 import org.sunflow.core.shader.ConstantShader;
@@ -229,9 +219,6 @@ public class SCParser implements SceneParser {
     }
 
     private void parsePhotonBlock(SunflowAPI api) throws ParserException, IOException {
-        String type;
-        int gather;
-        float radius;
         int numEmit = 0;
         boolean globalEmit = false;
         p.checkNextToken("{");
@@ -251,17 +238,11 @@ public class SCParser implements SceneParser {
         p.checkNextToken("caustics");
         if (!globalEmit)
             numEmit = p.getNextInt();
-        type = p.getNextToken();
-        gather = p.getNextInt();
-        radius = p.getNextFloat();
-        CausticPhotonMapInterface cmap = null;
-        if (type.equals("kd"))
-            cmap = new CausticPhotonMap(numEmit, gather, radius, 1.1f);
-        else if (type.equals("none"))
-            cmap = null;
-        else
-            UI.printWarning(Module.API, "Unrecognized caustic photon map type: %s", type);
-        api.photons(cmap);
+        api.parameter("caustics.emit", numEmit);
+        api.parameter("caustics", p.getNextToken());
+        api.parameter("caustics.gather", p.getNextInt());
+        api.parameter("caustics.radius", p.getNextFloat());
+        api.options(SunflowAPI.DEFAULT_OPTIONS);
         p.checkNextToken("}");
     }
 
@@ -269,72 +250,64 @@ public class SCParser implements SceneParser {
         p.checkNextToken("{");
         p.checkNextToken("type");
         if (p.peekNextToken("irr-cache")) {
+            api.parameter("gi.engine", "irr-cache");
             p.checkNextToken("samples");
-            int samples = p.getNextInt();
+            api.parameter("gi.irr-cache.samples", p.getNextInt());
             p.checkNextToken("tolerance");
-            float tolerance = p.getNextFloat();
+            api.parameter("gi.irr-cache.tolerance", p.getNextFloat());
             p.checkNextToken("spacing");
-            float min = p.getNextFloat();
-            float max = p.getNextFloat();
+            api.parameter("gi.irr-cache.min_spacing", p.getNextFloat());
+            api.parameter("gi.irr-cache.max_spacing", p.getNextFloat());
             // parse global photon map info
-            GlobalPhotonMapInterface gmap = null;
             if (p.peekNextToken("global")) {
-                int numEmit = p.getNextInt();
-                String type = p.getNextToken();
-                int gather = p.getNextInt();
-                float radius = p.getNextFloat();
-                if (type.equals("kd"))
-                    gmap = new GlobalPhotonMap(numEmit, gather, radius);
-                else if (type.equals("grid"))
-                    gmap = new GridPhotonMap(numEmit, gather, radius);
-                else if (type.equals("none"))
-                    gmap = null;
-                else
-                    UI.printWarning(Module.API, "Unrecognized global photon map type: %s", type);
+                api.parameter("gi.irr-cache.gmap.emit", p.getNextInt());
+                api.parameter("gi.irr-cache.gmap", p.getNextToken());
+                api.parameter("gi.irr-cache.gmap.gather", p.getNextInt());
+                api.parameter("gi.irr-cache.gmap.radius", p.getNextFloat());
             }
-            api.giEngine(new IrradianceCacheGIEngine(samples, tolerance, min, max, gmap));
         } else if (p.peekNextToken("path")) {
+            api.parameter("gi.engine", "path");
             p.checkNextToken("samples");
-            int samples = p.getNextInt();
+            api.parameter("gi.path.samples", p.getNextInt());
             if (p.peekNextToken("bounces")) {
                 UI.printWarning(Module.API, "Deprecated setting: bounces - use diffuse trace depth instead");
                 p.getNextInt();
             }
-            api.giEngine(new PathTracingGIEngine(samples));
         } else if (p.peekNextToken("fake")) {
+            api.parameter("gi.engine", "fake");
             p.checkNextToken("up");
-            Vector3 up = parseVector();
+            api.parameter("gi.fake.up", parseVector());
             p.checkNextToken("sky");
-            Color sky = parseColor();
+            api.parameter("gi.fake.sky", parseColor());
             p.checkNextToken("ground");
-            Color ground = parseColor();
-            api.giEngine(new FakeGIEngine(up, sky, ground));
+            api.parameter("gi.fake.ground", parseColor());
         } else if (p.peekNextToken("igi")) {
+            api.parameter("gi.engine", "igi");
             p.checkNextToken("samples");
-            int samples = p.getNextInt();
+            api.parameter("gi.igi.samples", p.getNextInt());
             p.checkNextToken("sets");
-            int sets = p.getNextInt();
-            p.checkNextToken("b");
-            float b = p.getNextFloat();
+            api.parameter("gi.igi.sets", p.getNextInt());
+            if (!p.peekNextToken("b"))
+                p.checkNextToken("c");
+            api.parameter("gi.igi.c", p.getNextFloat());
             p.checkNextToken("bias-samples");
-            int bias = p.getNextInt();
-            api.giEngine(new InstantGI(samples, sets, b, bias));
+            api.parameter("gi.igi.bias_samples", p.getNextInt());
         } else if (p.peekNextToken("ambocc")) {
+            api.parameter("gi.engine", "ambocc");
             p.checkNextToken("bright");
-            Color bright = parseColor();
+            api.parameter("gi.ambocc.bright", parseColor());
             p.checkNextToken("dark");
-            Color dark = parseColor();
+            api.parameter("gi.ambocc.dark", parseColor());
             p.checkNextToken("samples");
-            int samples = p.getNextInt();
-            float maxdist = 0;
+            api.parameter("gi.ambocc.samples", p.getNextInt());
             if (p.peekNextToken("maxdist"))
-                maxdist = p.getNextFloat();
-            api.giEngine(new AmbientOcclusionGIEngine(bright, dark, samples, maxdist));
+                api.parameter("gi.ambocc.maxdist", p.getNextFloat());
         } else if (p.peekNextToken("none") || p.peekNextToken("null")) {
             // disable GI
-            api.giEngine(null);
+            api.parameter("gi.engine", "none");
         } else
-            UI.printWarning(Module.API, "Unrecognized gi engine type: %s", p.getNextToken());
+            UI.printWarning(Module.API, "Unrecognized gi engine type \"%s\" - ignoring", p.getNextToken());
+        api.options(SunflowAPI.DEFAULT_OPTIONS);
         p.checkNextToken("}");
     }
 

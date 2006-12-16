@@ -5,7 +5,6 @@ import org.sunflow.core.Tesselatable;
 import org.sunflow.core.camera.PinholeLens;
 import org.sunflow.core.display.FastDisplay;
 import org.sunflow.core.display.FileDisplay;
-import org.sunflow.core.gi.FakeGIEngine;
 import org.sunflow.core.light.DirectionalSpotlight;
 import org.sunflow.core.primitive.Plane;
 import org.sunflow.core.shader.DiffuseShader;
@@ -92,7 +91,11 @@ public class RealtimeBenchmark extends SunflowAPI {
         light("light", new DirectionalSpotlight());
 
         // gi-engine
-        giEngine(new FakeGIEngine(new Vector3(0, 0, 1), new Color(0.25f, 0.25f, 0.25f), new Color(0.01f, 0.01f, 0.5f)));
+        parameter("gi.engine", "fake");
+        parameter("gi.fake.sky", new Color(0.25f, 0.25f, 0.25f));
+        parameter("gi.fake.ground", new Color(0.01f, 0.01f, 0.5f));
+        parameter("gi.fake.up", new Vector3(0, 0, 1));
+        options(DEFAULT_OPTIONS);
 
         // shaders
         parameter("diffuse", Color.white().mul(0.5f));

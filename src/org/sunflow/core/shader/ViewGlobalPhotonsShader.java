@@ -12,6 +12,7 @@ public class ViewGlobalPhotonsShader implements Shader {
     }
 
     public Color getRadiance(ShadingState state) {
+        state.faceforward();
         return state.getGlobalRadiance();
     }
 

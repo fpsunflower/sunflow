@@ -110,16 +110,6 @@ public class Scene {
     }
 
     /**
-     * Sets the type of map to use for caustic photons. You may pass
-     * <code>null</code> to disable caustics.
-     * 
-     * @param cmap caustic photon map data structure
-     */
-    public void photons(CausticPhotonMapInterface cmap) {
-        lightServer.photons(cmap);
-    }
-
-    /**
      * Enables shader overiding (set null to disable). The specified shader will
      * be used to shade all surfaces
      * 
@@ -131,10 +121,6 @@ public class Scene {
      */
     public void setShaderOverride(Shader shader, boolean photonOverride) {
         lightServer.setShaderOverride(shader, photonOverride);
-    }
-
-    public void giEngine(GIEngine engine) {
-        lightServer.giEngine(engine);
     }
 
     /**
@@ -230,15 +216,14 @@ public class Scene {
         }
 
         // read from options
-        threads = options.getInt("threads", threads);
-        lowPriority = options.getBoolean("threads.lowPriority", lowPriority);
-        imageWidth = options.getInt("resolutionX", imageWidth);
-        imageHeight = options.getInt("resolutionY", imageHeight);
+        threads = options.getInt("threads", 0);
+        lowPriority = options.getBoolean("threads.lowPriority", true);
+        imageWidth = options.getInt("resolutionX", 640);
+        imageHeight = options.getInt("resolutionY", 480);
         // limit resolution to 16k
         imageWidth = MathUtils.clamp(imageWidth, 1, 1 << 14);
         imageHeight = MathUtils.clamp(imageHeight, 1, 1 << 14);
 
-        
         // get acceleration structure info
         // count scene primitives
         long numPrimitives = 0;

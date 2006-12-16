@@ -1,6 +1,7 @@
 package org.sunflow.core.gi;
 
 import org.sunflow.core.GIEngine;
+import org.sunflow.core.Options;
 import org.sunflow.core.Ray;
 import org.sunflow.core.Scene;
 import org.sunflow.core.ShadingState;
@@ -14,11 +15,12 @@ public class AmbientOcclusionGIEngine implements GIEngine {
     private int samples;
     private float maxDist;
 
-    public AmbientOcclusionGIEngine(Color bright, Color dark, int samples, float maxDist) {
-        this.bright = bright;
-        this.dark = dark;
-        this.samples = samples;
-        this.maxDist = (maxDist <= 0) ? Float.POSITIVE_INFINITY : maxDist;
+    public AmbientOcclusionGIEngine(Options options) {
+        bright = options.getColor("gi.ambocc.bright", Color.WHITE);
+        dark = options.getColor("gi.ambocc.dark", Color.BLACK);
+        samples = options.getInt("gi.ambocc.samples", 32);
+        maxDist = options.getFloat("gi.ambocc.maxdist", 0);
+        maxDist = (maxDist <= 0) ? Float.POSITIVE_INFINITY : maxDist;
     }
 
     public Color getGlobalRadiance(ShadingState state) {

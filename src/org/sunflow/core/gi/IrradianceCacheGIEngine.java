@@ -4,9 +4,12 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import org.sunflow.core.GIEngine;
 import org.sunflow.core.GlobalPhotonMapInterface;
+import org.sunflow.core.Options;
 import org.sunflow.core.Ray;
 import org.sunflow.core.Scene;
 import org.sunflow.core.ShadingState;
+import org.sunflow.core.photonmap.GlobalPhotonMap;
+import org.sunflow.core.photonmap.GridPhotonMap;
 import org.sunflow.image.Color;
 import org.sunflow.math.MathUtils;
 import org.sunflow.math.OrthoNormalBasis;
@@ -25,15 +28,27 @@ public class IrradianceCacheGIEngine implements GIEngine {
     private ReentrantReadWriteLock rwl;
     private GlobalPhotonMapInterface globalPhotonMap;
 
-    public IrradianceCacheGIEngine(int samples, float tolerance, float minSpacing, float maxSpacing, GlobalPhotonMapInterface globalPhotonMap) {
-        this.globalPhotonMap = globalPhotonMap;
-        this.samples = samples;
-        this.tolerance = tolerance;
+    public IrradianceCacheGIEngine(Options options) {
+        samples = options.getInt("gi.irr-cache.samples", 256);
+        tolerance = options.getFloat("gi.irr-cache.tolerance", 0.05f);
         invTolerance = 1.0f / tolerance;
-        this.minSpacing = minSpacing;
-        this.maxSpacing = maxSpacing;
+        minSpacing = options.getFloat("gi.irr-cache.min_spacing", 0.05f);
+        maxSpacing = options.getFloat("gi.irr-cache.max_spacing", 5.00f);
         root = null;
         rwl = new ReentrantReadWriteLock();
+        globalPhotonMap = null;
+        String gmap = options.getString("gi.irr-cache.gmap", null);
+        if (gmap == null || gmap.equals("none"))
+            return;
+        int numEmit = options.getInt("gi.irr-cache.gmap.emit", 100000);
+        int gather = options.getInt("gi.irr-cache.gmap.gather", 50);
+        float radius = options.getFloat("gi.irr-cache.gmap.radius", 0.5f);
+        if (gmap.equals("kd"))
+            globalPhotonMap = new GlobalPhotonMap(numEmit, gather, radius);
+        else if (gmap.equals("grid"))
+            globalPhotonMap = new GridPhotonMap(numEmit, gather, radius);
+        else
+            UI.printWarning(Module.LIGHT, "Unrecognized global photon map type \"%s\" - ignoring", gmap);
     }
 
     public boolean init(Scene scene) {

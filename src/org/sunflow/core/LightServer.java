@@ -1,5 +1,7 @@
 package org.sunflow.core;
 
+import org.sunflow.core.gi.GIEngineFactory;
+import org.sunflow.core.photonmap.CausticPhotonMap;
 import org.sunflow.image.Color;
 import org.sunflow.math.Point3;
 import org.sunflow.math.QMC;
@@ -83,17 +85,9 @@ class LightServer {
         return scene;
     }
 
-    void photons(CausticPhotonMapInterface cmap) {
-        causticPhotonMap = cmap;
-    }
-
     void setShaderOverride(Shader shader, boolean photonOverride) {
         shaderOverride = shader;
         shaderOverridePhotons = photonOverride;
-    }
-
-    void giEngine(GIEngine engine) {
-        giEngine = engine;
     }
 
     boolean build(Options options) {
@@ -101,7 +95,17 @@ class LightServer {
         maxDiffuseDepth = options.getInt("depths.diffuse", maxDiffuseDepth);
         maxReflectionDepth = options.getInt("depths.reflection", maxReflectionDepth);
         maxRefractionDepth = options.getInt("depths.refraction", maxRefractionDepth);
-
+        giEngine = GIEngineFactory.create(options);
+        String caustics = options.getString("caustics", null);
+        if (caustics == null || caustics.equals("none"))
+            causticPhotonMap = null;
+        if (caustics != null && caustics.equals("kd"))
+            causticPhotonMap = new CausticPhotonMap(options);
+        else {
+            UI.printWarning(Module.LIGHT, "Unrecognized caustics photon map engine \"%s\" - ignoring", caustics);
+            causticPhotonMap = null;
+        }
+        
         // validate options
         maxDiffuseDepth = Math.max(0, maxDiffuseDepth);
         maxReflectionDepth = Math.max(0, maxReflectionDepth);

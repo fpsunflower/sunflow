@@ -12,9 +12,7 @@ import org.codehaus.janino.Parser.ParseException;
 import org.codehaus.janino.Scanner.ScanException;
 import org.sunflow.core.Camera;
 import org.sunflow.core.CameraLens;
-import org.sunflow.core.CausticPhotonMapInterface;
 import org.sunflow.core.Display;
-import org.sunflow.core.GIEngine;
 import org.sunflow.core.Geometry;
 import org.sunflow.core.ImageSampler;
 import org.sunflow.core.Instance;
@@ -301,26 +299,6 @@ public class SunflowAPI {
      */
     public final String resolveTextureFilename(String filename) {
         return textureSearchPath.resolvePath(filename);
-    }
-
-    /**
-     * Sets the type of caustic photons to use. To disable caustics use:
-     * <code>photons(null);</code>.
-     * 
-     * @param cmap Caustic photon object.
-     */
-    public final void photons(CausticPhotonMapInterface cmap) {
-        scene.photons(cmap);
-    }
-
-    /**
-     * Sets the global illumination engine to be used. To disable GI
-     * computations use: <code>giEngine(null);</code>.
-     * 
-     * @param engine global illumination engine to use.
-     */
-    public final void giEngine(GIEngine engine) {
-        scene.giEngine(engine);
     }
 
     /**

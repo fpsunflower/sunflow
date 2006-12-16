@@ -4,6 +4,7 @@ import java.util.ArrayList;
 
 import org.sunflow.core.CausticPhotonMapInterface;
 import org.sunflow.core.LightSample;
+import org.sunflow.core.Options;
 import org.sunflow.core.Ray;
 import org.sunflow.core.ShadingState;
 import org.sunflow.image.Color;
@@ -28,12 +29,12 @@ public final class CausticPhotonMap implements CausticPhotonMapInterface {
     private float maxRadius;
     private int numEmit;
 
-    public CausticPhotonMap(int numEmit, int gatherNum, float gatherRadius, float filterValue) {
-        this.numEmit = numEmit;
-        this.gatherNum = gatherNum;
-        this.gatherRadius = gatherRadius;
+    public CausticPhotonMap(Options options) {
+        numEmit = options.getInt("caustics.emit", 10000);
+        gatherNum = options.getInt("caustics.gather", 50);
+        gatherRadius = options.getFloat("caustics.radius", 0.5f);
+        filterValue = options.getFloat("caustics.filter", 1.1f);
         bounds = new BoundingBox();
-        this.filterValue = filterValue;
         maxPower = 0;
         maxRadius = 0;
     }

@@ -3,6 +3,7 @@ package org.sunflow.core.gi;
 import java.util.ArrayList;
 
 import org.sunflow.core.GIEngine;
+import org.sunflow.core.Options;
 import org.sunflow.core.PhotonStore;
 import org.sunflow.core.Ray;
 import org.sunflow.core.Scene;
@@ -22,11 +23,11 @@ public class InstantGI implements GIEngine {
     private int numBias;
     private PointLight[][] virtualLights;
 
-    public InstantGI(int numPhotons, int numSets, float c, int numBias) {
-        this.numPhotons = numPhotons;
-        this.numSets = numSets;
-        this.c = c;
-        this.numBias = numBias;
+    public InstantGI(Options options) {
+        numPhotons = options.getInt("gi.igi.samples", 64);
+        numSets = options.getInt("gi.igi.sets", 1);
+        c = options.getFloat("gi.igi.c", 0.00003f);
+        numBias = options.getInt("gi.igi.bias_samples", 0);
         virtualLights = null;
     }
 

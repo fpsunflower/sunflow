@@ -335,9 +335,9 @@ public class SunflowGUI extends javax.swing.JFrame implements UserInterface {
             }
             if (filterType != null)
                 api.parameter("filter", filterType);
-            api.options(SunflowAPI.DEFAULT_OPTIONS);
             if (noGI)
-                api.giEngine(null);
+                api.parameter("gi.engine", "none");
+            api.options(SunflowAPI.DEFAULT_OPTIONS);
             Display display;
             if (showFrame) {
                 display = new FrameDisplay(filename);

@@ -1,6 +1,7 @@
 package org.sunflow.core.gi;
 
 import org.sunflow.core.GIEngine;
+import org.sunflow.core.Options;
 import org.sunflow.core.Ray;
 import org.sunflow.core.Scene;
 import org.sunflow.core.ShadingState;
@@ -13,8 +14,8 @@ import org.sunflow.system.UI.Module;
 public class PathTracingGIEngine implements GIEngine {
     private int samples;
 
-    public PathTracingGIEngine(int samples) {
-        this.samples = samples;
+    public PathTracingGIEngine(Options options) {
+        samples = options.getInt("gi.path.samples", 16);
     }
 
     public boolean requiresPhotons() {

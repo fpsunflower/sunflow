@@ -10,10 +10,9 @@ import javax.imageio.ImageIO;
 import org.sunflow.core.Display;
 import org.sunflow.core.camera.PinholeLens;
 import org.sunflow.core.display.FrameDisplay;
-import org.sunflow.core.gi.InstantGI;
 import org.sunflow.core.light.MeshLight;
-import org.sunflow.core.primitive.TriangleMesh;
 import org.sunflow.core.primitive.Sphere;
+import org.sunflow.core.primitive.TriangleMesh;
 import org.sunflow.core.shader.DiffuseShader;
 import org.sunflow.core.shader.GlassShader;
 import org.sunflow.core.shader.MirrorShader;
@@ -192,7 +191,12 @@ public class Benchmark extends SunflowAPI implements BenchmarkTest, UserInterfac
         String ra3file = resourcePath + "maxplanck.ra3";
         if (!parse(ra3file))
             UI.printError(Module.BENCH, "Unable to load %s", ra3file);
-        giEngine(new InstantGI(90, 1, 0.00002f, 0));
+        
+        // gi options
+        parameter("gi.engine", "igi");
+        parameter("gi.igi.samples", 90);
+        parameter("gi.igi.c", 0.00002f);
+        options(DEFAULT_OPTIONS);
     }
 
     private void sphere(String name, String shaderName, float x, float y, float z, float radius) {
