@@ -40,9 +40,9 @@ public class SunSkyLight implements LightSource, PrimitiveList, Shader {
     private Color sunColor;
     private float sunTheta;
     private double zenithY, zenithx, zenithy;
-    private final double[] perezY = new double[6];
-    private final double[] perezx = new double[6];
-    private final double[] perezy = new double[6];
+    private final double[] perezY = new double[5];
+    private final double[] perezx = new double[5];
+    private final double[] perezy = new double[5];
     // constant data
     private static final float[] solAmplitudes = { 165.5f, 162.3f, 211.2f,
             258.8f, 258.2f, 242.3f, 267.6f, 296.6f, 305.4f, 300.6f, 306.6f,
@@ -73,9 +73,9 @@ public class SunSkyLight implements LightSource, PrimitiveList, Shader {
             0.125e-1f, 0.100e+1f, 0.870f, 0.610e-1f, 0.100e-2f, 0.100e-4f,
             0.100e-4f, 0.600e-3f, 0.175e-1f, 0.360e-1f };
 
-    private static final IrregularSpectralCurve k_oCurve = new IrregularSpectralCurve(k_oAmplitudes, k_oWavelengths);
-    private static final IrregularSpectralCurve k_gCurve = new IrregularSpectralCurve(k_gAmplitudes, k_gWavelengths);
-    private static final IrregularSpectralCurve k_waCurve = new IrregularSpectralCurve(k_waAmplitudes, k_waWavelengths);
+    private static final IrregularSpectralCurve k_oCurve = new IrregularSpectralCurve(k_oWavelengths, k_oAmplitudes);
+    private static final IrregularSpectralCurve k_gCurve = new IrregularSpectralCurve(k_gWavelengths, k_gAmplitudes);
+    private static final IrregularSpectralCurve k_waCurve = new IrregularSpectralCurve(k_waWavelengths, k_waAmplitudes);
 
     public SunSkyLight() {
         numSkySamples = 16;
@@ -94,7 +94,7 @@ public class SunSkyLight implements LightSource, PrimitiveList, Shader {
         double beta = 0.04608365822050 * turbidity - 0.04586025928522;
         // Relative optical mass
         double m = 1.0 / (Math.cos(theta) + 0.15 * Math.pow(93.885 - theta / Math.PI * 180.0, -1.253));
-        for (int i = 0, lambda = 380; lambda < 781; i++, lambda += 10) {
+        for (int i = 0, lambda = 380; lambda <= 780; i++, lambda += 10) {
             // Rayleigh scattering
             double tauR = Math.exp(-m * 0.008735 * Math.pow((double) lambda / 1000.0, -4.08));
             // Aerosol (water + dust) attenuation
