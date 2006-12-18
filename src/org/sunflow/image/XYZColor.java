@@ -24,6 +24,16 @@ public final class XYZColor {
         return Z;
     }
 
+    public void normalize() {
+        float XYZ = X + Y + Z;
+        if (XYZ < 1e-6f)
+            return;
+        float s = 1 / XYZ;
+        X *= s;
+        Y *= s;
+        Z *= s;
+    }
+
     public final String toString() {
         return String.format("(%.3f, %.3f, %.3f)", X, Y, Z);
     }
