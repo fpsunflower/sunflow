@@ -9,7 +9,7 @@ public class RegularSpectralCurve extends SpectralCurve {
         this.lambdaMin = lambdaMin;
         this.lambdaMax = lambdaMax;
         this.spectrum = spectrum;
-        delta = (lambdaMax - lambdaMin) / spectrum.length;
+        delta = (lambdaMax - lambdaMin) / (spectrum.length - 1);
         invDelta = 1 / delta;
     }
     

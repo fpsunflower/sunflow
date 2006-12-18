@@ -5,7 +5,7 @@ package org.sunflow.image;
  * in the sun/sky paper (section A.5)
  */
 public final class ChromaticitySpectrum extends SpectralCurve {
-    private static final float S0Amplitudes[] = { 0.04f, 6.0f, 29.6f, 55.3f,
+    private static final float[] S0Amplitudes = { 0.04f, 6.0f, 29.6f, 55.3f,
             57.3f, 61.8f, 61.5f, 68.8f, 63.4f, 65.8f, 94.8f, 104.8f, 105.9f,
             96.8f, 113.9f, 125.6f, 125.5f, 121.3f, 121.3f, 113.5f, 113.1f,
             110.8f, 106.5f, 108.8f, 105.3f, 104.4f, 100.0f, 96.0f, 95.1f,
@@ -13,7 +13,7 @@ public final class ChromaticitySpectrum extends SpectralCurve {
             81.3f, 71.9f, 74.3f, 76.4f, 63.3f, 71.7f, 77.0f, 65.2f, 47.7f,
             68.6f, 65.0f, 66.0f, 61.0f, 53.3f, 58.9f, 61.9f };
 
-    private static final float S1Amplitudes[] = { 0.02f, 4.5f, 22.4f, 42.0f,
+    private static final float[] S1Amplitudes = { 0.02f, 4.5f, 22.4f, 42.0f,
             40.6f, 41.6f, 38.0f, 42.4f, 38.5f, 35.0f, 43.4f, 46.3f, 43.9f,
             37.1f, 36.7f, 35.9f, 32.6f, 27.9f, 24.3f, 20.1f, 16.2f, 13.2f,
             8.6f, 6.1f, 4.2f, 1.9f, 0.0f, -1.6f, -3.5f, -3.5f, -5.8f, -7.2f,
@@ -21,7 +21,7 @@ public final class ChromaticitySpectrum extends SpectralCurve {
             -13.3f, -12.9f, -10.6f, -11.6f, -12.2f, -10.2f, -7.8f, -11.2f,
             -10.4f, -10.6f, -9.7f, -8.3f, -9.3f, -9.8f };
 
-    private static final float S2Amplitudes[] = { 0.0f, 2.0f, 4.0f, 8.5f, 7.8f,
+    private static final float[] S2Amplitudes = { 0.0f, 2.0f, 4.0f, 8.5f, 7.8f,
             6.7f, 5.3f, 6.1f, 3.0f, 1.2f, -1.1f, -0.5f, -0.7f, -1.2f, -2.6f,
             -2.9f, -2.8f, -2.6f, -2.6f, -1.8f, -1.5f, -1.3f, -1.2f, -1.0f,
             -0.5f, -0.3f, 0.0f, 0.2f, 0.5f, 2.1f, 3.2f, 4.1f, 4.7f, 5.1f, 6.7f,

@@ -27,6 +27,7 @@ import org.sunflow.core.light.DirectionalSpotlight;
 import org.sunflow.core.light.ImageBasedLight;
 import org.sunflow.core.light.MeshLight;
 import org.sunflow.core.light.SphereLight;
+import org.sunflow.core.light.SunSkyLight;
 import org.sunflow.core.primitive.Background;
 import org.sunflow.core.primitive.BanchoffSurface;
 import org.sunflow.core.primitive.CornellBox;
@@ -1113,6 +1114,17 @@ public class SCParser implements SceneParser {
             api.parameter("triangles", parseIntArray(nt * 3));
             MeshLight mesh = new MeshLight();
             mesh.init(name, api);
+        } else if (p.peekNextToken("sunsky")) {
+            p.checkNextToken("up");
+            api.parameter("up", parseVector());
+            p.checkNextToken("east");
+            api.parameter("east", parseVector());
+            p.checkNextToken("sundir");
+            api.parameter("sundir", parseVector());
+            p.checkNextToken("turbidity");
+            api.parameter("turbidity", p.getNextFloat());
+            SunSkyLight sunsky = new SunSkyLight();
+            sunsky.init(api.getUniqueName("sunsky"), api);
         } else
             UI.printWarning(Module.API, "Unrecognized object type: %s", p.getNextToken());
         p.checkNextToken("}");

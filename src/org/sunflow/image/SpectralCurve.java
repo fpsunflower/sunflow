@@ -20,7 +20,7 @@ public abstract class SpectralCurve {
     private static final int WAVELENGTH_MIN = 375;
     private static final int WAVELENGTH_MAX = 800;
     // TODO: decide if this data is the "best" to use
-    private static final float CIE_COLOR_MATCHING_CURVES[][] = {
+    private static final float[][] CIE_COLOR_MATCHING_CURVES = {
             { 0.00003f, 0.00000f, 0.00013f }, { 0.00023f, 0.00000f, 0.00107f },
             { 0.00056f, 0.00000f, 0.00259f }, { 0.00094f, 0.00000f, 0.00432f },
             { 0.00127f, 0.00000f, 0.00589f }, { 0.00150f, 0.00001f, 0.00698f },
@@ -234,11 +234,13 @@ public abstract class SpectralCurve {
             { 0.00000f, 0.00000f, 0.00000f }, { 0.00000f, 0.00000f, 0.00000f },
             { 0.00000f, 0.00000f, 0.00000f }, { 0.00000f, 0.00000f, 0.00000f },
             { 0.00000f, 0.00000f, 0.00000f } };
-    private static final int WAVELENGTH_STEP = (WAVELENGTH_MAX - WAVELENGTH_MIN) / (CIE_COLOR_MATCHING_CURVES.length - 1);
+    private static final int WAVELENGTH_STEP = (WAVELENGTH_MAX - WAVELENGTH_MIN) / CIE_COLOR_MATCHING_CURVES.length;
 
     static {
-        if (WAVELENGTH_STEP * (CIE_COLOR_MATCHING_CURVES.length - 1) != WAVELENGTH_MAX - WAVELENGTH_MIN)
-            throw new RuntimeException("Internal error - spectrum static data is inconsistent!");
+        if (WAVELENGTH_STEP * CIE_COLOR_MATCHING_CURVES.length != WAVELENGTH_MAX - WAVELENGTH_MIN) {
+            String err = String.format("Internal error - spectrum static data is inconsistent!\n  * min = %d\n  * max = %d\n  * step = %d\n  * num = %d", WAVELENGTH_MIN, WAVELENGTH_MAX, WAVELENGTH_STEP, CIE_COLOR_MATCHING_CURVES.length);
+            throw new RuntimeException(err);
+        }
     }
 
     /**
