@@ -24,6 +24,11 @@ public class IrregularSpectralCurve extends SpectralCurve {
     public IrregularSpectralCurve(float[] wavelengths, float[] amplitudes) {
         this.wavelengths = wavelengths;
         this.amplitudes = amplitudes;
+        if (wavelengths.length != amplitudes.length)
+            throw new RuntimeException(String.format("Error creating irregular spectral curve: %d wavelengths and %d amplitudes", wavelengths.length, amplitudes.length));
+        for (int i = 1; i < wavelengths.length; i++)
+            if (wavelengths[i - 1] >= wavelengths[i])
+                throw new RuntimeException(String.format("Error creating irregular spectral curve: values are not sorted - error at index %d", i));
     }
 
     public float sample(float lambda) {

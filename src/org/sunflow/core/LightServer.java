@@ -99,7 +99,7 @@ class LightServer {
         String caustics = options.getString("caustics", null);
         if (caustics == null || caustics.equals("none"))
             causticPhotonMap = null;
-        if (caustics != null && caustics.equals("kd"))
+        else if (caustics != null && caustics.equals("kd"))
             causticPhotonMap = new CausticPhotonMap(options);
         else {
             UI.printWarning(Module.LIGHT, "Unrecognized caustics photon map engine \"%s\" - ignoring", caustics);
