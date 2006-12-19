@@ -16,6 +16,7 @@ import org.sunflow.image.IrregularSpectralCurve;
 import org.sunflow.image.RGBSpace;
 import org.sunflow.image.RegularSpectralCurve;
 import org.sunflow.image.SpectralCurve;
+import org.sunflow.image.XYZColor;
 import org.sunflow.math.BoundingBox;
 import org.sunflow.math.MathUtils;
 import org.sunflow.math.Matrix4;
@@ -35,7 +36,7 @@ public class SunSkyLight implements LightSource, PrimitiveList, Shader {
     private float turbidity;
     // derived quantities
     private Vector3 sunDir;
-    private float sunSolidAngle;
+    // private float sunSolidAngle;
     private SpectralCurve sunSpectralRadiance;
     private Color sunColor;
     private float sunTheta;
@@ -134,7 +135,7 @@ public class SunSkyLight implements LightSource, PrimitiveList, Shader {
             sunColor = Color.BLACK;
             UI.printInfo(Module.LIGHT, "Sun is below the horizon!");
         }
-        sunSolidAngle = (float) (0.25 * Math.PI * 1.39 * 1.39 / (150 * 150));
+        // sunSolidAngle = (float) (0.25 * Math.PI * 1.39 * 1.39 / (150 * 150));
         float theta2 = sunTheta * sunTheta;
         float theta3 = sunTheta * theta2;
         float T = turbidity;
@@ -198,19 +199,11 @@ public class SunSkyLight implements LightSource, PrimitiveList, Shader {
         double gamma = Math.acos(MathUtils.clamp(Vector3.dot(dir, sunDir), -1, 1));
         double x = perezFunction(perezx, theta, gamma, zenithx, sunTheta);
         double y = perezFunction(perezy, theta, gamma, zenithy, sunTheta);
-        double Y = perezFunction(perezY, theta, gamma, zenithY, sunTheta);
-        SpectralCurve spectrum = new ChromaticitySpectrum((float) x, (float) y);
-        float ly = spectrum.toXYZ().getY();
-        if (ly < 1e-48)
-            ly = 1;
-        float scale = (float) (Y / ly);
-        int lambdaMin = 380;
-        int lambdaMax = 780;
-        int lambdaStep = 10;
-        final float[] data = new float[(lambdaMax - lambdaMin) / lambdaStep + 1];
-        for (int i = 0, lambda = lambdaMin; lambda <= lambdaMax; lambda += lambdaStep, i++)
-            data[i] = spectrum.sample(lambda) * scale;
-        return RGBSpace.SRGB.convertXYZtoRGB(new RegularSpectralCurve(data, lambdaMin, lambdaMax).toXYZ());
+        double Ys = perezFunction(perezY, theta, gamma, zenithY, sunTheta);
+        XYZColor c = new ChromaticitySpectrum((float) x, (float) y).toXYZ();
+        float X = (float) (c.getX() * Ys / c.getY());
+        float Z = (float) (c.getZ() * Ys / c.getY());
+        return RGBSpace.SRGB.convertXYZtoRGB(X, (float) Ys, Z);
     }
 
     public int getNumSamples() {
@@ -237,7 +230,8 @@ public class SunSkyLight implements LightSource, PrimitiveList, Shader {
     }
 
     public boolean isVisible(ShadingState state) {
-        return Vector3.dot(sunDirWorld, state.getGeoNormal()) > 0 && Vector3.dot(sunDirWorld, state.getNormal()) > 0;
+        return false; // Vector3.dot(sunDirWorld, state.getGeoNormal()) > 0 &&
+                        // Vector3.dot(sunDirWorld, state.getNormal()) > 0;
     }
 
     public PrimitiveList getBakingPrimitives() {
