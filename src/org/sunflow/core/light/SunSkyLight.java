@@ -88,14 +88,14 @@ public class SunSkyLight implements LightSource, PrimitiveList, Shader {
     }
 
     private SpectralCurve computeAttenuatedSunlight(float theta, float turbidity) {
-        float[] data = new float[41]; // holds the sunsky curve data
+        float[] data = new float[91]; // holds the sunsky curve data
         final double alpha = 1.3;
         final double lozone = 0.35;
         final double w = 2.0;
         double beta = 0.04608365822050 * turbidity - 0.04586025928522;
         // Relative optical mass
         double m = 1.0 / (Math.cos(theta) + 0.15 * Math.pow(93.885 - theta / Math.PI * 180.0, -1.253));
-        for (int i = 0, lambda = 380; lambda <= 780; i++, lambda += 10) {
+        for (int i = 0, lambda = 350; lambda <= 800; i++, lambda += 5) {
             // Rayleigh scattering
             double tauR = Math.exp(-m * 0.008735 * Math.pow((double) lambda / 1000.0, -4.08));
             // Aerosol (water + dust) attenuation
@@ -110,10 +110,10 @@ public class SunSkyLight implements LightSource, PrimitiveList, Shader {
             double amp = 100.0 * solCurve.sample(lambda) * tauR * tauA * tauO * tauG * tauWA;
             data[i] = (float) amp;
         }
-        return new RegularSpectralCurve(data, 380, 780);
+        return new RegularSpectralCurve(data, 350, 800);
     }
 
-    private double perezFunction(final double[] lam, double theta, double gamma, double lvz, double sunTheta) {
+    private double perezFunction(final double[] lam, double theta, double gamma, double lvz) {
         double den = ((1.0 + lam[0] * Math.exp(lam[1])) * (1.0 + lam[2] * Math.exp(lam[3] * sunTheta) + lam[4] * Math.cos(sunTheta) * Math.cos(sunTheta)));
         double num = ((1.0 + lam[0] * Math.exp(lam[1] / Math.cos(theta))) * (1.0 + lam[2] * Math.exp(lam[3] * gamma) + lam[4] * Math.cos(gamma) * Math.cos(gamma)));
         return lvz * num / den;
@@ -197,9 +197,9 @@ public class SunSkyLight implements LightSource, PrimitiveList, Shader {
         dir.normalize();
         double theta = Math.acos(MathUtils.clamp(dir.z, -1, 1));
         double gamma = Math.acos(MathUtils.clamp(Vector3.dot(dir, sunDir), -1, 1));
-        double x = perezFunction(perezx, theta, gamma, zenithx, sunTheta);
-        double y = perezFunction(perezy, theta, gamma, zenithy, sunTheta);
-        double Ys = perezFunction(perezY, theta, gamma, zenithY, sunTheta);
+        double x = perezFunction(perezx, theta, gamma, zenithx);
+        double y = perezFunction(perezy, theta, gamma, zenithy);
+        double Ys = perezFunction(perezY, theta, gamma, zenithY);
         XYZColor c = new ChromaticitySpectrum((float) x, (float) y).toXYZ();
         float X = (float) (c.getX() * Ys / c.getY());
         float Z = (float) (c.getZ() * Ys / c.getY());
