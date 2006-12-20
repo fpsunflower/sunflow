@@ -130,7 +130,7 @@ public class SunSkyLight implements LightSource, PrimitiveList, Shader {
         if (sunDir.z > 0) {
             sunSpectralRadiance = computeAttenuatedSunlight(sunTheta, turbidity);
             // produce color suitable for rendering
-            sunColor = RGBSpace.SRGB.convertXYZtoRGB(sunSpectralRadiance.toXYZ());
+            sunColor = RGBSpace.SRGB.convertXYZtoRGB(sunSpectralRadiance.toXYZ()).constrainRGB();
             UI.printInfo(Module.LIGHT, "Sun RGB value = %s", sunColor);
         } else {
             sunSpectralRadiance = new ConstantSpectralCurve(0);
@@ -267,7 +267,7 @@ public class SunSkyLight implements LightSource, PrimitiveList, Shader {
     public Color getRadiance(ShadingState state) {
         Color c = getSkyRGB(state.getRay().getDirection());
         c.mul(scalingFactor); // simple tone mapping
-        return c;
+        return c.constrainRGB();
     }
 
     public void scatterPhoton(ShadingState state, Color power) {

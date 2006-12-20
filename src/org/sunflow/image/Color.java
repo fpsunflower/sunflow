@@ -217,6 +217,17 @@ public final class Color {
         return c;
     }
 
+    public final Color constrainRGB() {
+        // clamp the RGB value to a representable value
+        float w = -MathUtils.min(0, r, g, b);
+        if (w > 0) {
+            r += w;
+            g += w;
+            b += w;
+        }
+        return this;
+    }
+
     public final Color add(Color c) {
         r += c.r;
         g += c.g;
