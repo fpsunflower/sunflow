@@ -8,7 +8,7 @@ import org.sunflow.system.UI.Module;
 public final class GIEngineFactory {
     public static final GIEngine create(Options options) {
         String type = options.getString("gi.engine", null);
-        if (type == null || type.equals("null"))
+        if (type == null || type.equals("null") || type.equals("none"))
             return null;
         else if (type.equals("ambocc"))
             return new AmbientOcclusionGIEngine(options);

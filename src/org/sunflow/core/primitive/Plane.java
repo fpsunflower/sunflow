@@ -97,7 +97,7 @@ public class Plane implements PrimitiveList {
         state.getNormal().set(worldNormal);
         state.getGeoNormal().set(worldNormal);
         state.setShader(parent.getShader(0));
-        Point3 p = state.getPoint();
+        Point3 p = parent.transformWorldToObject(state.getPoint());
         float hu, hv;
         switch (k) {
             case 0: {
