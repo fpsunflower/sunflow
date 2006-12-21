@@ -3,6 +3,7 @@
 #include <maya/MItDag.h>
 #include <maya/MItDependencyNodes.h>
 #include <maya/MDagPath.h>
+#include <maya/MDagPathArray.h>
 #include <maya/MFnMesh.h>
 #include <maya/MFnCamera.h>
 #include <maya/MItMeshPolygon.h>
@@ -12,6 +13,7 @@
 #include <maya/MObjectArray.h>
 #include <maya/MPoint.h>
 #include <maya/MVector.h>
+#include <maya/MMatrix.h>
 #include <maya/MAngle.h>
 #include <maya/MSelectionList.h>
 #include <iostream>
@@ -81,8 +83,10 @@ int getAttributeInt(const std::string& node, const std::string& attributeName, i
 }
 
 void exportMesh(const MDagPath& path, std::ofstream& file) {
-    MFnMesh mesh(path);
+    if (path.isInstanced() && path.instanceNumber() != 0)
+        return; // this instance will be handled somewhere else
 
+    MFnMesh mesh(path);
 
     int numPoints = mesh.numVertices();
     int numTriangles = 0;
@@ -96,12 +100,18 @@ void exportMesh(const MDagPath& path, std::ofstream& file) {
 
     file << "object {" << std::endl;
     file << "\tshader default" << std::endl;
+    file << "\ttransform col ";
+    MMatrix o2w = path.inclusiveMatrix();
+    file << o2w[0][0] << " " << o2w[0][1] << " " << o2w[0][2] << " " << o2w[0][3] << " ";
+    file << o2w[1][0] << " " << o2w[1][1] << " " << o2w[1][2] << " " << o2w[1][3] << " ";
+    file << o2w[2][0] << " " << o2w[2][1] << " " << o2w[2][2] << " " << o2w[2][3] << " ";
+    file << o2w[3][0] << " " << o2w[3][1] << " " << o2w[3][2] << " " << o2w[3][3] << std::endl;
     file << "\ttype generic-mesh" << std::endl;
     file << "\tname \"" << path.fullPathName().asChar() << "\"" << std::endl;
     file << "\tpoints " << numPoints << std::endl;
 
     // write points
-    MSpace::Space space = MSpace::kWorld;
+    MSpace::Space space = MSpace::kObject;
     MPointArray points;
     mesh.getPoints(points, space);
     for (int i = 0; i < numPoints; i++) {
@@ -231,6 +241,27 @@ void exportMesh(const MDagPath& path, std::ofstream& file) {
         file << "\tuvs none" << std::endl;
     file << "}" << std::endl;
     file << std::endl;
+
+    if (path.isInstanced()) {
+        MDagPathArray paths;
+        path.getAllPathsTo(path.node(), paths);
+        for (unsigned int i = 0; i < paths.length(); i++) {
+            if (paths[i].fullPathName() == path.fullPathName())
+                continue;
+            o2w = paths[i].inclusiveMatrix();
+            file << "instance {" << std::endl;
+            file << "\tname \"" << paths[i].fullPathName().asChar() << "\"" << std::endl;
+            file << "\tgeometry \"" << path.fullPathName().asChar() << "\"" <<  std::endl;
+            file << "\ttransform col ";
+            MMatrix o2w = paths[i].inclusiveMatrix();
+            file << o2w[0][0] << " " << o2w[0][1] << " " << o2w[0][2] << " " << o2w[0][3] << " ";
+            file << o2w[1][0] << " " << o2w[1][1] << " " << o2w[1][2] << " " << o2w[1][3] << " ";
+            file << o2w[2][0] << " " << o2w[2][1] << " " << o2w[2][2] << " " << o2w[2][3] << " ";
+            file << o2w[3][0] << " " << o2w[3][1] << " " << o2w[3][2] << " " << o2w[3][3] << std::endl;
+            file << "\tshader default" << std::endl;
+            file << "\t}" << std::endl;
+        }
+    }
 }
 
 void exportCamera(const MDagPath& path, std::ofstream& file) {
@@ -286,7 +317,6 @@ MStatus sunflowExport::doIt(const MArgList& args) {
                 exportMesh(path, file);
             } break;
             case MFn::kCamera: {
-                if (!areObjectAndParentsVisible(path)) continue;
                 std::cout << "Exporting camera: " << path.fullPathName().asChar() << " ..." << std::endl;
                 exportCamera(path, file);
             } break;

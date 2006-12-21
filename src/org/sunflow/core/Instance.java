@@ -35,7 +35,7 @@ public class Instance implements RenderObject {
             for (int i = 0; i < shaders.length; i++) {
                 shaders[i] = api.lookupShader(shaderNames[i]);
                 if (shaders[i] == null)
-                    UI.printWarning(Module.GEOM, "Shader \"%s\" was not declared yet - ignoring", shaders[i]);
+                    UI.printWarning(Module.GEOM, "Shader \"%s\" was not declared yet - ignoring", shaderNames[i]);
             }
         } else {
             // re-use existing shader array
@@ -46,7 +46,7 @@ public class Instance implements RenderObject {
             if (o2w != null) {
                 w2o = o2w.inverse();
                 if (w2o == null) {
-                    UI.printError(Module.GEOM, "Unable to compute transform inverse");
+                    UI.printError(Module.GEOM, "Unable to compute transform inverse - determinant is: %g", o2w.determinant());
                     return false;
                 }
             } else
