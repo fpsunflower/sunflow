@@ -107,10 +107,10 @@ public abstract class SpectralCurve {
             yArea += CIE_ybar[i];
             zArea += CIE_zbar[i];
         }
-        xArea *= (WAVELENGTH_MAX - WAVELENGTH_MIN) / CIE_xbar.length;
-        yArea *= (WAVELENGTH_MAX - WAVELENGTH_MIN) / CIE_ybar.length;
-        zArea *= (WAVELENGTH_MAX - WAVELENGTH_MIN) / CIE_zbar.length;
-        System.out.printf("CIE area under the curves: %.3f %.3f %.3f\n", xArea, yArea, zArea);
+        xArea *= 1e-9f * WAVELENGTH_STEP;
+        yArea *= 1e-9f * WAVELENGTH_STEP;
+        zArea *= 1e-9f * WAVELENGTH_STEP;
+        System.out.printf("CIE area under the curves: %g %g %g\n", xArea, yArea, zArea);
     }
 
     /**
@@ -127,6 +127,9 @@ public abstract class SpectralCurve {
             Y += s * CIE_ybar[i];
             Z += s * CIE_zbar[i];
         }
+        X *= 1e-9f * WAVELENGTH_STEP;
+        Y *= 1e-9f * WAVELENGTH_STEP;
+        Z *= 1e-9f * WAVELENGTH_STEP;
         return new XYZColor(X, Y, Z);
     }
 }

@@ -228,6 +228,14 @@ public final class Color {
         return this;
     }
 
+    public final boolean isNan() {
+        return Float.isNaN(r) || Float.isNaN(g) || Float.isNaN(b);
+    }
+
+    public final boolean isInf() {
+        return Float.isInfinite(r) || Float.isInfinite(g) || Float.isInfinite(b);
+    }
+
     public final Color add(Color c) {
         r += c.r;
         g += c.g;

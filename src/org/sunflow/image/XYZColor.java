@@ -24,7 +24,14 @@ public final class XYZColor {
         return Z;
     }
 
-    public void normalize() {
+    public final XYZColor mul(float s) {
+        X *= s;
+        Y *= s;
+        Z *= s;
+        return this;
+    }
+    
+    public final void normalize() {
         float XYZ = X + Y + Z;
         if (XYZ < 1e-6f)
             return;

@@ -99,7 +99,7 @@ public class BucketRenderer implements ImageSampler {
         thresh = contrastThreshold * (float) Math.pow(2.0f, minAADepth);
         // read filter settings from scene
         filterName = options.getString("filter", filterName);
-        filter = FilterFactory.get(filterName);  
+        filter = FilterFactory.get(filterName);
         // adjust filter
         if (filter == null) {
             UI.printWarning(Module.BCKT, "Unrecognized filter type: \"%s\" - defaulting to box", filterName);
@@ -358,6 +358,10 @@ public class BucketRenderer implements ImageSampler {
                 c = Color.BLACK;
             else {
                 c = state.getResult();
+                if (c.isNan())
+                    UI.printError(Module.BCKT, "NaN shading sample!");
+                else if (c.isInf())
+                    UI.printError(Module.BCKT, "Inf shading sample!");
                 shader = state.getShader();
                 instance = state.getInstance();
                 if (state.getNormal() != null) {
@@ -374,8 +378,13 @@ public class BucketRenderer implements ImageSampler {
                 c = Color.black();
                 sampled = true;
             }
-            if (state != null)
+            if (state != null) {
                 c.add(state.getResult());
+                if (state.getResult().isNan())
+                    UI.printError(Module.BCKT, "NaN shading sample!");
+                else if (state.getResult().isInf())
+                    UI.printError(Module.BCKT, "Inf shading sample!");
+            }
             n++;
         }
 
