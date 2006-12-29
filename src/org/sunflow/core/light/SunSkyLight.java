@@ -23,28 +23,25 @@ import org.sunflow.math.Matrix4;
 import org.sunflow.math.OrthoNormalBasis;
 import org.sunflow.math.Point3;
 import org.sunflow.math.Vector3;
-import org.sunflow.system.UI;
-import org.sunflow.system.UI.Module;
 
 public class SunSkyLight implements LightSource, PrimitiveList, Shader {
     // sunflow parameters
     private int numSkySamples;
-    private int numSunSamples;
     private OrthoNormalBasis basis;
-    private float scalingFactor;
     // parameters to the model
     private Vector3 sunDirWorld;
     private float turbidity;
     // derived quantities
     private Vector3 sunDir;
-    // private float sunSolidAngle;
     private SpectralCurve sunSpectralRadiance;
-    private Color sunColor;
     private float sunTheta;
     private double zenithY, zenithx, zenithy;
     private final double[] perezY = new double[5];
     private final double[] perezx = new double[5];
     private final double[] perezy = new double[5];
+    private float jacobian;
+    private float[] colHistogram;
+    private float[][] imageHistogram;
     // constant data
     private static final float[] solAmplitudes = { 165.5f, 162.3f, 211.2f,
             258.8f, 258.2f, 242.3f, 267.6f, 296.6f, 305.4f, 300.6f, 306.6f,
@@ -80,10 +77,8 @@ public class SunSkyLight implements LightSource, PrimitiveList, Shader {
     private static final IrregularSpectralCurve k_waCurve = new IrregularSpectralCurve(k_waWavelengths, k_waAmplitudes);
 
     public SunSkyLight() {
-        numSkySamples = 16;
-        numSunSamples = 4;
-        sunDirWorld = new Vector3(1, 1, 0.01f);
-        scalingFactor = 1.0f / 4000;
+        numSkySamples = 64;
+        sunDirWorld = new Vector3(1, 1, 1);
         turbidity = 6;
         basis = OrthoNormalBasis.makeFromWV(new Vector3(0, 0, 1), new Vector3(0, 1, 0));
         initSunSky();
@@ -130,12 +125,9 @@ public class SunSkyLight implements LightSource, PrimitiveList, Shader {
         if (sunDir.z > 0) {
             sunSpectralRadiance = computeAttenuatedSunlight(sunTheta, turbidity);
             // produce color suitable for rendering
-            sunColor = RGBSpace.SRGB.convertXYZtoRGB(sunSpectralRadiance.toXYZ().mul(1e4f)).constrainRGB();
-            UI.printInfo(Module.LIGHT, "Sun RGB value = %s", sunColor);
+            RGBSpace.SRGB.convertXYZtoRGB(sunSpectralRadiance.toXYZ().mul(1e-4f)).constrainRGB();
         } else {
             sunSpectralRadiance = new ConstantSpectralCurve(0);
-            sunColor = Color.BLACK;
-            UI.printInfo(Module.LIGHT, "Sun is below the horizon!");
         }
         // sunSolidAngle = (float) (0.25 * Math.PI * 1.39 * 1.39 / (150 * 150));
         float theta2 = sunTheta * sunTheta;
@@ -165,6 +157,30 @@ public class SunSkyLight implements LightSource, PrimitiveList, Shader {
         perezy[2] = -0.00792 * T + 0.21023;
         perezy[3] = -0.04405 * T - 1.65369;
         perezy[4] = -0.01092 * T + 0.05291;
+
+        final int w = 32, h = 32;
+        imageHistogram = new float[w][h];
+        colHistogram = new float[w];
+        float du = 1.0f / w;
+        float dv = 1.0f / h;
+        for (int x = 0; x < w; x++) {
+            for (int y = 0; y < h; y++) {
+                float u = (x + 0.5f) * du;
+                float v = (y + 0.5f) * dv;
+                Color c = getSkyRGB(getDirection(u, v));
+                imageHistogram[x][y] = c.getLuminance() * (float) Math.sin(Math.PI * v);
+                if (y > 0)
+                    imageHistogram[x][y] += imageHistogram[x][y - 1];
+            }
+            colHistogram[x] = imageHistogram[x][h - 1];
+            if (x > 0)
+                colHistogram[x] += colHistogram[x - 1];
+            for (int y = 0; y < h; y++)
+                imageHistogram[x][y] /= imageHistogram[x][h - 1];
+        }
+        for (int x = 0; x < w; x++)
+            colHistogram[x] /= colHistogram[w - 1];
+        jacobian = (float) (2 * Math.PI * Math.PI) / (w * h);
     }
 
     public boolean update(ParameterList pl, SunflowAPI api) {
@@ -175,7 +191,6 @@ public class SunSkyLight implements LightSource, PrimitiveList, Shader {
         else if (up != null)
             basis = OrthoNormalBasis.makeFromW(up);
         numSkySamples = pl.getInt("samples.sky", numSkySamples);
-        numSunSamples = pl.getInt("samples.sun", numSunSamples);
         sunDirWorld = pl.getVector("sundir", sunDirWorld);
         turbidity = pl.getFloat("turbidity", turbidity);
         // recompute model
@@ -193,7 +208,6 @@ public class SunSkyLight implements LightSource, PrimitiveList, Shader {
     }
 
     private Color getSkyRGB(Vector3 dir) {
-        dir = basis.untransform(dir, new Vector3());
         if (dir.z < 0)
             return Color.BLACK;
         if (dir.z < 0.001f)
@@ -203,15 +217,16 @@ public class SunSkyLight implements LightSource, PrimitiveList, Shader {
         double gamma = Math.acos(MathUtils.clamp(Vector3.dot(dir, sunDir), -1, 1));
         double x = perezFunction(perezx, theta, gamma, zenithx);
         double y = perezFunction(perezy, theta, gamma, zenithy);
-        double Y = perezFunction(perezY, theta, gamma, zenithY);
-        XYZColor c = new ChromaticitySpectrum((float) x, (float) y).toXYZ();
+        double Y = perezFunction(perezY, theta, gamma, zenithY) * 1e-4;
+        XYZColor c = ChromaticitySpectrum.get((float) x, (float) y);
+        // XYZColor c = new ChromaticitySpectrum((float) x, (float) y).toXYZ();
         float X = (float) (c.getX() * Y / c.getY());
         float Z = (float) (c.getZ() * Y / c.getY());
         return RGBSpace.SRGB.convertXYZtoRGB(X, (float) Y, Z);
     }
 
     public int getNumSamples() {
-        return 1;// numSkySamples + numSunSamples;
+        return numSkySamples;
     }
 
     public void getPhoton(double randX1, double randY1, double randX2, double randY2, Point3 p, Vector3 dir, Color power) {
@@ -223,10 +238,39 @@ public class SunSkyLight implements LightSource, PrimitiveList, Shader {
     }
 
     public void getSample(int i, ShadingState state, LightSample dest) {
-        dest.setShadowRay(new Ray(state.getPoint(), sunDirWorld));
-        dest.getShadowRay().setMax(Float.MAX_VALUE);
-        dest.setRadiance(sunColor, sunColor);
-        dest.traceShadow(state);
+        // random offset on unit square, we use the infinite version of
+        // getRandom because the light sampling is adaptive
+        double randX = state.getRandom(i, 0);
+        double randY = state.getRandom(i, 1);
+
+        int x = 0;
+        while (randX >= colHistogram[x] && x < colHistogram.length - 1)
+            x++;
+        float[] rowHistogram = imageHistogram[x];
+        int y = 0;
+        while (randY >= rowHistogram[y] && y < rowHistogram.length - 1)
+            y++;
+        // sample from (x, y)
+        float u = (float) ((x == 0) ? (randX / colHistogram[0]) : ((randX - colHistogram[x - 1]) / (colHistogram[x] - colHistogram[x - 1])));
+        float v = (float) ((y == 0) ? (randY / rowHistogram[0]) : ((randY - rowHistogram[y - 1]) / (rowHistogram[y] - rowHistogram[y - 1])));
+
+        float px = ((x == 0) ? colHistogram[0] : (colHistogram[x] - colHistogram[x - 1]));
+        float py = ((y == 0) ? rowHistogram[0] : (rowHistogram[y] - rowHistogram[y - 1]));
+
+        float su = (x + u) / colHistogram.length;
+        float sv = (y + v) / rowHistogram.length;
+        float invP = (float) Math.sin(sv * Math.PI) * jacobian / (px * py);
+        Vector3 dir = getDirection(su, sv);
+        basis.transform(dir);
+        if (Vector3.dot(dir, state.getGeoNormal()) > 0 && Vector3.dot(dir, state.getNormal()) > 0) {
+            dest.setShadowRay(new Ray(state.getPoint(), dir));
+            dest.getShadowRay().setMax(Float.MAX_VALUE);
+            Color radiance = getSkyRGB(basis.untransform(dir));
+            dest.setRadiance(radiance, radiance);
+            dest.getDiffuseRadiance().mul(invP);
+            dest.getSpecularRadiance().mul(invP);
+            dest.traceShadow(state);
+        }
     }
 
     public boolean isAdaptive() {
@@ -234,8 +278,7 @@ public class SunSkyLight implements LightSource, PrimitiveList, Shader {
     }
 
     public boolean isVisible(ShadingState state) {
-        return false; // Vector3.dot(sunDirWorld, state.getGeoNormal()) > 0 &&
-        // Vector3.dot(sunDirWorld, state.getNormal()) > 0;
+        return true;
     }
 
     public PrimitiveList getBakingPrimitives() {
@@ -265,12 +308,22 @@ public class SunSkyLight implements LightSource, PrimitiveList, Shader {
     }
 
     public Color getRadiance(ShadingState state) {
-        Color c = getSkyRGB(state.getRay().getDirection());
-        c.mul(scalingFactor); // simple tone mapping
-        return c.constrainRGB();
+        return getSkyRGB(basis.untransform(state.getRay().getDirection())).constrainRGB();
     }
 
     public void scatterPhoton(ShadingState state, Color power) {
         // let photon escape
+    }
+
+    private Vector3 getDirection(float u, float v) {
+        Vector3 dest = new Vector3();
+        double phi = 0, theta = 0;
+        theta = u * 2 * Math.PI;
+        phi = v * Math.PI;
+        double sin_phi = Math.sin(phi);
+        dest.x = (float) (-sin_phi * Math.cos(theta));
+        dest.y = (float) Math.cos(phi);
+        dest.z = (float) (sin_phi * Math.sin(theta));
+        return dest;
     }
 }

@@ -32,6 +32,10 @@ public final class ChromaticitySpectrum extends SpectralCurve {
     private static final RegularSpectralCurve kS1Spectrum = new RegularSpectralCurve(S1Amplitudes, 300, 830);
     private static final RegularSpectralCurve kS2Spectrum = new RegularSpectralCurve(S2Amplitudes, 300, 830);
 
+    private static final XYZColor S0xyz = kS0Spectrum.toXYZ();
+    private static final XYZColor S1xyz = kS1Spectrum.toXYZ();
+    private static final XYZColor S2xyz = kS2Spectrum.toXYZ();
+
     private final float M1, M2;
 
     public ChromaticitySpectrum(float x, float y) {
@@ -41,5 +45,14 @@ public final class ChromaticitySpectrum extends SpectralCurve {
 
     public float sample(float lambda) {
         return kS0Spectrum.sample(lambda) + M1 * kS1Spectrum.sample(lambda) + M2 * kS2Spectrum.sample(lambda);
+    }
+
+    public static final XYZColor get(float x, float y) {
+        float M1 = (-1.3515f - 1.7703f * x + 5.9114f * y) / (0.0241f + 0.2562f * x - 0.7341f * y);
+        float M2 = (0.03f - 31.4424f * x + 30.0717f * y) / (0.0241f + 0.2562f * x - 0.7341f * y);
+        float X = S0xyz.getX() + M1 * S1xyz.getX() + M2 * S2xyz.getX();
+        float Y = S0xyz.getY() + M1 * S1xyz.getY() + M2 * S2xyz.getY();
+        float Z = S0xyz.getZ() + M1 * S1xyz.getZ() + M2 * S2xyz.getZ();
+        return new XYZColor(X, Y, Z);
     }
 }

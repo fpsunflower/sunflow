@@ -89,9 +89,8 @@ public abstract class SpectralCurve {
             0.000000000000, 0.000000000000, 0.000000000000, 0.000000000000,
             0.000000000000, 0.000000000000, 0.000000000000, 0.000000000000,
             0.000000000000, 0.000000000000, 0.000000000000, 0.000000000000,
-            0.000000000000,
+            0.000000000000, };
 
-    };
     private static final int WAVELENGTH_STEP = (WAVELENGTH_MAX - WAVELENGTH_MIN) / (CIE_xbar.length - 1);
 
     static {
@@ -99,18 +98,18 @@ public abstract class SpectralCurve {
             String err = String.format("Internal error - spectrum static data is inconsistent!\n  * min = %d\n  * max = %d\n  * step = %d\n  * num = %d", WAVELENGTH_MIN, WAVELENGTH_MAX, WAVELENGTH_STEP, CIE_xbar.length);
             throw new RuntimeException(err);
         }
-        float xArea = 0;
-        float yArea = 0;
-        float zArea = 0;
-        for (int i = 0, w = WAVELENGTH_MIN; i < CIE_xbar.length; i++, w += WAVELENGTH_STEP) {
-            xArea += CIE_xbar[i];
-            yArea += CIE_ybar[i];
-            zArea += CIE_zbar[i];
-        }
-        xArea *= 1e-9f * WAVELENGTH_STEP;
-        yArea *= 1e-9f * WAVELENGTH_STEP;
-        zArea *= 1e-9f * WAVELENGTH_STEP;
-        System.out.printf("CIE area under the curves: %g %g %g\n", xArea, yArea, zArea);
+//        float xArea = 0;
+//        float yArea = 0;
+//        float zArea = 0;
+//        for (int i = 0, w = WAVELENGTH_MIN; i < CIE_xbar.length; i++, w += WAVELENGTH_STEP) {
+//            xArea += CIE_xbar[i];
+//            yArea += CIE_ybar[i];
+//            zArea += CIE_zbar[i];
+//        }
+//        xArea *= WAVELENGTH_STEP;
+//        yArea *= WAVELENGTH_STEP;
+//        zArea *= WAVELENGTH_STEP;
+//        System.out.printf("CIE area under the curves: %g %g %g\n", xArea, yArea, zArea);
     }
 
     /**
@@ -127,9 +126,6 @@ public abstract class SpectralCurve {
             Y += s * CIE_ybar[i];
             Z += s * CIE_zbar[i];
         }
-        X *= 1e-9f * WAVELENGTH_STEP;
-        Y *= 1e-9f * WAVELENGTH_STEP;
-        Z *= 1e-9f * WAVELENGTH_STEP;
-        return new XYZColor(X, Y, Z);
+        return new XYZColor(X, Y, Z).mul(WAVELENGTH_STEP);
     }
 }
