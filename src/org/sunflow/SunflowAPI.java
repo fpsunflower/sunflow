@@ -61,6 +61,7 @@ public class SunflowAPI {
     private SearchPath textureSearchPath;
     private ParameterList parameterList;
     private RenderObjectMap renderObjects;
+    private int currentFrame;
 
     /**
      * The default constructor is only available to sub-classes.
@@ -81,6 +82,7 @@ public class SunflowAPI {
         textureSearchPath = new SearchPath("texture");
         parameterList = new ParameterList();
         renderObjects = new RenderObjectMap();
+        currentFrame = 1;
     }
 
     /**
@@ -722,5 +724,27 @@ public class SunflowAPI {
             UI.printError(Module.API, "%s", e.getMessage());
             return null;
         }
+    }
+
+    /**
+     * Read the value of the current frame. This value is intended only for
+     * procedural animation creation. It is not used by the Sunflow core in
+     * anyway. The default value is 1.
+     * 
+     * @return current frame number
+     */
+    public int getCurrentFrame() {
+        return currentFrame;
+    }
+
+    /**
+     * Set the value of the current frame. This value is intended only for
+     * procedural animation creation. It is not used by the Sunflow core in
+     * anyway. The default value is 1.
+     * 
+     * @param currentFrame current frame number
+     */
+    public void setCurrentFrame(int currentFrame) {
+        this.currentFrame = currentFrame;
     }
 }

@@ -1,4 +1,6 @@
 v0.07.0
+* Added basic animation support
+* Added SunSkyLight
 * Added QuadMesh primitive type (using bilinear patches)
 * Added real sphere lights
 * Console display now outputs to stderr to allow stdout to be used for output redirection
