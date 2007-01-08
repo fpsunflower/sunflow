@@ -297,6 +297,12 @@ public class SunflowGUI extends javax.swing.JFrame implements UserInterface {
                         usage(false);
                     frameStart = frameStop = Integer.parseInt(args[i + 1]);
                     i += 2;
+                } else if (args[i].equals("-anim")) {
+                    if (i > args.length - 3)
+                        usage(false);
+                    frameStart = Integer.parseInt(args[i + 1]);
+                    frameStop = Integer.parseInt(args[i + 2]);
+                    i += 3;
                 } else if (args[i].equals("-v")) {
                     if (i > args.length - 2)
                         usage(false);
@@ -355,7 +361,7 @@ public class SunflowGUI extends javax.swing.JFrame implements UserInterface {
                 api.options(SunflowAPI.DEFAULT_OPTIONS);
                 // create display
                 Display display;
-                String currentFilename = filename.replace("#", String.format("%04d", frameNumber));
+                String currentFilename = (filename != null) ? filename.replace("#", String.format("%04d", frameNumber)) : null;
                 if (showFrame) {
                     display = new FrameDisplay(currentFilename);
                 } else {
