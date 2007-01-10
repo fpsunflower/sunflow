@@ -328,12 +328,11 @@ public class SunflowGUI extends javax.swing.JFrame implements UserInterface {
             if (input == null)
                 usage(false);
             for (int frameNumber = frameStart; frameNumber <= frameStop; frameNumber++) {
-                SunflowAPI api = SunflowAPI.create(input);
+                SunflowAPI api = SunflowAPI.create(input, frameNumber);
                 if (api == null)
                     continue;
                 if (noRender)
                     continue;
-                api.setCurrentFrame(frameNumber);
                 if (resolutionW > 0 && resolutionH > 0) {
                     api.parameter("resolutionX", resolutionW);
                     api.parameter("resolutionY", resolutionH);

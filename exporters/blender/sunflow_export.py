@@ -8,7 +8,7 @@ Tip: ''
 """
 
 """
-Version         :       0.06.3 (June 2006)
+Version         :       0.07.0 (January 2007)
 Author          :       R Lindsay (hayfever) / Christopher Kulla
 Description     :       Export to Sunflow renderer http://sunflow.sourceforge.net/
 """
@@ -28,12 +28,9 @@ MINAA = Draw.Create(-2)
 MAXAA = Draw.Create(0)
 AASAMPLES = Draw.Create(1)
 DSAMPLES = Draw.Create(16)
-ACCELTYPE = Draw.Create(1)
 IMGFILTER = Draw.Create(1)
 IMGFILTERW = Draw.Create(1)
 IMGFILTERH = Draw.Create(1)
-BUCKET = Draw.Create(1)
-BUCKETSIZE = Draw.Create(32)
 DOF = Draw.Create(0)
 DOFRADIUS = Draw.Create(1.0)
 DOFDIST = Draw.Create(10.0)
@@ -61,10 +58,12 @@ CHANGE_ACC = 11
 CHANGE_LIGHT = 12
 CHANGE_AO = 13
 
-ACCELLIST = ["kdtree", "uniformgrid","null","bvh"]
+##  export options
+
+EXP_ANIM = Draw.Create(0)
+
 IMGFILTERLIST = ["box","gaussian","mitchell","triangle","catmull-rom","blackman-harris","sinc","lanczos"]
 IMGFILTERLISTFIXED = [0,0,1,0,1,0,0,1]
-BUCKETLIST = ["row","column","diagonal","spiral","hilbert"]
 
 ##  end global gui vars  ##
 
@@ -86,36 +85,24 @@ global SCREEN
 ##  start of export  ##
 
 print "\n\n"
-print "blend2sunflow v0.06.2"
+print "blend2sunflow v0.07.0"
 
-####################
+## Export logic for simple options
 def export_output():
-####################
+	print "o exporting output details..."
+	FILE.write("image {\n")
+	FILE.write("\tresolution %d %d" % (IM_WIDTH, IM_HEIGHT) + "\n")
+	FILE.write("\taa %s %s" % (MINAA.val, MAXAA.val)+"\n")
+	FILE.write("}")
+	if IMGFILTERLIST[IMGFILTER.val-1] in ("box","gaussian","triangle","blackman-harris","sinc"):
+		FILE.write("\n\nfilter %s" % IMGFILTERLIST[IMGFILTER.val-1] + " %s %s" %(IMGFILTERW.val,IMGFILTERH.val))
+	else:
+		FILE.write("\n\nfilter %s" % IMGFILTERLIST[IMGFILTER.val-1])
+	FILE.write("\n")
 
-      print "o exporting output details..."
-      FILE.write("image {\n")
-      FILE.write("\tresolution %d %d" % (IM_WIDTH, IM_HEIGHT) + "\n")
-      FILE.write("\taa %s %s" % (MINAA.val, MAXAA.val)+"\n")
-      FILE.write("}")
 
-##################
-def export_misc():
-##################
-
-      print "o exporting miscellaneous details..."
-
-      FILE.write("\n\naccel %s" %ACCELLIST[ACCELTYPE.val-1])
-      FILE.write("\n\nbucket %s" %BUCKETSIZE.val + " %s" %BUCKETLIST[BUCKET.val-1])
-
-      if IMGFILTERLIST[IMGFILTER.val-1] in ("box","gaussian","triangle","blackman-harris","sinc"):
-                      FILE.write("\n\nfilter %s" % IMGFILTERLIST[IMGFILTER.val-1] + " %s %s" %(IMGFILTERW.val,IMGFILTERH.val))
-      else:
-              FILE.write("\n\nfilter %s" % IMGFILTERLIST[IMGFILTER.val-1])
-
-#####################
+## Export logic for materials
 def export_shaders():
-#####################
-
       print "o exporting shaders..."
 
       # default shader
@@ -182,10 +169,9 @@ def export_shaders():
                               FILE.write("\ttype diffuse\n")
                               FILE.write("\tdiff { \"sRGB nonlinear\" %s %s %s }\n}" %(RGB[0],RGB[1],RGB[2]))
 
-########################
-def export_lights(lmp):
-########################
 
+## Export logic for Blender's light sources
+def export_lights(lmp):
       # only lamp type 0 supported at the moment
       # lamp types are: 0 - Lamp, 1 - Sun, 2 - Spot, 3 - Hemi, 4 - Area
       lamp = lmp.getData()
@@ -251,9 +237,9 @@ def export_lights(lmp):
       #        FILE.write("\temit %s %s %s" %(lamp.col[0],lamp.col[1],lamp.col[2])+"\n")
       #        FILE.write("}")
 
-#######################
+
+## Export method for Blender camera
 def export_camera(cam):
-#######################
       global IBLLIGHT
 
       # get the camera
@@ -300,10 +286,10 @@ def export_camera(cam):
               FILE.write("\tsamples %s\n" % DSAMPLES.val)
               FILE.write("}")
 
-##########################
-def export_geometry(obj):
-##########################
 
+## Export method for meshes
+def export_geometry(obj):
+      #mesh = "";verts="";faces="";numverts=""
       islight = obj.name.startswith("meshlight")
       if islight:
           print "o exporting meshlight " + obj.name+"..."
@@ -435,250 +421,219 @@ def export_geometry(obj):
               FILE.write("}\n")
 
 
-#########################
+## Main export method
 def exportfile(filename):
-#########################
-
-      global FILE, SCENE, IM_HEIGHT, IM_WIDTH, TEXTURES, OBJECTS, LAYERS, IBLLIGHT
+      global FILE, SCENE, IM_HEIGHT, IM_WIDTH, TEXTURES, OBJECTS, LAYERS, IBLLIGHT, EXP_ANIM
 
       SCENE     = Blender.Scene.getCurrent()
       IM_HEIGHT = SCENE.getRenderingContext().imageSizeY()
       IM_WIDTH  = SCENE.getRenderingContext().imageSizeX()
       TEXTURES  = Blender.Texture.Get()
-      OBJECTS   = Blender.Scene.GetCurrent().getChildren() 
+       
       LAYERS    = SCENE.getLayers()
-
-      try:
-           ibllighttext = Blender.Texture.Get("ibllight")
-           if ibllighttext <> "":
-              if ibllighttext <> None and ibllighttext.getType() == "Image":
-                      IBLLIGHT = ibllighttext.getImage().getFilename()
-      except:
-           IBLLIGHT = ""
+      STARTFRAME = SCENE.getRenderingContext().startFrame()
+      ENDFRAME  = SCENE.getRenderingContext().endFrame()
+      CTX       = SCENE.getRenderingContext()
+      orig_frame = CTX.currentFrame()
 
       if not filename.endswith(".sc"):
-           filename = filename + ".sc"
+         filename = filename + ".sc"
+      fname = filename
+      ANIM = EXP_ANIM.val
 
-      print "Exporting to: %s" % (filename)
+      if ANIM == 1:
+      	 base = os.path.splitext(os.path.basename(filename))[0]
+         FILE = open(filename.replace(".sc", ".java"), "wb")
+         FILE.write("""
+public void build() {
+	parse("%s" + ".settings.sc");
+	parse("%s" + "." + getCurrentFrame() + ".sc");
+}
+""" % (base, base))
+         FILE.close()
+         FILE = open(filename.replace(".sc", ".settings.sc"), "wb")
+         export_output()
+         FILE.close()
+      else:
+         STARTFRAME = ENDFRAME = 1
 
-      FILE = open(filename, 'wb')
-      export_output()
-      export_misc()
-      export_shaders()
+      for cntr in range(STARTFRAME, ENDFRAME + 1):
+          filename = fname
 
-      export_camera(SCENE.getCurrentCamera())
+          CTX.currentFrame(cntr)
+          SCENE.makeCurrent()
+          try:
+             ibllighttext = Blender.Texture.Get("ibllight")
+             if ibllighttext <> "":
+                if ibllighttext <> None and ibllighttext.getType() == "Image":
+                      IBLLIGHT = ibllighttext.getImage().getFilename()
+          except:
+             IBLLIGHT = ""
 
-      for object in OBJECTS:
-          if object.users > 1 and object.layers[0] in LAYERS:
-              if object.getType() == 'Lamp':
-                  export_lights(object)
-              if object.getType() == 'Mesh' or object.getType() == 'Surf':
-                  if object.name.startswith("meshlight"):
-                      export_geometry(object)
+          OBJECTS   = Blender.Scene.GetCurrent().getChildren()
+          
+          if ANIM == 1:
+             filename = filename.replace(".sc",  ".%d.sc" % (CTX.currentFrame()))
+            
+          print "Exporting to: %s" % (filename)
 
-      filename = filename.replace(".sc", ".geo.sc")
-      FILE.write("\n\ninclude %s\n" % (os.path.basename(filename)))
-      FILE.close()
+          FILE = open(filename, 'wb')
+          if ANIM == 0:
+             export_output()
+          export_shaders()
+          export_camera(SCENE.getCurrentCamera())
+          for object in OBJECTS:
+             if object.users > 1 and object.layers[0] in LAYERS:
+                  if object.getType() == 'Lamp':
+	                  export_lights(object)
+                  if object.getType() == 'Mesh' or object.getType() == 'Surf':
+                     if object.name.startswith("meshlight"):
+                            export_geometry(object)
+          if ANIM == 0:
+              FILE.write("\n\ninclude \"%s\"\n" % (os.path.basename(filename).replace(".sc", ".geo.sc")))
+              FILE.close()
+              ## open geo file
+              filename = filename.replace(".sc", ".geo.sc")
+              print "Exporting geometry to: %s" % (filename)
+              FILE = open(filename, 'wb')
 
-      ## open geo file
-      print "Exporting geometry to: %s" % (filename)
-      FILE = open(filename, 'wb')
-      for object in OBJECTS:
-          if object.users > 1 and object.layers[0] in LAYERS:
-              if object.getType() == 'Mesh' or object.getType() == 'Surf':
-                  if not object.name.startswith("meshlight"):
-                      export_geometry(object)
-      FILE.close()
+          for object in OBJECTS:
+             if object.users > 1 and object.layers[0] in LAYERS:
+                 if object.getType() == 'Mesh' or object.getType() == 'Surf':
+                    if not object.name.startswith("meshlight"):
+                        export_geometry(object)
+          FILE.close()
+
+      if ANIM == 1:
+          CTX.currentFrame(orig_frame)
+          SCENE.makeCurrent()
 
       print "Export finished."
 
-###################
-def event(evt,val):
-###################
+## Global event handler
+def event(evt, val):
+	if evt == Draw.ESCKEY:
+		print "quitting exporter..."
+		Draw.Exit()
 
-      if evt == Draw.ESCKEY:
-              print "quitting exporter..."
-              Draw.Exit()
 
-#####################
+## GUI button event handler
 def buttonEvent(evt):
-#####################
-
       global FILE,SCREEN
-
       if evt == EXPORT_EVT:
               Blender.Window.FileSelector(exportfile, "Export .sc", FILENAME)
-
       if evt == DOF_CAMERA:
               if DOF.val == 1:
                       if SPHERICALCAMERA.val == 1:
                               SPHERICALCAMERA.val = 0
                               Draw.Redraw()
-
       if evt == SPHER_CAMERA:
               if SPHERICALCAMERA.val == 1:
                       if DOF.val == 1:
                               DOF.val = 0
                               Draw.Redraw()
-
       if evt == IRR_EVENT:
               if GIIRR.val == 1:
                       if GIPATH.val == 1:
                               GIPATH.val = 0
                               Draw.Redraw()
-
       if evt == FILTER_EVENT:
               Draw.Redraw()
-
       if evt == CHANGE_AA:
               SCREEN=0
               Draw.Redraw()
               return
-
       if evt == CHANGE_CAM:
               SCREEN=2
               Draw.Redraw()
               return
-
-      if evt == CHANGE_ACC:
-              SCREEN=3
-              Draw.Redraw()
-              return
-
       if evt == CHANGE_LIGHT:
               SCREEN=4
               Draw.Redraw()
               return
-
       if evt == CHANGE_AO:
               SCREEN=5
               Draw.Redraw()
               return
 
-##############
+
+## Draws the individual panels
 def drawGUI():
-##############
-
       global SCREEN
-
       if SCREEN==0:
              drawAA()
       if SCREEN==2:
              drawCamera()
-      if SCREEN==3:
-             drawAccel()
       if SCREEN==4:
              drawLights()
       if SCREEN==5:
              drawAO()
 
-###########
+
+## Draw AA settings
 def drawAA():
-###########
+	global MINAA, MAXAA, AASAMPLES
+	global IMGFILTERW, IMGFILTERH, IMGFILTER
+	global EXP_ANIM
+	##  aa settings
+	col=10; line=200; BGL.glRasterPos2i(col, line); Draw.Text("AA:")
+	col=100; MINAA=Draw.Number("Min AA ", 2, col, line, 120, 18, MINAA.val, -4, 5); 
+	col=230; MAXAA=Draw.Number("Max AA  ", 2, col, line, 120, 18, MAXAA.val, -4, 5)
+	col=360; AASAMPLES=Draw.Number("Samples", 2, col, line, 120, 18, AASAMPLES.val, 0, 32)
+	col=10; line=175; BGL.glRasterPos2i(col, line); Draw.Text("Image Filter:")
+	col=100; line=173; IMGFILTER=Draw.Menu("%tImage Filter|box|gaussian|mitchell|triangle|catmull-rom|blackman-harris|sinc|lanczos", FILTER_EVENT, col, line, 120, 18, IMGFILTER.val)
+	if IMGFILTERLISTFIXED[IMGFILTER.val-1]==0:
+		col=230; IMGFILTERW=Draw.Number("Filter Width", 2, col, line, 120, 18, IMGFILTERW.val, 0, 30)
+		col=360; IMGFILTERH=Draw.Number("Filter Height", 2, col, line, 120, 18, IMGFILTERH.val, 0, 30)
+	col=10; line=120; EXP_ANIM=Draw.Toggle("Export As Animation", 2, col, line, 140, 18, EXP_ANIM.val)
+	drawButtons()
 
-      global MINAA, MAXAA, AASAMPLES, DSAMPLES
-      global IMGFILTERW, IMGFILTERH, IMGFILTER
-
-      ##  aa settings
-
-      col=10; line=200; BGL.glRasterPos2i(col, line); Draw.Text("AA:")
-      col=100; MINAA=Draw.Number("Min AA ", 2, col, line, 120, 18, MINAA.val, -4, 5); 
-      col=230; MAXAA=Draw.Number("Max AA  ", 2, col, line, 120, 18, MAXAA.val, -4, 5)
-      col=360; AASAMPLES=Draw.Number("Samples", 2, col, line, 120, 18, AASAMPLES.val, 0, 32)
-
-      col=10; line=175; BGL.glRasterPos2i(col, line); Draw.Text("Image Filter:")
-      col=100; line=173; IMGFILTER=Draw.Menu("%tImage Filter|box|gaussian|mitchell|triangle|catmull-rom|blackman-harris|sinc|lanczos", \
-                                                     FILTER_EVENT, col, line, 120, 18, IMGFILTER.val)
-      if IMGFILTERLISTFIXED[IMGFILTER.val-1]==0:
-              col=230; IMGFILTERW=Draw.Number("Filter Width", 2, col, line, 120, 18, IMGFILTERW.val, 0, 30)
-              col=360; IMGFILTERH=Draw.Number("Filter Height", 2, col, line, 120, 18, IMGFILTERH.val, 0, 30)
-
-      ## lightserver settings
-
-      col=10; line=150; BGL.glRasterPos2i(col, line); Draw.Text("Lightserver:")
-      col=100; line=147; DSAMPLES=Draw.Number("Direct Samples  ", 2, col, line, 250, 18, DSAMPLES.val, 0, 1024); 
-
-      drawButtons()
-
-################
-def drawAccel():
-################
-
-      global ACCELTYPE, BUCKET, BUCKETSIZE
-
-      ## misc settings
-
-      col=10; line=200; BGL.glRasterPos2i(col, line); Draw.Text("Accelerator:")
-      col=100; line=195; ACCELTYPE=Draw.Menu("%tAccelerator Type|kdtree|uniformgrid|null|bvh", 2, col, line, 125, 18, ACCELTYPE.val)
-
-      col=10; line=180; BGL.glRasterPos2i(col, line); Draw.Text("Bucket Order:")
-      col=100; line=170; BUCKET=Draw.Menu("%tBucket Ordering|row|column|diagonal|spiral|hilbert", 2, col, line, 125, 18, BUCKET.val)
-      col=230; BUCKETSIZE=Draw.Number("Bucket Size", 2, col, line, 125, 18, BUCKETSIZE.val, 8, 64)
-
-      drawButtons()
-
-#################
+## Draw camera options
 def drawCamera():
-#################
+	global DOF, DOFRADIUS, DOFDIST, SPHERICALCAMERA
+	##  camera settings
+	col=10; line=200; BGL.glRasterPos2i(col, line); Draw.Text("Camera:")
+	col=100; line=195; DOF=Draw.Toggle("DOF", DOF_CAMERA, col, line, 120, 18, DOF.val)
+	col=225; DOFDIST=Draw.Number("Distance", 2, col, line, 120, 18, DOFDIST.val, 0.0, 200.00)
+	col=350; DOFRADIUS=Draw.Number("Radius", 2, col, line, 120, 18, DOFRADIUS.val, 0.0, 200.00)
+	col=100; line=170; SPHERICALCAMERA=Draw.Toggle("Spherical", SPHER_CAMERA, col, line, 120, 18, SPHERICALCAMERA.val)
+	drawButtons()
 
-      global DOF, DOFRADIUS, DOFDIST, SPHERICALCAMERA
-
-      ##  camera settings
-
-      col=10; line=200; BGL.glRasterPos2i(col, line); Draw.Text("Camera:")
-      col=100; line=195; DOF=Draw.Toggle("DOF", DOF_CAMERA, col, line, 120, 18, DOF.val)
-      col=225; DOFDIST=Draw.Number("Distance", 2, col, line, 120, 18, DOFDIST.val, 0.0, 200.00)
-      col=350; DOFRADIUS=Draw.Number("Radius", 2, col, line, 120, 18, DOFRADIUS.val, 0.0, 200.00)
-      col=100; line=170; SPHERICALCAMERA=Draw.Toggle("Spherical", SPHER_CAMERA, col, line, 120, 18, SPHERICALCAMERA.val)
-
-      drawButtons()
-
-#################
+## Draw light options
 def drawLights():
-#################
+	global MESHLIGHTPOWER, DSAMPLES
+	## meshlight power slider
+	col=10; line=200; BGL.glRasterPos2i(col, line); Draw.Text("Meshlight:")
+	col=100; line=195; MESHLIGHTPOWER=Draw.Number("Power", 2, col, line, 120, 18, MESHLIGHTPOWER.val, 1, 15)
+	## lightserver settings
+	col=10; line=150; BGL.glRasterPos2i(col, line); Draw.Text("Lightserver:")
+	col=100; line=147; DSAMPLES=Draw.Number("Direct Samples  ", 2, col, line, 250, 18, DSAMPLES.val, 0, 1024); 
+	drawButtons()
 
-      global MESHLIGHTPOWER
 
-      ## meshlight power slider
-
-      col=10; line=200; BGL.glRasterPos2i(col, line); Draw.Text("Meshlight:")
-      col=100; line=195; MESHLIGHTPOWER=Draw.Number("Power", 2, col, line, 120, 18, MESHLIGHTPOWER.val, 1, 15)
-
-      drawButtons()
-
-#############
+## Draw ambient occlusion override settings
 def drawAO():
-#############
+	global OCCLUSSION, OCCBRIGHTR, OCCBRIGHTG, OCCBRIGHTB, OCCDARKR, OCCDARKG, OCCDARKB, OCCSAMPLES, OCCDIST
+	col=10; line=200; BGL.glRasterPos2i(col, line); Draw.Text("Ambient Occlusion")
+	col=10; line=175; OCCLUSSION=Draw.Toggle("Amb Occ", 2, col, line, 85, 18, OCCLUSSION.val)
+	col=100; OCCBRIGHTR=Draw.Number("Bright (R)", 2, col, line, 125, 18, OCCBRIGHTR.val, 0.0, 1.0)
+	col=230; OCCBRIGHTG=Draw.Number("Bright (G)", 2, col, line, 125, 18, OCCBRIGHTG.val, 0.0, 1.0)
+	col=360; OCCBRIGHTB=Draw.Number("Bright (B)", 2, col, line, 125, 18, OCCBRIGHTB.val, 0.0, 1.0)
+	col=100; line=150; OCCDARKR=Draw.Number("Dark (R)", 2, col, line, 125, 18, OCCDARKR.val, 0.00, 1.0)
+	col=230; OCCDARKG=Draw.Number("Dark (G)", 2, col, line, 125, 18, OCCDARKG.val, 0.0, 1.0)
+	col=360; OCCDARKB=Draw.Number("Dark (B)", 2, col, line, 125, 18, OCCDARKB.val, 0.0, 1.0)
+	col=100; line=125; OCCSAMPLES=Draw.Number("Samples", 2, col, line, 125, 18, OCCSAMPLES.val, 0, 256)
+	col=230; OCCDIST=Draw.Number("Distance", 2, col, line, 125, 18, OCCDIST.val, -1.0, 150.0)
+	drawButtons()
 
-      global OCCLUSSION, OCCBRIGHTR, OCCBRIGHTG, OCCBRIGHTB, OCCDARKR, OCCDARKG, OCCDARKB, OCCSAMPLES, OCCDIST
 
-      col=10; line=200; BGL.glRasterPos2i(col, line); Draw.Text("Ambient Occlusion")
-      col=10; line=175; OCCLUSSION=Draw.Toggle("Amb Occ", 2, col, line, 85, 18, OCCLUSSION.val)
-      col=100; OCCBRIGHTR=Draw.Number("Bright (R)", 2, col, line, 125, 18, OCCBRIGHTR.val, 0.0, 1.0)
-      col=230; OCCBRIGHTG=Draw.Number("Bright (G)", 2, col, line, 125, 18, OCCBRIGHTG.val, 0.0, 1.0)
-      col=360; OCCBRIGHTB=Draw.Number("Bright (B)", 2, col, line, 125, 18, OCCBRIGHTB.val, 0.0, 1.0)
-      col=100; line=150; OCCDARKR=Draw.Number("Dark (R)", 2, col, line, 125, 18, OCCDARKR.val, 0.00, 1.0)
-      col=230; OCCDARKG=Draw.Number("Dark (G)", 2, col, line, 125, 18, OCCDARKG.val, 0.0, 1.0)
-      col=360; OCCDARKB=Draw.Number("Dark (B)", 2, col, line, 125, 18, OCCDARKB.val, 0.0, 1.0)
-      col=100; line=125; OCCSAMPLES=Draw.Number("Samples", 2, col, line, 125, 18, OCCSAMPLES.val, 0, 256)
-      col=230; OCCDIST=Draw.Number("Distance", 2, col, line, 125, 18, OCCDIST.val, -1.0, 150.0)
-
-      drawButtons()
-
-##################
+## Draw the bottom bar of buttons in the interface
 def drawButtons():
-##################
-
-      ## buttons
-
-      Draw.Button("Export", EXPORT_EVT, 20, 10, 90, 20); 
-      Draw.Button("AA", CHANGE_AA, 20, 40, 90, 20); 
-      Draw.Button("Camera", CHANGE_CAM, 115, 40, 90, 20); 
-      Draw.Button("Accelerators", CHANGE_ACC, 210, 40, 90, 20); 
-      Draw.Button("Light", CHANGE_LIGHT, 305, 40, 90, 20); 
-      Draw.Button("AO Override", CHANGE_AO, 400, 40, 90, 20); 
+	Draw.Button("Export"     , EXPORT_EVT  , 20 , 10, 90, 20)
+	Draw.Button("AA"         , CHANGE_AA   , 20 , 40, 90, 20)
+	Draw.Button("Camera"     , CHANGE_CAM  , 115, 40, 90, 20)
+	Draw.Button("Light"      , CHANGE_LIGHT, 210, 40, 90, 20)
+	Draw.Button("AO Override", CHANGE_AO   , 305, 40, 90, 20)
 
 SCREEN=0
 Draw.Register(drawGUI, event, buttonEvent)
-
-##  end of export ##

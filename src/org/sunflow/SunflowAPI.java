@@ -646,7 +646,7 @@ public class SunflowAPI {
      * @param filename filename to load
      * @return a valid SunflowAPI object or <code>null</code> on failure
      */
-    public static SunflowAPI create(String filename) {
+    public static SunflowAPI create(String filename, int frameNumber) {
         if (filename == null)
             return new SunflowAPI();
         SunflowAPI api = null;
@@ -684,6 +684,7 @@ public class SunflowAPI {
             }
             UI.printInfo(Module.API, "Build script running ...");
             t.start();
+            api.setCurrentFrame(frameNumber);
             api.build();
             t.end();
             UI.printInfo(Module.API, "Build script time: %s", t.toString());
