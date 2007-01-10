@@ -1123,6 +1123,8 @@ public class SCParser implements SceneParser {
             api.parameter("sundir", parseVector());
             p.checkNextToken("turbidity");
             api.parameter("turbidity", p.getNextFloat());
+            if (p.peekNextToken("samples"))
+                api.parameter("samples", p.getNextInt());
             SunSkyLight sunsky = new SunSkyLight();
             sunsky.init(api.getUniqueName("sunsky"), api);
         } else

@@ -190,7 +190,7 @@ public class SunSkyLight implements LightSource, PrimitiveList, Shader {
             basis = OrthoNormalBasis.makeFromWV(up, east);
         else if (up != null)
             basis = OrthoNormalBasis.makeFromW(up);
-        numSkySamples = pl.getInt("samples.sky", numSkySamples);
+        numSkySamples = pl.getInt("samples", numSkySamples);
         sunDirWorld = pl.getVector("sundir", sunDirWorld);
         turbidity = pl.getFloat("turbidity", turbidity);
         // recompute model
