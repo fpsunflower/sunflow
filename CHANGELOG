@@ -1,4 +1,5 @@
 v0.07.0
+* Added -pathgi command line argument
 * Added basic animation support
 * Added SunSkyLight
 * Added QuadMesh primitive type (using bilinear patches)

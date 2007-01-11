@@ -6,6 +6,9 @@
 #include <maya/MDagPathArray.h>
 #include <maya/MFnMesh.h>
 #include <maya/MFnCamera.h>
+#include <maya/MFnDependencyNode.h>
+#include <maya/MFnLambertShader.h>
+#include <maya/MFnAreaLight.h>
 #include <maya/MItMeshPolygon.h>
 #include <maya/MIntArray.h>
 #include <maya/MPointArray.h>
@@ -16,8 +19,10 @@
 #include <maya/MMatrix.h>
 #include <maya/MAngle.h>
 #include <maya/MSelectionList.h>
+#include <maya/MPlugArray.h>
 #include <iostream>
 #include <fstream>
+#include <set>
 #include <vector>
 #include <string>
 
@@ -82,6 +87,49 @@ int getAttributeInt(const std::string& node, const std::string& attributeName, i
     return value;
 }
 
+bool getShaderFromEngine(const MObject& obj, MFnDependencyNode& node) {
+    if (!obj.hasFn(MFn::kShadingEngine))
+        return false; // not a shading engine
+    MFnDependencyNode seNode(obj);
+    // find connected shader
+    MPlug shaderPlug = seNode.findPlug("surfaceShader");
+    if (shaderPlug.isNull())
+        return false; // this shading group does not contain any surface shaders
+    // list all plugs which connect TO this shading group
+    MPlugArray plugs; 
+    shaderPlug.connectedTo(plugs, true, false);
+    for (unsigned int i = 0; i < plugs.length(); i++) {
+        MObject sObj = plugs[i].node();
+        // FIXME: not all shaders derive from kLambert
+        if (sObj.hasFn(MFn::kLambert)) {
+            // we have found a shader
+            node.setObject(sObj);
+            return true;
+        }
+    }
+    return false;
+}
+
+bool getShaderFromGeometry(const MDagPath& path, MFnDependencyNode& node) {
+    MStatus status;
+    MFnDagNode geom(path);
+    MObject iog = geom.attribute("instObjGroups", &status);
+    if (!status)
+        return false; // not a renderable object
+    MPlug iogPlug(geom.object(), iog);
+    MPlugArray iogPlugs;
+    iogPlug.elementByLogicalIndex(0).connectedTo(iogPlugs, false, true, &status);
+    if (!status)
+        return false; // no shading group defined
+    for (unsigned int i = 0; i < iogPlugs.length(); i++) {
+        MObject seObj = iogPlugs[i].node();
+        if (seObj.hasFn(MFn::kShadingEngine))
+            return getShaderFromEngine(seObj, node); // retrieve the actual shader node from the shading engine
+    }
+    return false; // no shading engines found
+}
+
+
 void exportMesh(const MDagPath& path, std::ofstream& file) {
     if (path.isInstanced() && path.instanceNumber() != 0)
         return; // this instance will be handled somewhere else
@@ -99,7 +147,29 @@ void exportMesh(const MDagPath& path, std::ofstream& file) {
     if (numPoints == 0 || numTriangles == 0) return;
 
     file << "object {" << std::endl;
-    file << "\tshader default" << std::endl;
+    // write shaders
+    // get shader table
+    MObjectArray shaders;
+    MIntArray polyShaderIndices;
+    mesh.getConnectedShaders(path.instanceNumber(), shaders, polyShaderIndices);
+    std::vector<std::string> shaderNames(shaders.length());
+    for (unsigned int i = 0; i < shaders.length(); i++) {
+        MObject engine = shaders[i];
+        MFnDependencyNode shader;
+        if (getShaderFromEngine(engine, shader))
+            shaderNames[i] = shader.name().asChar();
+        else
+            shaderNames[i] = "default";
+    }
+    if (shaderNames.size() == 0)
+        file << "\tshader default" << std::endl;
+    else if (shaderNames.size() == 1)
+        file << "\tshader " << shaderNames[0] << std::endl;
+    else {
+        file << "\tshaders " << shaderNames.size() << std::endl;
+        for (size_t i = 0; i < shaderNames.size(); i++)
+            file << "\t\t" << shaderNames[i] << std::endl;
+    }
     file << "\ttransform col ";
     MMatrix o2w = path.inclusiveMatrix();
     file << o2w[0][0] << " " << o2w[0][1] << " " << o2w[0][2] << " " << o2w[0][3] << " ";
@@ -124,27 +194,6 @@ void exportMesh(const MDagPath& path, std::ofstream& file) {
     int numUVSets = uvSets.length();
     int numUVs = numUVSets > 0 ? mesh.numUVs(uvSets[0]) : 0;
 
-//    MIntArray polyShaderIndices; // needed later if we have multiple shaders
-//    if (numUVs > 0)
-//        mesh.getUVSetNames(uvSets);    
-//    // write shaders
-//    int numShaders = 0;
-//    if (numShaders > 0) {
-//        // get shader table
-//        MObjectArray shaders;
-//        mesh.getConnectedShaders(path.instanceNumber(), shaders, polyShaderIndices);
-//        std::vector<std::string> shaderNames(shaders.length());
-//        for (unsigned int i = 0; i < shaders.length(); i++) {
-//            MObject engine = shaders[i];
-//            MFnDependencyNode shader;
-//            if (MayaHelpers::getShaderFromEngine(engine, shader))
-//                shaderNames[i] = shader.name().asChar();
-//            else
-//                shaderNames[i] = "default-shader";
-//        }
-//    }
-
-
     // get normals
     MFloatVectorArray normals;
     mesh.getNormals(normals, space);
@@ -162,6 +211,7 @@ void exportMesh(const MDagPath& path, std::ofstream& file) {
     MIntArray polygonVertices;
     std::vector<float> faceNormals(3 * 3 * numTriangles);
     std::vector<float> faceUVs(numUVs > 0 ? 3 * 2 * numTriangles : 1);
+    std::vector<int> faceMaterials(numTriangles);
     for (MItMeshPolygon mItMeshPolygon(path); !mItMeshPolygon.isDone(); mItMeshPolygon.next()) {
         mItMeshPolygon.getVertices(polygonVertices);
         int numVerts = (int) polygonVertices.length();
@@ -169,7 +219,6 @@ void exportMesh(const MDagPath& path, std::ofstream& file) {
         int numTriangles; mItMeshPolygon.numTriangles(numTriangles);
         while (numTriangles--) {
             mItMeshPolygon.getTriangle(numTriangles, nonTweaked, triangleVertices, MSpace::kObject);
-            //REQUIRE(triangleVertices.length() == 3);
             for (int gt = 0; gt < 3; gt++) {
                 for (int gv = 0; gv < numVerts; gv++) {
                     if (triangleVertices[gt] == polygonVertices[gv]) {
@@ -178,13 +227,6 @@ void exportMesh(const MDagPath& path, std::ofstream& file) {
                     }
                 }
             }
-//            mIndexes[t++] = triangleVertices[0];
-//            mIndexes[t++] = triangleVertices[1];
-//            mIndexes[t++] = triangleVertices[2];
-
-
-
-
             file << "\t\t" << triangleVertices[0] << " " << triangleVertices[1] << " " << triangleVertices[2] << std::endl;
 
             // per triangle normals
@@ -215,8 +257,8 @@ void exportMesh(const MDagPath& path, std::ofstream& file) {
                 faceUVs[3 * 2 * t + 4] = uv2[0];
                 faceUVs[3 * 2 * t + 5] = uv2[1];
             }
-//            if (numShaders > 1)
-//                mIndexes[t++] = polyShaderIndices[mItMeshPolygon.index()];
+            if (shaderNames.size() > 1)
+                faceMaterials[t] = polyShaderIndices[mItMeshPolygon.index()];
             t++;
         }
     }
@@ -239,6 +281,12 @@ void exportMesh(const MDagPath& path, std::ofstream& file) {
         }
     } else
         file << "\tuvs none" << std::endl;
+    // write per-face materials
+    if (shaderNames.size() > 1) {
+        file << "\tface_shaders" << std::endl;
+        for (int t = 0; t < numTriangles; t++)
+            file << "\t\t" << faceMaterials[t] << std::endl;
+    }
     file << "}" << std::endl;
     file << std::endl;
 
@@ -297,6 +345,7 @@ MStatus sunflowExport::doIt(const MArgList& args) {
     std::ofstream file(filename.asChar());
 
 
+    // default settings
     int resX = getAttributeInt("defaultResolution", "width" , 640);
     int resY = getAttributeInt("defaultResolution", "height", 480);
     resolutionAspectRatio = (float) resX / (float) resY;
@@ -306,7 +355,41 @@ MStatus sunflowExport::doIt(const MArgList& args) {
     file << "}" << std::endl; 
     file << std::endl;
 
+    // default shader
+    file << "shader {" << std::endl;
+    file << "\tname default" << std::endl;
+    file << "\ttype diffuse" << std::endl;
+    file << "\tdiff { \"sRGB nonlinear\" 0.7 0.7 0.7 }" << std::endl;
+    file << "}" << std::endl; 
+    file << std::endl;
+
+
     MStatus status;
+    std::set<std::string> shaderNodes;
+    for (MItDependencyNodes it(MFn::kShadingEngine); !it.isDone(&status); it.next()) {
+        MObject obj = it.item();
+        MFnDependencyNode sNode;
+        if (getShaderFromEngine(obj, sNode)) {
+            std::string name = sNode.name().asChar();
+            if (shaderNodes.find(name) != shaderNodes.end())
+                continue; // already encountered a shader with the same name, skip
+            std::cout << "Found surface shader: " << name << std::endl;
+            if (sNode.object().hasFn(MFn::kLambert)) {
+                MFnLambertShader shader(sNode.object());
+                file << "shader {" << std::endl;
+                file << "\tname " << name << std::endl;
+                file << "\ttype diffuse" << std::endl;
+                MColor col = shader.color();
+                float d = shader.diffuseCoeff();
+                file << "\tdiff { \"sRGB nonlinear\" " << (col.r * d) << " " << (col.g * d) << " " << (col.b * d) << " }" << std::endl;
+                file << "}" << std::endl; 
+                file << std::endl;
+                // add into the shader map, so we don't export the same shader twice
+                shaderNodes.insert(name);
+            }
+        }
+    }
+
     for (MItDag mItDag = MItDag(MItDag::kBreadthFirst); !mItDag.isDone(&status); mItDag.next()) {
         MDagPath path;
         status = mItDag.getPath(path);
@@ -320,14 +403,39 @@ MStatus sunflowExport::doIt(const MArgList& args) {
                 std::cout << "Exporting camera: " << path.fullPathName().asChar() << " ..." << std::endl;
                 exportCamera(path, file);
             } break;
-            case MFn::kDirectionalLight:
-            case MFn::kPointLight:
-            case MFn::kSpotLight:
-            case MFn::kVolumeLight:
-            case MFn::kAmbientLight:
             case MFn::kAreaLight: {
                 if (!areObjectAndParentsVisible(path)) continue;
                 std::cout << "Exporting light: " << path.fullPathName().asChar() << " ..." << std::endl;
+                MMatrix o2w = path.inclusiveMatrix();
+                MPoint lampV0(-1,  1,  0);
+                MPoint lampV1( 1,  1,  0);
+                MPoint lampV2( 1, -1,  0);
+                MPoint lampV3(-1, -1,  0);
+                lampV0 = lampV0 * o2w;
+                lampV1 = lampV1 * o2w;
+                lampV2 = lampV2 * o2w;
+                lampV3 = lampV3 * o2w;
+
+                MFnAreaLight area(path);
+                MColor c = area.color();
+                float i = area.intensity();
+                int n = area.numShadowSamples();
+                file << "\n\nlight {" << std::endl;
+                file << "\ttype meshlight" << std::endl;
+                file << "\tname " << path.fullPathName().asChar() << std::endl;
+                file << "\temit { \"sRGB nonlinear\" " << c.r << " " << c.g << " " << c.b << " }" << std::endl;
+                file << "\tradiance " << i << std::endl;
+                file << "\tsamples " << n << std::endl;
+                file << "\tpoints 4" << std::endl;
+                file << "\t\t" << lampV0.x << " " << lampV0.y << " " << lampV0.z << std::endl;
+                file << "\t\t" << lampV1.x << " " << lampV1.y << " " << lampV1.z << std::endl;
+                file << "\t\t" << lampV2.x << " " << lampV2.y << " " << lampV2.z << std::endl;
+                file << "\t\t" << lampV3.x << " " << lampV3.y << " " << lampV3.z << std::endl;
+                file << "\ttriangles 2" << std::endl;
+                file << "\t\t0 1 2" << std::endl;
+                file << "\t\t0 2 3" << std::endl;
+                file << "}" << std::endl;
+                file << std::endl;
             } break;
             default: break;
         }
