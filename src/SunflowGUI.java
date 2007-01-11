@@ -352,12 +352,12 @@ public class SunflowGUI extends javax.swing.JFrame implements UserInterface {
                     api.parameter("filter", filterType);
                 if (noGI)
                     api.parameter("gi.engine", "none");
+                api.parameter("sampler", sampler);
+                api.options(SunflowAPI.DEFAULT_OPTIONS);
                 if (shaderOverride != null) {
                     api.shader("ambocc", shaderOverride);
                     api.shaderOverride("ambocc", true);
                 }
-                api.parameter("sampler", sampler);
-                api.options(SunflowAPI.DEFAULT_OPTIONS);
                 // create display
                 Display display;
                 String currentFilename = (filename != null) ? filename.replace("#", String.format("%04d", frameNumber)) : null;
