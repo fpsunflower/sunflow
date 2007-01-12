@@ -62,8 +62,8 @@ CHANGE_AO = 13
 
 EXP_ANIM = Draw.Create(0)
 
-IMGFILTERLIST = ["box","gaussian","mitchell","triangle","catmull-rom","blackman-harris","sinc","lanczos"]
-IMGFILTERLISTFIXED = [0,0,1,0,1,0,0,1]
+IMGFILTERLIST      = ["box", "gaussian", "mitchell", "triangle", "catmull-rom", "blackman-harris", "sinc", "lanczos"]
+IMGFILTERLISTFIXED = [0    , 0         , 1         , 0         , 1            , 0                , 0     , 1        ]
 
 ##  end global gui vars  ##
 
@@ -94,8 +94,8 @@ def export_output():
 	FILE.write("\tresolution %d %d" % (IM_WIDTH, IM_HEIGHT) + "\n")
 	FILE.write("\taa %s %s" % (MINAA.val, MAXAA.val)+"\n")
 	FILE.write("}")
-	if IMGFILTERLIST[IMGFILTER.val-1] in ("box","gaussian","triangle","blackman-harris","sinc"):
-		FILE.write("\n\nfilter %s" % IMGFILTERLIST[IMGFILTER.val-1] + " %s %s" %(IMGFILTERW.val,IMGFILTERH.val))
+	if IMGFILTERLISTFIXED[IMGFILTER.val-1] == 0:
+		FILE.write("\n\nfilter %s 1 1 #  filter size is ignored - specified for compatibility only" % IMGFILTERLIST[IMGFILTER.val-1])
 	else:
 		FILE.write("\n\nfilter %s" % IMGFILTERLIST[IMGFILTER.val-1])
 	FILE.write("\n")
@@ -593,9 +593,6 @@ def drawAA():
 	col=360; AASAMPLES=Draw.Number("Samples", 2, col, line, 120, 18, AASAMPLES.val, 0, 32)
 	col=10; line=175; BGL.glRasterPos2i(col, line); Draw.Text("Image Filter:")
 	col=100; line=173; IMGFILTER=Draw.Menu("%tImage Filter|box|gaussian|mitchell|triangle|catmull-rom|blackman-harris|sinc|lanczos", FILTER_EVENT, col, line, 120, 18, IMGFILTER.val)
-	if IMGFILTERLISTFIXED[IMGFILTER.val-1]==0:
-		col=230; IMGFILTERW=Draw.Number("Filter Width", 2, col, line, 120, 18, IMGFILTERW.val, 0, 30)
-		col=360; IMGFILTERH=Draw.Number("Filter Height", 2, col, line, 120, 18, IMGFILTERH.val, 0, 30)
 	col=10; line=120; EXP_ANIM=Draw.Toggle("Export As Animation", 2, col, line, 140, 18, EXP_ANIM.val)
 	drawButtons()
 
