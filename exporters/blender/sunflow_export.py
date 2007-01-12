@@ -117,7 +117,7 @@ def export_shaders():
       materials = Blender.Material.get()
       for mat in materials:
               FILE.write("\n\nshader {\n")
-              FILE.write("\tname \""+mat.name+"\"\n")
+              FILE.write("\tname \""+mat.name+".shader\"\n")
 
               textures = mat.getTextures()
               flags = mat.getMode()
@@ -193,6 +193,17 @@ def export_lights(lmp):
               FILE.write("\tcolor { \"sRGB nonlinear\" %s %s %s }\n" % (red, green, blue))
               FILE.write("\tpower %s\n" % (power))
               FILE.write("\tp %s %s %s\n" % (lampV[0], lampV[1], lampV[2]))
+              FILE.write("}")
+      elif lamp.type == 1:
+              print "o exporting sun-light "+lmp.name+"..."
+              invmatrix = Mathutils.Matrix(lmp.getInverseMatrix())
+              FILE.write("\nlight {\n")
+              FILE.write("\ttype sunsky\n")
+              FILE.write("\tup 0 0 1\n")
+              FILE.write("\teast 0 1 0\n")
+              FILE.write("\tsundir %f %f %f\n" % (invmatrix[0][2], invmatrix[1][2], invmatrix[2][2]))
+              FILE.write("\tturbidity 6\n")
+              FILE.write("\tsamples %s\n" % DSAMPLES.val)
               FILE.write("}")
       elif lamp.type == 4:
               print "o exporting area-light "+lmp.name+"..."
@@ -318,11 +329,11 @@ def export_geometry(obj):
               else:
                       FILE.write("\n\nobject {\n")
                       if len(mesh.materials) == 1:
-                              FILE.write("\tshader \"" + mesh.materials[0].name + "\"\n")
+                              FILE.write("\tshader \"" + mesh.materials[0].name + ".shader\"\n")
                       elif len(mesh.materials) > 1:
                               FILE.write("\tshaders %d\n" % (len(mesh.materials)))
                               for mat in mesh.materials:
-                                      FILE.write("\t\t\"" + mat.name + "\"\n")
+                                      FILE.write("\t\t\"" + mat.name + ".shader\"\n")
                       else:
                               FILE.write("\tshader def\n")
                       FILE.write("\ttype generic-mesh\n")
