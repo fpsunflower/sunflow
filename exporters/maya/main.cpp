@@ -131,8 +131,21 @@ bool getShaderFromGeometry(const MDagPath& path, MFnDependencyNode& node) {
 
 
 void exportMesh(const MDagPath& path, std::ofstream& file) {
-    if (path.isInstanced() && path.instanceNumber() != 0)
-        return; // this instance will be handled somewhere else
+    bool instancing = path.isInstanced();
+    if (instancing) {
+        if (path.instanceNumber() != 0)
+            return; // this instance will be handled somewhere else
+        else {
+            MDagPathArray paths;
+            path.getAllPathsTo(path.node(), paths);
+            bool hasVisible = false;
+            for (unsigned int i = 0; i < paths.length() && !hasVisible; i++)
+                hasVisible |= areObjectAndParentsVisible(paths[i]);
+            if (!hasVisible)
+                return; // none of the instance are visible
+        }
+    } else if (!areObjectAndParentsVisible(path))
+        return;
 
     MFnMesh mesh(path);
 
@@ -147,7 +160,10 @@ void exportMesh(const MDagPath& path, std::ofstream& file) {
     if (numPoints == 0 || numTriangles == 0) return;
 
     file << "object {" << std::endl;
-    // write shaders
+    if (instancing) {
+        // instances will be created manually later on
+        file << "\tnoinstance" << std::endl;
+    }
     // get shader table
     MObjectArray shaders;
     MIntArray polyShaderIndices;
@@ -161,21 +177,25 @@ void exportMesh(const MDagPath& path, std::ofstream& file) {
         else
             shaderNames[i] = "default";
     }
-    if (shaderNames.size() == 0)
-        file << "\tshader default" << std::endl;
-    else if (shaderNames.size() == 1)
-        file << "\tshader " << shaderNames[0] << std::endl;
-    else {
-        file << "\tshaders " << shaderNames.size() << std::endl;
-        for (size_t i = 0; i < shaderNames.size(); i++)
-            file << "\t\t" << shaderNames[i] << std::endl;
+    if (!instancing) {
+        // write shaders
+        if (shaderNames.size() == 0)
+            file << "\tshader default" << std::endl;
+        else if (shaderNames.size() == 1)
+            file << "\tshader " << shaderNames[0] << std::endl;
+        else {
+            file << "\tshaders " << shaderNames.size() << std::endl;
+            for (size_t i = 0; i < shaderNames.size(); i++)
+                file << "\t\t" << shaderNames[i] << std::endl;
+        }
+        // instance this mesh directly
+        file << "\ttransform col ";
+        MMatrix o2w = path.inclusiveMatrix();
+        file << o2w[0][0] << " " << o2w[0][1] << " " << o2w[0][2] << " " << o2w[0][3] << " ";
+        file << o2w[1][0] << " " << o2w[1][1] << " " << o2w[1][2] << " " << o2w[1][3] << " ";
+        file << o2w[2][0] << " " << o2w[2][1] << " " << o2w[2][2] << " " << o2w[2][3] << " ";
+        file << o2w[3][0] << " " << o2w[3][1] << " " << o2w[3][2] << " " << o2w[3][3] << std::endl;
     }
-    file << "\ttransform col ";
-    MMatrix o2w = path.inclusiveMatrix();
-    file << o2w[0][0] << " " << o2w[0][1] << " " << o2w[0][2] << " " << o2w[0][3] << " ";
-    file << o2w[1][0] << " " << o2w[1][1] << " " << o2w[1][2] << " " << o2w[1][3] << " ";
-    file << o2w[2][0] << " " << o2w[2][1] << " " << o2w[2][2] << " " << o2w[2][3] << " ";
-    file << o2w[3][0] << " " << o2w[3][1] << " " << o2w[3][2] << " " << o2w[3][3] << std::endl;
     file << "\ttype generic-mesh" << std::endl;
     file << "\tname \"" << path.fullPathName().asChar() << "\"" << std::endl;
     file << "\tpoints " << numPoints << std::endl;
@@ -243,6 +263,7 @@ void exportMesh(const MDagPath& path, std::ofstream& file) {
             faceNormals[3 * 3 * t + 7] = normals[nidx2].y;
             faceNormals[3 * 3 * t + 8] = normals[nidx2].z;
 
+            // texture coordinates
             if (numUVs > 0) {
                 float2 uv0;
                 float2 uv1;
@@ -257,6 +278,8 @@ void exportMesh(const MDagPath& path, std::ofstream& file) {
                 faceUVs[3 * 2 * t + 4] = uv2[0];
                 faceUVs[3 * 2 * t + 5] = uv2[1];
             }
+
+            // per face materials
             if (shaderNames.size() > 1)
                 faceMaterials[t] = polyShaderIndices[mItMeshPolygon.index()];
             t++;
@@ -290,15 +313,13 @@ void exportMesh(const MDagPath& path, std::ofstream& file) {
     file << "}" << std::endl;
     file << std::endl;
 
-    if (path.isInstanced()) {
+    if (instancing) {
         MDagPathArray paths;
         path.getAllPathsTo(path.node(), paths);
         for (unsigned int i = 0; i < paths.length(); i++) {
-            if (paths[i].fullPathName() == path.fullPathName())
-                continue;
-            o2w = paths[i].inclusiveMatrix();
+            if (!areObjectAndParentsVisible(paths[i])) continue;
             file << "instance {" << std::endl;
-            file << "\tname \"" << paths[i].fullPathName().asChar() << "\"" << std::endl;
+            file << "\tname \"" << paths[i].fullPathName().asChar() << ".instance\"" << std::endl;
             file << "\tgeometry \"" << path.fullPathName().asChar() << "\"" <<  std::endl;
             file << "\ttransform col ";
             MMatrix o2w = paths[i].inclusiveMatrix();
@@ -306,7 +327,26 @@ void exportMesh(const MDagPath& path, std::ofstream& file) {
             file << o2w[1][0] << " " << o2w[1][1] << " " << o2w[1][2] << " " << o2w[1][3] << " ";
             file << o2w[2][0] << " " << o2w[2][1] << " " << o2w[2][2] << " " << o2w[2][3] << " ";
             file << o2w[3][0] << " " << o2w[3][1] << " " << o2w[3][2] << " " << o2w[3][3] << std::endl;
-            file << "\tshader default" << std::endl;
+            MObjectArray instanceShaders;
+            mesh.getConnectedShaders(path.instanceNumber(), instanceShaders, polyShaderIndices);
+            std::vector<std::string> instanceShaderNames(instanceShaders.length());
+            for (unsigned int i = 0; i < instanceShaders.length(); i++) {
+                MObject engine = instanceShaders[i];
+                MFnDependencyNode shader;
+                if (getShaderFromEngine(engine, shader))
+                    instanceShaderNames[i] = shader.name().asChar();
+                else
+                    instanceShaderNames[i] = "default";
+            }
+            if (instanceShaderNames.size() == 0)
+                file << "\tshader default" << std::endl;
+            else if (instanceShaderNames.size() == 1)
+                file << "\tshader " << instanceShaderNames[0] << std::endl;
+            else {
+                file << "\tshaders " << instanceShaderNames.size() << std::endl;
+                for (size_t i = 0; i < instanceShaderNames.size(); i++)
+                    file << "\t\t" << instanceShaderNames[i] << std::endl;
+            }
             file << "\t}" << std::endl;
         }
     }
@@ -395,7 +435,6 @@ MStatus sunflowExport::doIt(const MArgList& args) {
         status = mItDag.getPath(path);
         switch (path.apiType(&status)) {
             case MFn::kMesh: {
-                if (!areObjectAndParentsVisible(path)) continue;
                 std::cout << "Exporting mesh: " << path.fullPathName().asChar() << " ..." << std::endl;
                 exportMesh(path, file);
             } break;

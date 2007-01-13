@@ -1,16 +1,16 @@
-<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<?xml version="1.0" encoding="UTF-8"?>
 <jardesc>
-    <jar path="C:/Documents and Settings/Administrator/Desktop/ttmp/motion/sunflow.jar"/>
-    <options buildIfNeeded="true" compress="true" descriptionLocation="/sunflow/sunflow.jardesc" exportErrors="true" exportWarnings="true" includeDirectoryEntries="false" overwrite="false" saveDescription="true" storeRefactorings="false" useSourceFolders="false"/>
-    <storedRefactorings deprecationInfo="true" structuralOnly="false"/>
-    <selectedProjects/>
-    <manifest generateManifest="false" manifestLocation="/sunflow/manifest.mf" manifestVersion="1.0" reuseManifest="false" saveManifest="false" usesManifest="true">
-        <sealing sealJar="false">
-            <packagesToSeal/>
-            <packagesToUnSeal/>
-        </sealing>
-    </manifest>
-    <selectedElements exportClassFiles="true" exportJavaFiles="false" exportOutputFolder="false">
-        <javaElement handleIdentifier="=sunflow/src"/>
-    </selectedElements>
+<jar path="/diskx/film/apps/reelfx/java/sunflow.jar"/>
+<options buildIfNeeded="true" compress="true" descriptionLocation="/sunflow/sunflow.jardesc" exportErrors="true" exportWarnings="true" includeDirectoryEntries="false" overwrite="false" saveDescription="true" storeRefactorings="false" useSourceFolders="false"/>
+<storedRefactorings deprecationInfo="true" structuralOnly="false"/>
+<selectedProjects/>
+<manifest generateManifest="false" manifestLocation="/sunflow/manifest.mf" manifestVersion="1.0" reuseManifest="false" saveManifest="false" usesManifest="true">
+<sealing sealJar="false">
+<packagesToSeal/>
+<packagesToUnSeal/>
+</sealing>
+</manifest>
+<selectedElements exportClassFiles="true" exportJavaFiles="false" exportOutputFolder="false">
+<javaElement handleIdentifier="=sunflow/src"/>
+</selectedElements>
 </jardesc>
