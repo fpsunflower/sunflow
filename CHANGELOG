@@ -1,4 +1,6 @@
 v0.07.0
+* Added support for "noinstance" keyword
+* Unified instance handling in .sc parser
 * Added -pathgi command line argument
 * Added basic animation support
 * Added SunSkyLight
