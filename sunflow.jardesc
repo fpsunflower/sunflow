@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <jardesc>
-<jar path="/diskx/film/apps/reelfx/java/sunflow.jar"/>
+<jar path="sunflow/sunflow.jar"/>
 <options buildIfNeeded="true" compress="true" descriptionLocation="/sunflow/sunflow.jardesc" exportErrors="true" exportWarnings="true" includeDirectoryEntries="false" overwrite="false" saveDescription="true" storeRefactorings="false" useSourceFolders="false"/>
 <storedRefactorings deprecationInfo="true" structuralOnly="false"/>
 <selectedProjects/>
