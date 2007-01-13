@@ -9,6 +9,7 @@
 #include <maya/MFnDependencyNode.h>
 #include <maya/MFnLambertShader.h>
 #include <maya/MFnAreaLight.h>
+#include <maya/MFnDirectionalLight.h>
 #include <maya/MItMeshPolygon.h>
 #include <maya/MIntArray.h>
 #include <maya/MPointArray.h>
@@ -328,7 +329,8 @@ void exportMesh(const MDagPath& path, std::ofstream& file) {
             file << o2w[2][0] << " " << o2w[2][1] << " " << o2w[2][2] << " " << o2w[2][3] << " ";
             file << o2w[3][0] << " " << o2w[3][1] << " " << o2w[3][2] << " " << o2w[3][3] << std::endl;
             MObjectArray instanceShaders;
-            mesh.getConnectedShaders(path.instanceNumber(), instanceShaders, polyShaderIndices);
+            MFnMesh instancedMesh(paths[i]);
+            instancedMesh.getConnectedShaders(paths[i].instanceNumber(), instanceShaders, polyShaderIndices);
             std::vector<std::string> instanceShaderNames(instanceShaders.length());
             for (unsigned int i = 0; i < instanceShaders.length(); i++) {
                 MObject engine = instanceShaders[i];
@@ -429,7 +431,7 @@ MStatus sunflowExport::doIt(const MArgList& args) {
             }
         }
     }
-
+    bool exportedSun = false;
     for (MItDag mItDag = MItDag(MItDag::kBreadthFirst); !mItDag.isDone(&status); mItDag.next()) {
         MDagPath path;
         status = mItDag.getPath(path);
@@ -441,6 +443,25 @@ MStatus sunflowExport::doIt(const MArgList& args) {
             case MFn::kCamera: {
                 std::cout << "Exporting camera: " << path.fullPathName().asChar() << " ..." << std::endl;
                 exportCamera(path, file);
+            } break;
+            case MFn::kDirectionalLight: {
+                if (!areObjectAndParentsVisible(path)) continue;
+                if (exportedSun) continue;
+                std::cout << "Exporting sunlight: " << path.fullPathName().asChar() << " ..." << std::endl;
+                exportedSun = true;
+                MMatrix o2w = path.inclusiveMatrix();
+                MVector dir(0, 0, 1);
+                dir = dir * o2w;
+                MFnDirectionalLight light(path);
+                file << "light {" << std::endl;
+                file << "\ttype sunsky" << std::endl;
+                file << "\tup 0 1 0" << std::endl;
+                file << "\teast 0 0 1" << std::endl;
+                file << "\tsundir " << dir.x << " " << dir.y << " " << dir.z << std::endl;
+                file << "\tturbidity 6" << std::endl;
+                file << "\tsamples " << light.numShadowSamples() << std::endl;
+                file << "}" << std::endl;
+                file << std::endl;
             } break;
             case MFn::kAreaLight: {
                 if (!areObjectAndParentsVisible(path)) continue;
@@ -458,13 +479,12 @@ MStatus sunflowExport::doIt(const MArgList& args) {
                 MFnAreaLight area(path);
                 MColor c = area.color();
                 float i = area.intensity();
-                int n = area.numShadowSamples();
                 file << "\n\nlight {" << std::endl;
                 file << "\ttype meshlight" << std::endl;
                 file << "\tname " << path.fullPathName().asChar() << std::endl;
                 file << "\temit { \"sRGB nonlinear\" " << c.r << " " << c.g << " " << c.b << " }" << std::endl;
                 file << "\tradiance " << i << std::endl;
-                file << "\tsamples " << n << std::endl;
+                file << "\tsamples " << area.numShadowSamples() << std::endl;
                 file << "\tpoints 4" << std::endl;
                 file << "\t\t" << lampV0.x << " " << lampV0.y << " " << lampV0.z << std::endl;
                 file << "\t\t" << lampV1.x << " " << lampV1.y << " " << lampV1.z << std::endl;
