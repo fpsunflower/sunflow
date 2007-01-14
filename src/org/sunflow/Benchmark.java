@@ -37,22 +37,21 @@ public class Benchmark extends SunflowAPI implements BenchmarkTest, UserInterfac
 
     public static void main(String[] args) {
         if (args.length > 0 && args[0].equals("-test"))
-            new Benchmark("resources/", System.out, 0, 512, true, true, true, 4, true);
+            new Benchmark("resources/", System.out, 0, 512, true, true, true, 4, true, false);
         else {
             // this is used to regenerated the reference frames if needed
-            new Benchmark("resources/", System.out, 0, 128, false, false, true, 4, true).build();
-            new Benchmark("resources/", System.out, 0, 256, false, false, true, 4, true).build();
-            new Benchmark("resources/", System.out, 0, 384, false, false, true, 4, true).build();
-            new Benchmark("resources/", System.out, 0, 512, false, false, true, 4, true).build();
-            new Benchmark("resources/", System.out, 0, 1024, false, false, true, 4, true).build();
+            new Benchmark("resources/", System.out, 0, 128, false, false, true, 4, true, true).build();
+            new Benchmark("resources/", System.out, 0, 256, false, false, true, 4, true, true).build();
+            new Benchmark("resources/", System.out, 0, 384, false, false, true, 4, true, true).build();
+            new Benchmark("resources/", System.out, 0, 512, false, false, true, 4, true, true).build();
         }
     }
 
     public Benchmark(boolean showGUI) {
-        this("resources/", System.out, 0, 512, showGUI, false, true, 6, false);
+        this("resources/", System.out, 0, 512, showGUI, false, true, 6, false, true);
     }
 
-    public Benchmark(String resourcePath, PrintStream stream, int threads, int resolution, boolean showGUI, boolean showOutput, boolean showBenchmarkOutput, int errorThreshold, boolean generateMissingReference) {
+    private Benchmark(String resourcePath, PrintStream stream, int threads, int resolution, boolean showGUI, boolean showOutput, boolean showBenchmarkOutput, int errorThreshold, boolean generateMissingReference, boolean checkFrame) {
         this.resourcePath = resourcePath;
         this.stream = stream;
         this.showGUI = showGUI;
@@ -104,7 +103,9 @@ public class Benchmark extends SunflowAPI implements BenchmarkTest, UserInterfac
         // this also caches the acceleration data structures so it won't be
         // included in the kernel timing
         UI.printInfo(Module.BENCH, "Rendering warmup frame ...");
-        render(SunflowAPI.DEFAULT_OPTIONS, new ValidatingDisplay(generatingReference, errorThreshold));
+        render(SunflowAPI.DEFAULT_OPTIONS, checkFrame ? new ValidatingDisplay(generatingReference, errorThreshold) : new FrameDisplay());
+        if (!checkFrame)
+            return;
         // if the data has been just generated - write it to file for future
         // runs
         if (generatingReference) {
@@ -191,11 +192,11 @@ public class Benchmark extends SunflowAPI implements BenchmarkTest, UserInterfac
         String ra3file = resourcePath + "maxplanck.ra3";
         if (!parse(ra3file))
             UI.printError(Module.BENCH, "Unable to load %s", ra3file);
-        
+
         // gi options
         parameter("gi.engine", "igi");
         parameter("gi.igi.samples", 90);
-        parameter("gi.igi.c", 0.00002f);
+        parameter("gi.igi.c", 0.000008f);
         options(DEFAULT_OPTIONS);
     }
 
