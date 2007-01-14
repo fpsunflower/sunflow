@@ -355,6 +355,10 @@ public class CornellBox implements PrimitiveList, Shader, LightSource {
         return samples;
     }
 
+    public int getLowSamples() {
+        return samples;
+    }
+
     public boolean isVisible(ShadingState state) {
         Point3 p = state.getPoint();
         return lightBounds.contains(p) && p.z < maxZ;
@@ -407,10 +411,6 @@ public class CornellBox implements PrimitiveList, Shader, LightSource {
         Color.mul((float) Math.PI * area, radiance, power);
     }
 
-    public boolean isAdaptive() {
-        return true;
-    }
-
     public float getPower() {
         return radiance.copy().mul((float) Math.PI * area).getLuminance();
     }
@@ -445,7 +445,7 @@ public class CornellBox implements PrimitiveList, Shader, LightSource {
             return bounds;
         return o2w.transform(bounds);
     }
-    
+
     public PrimitiveList getBakingPrimitives() {
         return null;
     }

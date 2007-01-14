@@ -473,9 +473,8 @@ class LightServer {
         for (int i = 0; i < lights.length; i++) {
             if (!lights[i].isVisible(state))
                 continue;
-            boolean adaptive = lights[i].isAdaptive();
             // reduce sampling of adaptive lights for diffuse reflections
-            int n = adaptive && state.getDiffuseDepth() > 0 ? 1 : lights[i].getNumSamples();
+            int n = state.getDiffuseDepth() > 0 ? lights[i].getLowSamples() : lights[i].getNumSamples();
             float inv = 1.0f / n;
             for (int sample = 0; sample < n; sample++) {
                 // regular sampling

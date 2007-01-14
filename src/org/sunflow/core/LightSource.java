@@ -10,19 +10,19 @@ import org.sunflow.math.Vector3;
  */
 public interface LightSource extends RenderObject {
     /**
-     * Returns true if adaptive sampling can be used
-     * 
-     * @return <code>true</code> if this light source can be adaptively
-     *         sampled, <code>false</code> otherwise
-     */
-    boolean isAdaptive();
-
-    /**
-     * Return the number of samples to take from this light source
+     * Return the number of samples to take from this light source.
      * 
      * @return a number of samples, must be greater than 0
      */
     int getNumSamples();
+
+    /**
+     * Return the number of samples to take from this light source to be taken
+     * when lower accuracy is desired.
+     * 
+     * @return a number of samples, must be greater than 0
+     */
+    int getLowSamples();
 
     /**
      * Checks to see if the light is trivally visible from the current render

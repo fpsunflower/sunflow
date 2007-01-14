@@ -167,6 +167,10 @@ public class ImageBasedLight implements PrimitiveList, LightSource, Shader {
     public int getNumSamples() {
         return numSamples;
     }
+    
+    public int getLowSamples() {
+        return samples == null ? 1 : numSamples;
+    }
 
     public boolean isVisible(ShadingState state) {
         return true;
@@ -249,10 +253,6 @@ public class ImageBasedLight implements PrimitiveList, LightSource, Shader {
     }
 
     public void scatterPhoton(ShadingState state, Color power) {
-    }
-
-    public boolean isAdaptive() {
-        return samples == null;
     }
 
     public float getPower() {

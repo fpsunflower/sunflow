@@ -34,6 +34,7 @@ public class SunSkyLight implements LightSource, PrimitiveList, Shader {
     // derived quantities
     private Vector3 sunDir;
     private SpectralCurve sunSpectralRadiance;
+    private Color sunColor;
     private float sunTheta;
     private double zenithY, zenithx, zenithy;
     private final double[] perezY = new double[5];
@@ -91,7 +92,7 @@ public class SunSkyLight implements LightSource, PrimitiveList, Shader {
         final double w = 2.0;
         double beta = 0.04608365822050 * turbidity - 0.04586025928522;
         // Relative optical mass
-        double m = 1.0 / (Math.cos(theta) + 0.15 * Math.pow(93.885 - theta / Math.PI * 180.0, -1.253));
+        double m = 1.0 / (Math.cos(theta) + 0.000940 * Math.pow(1.6386 - theta, -1.253));
         for (int i = 0, lambda = 350; lambda <= 800; i++, lambda += 5) {
             // Rayleigh scattering
             double tauR = Math.exp(-m * 0.008735 * Math.pow((double) lambda / 1000.0, -4.08));
@@ -125,7 +126,7 @@ public class SunSkyLight implements LightSource, PrimitiveList, Shader {
         if (sunDir.z > 0) {
             sunSpectralRadiance = computeAttenuatedSunlight(sunTheta, turbidity);
             // produce color suitable for rendering
-            RGBSpace.SRGB.convertXYZtoRGB(sunSpectralRadiance.toXYZ().mul(1e-4f)).constrainRGB();
+            sunColor = RGBSpace.SRGB.convertXYZtoRGB(sunSpectralRadiance.toXYZ().mul(1e-4f)).constrainRGB();
         } else {
             sunSpectralRadiance = new ConstantSpectralCurve(0);
         }
@@ -226,7 +227,11 @@ public class SunSkyLight implements LightSource, PrimitiveList, Shader {
     }
 
     public int getNumSamples() {
-        return numSkySamples;
+        return 1 + numSkySamples;
+    }
+
+    public int getLowSamples() {
+        return 2;
     }
 
     public void getPhoton(double randX1, double randY1, double randX2, double randY2, Point3 p, Vector3 dir, Color power) {
@@ -238,43 +243,48 @@ public class SunSkyLight implements LightSource, PrimitiveList, Shader {
     }
 
     public void getSample(int i, ShadingState state, LightSample dest) {
-        // random offset on unit square, we use the infinite version of
-        // getRandom because the light sampling is adaptive
-        double randX = state.getRandom(i, 0);
-        double randY = state.getRandom(i, 1);
+        if (i == 0) {
+            if (Vector3.dot(sunDir, state.getGeoNormal()) > 0 && Vector3.dot(sunDir, state.getNormal()) > 0) {
+                dest.setShadowRay(new Ray(state.getPoint(), sunDir));
+                dest.getShadowRay().setMax(Float.MAX_VALUE);
+                dest.setRadiance(sunColor, sunColor);
+                dest.traceShadow(state);
+            }
+        } else {
+            // random offset on unit square, we use the infinite version of
+            // getRandom because the light sampling is adaptive
+            double randX = state.getRandom(i - 1, 0);
+            double randY = state.getRandom(i - 1, 1);
 
-        int x = 0;
-        while (randX >= colHistogram[x] && x < colHistogram.length - 1)
-            x++;
-        float[] rowHistogram = imageHistogram[x];
-        int y = 0;
-        while (randY >= rowHistogram[y] && y < rowHistogram.length - 1)
-            y++;
-        // sample from (x, y)
-        float u = (float) ((x == 0) ? (randX / colHistogram[0]) : ((randX - colHistogram[x - 1]) / (colHistogram[x] - colHistogram[x - 1])));
-        float v = (float) ((y == 0) ? (randY / rowHistogram[0]) : ((randY - rowHistogram[y - 1]) / (rowHistogram[y] - rowHistogram[y - 1])));
+            int x = 0;
+            while (randX >= colHistogram[x] && x < colHistogram.length - 1)
+                x++;
+            float[] rowHistogram = imageHistogram[x];
+            int y = 0;
+            while (randY >= rowHistogram[y] && y < rowHistogram.length - 1)
+                y++;
+            // sample from (x, y)
+            float u = (float) ((x == 0) ? (randX / colHistogram[0]) : ((randX - colHistogram[x - 1]) / (colHistogram[x] - colHistogram[x - 1])));
+            float v = (float) ((y == 0) ? (randY / rowHistogram[0]) : ((randY - rowHistogram[y - 1]) / (rowHistogram[y] - rowHistogram[y - 1])));
 
-        float px = ((x == 0) ? colHistogram[0] : (colHistogram[x] - colHistogram[x - 1]));
-        float py = ((y == 0) ? rowHistogram[0] : (rowHistogram[y] - rowHistogram[y - 1]));
+            float px = ((x == 0) ? colHistogram[0] : (colHistogram[x] - colHistogram[x - 1]));
+            float py = ((y == 0) ? rowHistogram[0] : (rowHistogram[y] - rowHistogram[y - 1]));
 
-        float su = (x + u) / colHistogram.length;
-        float sv = (y + v) / rowHistogram.length;
-        float invP = (float) Math.sin(sv * Math.PI) * jacobian / (px * py);
-        Vector3 dir = getDirection(su, sv);
-        basis.transform(dir);
-        if (Vector3.dot(dir, state.getGeoNormal()) > 0 && Vector3.dot(dir, state.getNormal()) > 0) {
-            dest.setShadowRay(new Ray(state.getPoint(), dir));
-            dest.getShadowRay().setMax(Float.MAX_VALUE);
-            Color radiance = getSkyRGB(basis.untransform(dir));
-            dest.setRadiance(radiance, radiance);
-            dest.getDiffuseRadiance().mul(invP);
-            dest.getSpecularRadiance().mul(invP);
-            dest.traceShadow(state);
+            float su = (x + u) / colHistogram.length;
+            float sv = (y + v) / rowHistogram.length;
+            float invP = (float) Math.sin(sv * Math.PI) * jacobian / (px * py);
+            Vector3 dir = getDirection(su, sv);
+            basis.transform(dir);
+            if (Vector3.dot(dir, state.getGeoNormal()) > 0 && Vector3.dot(dir, state.getNormal()) > 0) {
+                dest.setShadowRay(new Ray(state.getPoint(), dir));
+                dest.getShadowRay().setMax(Float.MAX_VALUE);
+                Color radiance = getSkyRGB(basis.untransform(dir));
+                dest.setRadiance(radiance, radiance);
+                dest.getDiffuseRadiance().mul(invP);
+                dest.getSpecularRadiance().mul(invP);
+                dest.traceShadow(state);
+            }
         }
-    }
-
-    public boolean isAdaptive() {
-        return true;
     }
 
     public boolean isVisible(ShadingState state) {

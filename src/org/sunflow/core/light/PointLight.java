@@ -29,6 +29,10 @@ public class PointLight implements LightSource {
         return 1;
     }
 
+    public int getLowSamples() {
+        return 1;
+    }
+
     public boolean isVisible(ShadingState state) {
         Vector3 d = Point3.sub(lightPoint, state.getPoint(), new Vector3());
         return (Vector3.dot(d, state.getNormal()) > 0 && Vector3.dot(d, state.getGeoNormal()) > 0);
@@ -52,10 +56,6 @@ public class PointLight implements LightSource {
         dir.y = (float) Math.sin(phi) * s;
         dir.z = (float) (1 - 2 * randY1);
         power.set(this.power);
-    }
-
-    public boolean isAdaptive() {
-        return false;
     }
 
     public float getPower() {

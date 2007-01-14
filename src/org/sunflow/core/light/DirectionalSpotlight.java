@@ -43,6 +43,10 @@ public class DirectionalSpotlight implements LightSource {
         return 1;
     }
 
+    public int getLowSamples() {
+        return 1;
+    }
+
     public boolean isVisible(ShadingState state) {
         if (Vector3.dot(dir, state.getGeoNormal()) < 0.0 && Vector3.dot(dir, state.getNormal()) < 0.0) {
             // project point onto source plane
@@ -88,10 +92,6 @@ public class DirectionalSpotlight implements LightSource {
         Point3.add(src, dir, p);
         dir.set(this.dir);
         power.set(radiance).mul((float) Math.PI * r2);
-    }
-
-    public boolean isAdaptive() {
-        return false;
     }
 
     public float getPower() {

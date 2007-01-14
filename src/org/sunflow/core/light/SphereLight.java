@@ -47,12 +47,12 @@ public class SphereLight implements LightSource, Shader {
         api.instance(name + ".instance", name + ".geo");
     }
 
-    public boolean isAdaptive() {
-        return true;
-    }
-
     public int getNumSamples() {
         return numSamples;
+    }
+
+    public int getLowSamples() {
+        return 1;
     }
 
     public boolean isVisible(ShadingState state) {

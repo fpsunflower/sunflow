@@ -71,12 +71,12 @@ public class MeshLight extends TriangleMesh implements Shader {
             return true;
         }
 
-        public boolean isAdaptive() {
-            return true;
-        }
-
         public int getNumSamples() {
             return numSamples;
+        }
+
+        public int getLowSamples() {
+            return 1;
         }
 
         public boolean isVisible(ShadingState state) {
