@@ -316,6 +316,7 @@ public class SunflowAPI {
             // we are declaring a shader for the first time
             if (renderObjects.has(name)) {
                 UI.printError(Module.API, "Unable to declare shader \"%s\", name is already in use", name);
+                parameterList.clear(true);
                 return;
             }
             renderObjects.put(name, shader);
@@ -323,8 +324,10 @@ public class SunflowAPI {
         // update existing shader (only if it is valid)
         if (lookupShader(name) != null)
             update(name);
-        else
+        else {
             UI.printError(Module.API, "Unable to update shader \"%s\" - shader object was not found", name);
+            parameterList.clear(true);
+        }
     }
 
     /**
@@ -341,14 +344,17 @@ public class SunflowAPI {
             // we are declaring a geometry for the first time
             if (renderObjects.has(name)) {
                 UI.printError(Module.API, "Unable to declare geometry \"%s\", name is already in use", name);
+                parameterList.clear(true);
                 return;
             }
             renderObjects.put(name, primitives);
         }
         if (lookupGeometry(name) != null)
             update(name);
-        else
+        else {
             UI.printError(Module.API, "Unable to update geometry \"%s\" - geometry object was not found", name);
+            parameterList.clear(true);
+        }
     }
 
     /**
@@ -364,14 +370,17 @@ public class SunflowAPI {
             // we are declaring a geometry for the first time
             if (renderObjects.has(name)) {
                 UI.printError(Module.API, "Unable to declare geometry \"%s\", name is already in use", name);
+                parameterList.clear(true);
                 return;
             }
             renderObjects.put(name, tesselatable);
         }
         if (lookupGeometry(name) != null)
             update(name);
-        else
+        else {
             UI.printError(Module.API, "Unable to update geometry \"%s\" - geometry object was not found", name);
+            parameterList.clear(true);
+        }
     }
 
     /**
@@ -387,6 +396,7 @@ public class SunflowAPI {
             // we are declaring this instance for the first time
             if (renderObjects.has(name)) {
                 UI.printError(Module.API, "Unable to declare instance \"%s\", name is already in use", name);
+                parameterList.clear(true);
                 return;
             }
             parameter("geometry", geoname);
@@ -394,8 +404,10 @@ public class SunflowAPI {
         }
         if (lookupInstance(name) != null)
             update(name);
-        else
+        else {
             UI.printError(Module.API, "Unable to update instance \"%s\" - instance object was not found", name);
+            parameterList.clear(true);
+        }
     }
 
     /**
@@ -408,14 +420,17 @@ public class SunflowAPI {
             // we are declaring this light for the first time
             if (renderObjects.has(name)) {
                 UI.printError(Module.API, "Unable to declare light \"%s\", name is already in use", name);
+                parameterList.clear(true);
                 return;
             }
             renderObjects.put(name, light);
         }
         if (lookupLight(name) != null)
             update(name);
-        else
+        else {
             UI.printError(Module.API, "Unable to update instance \"%s\" - instance object was not found", name);
+            parameterList.clear(true);
+        }
     }
 
     /**
@@ -431,6 +446,7 @@ public class SunflowAPI {
             // we are declaring this camera for the first time
             if (renderObjects.has(name)) {
                 UI.printError(Module.API, "Unable to declare camera \"%s\", name is already in use", name);
+                parameterList.clear(true);
                 return;
             }
             renderObjects.put(name, new Camera(lens));
@@ -438,8 +454,10 @@ public class SunflowAPI {
         // update existing shader (only if it is valid)
         if (lookupCamera(name) != null)
             update(name);
-        else
+        else {
             UI.printError(Module.API, "Unable to update camera \"%s\" - camera object was not found", name);
+            parameterList.clear(true);
+        }
     }
 
     /**
@@ -452,6 +470,7 @@ public class SunflowAPI {
         if (lookupOptions(name) == null) {
             if (renderObjects.has(name)) {
                 UI.printError(Module.API, "Unable to declare options \"%s\", name is already in use", name);
+                parameterList.clear(true);
                 return;
             }
             renderObjects.put(name, new Options());
