@@ -569,14 +569,28 @@ public class SCParser implements SceneParser {
         } else if (p.peekNextToken("id")) {
             api.shader(name, new IDShader());
         } else if (p.peekNextToken("uber")) {
-            p.checkNextToken("diff");
-            api.parameter("diffuse", parseColor());
-            p.checkNextToken("refl");
-            api.parameter("reflection", parseColor());
+            if (p.peekNextToken("diff"))
+                api.parameter("diffuse", parseColor());
+            if (p.peekNextToken("diff.texture"))
+                api.parameter("diffuse.texture", p.getNextToken());
+            if (p.peekNextToken("diff.blend"))
+                api.parameter("diffuse.blend", p.getNextFloat());
+            if (p.peekNextToken("refl") || p.peekNextToken("spec"))
+                api.parameter("specular", parseColor());
             if (p.peekNextToken("texture")) {
-                api.parameter("texture", p.getNextToken());
-                api.parameter("blend", p.getNextFloat());
+                // deprecated
+                UI.printWarning(Module.API, "Deprecated uber shader parameter \"texture\" - please use \"diffuse.texture\" and \"diffuse.blend\" instead");
+                api.parameter("diffuse.texture", p.getNextToken());
+                api.parameter("diffuse.blend", p.getNextFloat());
             }
+            if (p.peekNextToken("spec.texture"))
+                api.parameter("specular.texture", p.getNextToken());
+            if (p.peekNextToken("spec.blend"))
+                api.parameter("specular.blend", p.getNextFloat());
+            if (p.peekNextToken("glossy"))
+                api.parameter("glossyness", p.getNextFloat());
+            if (p.peekNextToken("samples"))
+                api.parameter("samples", p.getNextInt());
             api.shader(name, new UberShader());
         } else
             UI.printWarning(Module.API, "Unrecognized shader type: %s", p.getNextToken());
