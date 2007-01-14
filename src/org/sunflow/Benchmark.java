@@ -8,6 +8,7 @@ import java.io.PrintStream;
 import javax.imageio.ImageIO;
 
 import org.sunflow.core.Display;
+import org.sunflow.core.Tesselatable;
 import org.sunflow.core.camera.PinholeLens;
 import org.sunflow.core.display.FrameDisplay;
 import org.sunflow.core.light.MeshLight;
@@ -16,6 +17,7 @@ import org.sunflow.core.primitive.TriangleMesh;
 import org.sunflow.core.shader.DiffuseShader;
 import org.sunflow.core.shader.GlassShader;
 import org.sunflow.core.shader.MirrorShader;
+import org.sunflow.core.tesselatable.Teapot;
 import org.sunflow.image.Color;
 import org.sunflow.math.Matrix4;
 import org.sunflow.math.Point3;
@@ -28,7 +30,6 @@ import org.sunflow.system.UI.Module;
 import org.sunflow.system.UI.PrintLevel;
 
 public class Benchmark extends SunflowAPI implements BenchmarkTest, UserInterface {
-    private String resourcePath;
     private PrintStream stream;
     private boolean showGUI;
     private boolean showOutput;
@@ -48,11 +49,10 @@ public class Benchmark extends SunflowAPI implements BenchmarkTest, UserInterfac
     }
 
     public Benchmark(boolean showGUI) {
-        this("resources/", System.out, 0, 512, showGUI, false, true, 6, false, true);
+        this("resources/", System.out, 0, 384, showGUI, true, true, 6, false, true);
     }
 
     private Benchmark(String resourcePath, PrintStream stream, int threads, int resolution, boolean showGUI, boolean showOutput, boolean showBenchmarkOutput, int errorThreshold, boolean generateMissingReference, boolean checkFrame) {
-        this.resourcePath = resourcePath;
         this.stream = stream;
         this.showGUI = showGUI;
         this.showOutput = showOutput;
@@ -67,9 +67,10 @@ public class Benchmark extends SunflowAPI implements BenchmarkTest, UserInterfac
         parameter("threads.lowPriority", false);
         parameter("resolutionX", resolution);
         parameter("resolutionY", resolution);
-        parameter("aa.min", -3);
-        parameter("aa.max", 0);
-        parameter("depths.diffuse", 4);
+        parameter("aa.min", -1);
+        parameter("aa.max", 1);
+        parameter("filter", "gaussian");
+        parameter("depths.diffuse", 2);
         parameter("depths.reflection", 2);
         parameter("depths.refraction", 2);
         parameter("bucket.order", "hilbert");
@@ -174,25 +175,26 @@ public class Benchmark extends SunflowAPI implements BenchmarkTest, UserInterfac
                 -50, 50, maxY - 1, -50, 50, maxY - 1, 50, -50, maxY - 1, 50 });
         parameter("triangles", new int[] { 0, 1, 2, 2, 3, 0 });
         parameter("radiance", emit);
-        parameter("samples", 16);
+        parameter("samples", 8);
         MeshLight light = new MeshLight();
         light.init("light", this);
 
         // spheres
         parameter("eta", 1.6f);
         shader("Glass", new GlassShader());
-        sphere("glass_sphere", "Glass", -60, minY + 100, -100, 50);
+        sphere("glass_sphere", "Glass", -120, minY + 55, -150, 50);
         parameter("color", new Color(0.70f, 0.70f, 0.70f));
         shader("Mirror", new MirrorShader());
         sphere("mirror_sphere", "Mirror", 100, minY + 60, -50, 50);
 
         // scanned model
-        parameter("diffuse", grey);
-        shader("ra3shader", new DiffuseShader());
-        String ra3file = resourcePath + "maxplanck.ra3";
-        if (!parse(ra3file))
-            UI.printError(Module.BENCH, "Unable to load %s", ra3file);
-
+        geometry("teapot", (Tesselatable) new Teapot());
+        parameter("transform", Matrix4.translation(80, -50, 100).multiply(Matrix4.rotateX((float) -Math.PI / 6)).multiply(Matrix4.rotateY((float) Math.PI / 4)).multiply(Matrix4.rotateX((float) -Math.PI / 2).multiply(Matrix4.scale(1.2f))));
+        parameter("shaders", "grey_shader");
+        instance("teapot.instance1", "teapot");
+        parameter("transform", Matrix4.translation(-80, -160, 50).multiply(Matrix4.rotateY((float) Math.PI / 4)).multiply(Matrix4.rotateX((float) -Math.PI / 2).multiply(Matrix4.scale(1.2f))));
+        parameter("shaders", "grey_shader");
+        instance("teapot.instance2", "teapot");
         // gi options
         parameter("gi.engine", "igi");
         parameter("gi.igi.samples", 90);
