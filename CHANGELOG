@@ -1,4 +1,6 @@
 v0.07.0
+* Upgraded to Janino 2.5.2
+* Added sun light to SunSkyLight - modified LightSource interface slightly
 * Added support for "noinstance" keyword
 * Unified instance handling in .sc parser
 * Added -pathgi command line argument
