@@ -32,8 +32,8 @@ public class CornellBox implements PrimitiveList, Shader, LightSource {
         // cube colors
         left = new Color(0.80f, 0.25f, 0.25f);
         right = new Color(0.25f, 0.25f, 0.80f);
-        Color grey = new Color(0.70f, 0.70f, 0.70f);
-        top = bottom = back = grey;
+        Color gray = new Color(0.70f, 0.70f, 0.70f);
+        top = bottom = back = gray;
 
         // light source
         radiance = Color.WHITE;
@@ -364,7 +364,7 @@ public class CornellBox implements PrimitiveList, Shader, LightSource {
         return lightBounds.contains(p) && p.z < maxZ;
     }
 
-    public void getSample(int i, ShadingState state, LightSample dest) {
+    public void getSample(int i, int n, ShadingState state, LightSample dest) {
         // random offset on unit square, we use the infinite version of
         // getRandom
         // because the light sampling is adaptive

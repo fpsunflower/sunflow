@@ -18,8 +18,8 @@ public class AnisotropicWardShader implements Shader {
     private int numRays;
 
     public AnisotropicWardShader() {
-        rhoD = Color.GREY;
-        rhoS = Color.GREY;
+        rhoD = Color.GRAY;
+        rhoS = Color.GRAY;
         alphaX = 1;
         alphaY = 1;
         numRays = 4;

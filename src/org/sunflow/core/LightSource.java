@@ -42,11 +42,12 @@ public interface LightSource extends RenderObject {
      * indicates the sample should not cast shadows.
      * 
      * @param i current sample number
+     * @param n number of samples being taken
      * @param state current state, including point to be
      * @param dest light sample to be filled in
      * @see LightSample
      */
-    void getSample(int i, ShadingState state, LightSample dest);
+    void getSample(int i, int n, ShadingState state, LightSample dest);
 
     /**
      * Gets a photon to emit from this light source by setting each of the

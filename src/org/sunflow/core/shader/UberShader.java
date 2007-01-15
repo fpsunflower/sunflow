@@ -23,7 +23,7 @@ public class UberShader implements Shader {
     private int numSamples;
 
     public UberShader() {
-        diff = spec = Color.GREY;
+        diff = spec = Color.GRAY;
         diffmap = specmap = null;
         diffBlend = specBlend = 1;
         glossyness = 0;

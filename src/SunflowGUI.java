@@ -55,6 +55,7 @@ import org.sunflow.core.shader.AmbientOcclusionShader;
 import org.sunflow.core.shader.IDShader;
 import org.sunflow.core.shader.NormalShader;
 import org.sunflow.core.shader.PrimIDShader;
+import org.sunflow.core.shader.QuickGrayShader;
 import org.sunflow.core.shader.UVShader;
 import org.sunflow.image.Color;
 import org.sunflow.system.ImagePanel;
@@ -148,6 +149,7 @@ public class SunflowGUI extends javax.swing.JFrame implements UserInterface {
             System.out.println("  -quick_normals   Applies a surface normal visualization shader to the scene");
             System.out.println("  -quick_id        Renders using a unique color for each instance");
             System.out.println("  -quick_prims     Renders using a unique color for each primitive");
+            System.out.println("  -quick_gray      Renders using a plain gray diffuse shader");
             System.out.println("  -resolution w h  Changes the render resolution to the specified width and height (in pixels)");
             System.out.println("  -bucket n order  Changes the default bucket size to n pixels and the default order");
             System.out.println("  -bake name       Bakes a lightmap for the specified instance");
@@ -259,6 +261,11 @@ public class SunflowGUI extends javax.swing.JFrame implements UserInterface {
                     if (i > args.length - 1)
                         usage(false);
                     shaderOverride = new PrimIDShader();
+                    i++;
+                } else if (args[i].equals("-quick_gray")) {
+                    if (i > args.length - 1)
+                        usage(false);
+                    shaderOverride = new QuickGrayShader();
                     i++;
                 } else if (args[i].equals("-resolution")) {
                     if (i > args.length - 3)

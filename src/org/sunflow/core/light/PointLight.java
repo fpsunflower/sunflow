@@ -38,7 +38,7 @@ public class PointLight implements LightSource {
         return (Vector3.dot(d, state.getNormal()) > 0 && Vector3.dot(d, state.getGeoNormal()) > 0);
     }
 
-    public void getSample(int i, ShadingState state, LightSample dest) {
+    public void getSample(int i, int n, ShadingState state, LightSample dest) {
         // prepare shadow ray
         dest.setShadowRay(new Ray(state.getPoint(), lightPoint));
         float scale = 1.0f / (float) (4 * Math.PI * lightPoint.distanceToSquared(state.getPoint()));

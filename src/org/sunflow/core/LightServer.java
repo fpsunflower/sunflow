@@ -479,7 +479,7 @@ class LightServer {
             for (int sample = 0; sample < n; sample++) {
                 // regular sampling
                 LightSample ls = new LightSample();
-                lights[i].getSample(sample, state, ls);
+                lights[i].getSample(sample, n, state, ls);
                 if (ls.isValid()) {
                     // divide by number of samples
                     ls.getDiffuseRadiance().mul(inv);

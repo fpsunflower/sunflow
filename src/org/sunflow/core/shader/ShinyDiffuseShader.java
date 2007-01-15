@@ -14,7 +14,7 @@ public class ShinyDiffuseShader implements Shader {
     private float refl;
 
     public ShinyDiffuseShader() {
-        diff = Color.GREY;
+        diff = Color.GRAY;
         refl = 0.5f;
     }
 

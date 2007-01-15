@@ -12,7 +12,7 @@ public final class Color {
     public static final Color YELLOW = new Color(1, 1, 0);
     public static final Color CYAN = new Color(0, 1, 1);
     public static final Color MAGENTA = new Color(1, 0, 1);
-    public static final Color GREY = new Color(0.5f, 0.5f, 0.5f);
+    public static final Color GRAY = new Color(0.5f, 0.5f, 0.5f);
 
     public static Color black() {
         return new Color();
@@ -67,8 +67,8 @@ public final class Color {
     public Color() {
     }
 
-    public Color(float grey) {
-        r = g = b = grey;
+    public Color(float gray) {
+        r = g = b = gray;
     }
 
     public Color(float r, float g, float b) {

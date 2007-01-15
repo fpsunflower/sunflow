@@ -105,7 +105,7 @@ public class SunSkyLight implements LightSource, PrimitiveList, Shader {
             // Attenuation due to water vapor absorption
             double tauWA = Math.exp(-0.2385 * k_waCurve.sample(lambda) * w * m / Math.pow(1.0 + 20.07 * k_waCurve.sample(lambda) * w * m, 0.45));
             // 100.0 comes from solAmplitudes begin in wrong units.
-            double amp = 100.0 * solCurve.sample(lambda) * tauR * tauA * tauO * tauG * tauWA;
+            double amp = /*100.0 * */solCurve.sample(lambda) * tauR * tauA * tauO * tauG * tauWA;
             data[i] = (float) amp;
         }
         return new RegularSpectralCurve(data, 350, 800);
@@ -242,12 +242,14 @@ public class SunSkyLight implements LightSource, PrimitiveList, Shader {
         return 0;
     }
 
-    public void getSample(int i, ShadingState state, LightSample dest) {
+    public void getSample(int i, int n, ShadingState state, LightSample dest) {
         if (i == 0) {
             if (Vector3.dot(sunDir, state.getGeoNormal()) > 0 && Vector3.dot(sunDir, state.getNormal()) > 0) {
                 dest.setShadowRay(new Ray(state.getPoint(), sunDir));
                 dest.getShadowRay().setMax(Float.MAX_VALUE);
                 dest.setRadiance(sunColor, sunColor);
+                dest.getDiffuseRadiance().mul(n);
+                dest.getSpecularRadiance().mul(n);
                 dest.traceShadow(state);
             }
         } else {
@@ -280,6 +282,7 @@ public class SunSkyLight implements LightSource, PrimitiveList, Shader {
                 dest.getShadowRay().setMax(Float.MAX_VALUE);
                 Color radiance = getSkyRGB(basis.untransform(dir));
                 dest.setRadiance(radiance, radiance);
+                invP *= (float) n / (float) (n - 1);
                 dest.getDiffuseRadiance().mul(invP);
                 dest.getSpecularRadiance().mul(invP);
                 dest.traceShadow(state);

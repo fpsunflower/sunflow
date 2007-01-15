@@ -176,7 +176,7 @@ public class ImageBasedLight implements PrimitiveList, LightSource, Shader {
         return true;
     }
 
-    public void getSample(int i, ShadingState state, LightSample dest) {
+    public void getSample(int i, int n, ShadingState state, LightSample dest) {
         if (samples == null) {
             // random offset on unit square, we use the infinite version of
             // getRandom because the light sampling is adaptive

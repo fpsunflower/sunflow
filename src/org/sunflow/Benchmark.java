@@ -134,7 +134,7 @@ public class Benchmark extends SunflowAPI implements BenchmarkTest, UserInterfac
         parameter("camera", name);
         options(SunflowAPI.DEFAULT_OPTIONS);
         // cornell box
-        Color grey = new Color(0.70f, 0.70f, 0.70f);
+        Color gray = new Color(0.70f, 0.70f, 0.70f);
         Color blue = new Color(0.25f, 0.25f, 0.80f);
         Color red = new Color(0.80f, 0.25f, 0.25f);
         Color emit = new Color(15, 15, 15);
@@ -152,8 +152,8 @@ public class Benchmark extends SunflowAPI implements BenchmarkTest, UserInterfac
         int[] indices = new int[] { 0, 1, 2, 2, 3, 0, 4, 5, 6, 6, 7, 4, 1, 2,
                 5, 5, 6, 2, 2, 3, 6, 6, 7, 3, 0, 3, 4, 4, 7, 3 };
 
-        parameter("diffuse", grey);
-        shader("grey_shader", new DiffuseShader());
+        parameter("diffuse", gray);
+        shader("gray_shader", new DiffuseShader());
         parameter("diffuse", red);
         shader("red_shader", new DiffuseShader());
         parameter("diffuse", blue);
@@ -166,7 +166,7 @@ public class Benchmark extends SunflowAPI implements BenchmarkTest, UserInterfac
         geometry("walls", new TriangleMesh());
 
         // instance walls
-        parameter("shaders", new String[] { "grey_shader", "red_shader",
+        parameter("shaders", new String[] { "gray_shader", "red_shader",
                 "blue_shader" });
         instance("walls.instance", "walls");
 
@@ -190,10 +190,10 @@ public class Benchmark extends SunflowAPI implements BenchmarkTest, UserInterfac
         // scanned model
         geometry("teapot", (Tesselatable) new Teapot());
         parameter("transform", Matrix4.translation(80, -50, 100).multiply(Matrix4.rotateX((float) -Math.PI / 6)).multiply(Matrix4.rotateY((float) Math.PI / 4)).multiply(Matrix4.rotateX((float) -Math.PI / 2).multiply(Matrix4.scale(1.2f))));
-        parameter("shaders", "grey_shader");
+        parameter("shaders", "gray_shader");
         instance("teapot.instance1", "teapot");
         parameter("transform", Matrix4.translation(-80, -160, 50).multiply(Matrix4.rotateY((float) Math.PI / 4)).multiply(Matrix4.rotateX((float) -Math.PI / 2).multiply(Matrix4.scale(1.2f))));
-        parameter("shaders", "grey_shader");
+        parameter("shaders", "gray_shader");
         instance("teapot.instance2", "teapot");
         // gi options
         parameter("gi.engine", "igi");

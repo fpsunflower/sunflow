@@ -59,7 +59,7 @@ public class SphereLight implements LightSource, Shader {
         return state.getPoint().distanceToSquared(center) > r2;
     }
 
-    public void getSample(int i, ShadingState state, LightSample dest) {
+    public void getSample(int i, int n, ShadingState state, LightSample dest) {
         // random offset on unit square
         double randX = state.getRandom(i, 0);
         double randY = state.getRandom(i, 1);

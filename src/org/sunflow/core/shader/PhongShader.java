@@ -16,8 +16,8 @@ public class PhongShader implements Shader {
     private int numRays;
 
     public PhongShader() {
-        diff = Color.GREY;
-        spec = Color.GREY;
+        diff = Color.GRAY;
+        spec = Color.GRAY;
         power = 20;
         numRays = 4;
     }

@@ -64,7 +64,7 @@ public class DirectionalSpotlight implements LightSource {
         return false;
     }
 
-    public void getSample(int i, ShadingState state, LightSample dest) {
+    public void getSample(int i, int n, ShadingState state, LightSample dest) {
         // project point onto source plane
         float x = state.getPoint().x - src.x;
         float y = state.getPoint().y - src.y;
