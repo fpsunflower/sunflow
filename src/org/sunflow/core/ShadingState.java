@@ -148,6 +148,11 @@ public final class ShadingState implements Iterable<LightSample> {
             basis.flipW();
             behind = true;
         }
+        // correct shading normals pointing the wrong way
+        if (Vector3.dot(n, ng) < 0) {
+            n.negate();
+            basis.flipW();
+        }
         cosND = Math.max(-r.dot(n), 0); // can't be negative
         // offset the shaded point away from the surface to prevent
         // self-intersection errors
