@@ -342,6 +342,14 @@ public class SunflowGUI extends javax.swing.JFrame implements UserInterface {
             }
             if (input == null)
                 usage(false);
+            if (frameStart < frameStop && showFrame) {
+                UI.printWarning(Module.GUI, "Animation is being rendered without -nogui - disabling");
+                showFrame = false;
+            }
+            if (frameStart < frameStop && filename == null) {
+                filename = "output.#.png";
+                UI.printWarning(Module.GUI, "Animation output was not specified - defaulting to: \"%s\"", filename);
+            }
             for (int frameNumber = frameStart; frameNumber <= frameStop; frameNumber++) {
                 SunflowAPI api = SunflowAPI.create(input, frameNumber);
                 if (api == null)
