@@ -131,7 +131,7 @@ public class SunflowGUI extends javax.swing.JFrame implements UserInterface {
             System.out.println("Sunflow v" + SunflowAPI.VERSION + " textmode");
             System.out.println("Renders the specified scene file");
             System.out.println("Options:");
-            System.out.println("  -o filename      Saves the output as the specified filename (png, hdr, tga)\n" + "                   #'s get expanded to the current frame number");
+            System.out.println("  -o filename      Saves the output as the specified filename (png, hdr, tga)\n                   #'s get expanded to the current frame number");
             System.out.println("  -nogui           Don't open the frame showing rendering progress");
             System.out.println("  -ipr             Render using progressive algorithm");
             System.out.println("  -sampler type    Render using the specified algorithm");
