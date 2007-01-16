@@ -462,7 +462,7 @@ public void build() {
          export_output()
          FILE.close()
       else:
-         STARTFRAME = ENDFRAME = 1
+         STARTFRAME = ENDFRAME = orig_frame
 
       for cntr in range(STARTFRAME, ENDFRAME + 1):
           filename = fname
