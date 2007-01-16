@@ -2,9 +2,8 @@ image {
   resolution 640 480
   aa 1 1
   samples 4
+  filter gaussian
 }
-
-filter gaussian 2 2
 
 camera {
   type thinlens

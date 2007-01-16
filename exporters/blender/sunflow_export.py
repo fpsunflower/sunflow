@@ -62,8 +62,7 @@ CHANGE_AO = 13
 
 EXP_ANIM = Draw.Create(0)
 
-IMGFILTERLIST      = ["box", "gaussian", "mitchell", "triangle", "catmull-rom", "blackman-harris", "sinc", "lanczos"]
-IMGFILTERLISTFIXED = [0    , 0         , 1         , 0         , 1            , 0                , 0     , 1        ]
+IMGFILTERLIST = ["box", "gaussian", "mitchell", "triangle", "catmull-rom", "blackman-harris", "sinc", "lanczos"]
 
 ##  end global gui vars  ##
 
@@ -91,13 +90,10 @@ print "blend2sunflow v0.07.0"
 def export_output():
 	print "o exporting output details..."
 	FILE.write("image {\n")
-	FILE.write("\tresolution %d %d" % (IM_WIDTH, IM_HEIGHT) + "\n")
-	FILE.write("\taa %s %s" % (MINAA.val, MAXAA.val)+"\n")
+	FILE.write("\tresolution %d %d\n" % (IM_WIDTH, IM_HEIGHT))
+	FILE.write("\taa %s %s\n" % (MINAA.val, MAXAA.val))
+	FILE.write("\tfilter %s\n" % IMGFILTERLIST[IMGFILTER.val-1])
 	FILE.write("}")
-	if IMGFILTERLISTFIXED[IMGFILTER.val-1] == 0:
-		FILE.write("\n\nfilter %s 1 1 #  filter size is ignored - specified for compatibility only" % IMGFILTERLIST[IMGFILTER.val-1])
-	else:
-		FILE.write("\n\nfilter %s" % IMGFILTERLIST[IMGFILTER.val-1])
 	FILE.write("\n")
 
 

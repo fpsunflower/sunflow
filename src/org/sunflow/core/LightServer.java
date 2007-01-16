@@ -145,6 +145,8 @@ class LightServer {
         UI.printInfo(Module.LIGHT, "      - Diffuse          %d", maxDiffuseDepth);
         UI.printInfo(Module.LIGHT, "      - Reflection       %d", maxReflectionDepth);
         UI.printInfo(Module.LIGHT, "      - Refraction       %d", maxRefractionDepth);
+        UI.printInfo(Module.LIGHT, "  * GI engine            %s", options.getString("gi.engine", "none"));
+        UI.printInfo(Module.LIGHT, "  * Caustics:            %s", caustics == null ? "none" : caustics);
         UI.printInfo(Module.LIGHT, "  * Shader override:     %b", shaderOverride);
         UI.printInfo(Module.LIGHT, "  * Photon override:     %b", shaderOverridePhotons);
         UI.printInfo(Module.LIGHT, "  * Shading cache:       %s", shadingCache == null ? "off" : "on");

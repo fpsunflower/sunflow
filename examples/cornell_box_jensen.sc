@@ -1,9 +1,8 @@
 image {
   resolution 800 600
   aa 0 2
+  filter gaussian
 }
-
-filter gaussian 2 2
 
 trace-depths {
   diff 4

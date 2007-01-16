@@ -1,9 +1,8 @@
 image {
   resolution 640 480
   aa 0 1
+  filter mitchell
 }
-
-filter mitchell
 
 camera {
   type pinhole

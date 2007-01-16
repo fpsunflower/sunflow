@@ -7,7 +7,7 @@ public final class FilterFactory {
         if (filter.equals("box"))
             return new BoxFilter(1);
         else if (filter.equals("gaussian"))
-            return new GaussianFilter(2);
+            return new GaussianFilter(3);
         else if (filter.equals("mitchell"))
             return new MitchellFilter();
         else if (filter.equals("catmull-rom"))

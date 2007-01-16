@@ -184,6 +184,8 @@ public class SCParser implements SceneParser {
             api.parameter("aa.samples", p.getNextInt());
         if (p.peekNextToken("contrast"))
             api.parameter("aa.contrast", p.getNextFloat());
+        if (p.peekNextToken("filter"))
+            api.parameter("filter", p.getNextToken());
         if (p.peekNextToken("show-aa")) {
             UI.printWarning(Module.API, "Deprecated: show-aa ignored");
             p.getNextBoolean();
@@ -208,12 +210,12 @@ public class SCParser implements SceneParser {
     }
 
     private void parseFilter(SunflowAPI api) throws IOException, ParserException {
+        UI.printWarning(Module.API, "Deprecated keyword \"filter\" - set this option in the image block");
         String name = p.getNextToken();
         api.parameter("filter", name);
         api.options(SunflowAPI.DEFAULT_OPTIONS);
         boolean hasSizeParams = name.equals("box") || name.equals("gaussian") || name.equals("blackman-harris") || name.equals("sinc") || name.equals("triangle");
         if (hasSizeParams) {
-            UI.printWarning(Module.API, "Filter size specification is deprecated - ignoring (optimal size is always used)");
             p.getNextFloat();
             p.getNextFloat();
         }
