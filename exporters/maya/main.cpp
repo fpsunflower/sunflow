@@ -379,7 +379,7 @@ void exportCamera(const MDagPath& path, std::ofstream& file) {
     file << std::endl;
 }
 
-DeclareSimpleCommand(sunflowExport, "sunflow.sourceforge.net", "0.05");
+DeclareSimpleCommand(sunflowExport, "sunflow.sourceforge.net", "0.07.0");
 MStatus sunflowExport::doIt(const MArgList& args) {
     if (args.length() < 1) return MS::kFailure;
     MString filename = args.asString(0);
@@ -394,6 +394,7 @@ MStatus sunflowExport::doIt(const MArgList& args) {
     file << "image {" << std::endl;
     file << "\tresolution " << resX << " " << resY << std::endl;
     file << "\taa 0 2" << std::endl;
+    file << "\tfilter gaussian" << std::endl;
     file << "}" << std::endl; 
     file << std::endl;
 
@@ -458,7 +459,7 @@ MStatus sunflowExport::doIt(const MArgList& args) {
                 file << "\tup 0 1 0" << std::endl;
                 file << "\teast 0 0 1" << std::endl;
                 file << "\tsundir " << dir.x << " " << dir.y << " " << dir.z << std::endl;
-                file << "\tturbidity 6" << std::endl;
+                file << "\tturbidity 2" << std::endl;
                 file << "\tsamples " << light.numShadowSamples() << std::endl;
                 file << "}" << std::endl;
                 file << std::endl;
