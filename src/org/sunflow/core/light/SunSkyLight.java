@@ -244,8 +244,8 @@ public class SunSkyLight implements LightSource, PrimitiveList, Shader {
 
     public void getSample(int i, int n, ShadingState state, LightSample dest) {
         if (i == 0) {
-            if (Vector3.dot(sunDir, state.getGeoNormal()) > 0 && Vector3.dot(sunDir, state.getNormal()) > 0) {
-                dest.setShadowRay(new Ray(state.getPoint(), sunDir));
+            if (Vector3.dot(sunDirWorld, state.getGeoNormal()) > 0 && Vector3.dot(sunDirWorld, state.getNormal()) > 0) {
+                dest.setShadowRay(new Ray(state.getPoint(), sunDirWorld));
                 dest.getShadowRay().setMax(Float.MAX_VALUE);
                 dest.setRadiance(sunColor, sunColor);
                 dest.getDiffuseRadiance().mul(n);
