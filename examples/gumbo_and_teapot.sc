@@ -77,7 +77,7 @@ object {
 	}
 	type gumbo
 	name gumbo_0
-	subdivs 10
+	subdivs 7
 }
 
 object {
@@ -153,7 +153,7 @@ object {
 	}
 	type teapot
 	name teapot_0
-	subdivs 10
+	subdivs 7
 }
 
 object {
@@ -194,7 +194,7 @@ object {
 	}
 	type teapot
 	name teapot_3
-	subdivs 6
+	subdivs 5
 	smooth false
 }
 
@@ -208,7 +208,7 @@ object {
 	}
 	type teapot
 	name teapot_4
-	subdivs 8
+	subdivs 7
 	smooth false
 }
 

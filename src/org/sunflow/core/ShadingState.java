@@ -563,6 +563,39 @@ public final class ShadingState implements Iterable<LightSample> {
         return server.traceFinalGather(this, r, i);
     }
 
+    public final Color occlusion(int samples, float maxDist) {
+        return occlusion(samples, maxDist, Color.WHITE, Color.BLACK);
+    }
+
+    public final Color occlusion(int samples, float maxDist, Color bright, Color dark) {
+        if (n == null) {
+            // in case we got called on a geometry without orientation
+            return bright;
+        }
+        // make sure we are on the right side of the material
+        faceforward();
+        OrthoNormalBasis onb = getBasis();
+        Vector3 w = new Vector3();
+        Color result = Color.black();
+        for (int i = 0; i < samples; i++) {
+            float xi = (float) getRandom(i, 0, samples);
+            float xj = (float) getRandom(i, 1, samples);
+            float phi = (float) (2 * Math.PI * xi);
+            float cosPhi = (float) Math.cos(phi);
+            float sinPhi = (float) Math.sin(phi);
+            float sinTheta = (float) Math.sqrt(xj);
+            float cosTheta = (float) Math.sqrt(1.0f - xj);
+            w.x = cosPhi * sinTheta;
+            w.y = sinPhi * sinTheta;
+            w.z = cosTheta;
+            onb.transform(w);
+            Ray r = new Ray(p, w);
+            r.setMax(maxDist);
+            result.add(Color.blend(bright, dark, traceShadow(r)));
+        }
+        return result.mul(1.0f / samples);
+    }
+
     public final Color diffuse(Color diff) {
         // integrate a diffuse function
         Color lr = Color.black();

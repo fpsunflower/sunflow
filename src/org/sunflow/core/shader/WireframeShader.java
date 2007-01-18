@@ -31,10 +31,18 @@ public class WireframeShader implements Shader {
         return true;
     }
 
+    public Color getFillColor(ShadingState state) {
+        return fillColor;
+    }
+    
+    public Color getLineColor(ShadingState state) {
+        return lineColor;
+    }
+    
     public Color getRadiance(ShadingState state) {
         Point3[] p = new Point3[3];
         if (!state.getTrianglePoints(p))
-            return fillColor;
+            return getFillColor(state);
         // transform points into camera space
         Point3 center = state.getPoint();
         Matrix4 w2c = state.getWorldToCamera();
@@ -57,9 +65,9 @@ public class WireframeShader implements Shader {
             // check angular width
             float dot = projx * center.x + projy * center.y + projz * center.z;
             if (dot * n * cn >= cosWidth)
-                return lineColor;
+                return getLineColor(state);
         }
-        return fillColor;
+        return getFillColor(state);
     }
 
     public void scatterPhoton(ShadingState state, Color power) {
