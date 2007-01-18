@@ -5,103 +5,95 @@ public final class MathUtils {
     }
 
     public static final int clamp(int x, int min, int max) {
-        if (x < min)
-            return min;
         if (x > max)
             return max;
-        return x;
+        if (x > min)
+            return x;
+        return min;
     }
 
     public static final float clamp(float x, float min, float max) {
-        if (x < min)
-            return min;
         if (x > max)
             return max;
-        return x;
+        if (x > min)
+            return x;
+        return min;
     }
 
     public static final double clamp(double x, double min, double max) {
-        if (x < min)
-            return min;
         if (x > max)
             return max;
-        return x;
+        if (x > min)
+            return x;
+        return min;
     }
 
     public static final int min(int a, int b, int c) {
-        int min = a;
-        if (min > b)
-            min = b;
-        if (min > c)
-            min = c;
-        return min;
+        if (a > b)
+            a = b;
+        if (a > c)
+            a = c;
+        return a;
     }
 
     public static final float min(float a, float b, float c) {
-        float min = a;
-        if (min > b)
-            min = b;
-        if (min > c)
-            min = c;
-        return min;
+        if (a > b)
+            a = b;
+        if (a > c)
+            a = c;
+        return a;
     }
 
     public static final double min(double a, double b, double c) {
-        double min = a;
-        if (min > b)
-            min = b;
-        if (min > c)
-            min = c;
-        return min;
+        if (a > b)
+            a = b;
+        if (a > c)
+            a = c;
+        return a;
     }
 
     public static final float min(float a, float b, float c, float d) {
-        float min = a;
-        if (min > b)
-            min = b;
-        if (min > c)
-            min = c;
-        if (min > d)
-            min = d;
-        return min;
+        if (a > b)
+            a = b;
+        if (a > c)
+            a = c;
+        if (a > d)
+            a = d;
+        return a;
     }
 
     public static final int max(int a, int b, int c) {
-        int max = a;
-        if (max < b)
-            max = b;
-        if (max < c)
-            max = c;
-        return max;
+        if (a < b)
+            a = b;
+        if (a < c)
+            a = c;
+        return a;
     }
 
     public static final float max(float a, float b, float c) {
-        float max = a;
-        if (max < b)
-            max = b;
-        if (max < c)
-            max = c;
-        return max;
+        if (a < b)
+            a = b;
+        if (a < c)
+            a = c;
+        return a;
     }
 
     public static final double max(double a, double b, double c) {
-        double max = a;
-        if (max < b)
-            max = b;
-        if (max < c)
-            max = c;
-        return max;
+        if (a < b)
+            a = b;
+        if (a < c)
+            a = c;
+        return a;
     }
-    
+
     public static final float max(float a, float b, float c, float d) {
-        float max = a;
-        if (max < b)
-            max = b;
-        if (max < c)
-            max = c;
-        if (max < d)
-            max = d;
-        return max;
+        if (a < b)
+            a = b;
+        if (a < c)
+            a = c;
+        if (a < d)
+            a = d;
+        return a;
     }
 
     public static final float smoothStep(float a, float b, float x) {

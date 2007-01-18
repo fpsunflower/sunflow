@@ -47,18 +47,9 @@ public class MeshLight extends TriangleMesh implements Shader {
 
         TriangleLight(int tri) {
             tri3 = 3 * tri;
-            int a, b, c;
-            if (triangles == null) {
-                // implicit indexing
-                a = tri3 + 0;
-                b = tri3 + 1;
-                c = tri3 + 2;
-            } else {
-                // explicit indexing
-                a = triangles[tri3 + 0];
-                b = triangles[tri3 + 1];
-                c = triangles[tri3 + 2];
-            }
+            int a = triangles[tri3 + 0];
+            int b = triangles[tri3 + 1];
+            int c = triangles[tri3 + 2];
             Point3 v0p = getPoint(a);
             Point3 v1p = getPoint(b);
             Point3 v2p = getPoint(c);
@@ -83,18 +74,9 @@ public class MeshLight extends TriangleMesh implements Shader {
             Point3 p = state.getPoint();
             Vector3 n = state.getNormal();
             Vector3 sub = new Vector3();
-            int a, b, c;
-            if (triangles == null) {
-                // implicit indexing
-                a = tri3 + 0;
-                b = tri3 + 1;
-                c = tri3 + 2;
-            } else {
-                // explicit indexing
-                a = triangles[tri3 + 0];
-                b = triangles[tri3 + 1];
-                c = triangles[tri3 + 2];
-            }
+            int a = triangles[tri3 + 0];
+            int b = triangles[tri3 + 1];
+            int c = triangles[tri3 + 2];
             Point3 v0p = getPoint(a);
             Point3.sub(v0p, p, sub);
             if ((Vector3.dot(sub, n) > 0.0) || (Vector3.dot(sub, ng) < 0.0))
@@ -121,21 +103,9 @@ public class MeshLight extends TriangleMesh implements Shader {
             float w = 1 - u - v;
 
             Point3 p = new Point3();
-            int a, b, c;
-            if (triangles == null) {
-                // implicit indexing
-                a = tri3 + 0;
-                b = tri3 + 1;
-                c = tri3 + 2;
-            } else {
-                // explicit indexing
-                a = triangles[tri3 + 0];
-                b = triangles[tri3 + 1];
-                c = triangles[tri3 + 2];
-            }
-            int index0 = 3 * a;
-            int index1 = 3 * b;
-            int index2 = 3 * c;
+            int index0 = 3 * triangles[tri3 + 0];
+            int index1 = 3 * triangles[tri3 + 1];
+            int index2 = 3 * triangles[tri3 + 2];
             p.x = w * points[index0 + 0] + u * points[index1 + 0] + v * points[index2 + 0];
             p.y = w * points[index0 + 1] + u * points[index1 + 1] + v * points[index2 + 1];
             p.z = w * points[index0 + 2] + u * points[index1 + 2] + v * points[index2 + 2];
@@ -171,21 +141,9 @@ public class MeshLight extends TriangleMesh implements Shader {
             float u = (float) (randY2 * s);
             float v = (float) (1 - s);
             float w = 1 - u - v;
-            int a, b, c;
-            if (triangles == null) {
-                // implicit indexing
-                a = tri3 + 0;
-                b = tri3 + 1;
-                c = tri3 + 2;
-            } else {
-                // explicit indexing
-                a = triangles[tri3 + 0];
-                b = triangles[tri3 + 1];
-                c = triangles[tri3 + 2];
-            }
-            int index0 = 3 * a;
-            int index1 = 3 * b;
-            int index2 = 3 * c;
+            int index0 = 3 * triangles[tri3 + 0];
+            int index1 = 3 * triangles[tri3 + 1];
+            int index2 = 3 * triangles[tri3 + 2];
             p.x = w * points[index0 + 0] + u * points[index1 + 0] + v * points[index2 + 0];
             p.y = w * points[index0 + 1] + u * points[index1 + 1] + v * points[index2 + 1];
             p.z = w * points[index0 + 2] + u * points[index1 + 2] + v * points[index2 + 2];
