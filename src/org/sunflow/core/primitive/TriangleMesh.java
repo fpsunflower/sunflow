@@ -497,6 +497,11 @@ public class TriangleMesh implements PrimitiveList {
         return new Point3(points[i], points[i + 1], points[i + 2]);
     }
 
+    public void getPoint(int tri, int i, Point3 p) {
+        int index = 3 * triangles[3 * tri + i];
+        p.set(points[index], points[index + 1], points[index + 2]);
+    }
+
     private static final class WaldTriangle {
         // private data for fast triangle intersection testing
         private int k;

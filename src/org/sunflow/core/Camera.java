@@ -15,7 +15,7 @@ public class Camera implements RenderObject {
 
     public Camera(CameraLens lens) {
         this.lens = lens;
-        c2w = null;
+        c2w = w2c = null;
     }
 
     public boolean update(ParameterList pl, SunflowAPI api) {

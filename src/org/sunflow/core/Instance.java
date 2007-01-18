@@ -124,4 +124,8 @@ public class Instance implements RenderObject {
     public PrimitiveList getBakingPrimitives() {
         return geometry.getBakingPrimitives();
     }
+
+    Geometry getGeometry() {
+        return geometry;
+    }
 }

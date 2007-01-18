@@ -1,4 +1,7 @@
 v0.07.0
+* New wireframe shader (-quick_wire command line option)
+* Added calls to get triangle vertices
+* Added camera space utility functions
 * Upgraded to Janino 2.5.3
 * Upgraded to Janino 2.5.2
 * Added sun light to SunSkyLight - modified LightSource interface slightly

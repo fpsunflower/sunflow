@@ -36,10 +36,24 @@ public final class Point3 {
         return (float) Math.sqrt((dx * dx) + (dy * dy) + (dz * dz));
     }
 
+    public final float distanceTo(float px, float py, float pz) {
+        float dx = x - px;
+        float dy = y - py;
+        float dz = z - pz;
+        return (float) Math.sqrt((dx * dx) + (dy * dy) + (dz * dz));
+    }
+
     public final float distanceToSquared(Point3 p) {
         float dx = x - p.x;
         float dy = y - p.y;
         float dz = z - p.z;
+        return (dx * dx) + (dy * dy) + (dz * dz);
+    }
+
+    public final float distanceToSquared(float px, float py, float pz) {
+        float dx = x - px;
+        float dy = y - py;
+        float dz = z - pz;
         return (dx * dx) + (dy * dy) + (dz * dz);
     }
 

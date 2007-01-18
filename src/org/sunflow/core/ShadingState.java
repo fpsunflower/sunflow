@@ -2,6 +2,7 @@ package org.sunflow.core;
 
 import java.util.Iterator;
 
+import org.sunflow.core.primitive.TriangleMesh;
 import org.sunflow.image.Color;
 import org.sunflow.math.Matrix4;
 import org.sunflow.math.OrthoNormalBasis;
@@ -376,14 +377,38 @@ public final class ShadingState implements Iterable<LightSample> {
         return r;
     }
 
+    /**
+     * Get a transformation matrix that will transform camera space points into
+     * world space.
+     * 
+     * @return camera to world transform
+     */
     public final Matrix4 getCameraToWorld() {
         Camera c = server.getScene().getCamera();
         return c != null ? c.getCameraToWorld() : Matrix4.IDENTITY;
     }
 
-    public final Matrix4 getWorldoCamera() {
+    /**
+     * Get a transformation matrix that will transform world space points into
+     * camera space.
+     * 
+     * @return world to camera transform
+     */
+    public final Matrix4 getWorldToCamera() {
         Camera c = server.getScene().getCamera();
         return c != null ? c.getWorldToCamera() : Matrix4.IDENTITY;
+    }
+
+    public final boolean getTrianglePoints(Point3[] p) {
+        PrimitiveList prims = instance.getGeometry().getPrimitiveList();
+        if (prims instanceof TriangleMesh) {
+            TriangleMesh m = (TriangleMesh) prims;
+            m.getPoint(primitiveID, 0, p[0] = new Point3());
+            m.getPoint(primitiveID, 1, p[1] = new Point3());
+            m.getPoint(primitiveID, 2, p[2] = new Point3());
+            return true;
+        }
+        return false;
     }
 
     /**

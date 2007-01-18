@@ -95,4 +95,8 @@ public class Geometry implements RenderObject {
             build();
         return primitives.getBakingPrimitives();
     }
+    
+    PrimitiveList getPrimitiveList() {
+        return primitives;
+    }
 }

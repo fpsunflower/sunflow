@@ -57,6 +57,7 @@ import org.sunflow.core.shader.NormalShader;
 import org.sunflow.core.shader.PrimIDShader;
 import org.sunflow.core.shader.QuickGrayShader;
 import org.sunflow.core.shader.UVShader;
+import org.sunflow.core.shader.WireframeShader;
 import org.sunflow.image.Color;
 import org.sunflow.system.ImagePanel;
 import org.sunflow.system.Timer;
@@ -151,7 +152,9 @@ public class SunflowGUI extends javax.swing.JFrame implements UserInterface {
             System.out.println("  -quick_id        Renders using a unique color for each instance");
             System.out.println("  -quick_prims     Renders using a unique color for each primitive");
             System.out.println("  -quick_gray      Renders using a plain gray diffuse shader");
+            System.out.println("  -quick_wire      Renders using a wireframe shader");
             System.out.println("  -resolution w h  Changes the render resolution to the specified width and height (in pixels)");
+            System.out.println("  -aa min max      Overrides the image anti-aliasing depths");
             System.out.println("  -bucket n order  Changes the default bucket size to n pixels and the default order");
             System.out.println("  -bake name       Bakes a lightmap for the specified instance");
             System.out.println("  -bakedir dir     Selects the type of lightmap baking: dir=view or ortho");
@@ -181,6 +184,7 @@ public class SunflowGUI extends javax.swing.JFrame implements UserInterface {
             int pathGI = 0;
             Shader shaderOverride = null;
             int resolutionW = 0, resolutionH = 0;
+            int aaMin = -5, aaMax = -5;
             int bucketSize = 0;
             String bucketOrder = null;
             String bakingName = null;
@@ -268,11 +272,22 @@ public class SunflowGUI extends javax.swing.JFrame implements UserInterface {
                         usage(false);
                     shaderOverride = new QuickGrayShader();
                     i++;
+                } else if (args[i].equals("-quick_wire")) {
+                    if (i > args.length - 1)
+                        usage(false);
+                    shaderOverride = new WireframeShader();
+                    i++;
                 } else if (args[i].equals("-resolution")) {
                     if (i > args.length - 3)
                         usage(false);
                     resolutionW = Integer.parseInt(args[i + 1]);
                     resolutionH = Integer.parseInt(args[i + 2]);
+                    i += 3;
+                } else if (args[i].equals("-aa")) {
+                    if (i > args.length - 3)
+                        usage(false);
+                    aaMin = Integer.parseInt(args[i + 1]);
+                    aaMax = Integer.parseInt(args[i + 2]);
                     i += 3;
                 } else if (args[i].equals("-bucket")) {
                     if (i > args.length - 3)
@@ -359,6 +374,10 @@ public class SunflowGUI extends javax.swing.JFrame implements UserInterface {
                 if (resolutionW > 0 && resolutionH > 0) {
                     api.parameter("resolutionX", resolutionW);
                     api.parameter("resolutionY", resolutionH);
+                }
+                if (aaMin != -5 || aaMax != -5) {
+                    api.parameter("aa.min", aaMin);
+                    api.parameter("aa.max", aaMax);
                 }
                 if (bucketSize > 0)
                     api.parameter("bucket.size", bucketSize);
