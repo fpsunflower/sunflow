@@ -61,5 +61,7 @@ public class BenchmarkFramework {
         UI.printInfo(Module.BENCH, "  * Fastest:    %s", Timer.toString(min));
         UI.printInfo(Module.BENCH, "  * Longest:    %s", Timer.toString(max));
         UI.printInfo(Module.BENCH, "  * Deviation:  %s", Timer.toString(stdDev));
+        for (int i = 0; i < timers.length && timers[i] != null; i++)
+            UI.printDetailed(Module.BENCH, "  * Iteration %d: %s", i + 1, timers[i]);
     }
 }

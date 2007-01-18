@@ -39,7 +39,7 @@ import javax.swing.filechooser.FileFilter;
 import javax.swing.plaf.metal.DefaultMetalTheme;
 import javax.swing.plaf.metal.MetalLookAndFeel;
 
-import org.sunflow.Benchmark;
+import org.sunflow.Benchmark2;
 import org.sunflow.RealtimeBenchmark;
 import org.sunflow.SunflowAPI;
 import org.sunflow.core.Display;
@@ -348,7 +348,8 @@ public class SunflowGUI extends javax.swing.JFrame implements UserInterface {
                 }
             }
             if (runBenchmark) {
-                new Benchmark(showFrame).execute();
+                //new Benchmark(showFrame).execute();
+                new Benchmark2().execute();
                 return;
             }
             if (runRTBenchmark) {
