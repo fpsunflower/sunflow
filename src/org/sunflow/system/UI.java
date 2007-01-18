@@ -13,7 +13,7 @@ public final class UI {
     private static int verbosity = 3;
 
     public enum Module {
-        API, GEOM, HAIR, ACCEL, BCKT, IPR, LIGHT, GUI, SCENE, BENCH, TEX, IMG, DISP, QMC, SYS, USER,
+        API, GEOM, HAIR, ACCEL, BCKT, IPR, LIGHT, GUI, SCENE, BENCH, TEX, IMG, DISP, QMC, SYS, USER, CAM,
     }
 
     public enum PrintLevel {

@@ -5,10 +5,13 @@ import org.sunflow.math.Matrix4;
 import org.sunflow.math.OrthoNormalBasis;
 import org.sunflow.math.Point3;
 import org.sunflow.math.Vector3;
+import org.sunflow.system.UI;
+import org.sunflow.system.UI.Module;
 
 public class Camera implements RenderObject {
     private final CameraLens lens;
     private Matrix4 c2w;
+    private Matrix4 w2c;
 
     public Camera(CameraLens lens) {
         this.lens = lens;
@@ -28,6 +31,14 @@ public class Camera implements RenderObject {
             }
         } else
             c2w = transform;
+        if (c2w != null) {
+            w2c = c2w.inverse();
+            if (w2c == null) {
+                UI.printError(Module.CAM, "Camera matrix is not invertible");
+                return false;
+            }
+        } else
+            w2c = null;
         return lens.update(pl, api);
     }
 
@@ -49,5 +60,13 @@ public class Camera implements RenderObject {
      */
     Ray getRay(Point3 p) {
         return new Ray(c2w.transformP(new Point3(0, 0, 0)), p);
+    }
+
+    Matrix4 getCameraToWorld() {
+        return c2w == null ? Matrix4.IDENTITY : c2w;
+    }
+
+    Matrix4 getWorldToCamera() {
+        return w2c == null ? Matrix4.IDENTITY : w2c;
     }
 }

@@ -3,6 +3,7 @@ package org.sunflow.core;
 import java.util.Iterator;
 
 import org.sunflow.image.Color;
+import org.sunflow.math.Matrix4;
 import org.sunflow.math.OrthoNormalBasis;
 import org.sunflow.math.Point2;
 import org.sunflow.math.Point3;
@@ -373,6 +374,16 @@ public final class ShadingState implements Iterable<LightSample> {
      */
     public final Ray getRay() {
         return r;
+    }
+
+    public final Matrix4 getCameraToWorld() {
+        Camera c = server.getScene().getCamera();
+        return c != null ? c.getCameraToWorld() : Matrix4.IDENTITY;
+    }
+
+    public final Matrix4 getWorldoCamera() {
+        Camera c = server.getScene().getCamera();
+        return c != null ? c.getWorldToCamera() : Matrix4.IDENTITY;
     }
 
     /**

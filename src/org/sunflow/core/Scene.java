@@ -88,6 +88,10 @@ public class Scene {
         this.camera = camera;
     }
 
+    Camera getCamera() {
+        return camera;
+    }
+
     /**
      * Update the instance lists for this scene.
      * 
