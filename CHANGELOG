@@ -1,4 +1,7 @@
 v0.07.0
+* Renamed MeshLight to TriangleMeshLight
+* Updated LightSource interface - lights must now do their own loop to take mutltiple samples
+* Spherical triangle sampling for triangle lights
 * New wireframe shader (-quick_wire command line option)
 * Added calls to get triangle vertices
 * Added camera space utility functions

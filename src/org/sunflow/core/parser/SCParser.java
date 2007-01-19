@@ -25,7 +25,7 @@ import org.sunflow.core.camera.SphericalLens;
 import org.sunflow.core.camera.ThinLens;
 import org.sunflow.core.light.DirectionalSpotlight;
 import org.sunflow.core.light.ImageBasedLight;
-import org.sunflow.core.light.MeshLight;
+import org.sunflow.core.light.TriangleMeshLight;
 import org.sunflow.core.light.SphereLight;
 import org.sunflow.core.light.SunSkyLight;
 import org.sunflow.core.primitive.Background;
@@ -966,7 +966,7 @@ public class SCParser implements SceneParser {
             }
             api.parameter("points", "point", "vertex", points);
             api.parameter("triangles", triangles);
-            MeshLight mesh = new MeshLight();
+            TriangleMeshLight mesh = new TriangleMeshLight();
             mesh.init(name, api);
         } else if (p.peekNextToken("point")) {
             UI.printInfo(Module.API, "Reading point light ...");
@@ -1064,7 +1064,7 @@ public class SCParser implements SceneParser {
             p.checkNextToken("triangles");
             int nt = p.getNextInt();
             api.parameter("triangles", parseIntArray(nt * 3));
-            MeshLight mesh = new MeshLight();
+            TriangleMeshLight mesh = new TriangleMeshLight();
             mesh.init(name, api);
         } else if (p.peekNextToken("sunsky")) {
             p.checkNextToken("up");

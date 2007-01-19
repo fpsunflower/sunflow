@@ -11,7 +11,7 @@ import org.sunflow.core.Display;
 import org.sunflow.core.Tesselatable;
 import org.sunflow.core.camera.PinholeLens;
 import org.sunflow.core.display.FrameDisplay;
-import org.sunflow.core.light.MeshLight;
+import org.sunflow.core.light.TriangleMeshLight;
 import org.sunflow.core.primitive.Sphere;
 import org.sunflow.core.primitive.TriangleMesh;
 import org.sunflow.core.shader.DiffuseShader;
@@ -176,7 +176,7 @@ public class DepreactedBenchmark extends SunflowAPI implements BenchmarkTest, Us
         parameter("triangles", new int[] { 0, 1, 2, 2, 3, 0 });
         parameter("radiance", emit);
         parameter("samples", 8);
-        MeshLight light = new MeshLight();
+        TriangleMeshLight light = new TriangleMeshLight();
         light.init("light", this);
 
         // spheres

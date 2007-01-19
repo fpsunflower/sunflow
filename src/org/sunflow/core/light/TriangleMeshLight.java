@@ -14,11 +14,11 @@ import org.sunflow.math.OrthoNormalBasis;
 import org.sunflow.math.Point3;
 import org.sunflow.math.Vector3;
 
-public class MeshLight extends TriangleMesh implements Shader {
+public class TriangleMeshLight extends TriangleMesh implements Shader {
     private Color radiance;
     private int numSamples;
 
-    public MeshLight() {
+    public TriangleMeshLight() {
         radiance = Color.WHITE;
         numSamples = 4;
     }
