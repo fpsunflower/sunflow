@@ -47,7 +47,7 @@ public class DirectionalSpotlight implements LightSource {
         return 1;
     }
 
-    public boolean isVisible(ShadingState state) {
+    public void getSamples(ShadingState state) {
         if (Vector3.dot(dir, state.getGeoNormal()) < 0.0 && Vector3.dot(dir, state.getNormal()) < 0.0) {
             // project point onto source plane
             float x = state.getPoint().x - src.x;
@@ -58,28 +58,18 @@ public class DirectionalSpotlight implements LightSource {
                 x -= (t * dir.x);
                 y -= (t * dir.y);
                 z -= (t * dir.z);
-                return (((x * x) + (y * y) + (z * z)) <= r2);
+                if (((x * x) + (y * y) + (z * z)) <= r2) {
+                    Point3 p = new Point3();
+                    p.x = src.x + x;
+                    p.y = src.y + y;
+                    p.z = src.z + z;
+                    LightSample dest = new LightSample();
+                    dest.setShadowRay(new Ray(state.getPoint(), p));
+                    dest.setRadiance(radiance, radiance);
+                    dest.traceShadow(state);
+                }
             }
         }
-        return false;
-    }
-
-    public void getSample(int i, int n, ShadingState state, LightSample dest) {
-        // project point onto source plane
-        float x = state.getPoint().x - src.x;
-        float y = state.getPoint().y - src.y;
-        float z = state.getPoint().z - src.z;
-        float t = ((x * dir.x) + (y * dir.y) + (z * dir.z));
-        x -= (t * dir.x);
-        y -= (t * dir.y);
-        z -= (t * dir.z);
-        Point3 p = new Point3();
-        p.x = src.x + x;
-        p.y = src.y + y;
-        p.z = src.z + z;
-        dest.setShadowRay(new Ray(state.getPoint(), p));
-        dest.setRadiance(radiance, radiance);
-        dest.traceShadow(state);
     }
 
     public void getPhoton(double randX1, double randY1, double randX2, double randY2, Point3 p, Vector3 dir, Color power) {

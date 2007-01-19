@@ -67,32 +67,6 @@ public class MeshLight extends TriangleMesh implements Shader {
             return numSamples;
         }
 
-        public int getLowSamples() {
-            return 1;
-        }
-
-        public boolean isVisible(ShadingState state) {
-            Point3 p = state.getPoint();
-            Vector3 n = state.getNormal();
-            Vector3 sub = new Vector3();
-            int a = triangles[tri3 + 0];
-            int b = triangles[tri3 + 1];
-            int c = triangles[tri3 + 2];
-            Point3 v0p = getPoint(a);
-            Point3.sub(v0p, p, sub);
-            if ((Vector3.dot(sub, n) > 0.0) || (Vector3.dot(sub, ng) < 0.0))
-                return true;
-            Point3 v1p = getPoint(b);
-            Point3.sub(v1p, p, sub);
-            if ((Vector3.dot(sub, n) > 0.0) || (Vector3.dot(sub, ng) < 0.0))
-                return true;
-            Point3 v2p = getPoint(c);
-            Point3.sub(v2p, p, sub);
-            if ((Vector3.dot(sub, n) > 0.0) || (Vector3.dot(sub, ng) < 0.0))
-                return true;
-            return false;
-        }
-
         private final boolean intersectTriangleKensler(Ray r) {
             int a = 3 * triangles[tri3 + 0];
             int b = 3 * triangles[tri3 + 1];
@@ -128,127 +102,133 @@ public class MeshLight extends TriangleMesh implements Shader {
             float gamma = iv * v2;
             if (gamma < 0)
                 return false;
-            r.setMax(t);
+            // FIXME: arbitrary bias, should handle as in other places
+            r.setMax(t - 1e-3f);
             return true;
         }
 
-        public void getSample(int i, int n, ShadingState state, LightSample dest) {
-            int index0 = triangles[tri3 + 0];
-            int index1 = triangles[tri3 + 1];
-            int index2 = triangles[tri3 + 2];
-            Vector3 p0 = Point3.sub(getPoint(index0), state.getPoint(), new Vector3()).normalize();
-            Vector3 p1 = Point3.sub(getPoint(index1), state.getPoint(), new Vector3()).normalize();
-            Vector3 p2 = Point3.sub(getPoint(index2), state.getPoint(), new Vector3()).normalize();
-
-            float cc = MathUtils.clamp(Vector3.dot(p0, p1), -1.0f, 1.0f);
-
-            Vector3 n0 = Vector3.cross(p0, p1, new Vector3());
-            Vector3 n1 = Vector3.cross(p1, p2, new Vector3());
-            Vector3 n2 = Vector3.cross(p2, p0, new Vector3());
-            float len0 = n0.length(), len1 = n1.length(), len2 = n2.length();
-
-            if (len0 > 1e-6f)
-                n0.div(len0);
-            else
+        public void getSamples(ShadingState state) {
+            if (getNumSamples() <= 0)
                 return;
-            if (len1 > 1e-6f)
-                n1.div(len1);
-            else
-                return;
-            if (len2 > 1e-6f)
-                n2.div(len2);
-            else
+            Vector3 n = state.getNormal();
+            Point3 p = state.getPoint();
+            // vector towards each vertex of the light source
+            Vector3 p0 = Point3.sub(getPoint(triangles[tri3 + 0]), p, new Vector3());
+            Vector3 p1 = Point3.sub(getPoint(triangles[tri3 + 1]), p, new Vector3());
+            Vector3 p2 = Point3.sub(getPoint(triangles[tri3 + 2]), p, new Vector3());
+
+            // if all three vertices are below the hemisphere, stop
+            if (Vector3.dot(p0, n) <= 0 && Vector3.dot(p1, n) <= 0 && Vector3.dot(p2, n) <= 0)
                 return;
 
-            float calpha = MathUtils.clamp(-Vector3.dot(n2, n0), -1.0f, 1.0f);
-            float cbeta = MathUtils.clamp(-Vector3.dot(n0, n1), -1.0f, 1.0f);
-            float cgamma = MathUtils.clamp(-Vector3.dot(n1, n2), -1.0f, 1.0f);
-
-            float alpha = (float) Math.acos(calpha);
-            float beta = (float) Math.acos(cbeta);
-            float gamma = (float) Math.acos(cgamma);
-
-            float area = alpha + beta + gamma - (float) Math.PI;
-
+            p0.normalize();
+            p1.normalize();
+            p2.normalize();
             float dot = Vector3.dot(p2, p0);
             Vector3 h = new Vector3();
             h.x = p2.x - dot * p0.x;
             h.y = p2.y - dot * p0.y;
             h.z = p2.z - dot * p0.z;
             float hlen = h.length();
-            if (hlen < 1e-6f)
+            if (hlen > 1e-6f)
+                h.div(hlen);
+            else
                 return;
-            h.div(hlen);
+            Vector3 n0 = Vector3.cross(p0, p1, new Vector3());
+            float len0 = n0.length();
+            if (len0 > 1e-6f)
+                n0.div(len0);
+            else
+                return;
+            Vector3 n1 = Vector3.cross(p1, p2, new Vector3());
+            float len1 = n1.length();
+            if (len1 > 1e-6f)
+                n1.div(len1);
+            else
+                return;
+            Vector3 n2 = Vector3.cross(p2, p0, new Vector3());
+            float len2 = n2.length();
+            if (len2 > 1e-6f)
+                n2.div(len2);
+            else
+                return;
 
+            float cosAlpha = MathUtils.clamp(-Vector3.dot(n2, n0), -1.0f, 1.0f);
+            float cosBeta = MathUtils.clamp(-Vector3.dot(n0, n1), -1.0f, 1.0f);
+            float cosGamma = MathUtils.clamp(-Vector3.dot(n1, n2), -1.0f, 1.0f);
+
+            float alpha = (float) Math.acos(cosAlpha);
+            float beta = (float) Math.acos(cosBeta);
+            float gamma = (float) Math.acos(cosGamma);
+
+            float area = alpha + beta + gamma - (float) Math.PI;
+
+            float cosC = MathUtils.clamp(Vector3.dot(p0, p1), -1.0f, 1.0f);
             float salpha = (float) Math.sin(alpha);
-            float product = salpha * cc;
+            float product = salpha * cosC;
 
             // now sample
+            // lower sampling depth for diffuse bounces
+            int samples = state.getDiffuseDepth() > 0 ? 1 : numSamples;
+            Color c = Color.mul(area / samples, radiance);
+            for (int i = 0; i < samples; i++) {
+                // random offset on unit square
+                double randX = state.getRandom(i, 0, samples);
+                double randY = state.getRandom(i, 1, samples);
 
-            // random offset on unit square
-            double randX = state.getRandom(i, 0);
-            double randY = state.getRandom(i, 1);
+                float phi = (float) randX * area - alpha + (float) Math.PI;
+                float sphi = (float) Math.sin(phi);
+                float cphi = (float) Math.cos(phi);
 
-            float phi = (float) randX * area - alpha + (float) Math.PI;
-            float sphi = (float) Math.sin(phi);
-            float cphi = (float) Math.cos(phi);
+                float u = cphi + cosAlpha;
+                float v = sphi - product;
 
-            float u = cphi + calpha;
-            float v = sphi - product;
+                float cbt = -v;
+                float sbt = u;
 
-            float cbt = -v;
-            float sbt = u;
+                float q = (cbt + cosAlpha * (cphi * cbt + sphi * sbt)) / (salpha * (sphi * cbt - cphi * sbt));
+                float q1 = 1.0f - q * q;
+                if (q1 < 0.0f)
+                    q1 = 0.0f;
 
-            float q = (cbt + calpha * (cphi * cbt + sphi * sbt)) / (salpha * (sphi * cbt - cphi * sbt));
-            float q1 = 1.0f - q * q;
-            if (q1 < 0.0f)
-                q1 = 0.0f;
+                Vector3 nc = new Vector3();
+                float sqrtq1 = (float) Math.sqrt(q1);
+                nc.x = q * p0.x + sqrtq1 * h.x;
+                nc.y = q * p0.y + sqrtq1 * h.y;
+                nc.z = q * p0.z + sqrtq1 * h.z;
 
-            Vector3 nc = new Vector3();
-            float sqrtq1 = (float) Math.sqrt(q1);
-            nc.x = q * p0.x + sqrtq1 * h.x;
-            nc.y = q * p0.y + sqrtq1 * h.y;
-            nc.z = q * p0.z + sqrtq1 * h.z;
+                float z = 1.0f - (float) randY * (1.0f - Vector3.dot(nc, p1));
+                float z1 = 1.0f - z * z;
+                if (z1 < 0.0f)
+                    z1 = 0.0f;
 
-            float z = 1.0f - (float) randY * (1.0f - Vector3.dot(nc, p1));
-            float z1 = 1.0f - z * z;
-            if (z1 < 0.0f)
-                z1 = 0.0f;
+                dot = Vector3.dot(nc, p1);
+                Vector3 nd = new Vector3();
+                nd.x = nc.x - dot * p1.x;
+                nd.y = nc.y - dot * p1.y;
+                nd.z = nc.z - dot * p1.z;
+                nd.normalize();
+                float sqrtz1 = (float) Math.sqrt(z1);
+                Vector3 result = new Vector3();
+                result.x = z * p1.x + sqrtz1 * nd.x;
+                result.y = z * p1.y + sqrtz1 * nd.y;
+                result.z = z * p1.z + sqrtz1 * nd.z;
 
-            dot = Vector3.dot(nc, p1);
-            Vector3 nd = new Vector3();
-            nd.x = nc.x - dot * p1.x;
-            nd.y = nc.y - dot * p1.y;
-            nd.z = nc.z - dot * p1.z;
-            nd.normalize();
-            float sqrtz1 = (float) Math.sqrt(z1);
-            Vector3 result = new Vector3();
-            result.x = z * p1.x + sqrtz1 * nd.x;
-            result.y = z * p1.y + sqrtz1 * nd.y;
-            result.z = z * p1.z + sqrtz1 * nd.z;
+                // make sure the sample is in the right hemisphere - facing in
+                // the right direction
+                if (Vector3.dot(result, n) <= 0 || Vector3.dot(result, state.getGeoNormal()) <= 0 || Vector3.dot(result, ng) >= 0)
+                    continue;
 
-            // compute intersection with triangle (if any)
-            Ray shadowRay = new Ray(state.getPoint(), result);
-            if (!intersectTriangleKensler(shadowRay))
-                return;
-
-            dest.setShadowRay(shadowRay);
-
-            // check that the direction of the sample is the same as the
-            // normal
-            float cosNx = dest.dot(state.getNormal());
-            if (cosNx <= 0)
-                return;
-
-            // light source facing point ?
-            // (need to check with light source's normal)
-            float cosNy = -dest.dot(ng);
-            if (cosNy > 0) {
+                // compute intersection with triangle (if any)
+                Ray shadowRay = new Ray(state.getPoint(), result);
+                if (!intersectTriangleKensler(shadowRay))
+                    continue;
+                LightSample dest = new LightSample();
+                dest.setShadowRay(shadowRay);
                 // prepare sample
-                dest.setRadiance(radiance, radiance);
-                dest.getDiffuseRadiance().mul(area);
-                dest.getSpecularRadiance().mul(area);
+                dest.setRadiance(c, c);
                 dest.traceShadow(state);
+                state.addSample(dest);
             }
         }
 

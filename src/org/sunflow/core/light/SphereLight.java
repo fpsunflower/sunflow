@@ -59,46 +59,61 @@ public class SphereLight implements LightSource, Shader {
         return state.getPoint().distanceToSquared(center) > r2;
     }
 
-    public void getSample(int i, int n, ShadingState state, LightSample dest) {
-        // random offset on unit square
-        double randX = state.getRandom(i, 0);
-        double randY = state.getRandom(i, 1);
+    public void getSamples(ShadingState state) {
+        if (getNumSamples() <= 0)
+            return;
         Vector3 wc = Point3.sub(center, state.getPoint(), new Vector3());
-        OrthoNormalBasis basis = OrthoNormalBasis.makeFromW(wc);
+        float l2 = wc.lengthSquared();
+        if (l2 <= r2)
+            return; // inside the sphere?
+        // top of the sphere as viewed from the current shading point
+        float topX = wc.x + state.getNormal().x * radius;
+        float topY = wc.y + state.getNormal().y * radius;
+        float topZ = wc.z + state.getNormal().z * radius;
+        if (state.getNormal().dot(topX, topY, topZ) <= 0)
+            return; // top of the sphere is below the horizon
         float cosThetaMax = (float) Math.sqrt(Math.max(0, 1 - r2 / Vector3.dot(wc, wc)));
-
-        // cone sampling
-        double cosTheta = (1 - randX) * cosThetaMax + randX;
-        double sinTheta = Math.sqrt(1 - cosTheta * cosTheta);
-        double phi = randY * 2 * Math.PI;
-        Vector3 dir = new Vector3((float) (Math.cos(phi) * sinTheta), (float) (Math.sin(phi) * sinTheta), (float) cosTheta);
-        basis.transform(dir);
-
-        // check that the direction of the sample is the same as the
-        // normal
-        float cosNx = Vector3.dot(dir, state.getNormal());
-        if (cosNx <= 0)
-            return;
-
-        float ocx = state.getPoint().x - center.x;
-        float ocy = state.getPoint().y - center.y;
-        float ocz = state.getPoint().z - center.z;
-        float qa = Vector3.dot(dir, dir);
-        float qb = 2 * ((dir.x * ocx) + (dir.y * ocy) + (dir.z * ocz));
-        float qc = ((ocx * ocx) + (ocy * ocy) + (ocz * ocz)) - r2;
-        double[] t = Solvers.solveQuadric(qa, qb, qc);
-        if (t == null)
-            return;
-        // compute shadow ray to the sampled point
-        dest.setShadowRay(new Ray(state.getPoint(), dir));
-        // FIXME: arbitrary bias, should handle as in other places
-        dest.getShadowRay().setMax((float) t[0] - 0.01f);
-        // prepare sample
+        OrthoNormalBasis basis = OrthoNormalBasis.makeFromW(wc);
+        int samples = state.getDiffuseDepth() > 0 ? 1 : getNumSamples();
         float scale = (float) (2 * Math.PI * (1 - cosThetaMax));
-        dest.setRadiance(radiance, radiance);
-        dest.getDiffuseRadiance().mul(scale);
-        dest.getSpecularRadiance().mul(scale);
-        dest.traceShadow(state);
+        Color c = Color.mul(scale / samples, radiance);
+        for (int i = 0; i < samples; i++) {
+            // random offset on unit square
+            double randX = state.getRandom(i, 0, samples);
+            double randY = state.getRandom(i, 1, samples);
+
+            // cone sampling
+            double cosTheta = (1 - randX) * cosThetaMax + randX;
+            double sinTheta = Math.sqrt(1 - cosTheta * cosTheta);
+            double phi = randY * 2 * Math.PI;
+            Vector3 dir = new Vector3((float) (Math.cos(phi) * sinTheta), (float) (Math.sin(phi) * sinTheta), (float) cosTheta);
+            basis.transform(dir);
+
+            // check that the direction of the sample is the same as the
+            // normal
+            float cosNx = Vector3.dot(dir, state.getNormal());
+            if (cosNx <= 0)
+                continue;
+
+            float ocx = state.getPoint().x - center.x;
+            float ocy = state.getPoint().y - center.y;
+            float ocz = state.getPoint().z - center.z;
+            float qa = Vector3.dot(dir, dir);
+            float qb = 2 * ((dir.x * ocx) + (dir.y * ocy) + (dir.z * ocz));
+            float qc = ((ocx * ocx) + (ocy * ocy) + (ocz * ocz)) - r2;
+            double[] t = Solvers.solveQuadric(qa, qb, qc);
+            if (t == null)
+                continue;
+            LightSample dest = new LightSample();
+            // compute shadow ray to the sampled point
+            dest.setShadowRay(new Ray(state.getPoint(), dir));
+            // FIXME: arbitrary bias, should handle as in other places
+            dest.getShadowRay().setMax((float) t[0] - 1e-3f);
+            // prepare sample
+            dest.setRadiance(c, c);
+            dest.traceShadow(state);
+            state.addSample(dest);
+        }
     }
 
     public void getPhoton(double randX1, double randY1, double randX2, double randY2, Point3 p, Vector3 dir, Color power) {

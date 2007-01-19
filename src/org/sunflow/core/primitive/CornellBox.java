@@ -355,48 +355,49 @@ public class CornellBox implements PrimitiveList, Shader, LightSource {
         return samples;
     }
 
-    public int getLowSamples() {
-        return samples;
-    }
+    public void getSamples(ShadingState state) {
+        if (lightBounds.contains(state.getPoint()) && state.getPoint().z < maxZ) {
+            int n = state.getDiffuseDepth() > 0 ? 1 : samples;
+            float a = area / n;
+            for (int i = 0; i < n; i++) {
+                // random offset on unit square, we use the infinite version of
+                // getRandom
+                // because the light sampling is adaptive
+                double randX = state.getRandom(i, 0);
+                double randY = state.getRandom(i, 1);
 
-    public boolean isVisible(ShadingState state) {
-        Point3 p = state.getPoint();
-        return lightBounds.contains(p) && p.z < maxZ;
-    }
+                Point3 p = new Point3();
+                p.x = (float) (lxmin * (1 - randX) + lxmax * randX);
+                p.y = (float) (lymin * (1 - randY) + lymax * randY);
+                p.z = maxZ - 0.001f;
 
-    public void getSample(int i, int n, ShadingState state, LightSample dest) {
-        // random offset on unit square, we use the infinite version of
-        // getRandom
-        // because the light sampling is adaptive
-        double randX = state.getRandom(i, 0);
-        double randY = state.getRandom(i, 1);
+                LightSample dest = new LightSample();
+                // prepare shadow ray to sampled point
+                dest.setShadowRay(new Ray(state.getPoint(), p));
 
-        Point3 p = new Point3();
-        p.x = (float) (lxmin * (1 - randX) + lxmax * randX);
-        p.y = (float) (lymin * (1 - randY) + lymax * randY);
-        p.z = maxZ - 0.001f;
+                // check that the direction of the sample is the same as the
+                // normal
+                float cosNx = dest.dot(state.getNormal());
+                if (cosNx <= 0)
+                    return;
 
-        // prepare shadow ray to sampled point
-        dest.setShadowRay(new Ray(state.getPoint(), p));
-
-        // check that the direction of the sample is the same as the normal
-        float cosNx = dest.dot(state.getNormal());
-        if (cosNx <= 0)
-            return;
-
-        // light source facing point ?
-        // (need to check with light source's normal)
-        float cosNy = dest.getShadowRay().dz;
-        if (cosNy > 0) {
-            // compute geometric attenuation and probability scale factor
-            float r = dest.getShadowRay().getMax();
-            float g = cosNy / (r * r);
-            float scale = g * area;
-            // set final sample radiance
-            dest.setRadiance(radiance, radiance);
-            dest.getDiffuseRadiance().mul(scale);
-            dest.getSpecularRadiance().mul(scale);
-            dest.traceShadow(state);
+                // light source facing point ?
+                // (need to check with light source's normal)
+                float cosNy = dest.getShadowRay().dz;
+                if (cosNy > 0) {
+                    // compute geometric attenuation and probability scale
+                    // factor
+                    float r = dest.getShadowRay().getMax();
+                    float g = cosNy / (r * r);
+                    float scale = g * a;
+                    // set final sample radiance
+                    dest.setRadiance(radiance, radiance);
+                    dest.getDiffuseRadiance().mul(scale);
+                    dest.getSpecularRadiance().mul(scale);
+                    dest.traceShadow(state);
+                    state.addSample(dest);
+                }
+            }
         }
     }
 

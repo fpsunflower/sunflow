@@ -114,7 +114,7 @@ public class ImageBasedLight implements PrimitiveList, LightSource, Shader {
                 float su = (x + u) / colHistogram.length;
                 float sv = (y + v) / rowHistogram.length;
 
-                float invP = (float) Math.sin(sv * Math.PI) * jacobian / (px * py);
+                float invP = (float) Math.sin(sv * Math.PI) * jacobian / (numSamples * px * py);
                 samples[i] = getDirection(su, sv);
                 basis.transform(samples[i]);
                 colors[i] = texture.getPixel(su, sv).mul(invP);
@@ -167,56 +167,56 @@ public class ImageBasedLight implements PrimitiveList, LightSource, Shader {
     public int getNumSamples() {
         return numSamples;
     }
-    
-    public int getLowSamples() {
-        return samples == null ? 1 : numSamples;
-    }
 
-    public boolean isVisible(ShadingState state) {
-        return true;
-    }
-
-    public void getSample(int i, int n, ShadingState state, LightSample dest) {
+    public void getSamples(ShadingState state) {
         if (samples == null) {
-            // random offset on unit square, we use the infinite version of
-            // getRandom because the light sampling is adaptive
-            double randX = state.getRandom(i, 0);
-            double randY = state.getRandom(i, 1);
+            int n = state.getDiffuseDepth() > 0 ? 1 : numSamples;
+            for (int i = 0; i < n; i++) {
+                // random offset on unit square, we use the infinite version of
+                // getRandom because the light sampling is adaptive
+                double randX = state.getRandom(i, 0, n);
+                double randY = state.getRandom(i, 1, n);
+                int x = 0;
+                while (randX >= colHistogram[x] && x < colHistogram.length - 1)
+                    x++;
+                float[] rowHistogram = imageHistogram[x];
+                int y = 0;
+                while (randY >= rowHistogram[y] && y < rowHistogram.length - 1)
+                    y++;
+                // sample from (x, y)
+                float u = (float) ((x == 0) ? (randX / colHistogram[0]) : ((randX - colHistogram[x - 1]) / (colHistogram[x] - colHistogram[x - 1])));
+                float v = (float) ((y == 0) ? (randY / rowHistogram[0]) : ((randY - rowHistogram[y - 1]) / (rowHistogram[y] - rowHistogram[y - 1])));
 
-            int x = 0;
-            while (randX >= colHistogram[x] && x < colHistogram.length - 1)
-                x++;
-            float[] rowHistogram = imageHistogram[x];
-            int y = 0;
-            while (randY >= rowHistogram[y] && y < rowHistogram.length - 1)
-                y++;
-            // sample from (x, y)
-            float u = (float) ((x == 0) ? (randX / colHistogram[0]) : ((randX - colHistogram[x - 1]) / (colHistogram[x] - colHistogram[x - 1])));
-            float v = (float) ((y == 0) ? (randY / rowHistogram[0]) : ((randY - rowHistogram[y - 1]) / (rowHistogram[y] - rowHistogram[y - 1])));
+                float px = ((x == 0) ? colHistogram[0] : (colHistogram[x] - colHistogram[x - 1]));
+                float py = ((y == 0) ? rowHistogram[0] : (rowHistogram[y] - rowHistogram[y - 1]));
 
-            float px = ((x == 0) ? colHistogram[0] : (colHistogram[x] - colHistogram[x - 1]));
-            float py = ((y == 0) ? rowHistogram[0] : (rowHistogram[y] - rowHistogram[y - 1]));
-
-            float su = (x + u) / colHistogram.length;
-            float sv = (y + v) / rowHistogram.length;
-            float invP = (float) Math.sin(sv * Math.PI) * jacobian / (px * py);
-            Vector3 dir = getDirection(su, sv);
-            basis.transform(dir);
-            if (Vector3.dot(dir, state.getGeoNormal()) > 0) {
-                dest.setShadowRay(new Ray(state.getPoint(), dir));
-                dest.getShadowRay().setMax(Float.MAX_VALUE);
-                Color radiance = texture.getPixel(su, sv);
-                dest.setRadiance(radiance, radiance);
-                dest.getDiffuseRadiance().mul(invP);
-                dest.getSpecularRadiance().mul(invP);
-                dest.traceShadow(state);
+                float su = (x + u) / colHistogram.length;
+                float sv = (y + v) / rowHistogram.length;
+                float invP = (float) Math.sin(sv * Math.PI) * jacobian / (n * px * py);
+                Vector3 dir = getDirection(su, sv);
+                basis.transform(dir);
+                if (Vector3.dot(dir, state.getGeoNormal()) > 0) {
+                    LightSample dest = new LightSample();
+                    dest.setShadowRay(new Ray(state.getPoint(), dir));
+                    dest.getShadowRay().setMax(Float.MAX_VALUE);
+                    Color radiance = texture.getPixel(su, sv);
+                    dest.setRadiance(radiance, radiance);
+                    dest.getDiffuseRadiance().mul(invP);
+                    dest.getSpecularRadiance().mul(invP);
+                    dest.traceShadow(state);
+                    state.addSample(dest);
+                }
             }
         } else {
-            if (Vector3.dot(samples[i], state.getGeoNormal()) > 0 && Vector3.dot(samples[i], state.getNormal()) > 0) {
-                dest.setShadowRay(new Ray(state.getPoint(), samples[i]));
-                dest.getShadowRay().setMax(Float.MAX_VALUE);
-                dest.setRadiance(colors[i], colors[i]);
-                dest.traceShadow(state);
+            for (int i = 0; i < numSamples; i++) {
+                if (Vector3.dot(samples[i], state.getGeoNormal()) > 0 && Vector3.dot(samples[i], state.getNormal()) > 0) {
+                    LightSample dest = new LightSample();
+                    dest.setShadowRay(new Ray(state.getPoint(), samples[i]));
+                    dest.getShadowRay().setMax(Float.MAX_VALUE);
+                    dest.setRadiance(colors[i], colors[i]);
+                    dest.traceShadow(state);
+                    state.addSample(dest);
+                }
             }
         }
     }

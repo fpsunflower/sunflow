@@ -105,7 +105,7 @@ class LightServer {
             UI.printWarning(Module.LIGHT, "Unrecognized caustics photon map engine \"%s\" - ignoring", caustics);
             causticPhotonMap = null;
         }
-        
+
         // validate options
         maxDiffuseDepth = Math.max(0, maxDiffuseDepth);
         maxReflectionDepth = Math.max(0, maxReflectionDepth);
@@ -472,24 +472,8 @@ class LightServer {
     }
 
     void initLightSamples(ShadingState state) {
-        for (int i = 0; i < lights.length; i++) {
-            if (!lights[i].isVisible(state))
-                continue;
-            // reduce sampling of adaptive lights for diffuse reflections
-            int n = state.getDiffuseDepth() > 0 ? lights[i].getLowSamples() : lights[i].getNumSamples();
-            float inv = 1.0f / n;
-            for (int sample = 0; sample < n; sample++) {
-                // regular sampling
-                LightSample ls = new LightSample();
-                lights[i].getSample(sample, n, state, ls);
-                if (ls.isValid()) {
-                    // divide by number of samples
-                    ls.getDiffuseRadiance().mul(inv);
-                    ls.getSpecularRadiance().mul(inv);
-                    state.addSample(ls);
-                }
-            }
-        }
+        for (LightSource l : lights)
+            l.getSamples(state);
     }
 
     void initCausticSamples(ShadingState state) {

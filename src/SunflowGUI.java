@@ -144,7 +144,8 @@ public class SunflowGUI extends javax.swing.JFrame implements UserInterface {
             System.out.println("  -dumpkd          Dump KDTree to an obj file for visualization");
             System.out.println("  -buildonly       Do not call render method after loading the scene");
             System.out.println("  -showaa          Display sampling levels per pixel for bucket renderer");
-            System.out.println("  -nogi            Disable any global illumination engines in the scene.");
+            System.out.println("  -nogi            Disable any global illumination engines in the scene");
+            System.out.println("  -nocaustics      Disable any caustic engine in the scene");
             System.out.println("  -pathgi n        Use path tracing with n samples to render global illumination");
             System.out.println("  -quick_ambocc d  Applies ambient occlusion to the scene with specified maximum distance");
             System.out.println("  -quick_uvs       Applies a surface uv visualization shader to the scene");
@@ -181,6 +182,7 @@ public class SunflowGUI extends javax.swing.JFrame implements UserInterface {
             boolean lowPriority = true;
             boolean showAA = false;
             boolean noGI = false;
+            boolean noCaustics = false;
             int pathGI = 0;
             Shader shaderOverride = null;
             int resolutionW = 0, resolutionH = 0;
@@ -235,6 +237,9 @@ public class SunflowGUI extends javax.swing.JFrame implements UserInterface {
                     i++;
                 } else if (args[i].equals("-nogi")) {
                     noGI = true;
+                    i++;
+                } else if (args[i].equals("-nocaustics")) {
+                    noCaustics = true;
                     i++;
                 } else if (args[i].equals("-pathgi")) {
                     if (i > args.length - 2)
@@ -399,6 +404,8 @@ public class SunflowGUI extends javax.swing.JFrame implements UserInterface {
                     api.parameter("gi.engine", "path");
                     api.parameter("gi.path.samples", pathGI);
                 }
+                if (noCaustics)
+                    api.parameter("caustics", "none");
                 api.parameter("sampler", sampler);
                 api.options(SunflowAPI.DEFAULT_OPTIONS);
                 if (shaderOverride != null) {

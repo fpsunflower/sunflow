@@ -105,7 +105,7 @@ public class SunSkyLight implements LightSource, PrimitiveList, Shader {
             // Attenuation due to water vapor absorption
             double tauWA = Math.exp(-0.2385 * k_waCurve.sample(lambda) * w * m / Math.pow(1.0 + 20.07 * k_waCurve.sample(lambda) * w * m, 0.45));
             // 100.0 comes from solAmplitudes begin in wrong units.
-            double amp = /*100.0 * */solCurve.sample(lambda) * tauR * tauA * tauO * tauG * tauWA;
+            double amp = /* 100.0 * */solCurve.sample(lambda) * tauR * tauA * tauO * tauG * tauWA;
             data[i] = (float) amp;
         }
         return new RegularSpectralCurve(data, 350, 800);
@@ -230,10 +230,6 @@ public class SunSkyLight implements LightSource, PrimitiveList, Shader {
         return 1 + numSkySamples;
     }
 
-    public int getLowSamples() {
-        return 2;
-    }
-
     public void getPhoton(double randX1, double randY1, double randX2, double randY2, Point3 p, Vector3 dir, Color power) {
         // FIXME: not implemented
     }
@@ -242,21 +238,21 @@ public class SunSkyLight implements LightSource, PrimitiveList, Shader {
         return 0;
     }
 
-    public void getSample(int i, int n, ShadingState state, LightSample dest) {
-        if (i == 0) {
-            if (Vector3.dot(sunDirWorld, state.getGeoNormal()) > 0 && Vector3.dot(sunDirWorld, state.getNormal()) > 0) {
-                dest.setShadowRay(new Ray(state.getPoint(), sunDirWorld));
-                dest.getShadowRay().setMax(Float.MAX_VALUE);
-                dest.setRadiance(sunColor, sunColor);
-                dest.getDiffuseRadiance().mul(n);
-                dest.getSpecularRadiance().mul(n);
-                dest.traceShadow(state);
-            }
-        } else {
+    public void getSamples(ShadingState state) {
+        if (Vector3.dot(sunDirWorld, state.getGeoNormal()) > 0 && Vector3.dot(sunDirWorld, state.getNormal()) > 0) {
+            LightSample dest = new LightSample();
+            dest.setShadowRay(new Ray(state.getPoint(), sunDirWorld));
+            dest.getShadowRay().setMax(Float.MAX_VALUE);
+            dest.setRadiance(sunColor, sunColor);
+            dest.traceShadow(state);
+            state.addSample(dest);
+        }
+        int n = state.getDiffuseDepth() > 0 ? 1 : numSkySamples;
+        for (int i = 0; i < n; i++) {
             // random offset on unit square, we use the infinite version of
             // getRandom because the light sampling is adaptive
-            double randX = state.getRandom(i - 1, 0);
-            double randY = state.getRandom(i - 1, 1);
+            double randX = state.getRandom(i, 0, n);
+            double randY = state.getRandom(i, 1, n);
 
             int x = 0;
             while (randX >= colHistogram[x] && x < colHistogram.length - 1)
@@ -274,24 +270,21 @@ public class SunSkyLight implements LightSource, PrimitiveList, Shader {
 
             float su = (x + u) / colHistogram.length;
             float sv = (y + v) / rowHistogram.length;
-            float invP = (float) Math.sin(sv * Math.PI) * jacobian / (px * py);
-            Vector3 dir = getDirection(su, sv);
-            basis.transform(dir);
+            float invP = (float) Math.sin(sv * Math.PI) * jacobian / (n * px * py);
+            Vector3 localDir = getDirection(su, sv);
+            Vector3 dir = basis.transform(localDir, new Vector3());
             if (Vector3.dot(dir, state.getGeoNormal()) > 0 && Vector3.dot(dir, state.getNormal()) > 0) {
+                LightSample dest = new LightSample();
                 dest.setShadowRay(new Ray(state.getPoint(), dir));
                 dest.getShadowRay().setMax(Float.MAX_VALUE);
-                Color radiance = getSkyRGB(basis.untransform(dir));
+                Color radiance = getSkyRGB(localDir);
                 dest.setRadiance(radiance, radiance);
-                invP *= (float) n / (float) (n - 1);
                 dest.getDiffuseRadiance().mul(invP);
                 dest.getSpecularRadiance().mul(invP);
                 dest.traceShadow(state);
+                state.addSample(dest);
             }
         }
-    }
-
-    public boolean isVisible(ShadingState state) {
-        return true;
     }
 
     public PrimitiveList getBakingPrimitives() {

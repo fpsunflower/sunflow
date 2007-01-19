@@ -10,44 +10,26 @@ import org.sunflow.math.Vector3;
  */
 public interface LightSource extends RenderObject {
     /**
-     * Return the number of samples to take from this light source.
+     * Get the maximum number of samples that can be taken from this light
+     * source.
      * 
-     * @return a number of samples, must be greater than 0
+     * @return maximum number of samples to be taken from this light source
      */
-    int getNumSamples();
+    public int getNumSamples();
 
     /**
-     * Return the number of samples to take from this light source to be taken
-     * when lower accuracy is desired.
+     * Samples the light source to compute direct illumination. Light samples
+     * can be created using the {@link LightSample} class and added to the
+     * current {@link ShadingState}. This method is responsible for the
+     * shooting of shadow rays which allows for non-physical lights that don't
+     * cast shadows. It is recommended that only a single shadow ray be shot if
+     * {@link ShadingState#getDiffuseDepth()} is greater than 0. This avoids an
+     * exponential number of shadow rays from being traced.
      * 
-     * @return a number of samples, must be greater than 0
-     */
-    int getLowSamples();
-
-    /**
-     * Checks to see if the light is trivally visible from the current render
-     * state.
-     * 
-     * @param state currente render state
-     * @return <code>true</code> if the light source is visible,
-     *         <code>false</code> otherwise
-     */
-    boolean isVisible(ShadingState state);
-
-    /**
-     * Creates a light sample on the light source that points towards the vertex
-     * in the current state. This method will determine if it is necessary to
-     * trace shadows for this sample. If a light sample has null direction or
-     * radiance it will be treated as invisible. A null shadow ray simply
-     * indicates the sample should not cast shadows.
-     * 
-     * @param i current sample number
-     * @param n number of samples being taken
-     * @param state current state, including point to be
-     * @param dest light sample to be filled in
+     * @param state current state, including point to be shaded
      * @see LightSample
      */
-    void getSample(int i, int n, ShadingState state, LightSample dest);
+    void getSamples(ShadingState state);
 
     /**
      * Gets a photon to emit from this light source by setting each of the

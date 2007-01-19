@@ -29,23 +29,19 @@ public class PointLight implements LightSource {
         return 1;
     }
 
-    public int getLowSamples() {
-        return 1;
-    }
-
-    public boolean isVisible(ShadingState state) {
+    public void getSamples(ShadingState state) {
         Vector3 d = Point3.sub(lightPoint, state.getPoint(), new Vector3());
-        return (Vector3.dot(d, state.getNormal()) > 0 && Vector3.dot(d, state.getGeoNormal()) > 0);
-    }
-
-    public void getSample(int i, int n, ShadingState state, LightSample dest) {
-        // prepare shadow ray
-        dest.setShadowRay(new Ray(state.getPoint(), lightPoint));
-        float scale = 1.0f / (float) (4 * Math.PI * lightPoint.distanceToSquared(state.getPoint()));
-        dest.setRadiance(power, power);
-        dest.getDiffuseRadiance().mul(scale);
-        dest.getSpecularRadiance().mul(scale);
-        dest.traceShadow(state);
+        if (Vector3.dot(d, state.getNormal()) > 0 && Vector3.dot(d, state.getGeoNormal()) > 0) {
+            LightSample dest = new LightSample();
+            // prepare shadow ray
+            dest.setShadowRay(new Ray(state.getPoint(), lightPoint));
+            float scale = 1.0f / (float) (4 * Math.PI * lightPoint.distanceToSquared(state.getPoint()));
+            dest.setRadiance(power, power);
+            dest.getDiffuseRadiance().mul(scale);
+            dest.getSpecularRadiance().mul(scale);
+            dest.traceShadow(state);
+            state.addSample(dest);
+        }
     }
 
     public void getPhoton(double randX1, double randY1, double randX2, double randY2, Point3 p, Vector3 dir, Color power) {
