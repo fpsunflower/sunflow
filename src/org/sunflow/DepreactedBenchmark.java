@@ -29,7 +29,7 @@ import org.sunflow.system.UserInterface;
 import org.sunflow.system.UI.Module;
 import org.sunflow.system.UI.PrintLevel;
 
-public class Benchmark extends SunflowAPI implements BenchmarkTest, UserInterface {
+public class DepreactedBenchmark extends SunflowAPI implements BenchmarkTest, UserInterface {
     private PrintStream stream;
     private boolean showGUI;
     private boolean showOutput;
@@ -38,21 +38,21 @@ public class Benchmark extends SunflowAPI implements BenchmarkTest, UserInterfac
 
     public static void main(String[] args) {
         if (args.length > 0 && args[0].equals("-test"))
-            new Benchmark("resources/", System.out, 0, 512, true, true, true, 4, true, false);
+            new DepreactedBenchmark("resources/", System.out, 0, 512, true, true, true, 4, true, false);
         else {
             // this is used to regenerated the reference frames if needed
-            new Benchmark("resources/", System.out, 0, 128, false, false, true, 4, true, true).build();
-            new Benchmark("resources/", System.out, 0, 256, false, false, true, 4, true, true).build();
-            new Benchmark("resources/", System.out, 0, 384, false, false, true, 4, true, true).build();
-            new Benchmark("resources/", System.out, 0, 512, false, false, true, 4, true, true).build();
+            new DepreactedBenchmark("resources/", System.out, 0, 128, false, false, true, 4, true, true).build();
+            new DepreactedBenchmark("resources/", System.out, 0, 256, false, false, true, 4, true, true).build();
+            new DepreactedBenchmark("resources/", System.out, 0, 384, false, false, true, 4, true, true).build();
+            new DepreactedBenchmark("resources/", System.out, 0, 512, false, false, true, 4, true, true).build();
         }
     }
 
-    public Benchmark(boolean showGUI) {
+    public DepreactedBenchmark(boolean showGUI) {
         this("resources/", System.out, 0, 384, showGUI, true, true, 6, false, true);
     }
 
-    public Benchmark(String resourcePath, PrintStream stream, int threads, int resolution, boolean showGUI, boolean showOutput, boolean showBenchmarkOutput, int errorThreshold, boolean generateMissingReference, boolean checkFrame) {
+    public DepreactedBenchmark(String resourcePath, PrintStream stream, int threads, int resolution, boolean showGUI, boolean showOutput, boolean showBenchmarkOutput, int errorThreshold, boolean generateMissingReference, boolean checkFrame) {
         this.stream = stream;
         this.showGUI = showGUI;
         this.showOutput = showOutput;
