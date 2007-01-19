@@ -28,7 +28,7 @@ import org.sunflow.system.UserInterface;
 import org.sunflow.system.UI.Module;
 import org.sunflow.system.UI.PrintLevel;
 
-public class Benchmark2 implements BenchmarkTest, UserInterface, Display {
+public class Benchmark implements BenchmarkTest, UserInterface, Display {
     private int resolution;
     private boolean showOutput;
     private boolean showBenchmarkOutput;
@@ -41,16 +41,16 @@ public class Benchmark2 implements BenchmarkTest, UserInterface, Display {
         int[] sizes = { 32, 64, 96, 128, 256, 384, 512 };
         for (int s : sizes) {
             // run a single iteration to generate the image
-            Benchmark2 b = new Benchmark2(s, true, false, true);
+            Benchmark b = new Benchmark(s, true, false, true);
             b.kernelMain();
         }
     }
 
-    public Benchmark2() {
+    public Benchmark() {
         this(384, false, true, false);
     }
 
-    public Benchmark2(int resolution, boolean showOutput, boolean showBenchmarkOutput, boolean saveOutput) {
+    public Benchmark(int resolution, boolean showOutput, boolean showBenchmarkOutput, boolean saveOutput) {
         UI.set(this);
         this.resolution = resolution;
         this.showOutput = showOutput;
@@ -60,7 +60,7 @@ public class Benchmark2 implements BenchmarkTest, UserInterface, Display {
         // fetch reference image from resources (jar file or classpath)
         if (saveOutput)
             return;
-        URL imageURL = Benchmark2.class.getResource(String.format("/resources/golden_%04X.png", resolution));
+        URL imageURL = Benchmark.class.getResource(String.format("/resources/golden_%04X.png", resolution));
         if (imageURL == null)
             UI.printError(Module.BENCH, "Unable to find reference frame!");
         UI.printInfo(Module.BENCH, "Loading reference image from: %s", imageURL);
@@ -86,7 +86,7 @@ public class Benchmark2 implements BenchmarkTest, UserInterface, Display {
     private class BenchmarkScene extends SunflowAPI {
         public BenchmarkScene() {
             build();
-            render(SunflowAPI.DEFAULT_OPTIONS, saveOutput ? new FileDisplay(String.format("resources/golden_%04X.png", resolution)) : Benchmark2.this);
+            render(SunflowAPI.DEFAULT_OPTIONS, saveOutput ? new FileDisplay(String.format("resources/golden_%04X.png", resolution)) : Benchmark.this);
         }
 
         public void build() {

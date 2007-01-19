@@ -39,7 +39,7 @@ import javax.swing.filechooser.FileFilter;
 import javax.swing.plaf.metal.DefaultMetalTheme;
 import javax.swing.plaf.metal.MetalLookAndFeel;
 
-import org.sunflow.Benchmark2;
+import org.sunflow.Benchmark;
 import org.sunflow.RealtimeBenchmark;
 import org.sunflow.SunflowAPI;
 import org.sunflow.core.Display;
@@ -354,7 +354,7 @@ public class SunflowGUI extends javax.swing.JFrame implements UserInterface {
             }
             if (runBenchmark) {
                 //new Benchmark(showFrame).execute();
-                new Benchmark2().execute();
+                new Benchmark().execute();
                 return;
             }
             if (runRTBenchmark) {
@@ -364,7 +364,7 @@ public class SunflowGUI extends javax.swing.JFrame implements UserInterface {
             if (input == null)
                 usage(false);
             if (frameStart < frameStop && showFrame) {
-                UI.printWarning(Module.GUI, "Animation is being rendered without -nogui - disabling");
+                UI.printWarning(Module.GUI, "Animations should not be rendered without -nogui - forcing GUI off anyway");
                 showFrame = false;
             }
             if (frameStart < frameStop && filename == null) {
