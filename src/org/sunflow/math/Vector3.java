@@ -92,6 +92,34 @@ public final class Vector3 {
         return dest;
     }
 
+    public final Vector3 mul(float s) {
+        x *= s;
+        y *= s;
+        z *= s;
+        return this;
+    }
+
+    public final Vector3 mul(float s, Vector3 dest) {
+        dest.x = x * s;
+        dest.y = y * s;
+        dest.z = z * s;
+        return dest;
+    }
+
+    public final Vector3 div(float d) {
+        x /= d;
+        y /= d;
+        z /= d;
+        return this;
+    }
+
+    public final Vector3 div(float d, Vector3 dest) {
+        dest.x = x / d;
+        dest.y = y / d;
+        dest.z = z / d;
+        return dest;
+    }
+
     public final float normalizeLength() {
         float n = (float) Math.sqrt(x * x + y * y + z * z);
         float in = 1.0f / n;
