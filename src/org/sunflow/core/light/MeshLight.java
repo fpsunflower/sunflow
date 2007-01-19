@@ -108,7 +108,7 @@ public class MeshLight extends TriangleMesh implements Shader {
         }
 
         public void getSamples(ShadingState state) {
-            if (getNumSamples() <= 0)
+            if (numSamples == 0)
                 return;
             Vector3 n = state.getNormal();
             Point3 p = state.getPoint();
@@ -167,8 +167,7 @@ public class MeshLight extends TriangleMesh implements Shader {
             float salpha = (float) Math.sin(alpha);
             float product = salpha * cosC;
 
-            // now sample
-            // lower sampling depth for diffuse bounces
+            // use lower sampling depth for diffuse bounces
             int samples = state.getDiffuseDepth() > 0 ? 1 : numSamples;
             Color c = Color.mul(area / samples, radiance);
             for (int i = 0; i < samples; i++) {
@@ -177,36 +176,30 @@ public class MeshLight extends TriangleMesh implements Shader {
                 double randY = state.getRandom(i, 1, samples);
 
                 float phi = (float) randX * area - alpha + (float) Math.PI;
-                float sphi = (float) Math.sin(phi);
-                float cphi = (float) Math.cos(phi);
+                float sinPhi = (float) Math.sin(phi);
+                float cosPhi = (float) Math.cos(phi);
 
-                float u = cphi + cosAlpha;
-                float v = sphi - product;
+                float u = cosPhi + cosAlpha;
+                float v = sinPhi - product;
 
-                float cbt = -v;
-                float sbt = u;
-
-                float q = (cbt + cosAlpha * (cphi * cbt + sphi * sbt)) / (salpha * (sphi * cbt - cphi * sbt));
+                float q = (-v + cosAlpha * (cosPhi * -v + sinPhi * u)) / (salpha * (sinPhi * -v - cosPhi * u));
                 float q1 = 1.0f - q * q;
                 if (q1 < 0.0f)
                     q1 = 0.0f;
 
-                Vector3 nc = new Vector3();
                 float sqrtq1 = (float) Math.sqrt(q1);
-                nc.x = q * p0.x + sqrtq1 * h.x;
-                nc.y = q * p0.y + sqrtq1 * h.y;
-                nc.z = q * p0.z + sqrtq1 * h.z;
-
-                float z = 1.0f - (float) randY * (1.0f - Vector3.dot(nc, p1));
+                float ncx = q * p0.x + sqrtq1 * h.x;
+                float ncy = q * p0.y + sqrtq1 * h.y;
+                float ncz = q * p0.z + sqrtq1 * h.z;
+                dot = p1.dot(ncx, ncy, ncz);
+                float z = 1.0f - (float) randY * (1.0f - dot);
                 float z1 = 1.0f - z * z;
                 if (z1 < 0.0f)
                     z1 = 0.0f;
-
-                dot = Vector3.dot(nc, p1);
                 Vector3 nd = new Vector3();
-                nd.x = nc.x - dot * p1.x;
-                nd.y = nc.y - dot * p1.y;
-                nd.z = nc.z - dot * p1.z;
+                nd.x = ncx - dot * p1.x;
+                nd.y = ncy - dot * p1.y;
+                nd.z = ncz - dot * p1.z;
                 nd.normalize();
                 float sqrtz1 = (float) Math.sqrt(z1);
                 Vector3 result = new Vector3();
@@ -216,19 +209,18 @@ public class MeshLight extends TriangleMesh implements Shader {
 
                 // make sure the sample is in the right hemisphere - facing in
                 // the right direction
-                if (Vector3.dot(result, n) <= 0 || Vector3.dot(result, state.getGeoNormal()) <= 0 || Vector3.dot(result, ng) >= 0)
-                    continue;
-
-                // compute intersection with triangle (if any)
-                Ray shadowRay = new Ray(state.getPoint(), result);
-                if (!intersectTriangleKensler(shadowRay))
-                    continue;
-                LightSample dest = new LightSample();
-                dest.setShadowRay(shadowRay);
-                // prepare sample
-                dest.setRadiance(c, c);
-                dest.traceShadow(state);
-                state.addSample(dest);
+                if (Vector3.dot(result, n) > 0 && Vector3.dot(result, state.getGeoNormal()) > 0 && Vector3.dot(result, ng) < 0) {
+                    // compute intersection with triangle (if any)
+                    Ray shadowRay = new Ray(state.getPoint(), result);
+                    if (!intersectTriangleKensler(shadowRay))
+                        continue;
+                    LightSample dest = new LightSample();
+                    dest.setShadowRay(shadowRay);
+                    // prepare sample
+                    dest.setRadiance(c, c);
+                    dest.traceShadow(state);
+                    state.addSample(dest);
+                }
             }
         }
 
