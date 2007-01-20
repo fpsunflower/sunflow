@@ -77,6 +77,7 @@ public class ThinLens implements CameraLens {
             eyeY = (float) (Math.sin(angle) * r);
         } else {
             // sample N-gon
+            // FIXME: this could use concentric sampling
             lensY *= lensSides;
             float side = (int) lensY;
             float offs = (float) lensY - side;

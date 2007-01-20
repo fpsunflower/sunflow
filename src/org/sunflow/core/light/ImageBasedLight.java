@@ -132,6 +132,11 @@ public class ImageBasedLight implements PrimitiveList, LightSource, Shader {
     public void init(String name, SunflowAPI api) {
         // register this object with the api properly
         api.geometry(name, this);
+        if (api.lookupGeometry(name) == null) {
+            // quit if we don't see our geometry in here (error message
+            // will have already been printed)
+            return;
+        }
         api.shader(name + ".shader", this);
         api.parameter("shaders", name + ".shader");
         api.instance(name + ".instance", name);
