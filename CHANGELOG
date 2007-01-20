@@ -1,4 +1,6 @@
 v0.07.0
+* Added basic absorbtion model to GlassShader
+* Added ngon sampling to ThinLens for bokeh effects
 * Renamed MeshLight to TriangleMeshLight
 * Updated LightSource interface - lights must now do their own loop to take mutltiple samples
 * Spherical triangle sampling for triangle lights

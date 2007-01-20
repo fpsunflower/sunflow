@@ -12,7 +12,8 @@ public void build() {
         }
     });
     // you can put the path to your own scene here to use this rendering technique
-    // make sure you use forward slashes ('/') in your filename
+    // just copy this file to the same directory as your main .sc file, and swap
+    // the fileanme in the line below
     parse("gumbo_and_teapot.sc");
     shaderOverride("ao_wire", true);
 
