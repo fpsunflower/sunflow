@@ -340,6 +340,20 @@ public final class Color {
         return dest;
     }
 
+    public final Color exp() {
+        r = (float) Math.exp(r);
+        g = (float) Math.exp(g);
+        b = (float) Math.exp(b);
+        return this;
+    }
+
+    public final Color opposite() {
+        r = 1 - r;
+        g = 1 - g;
+        b = 1 - b;
+        return this;
+    }
+
     public static final Color blend(Color c1, Color c2, float b) {
         return blend(c1, c2, b, new Color());
     }

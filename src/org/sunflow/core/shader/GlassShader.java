@@ -12,10 +12,14 @@ public class GlassShader implements Shader {
     private float eta; // refraction index ratio
     private float f0; // fresnel normal incidence
     private Color color;
+    private float absorbtionDistance;
+    private Color absorbtionColor;
 
     public GlassShader() {
-        this.eta = 1.3f;
-        this.color = Color.WHITE;
+        eta = 1.3f;
+        color = Color.WHITE;
+        absorbtionDistance = 0; // disabled by default
+        absorbtionColor = Color.GRAY; // 50% absorbtion
     }
 
     public boolean update(ParameterList pl, SunflowAPI api) {
@@ -23,6 +27,8 @@ public class GlassShader implements Shader {
         eta = pl.getFloat("eta", eta);
         f0 = (1 - eta) / (1 + eta);
         f0 = f0 * f0;
+        absorbtionDistance = pl.getFloat("absorbtion.distance", absorbtionDistance);
+        absorbtionColor = pl.getColor("absorbtion.color", absorbtionColor);
         return true;
     }
 
@@ -67,6 +73,11 @@ public class GlassShader implements Shader {
         if (!tir) {
             ret.madd(kt, state.traceRefraction(new Ray(state.getPoint(), refrDir), 0)).mul(color);
         }
+        if (inside && absorbtionDistance > 0) {
+            // this ray is inside the object and leaving it
+            // compute attenuation that occured along the ray
+            ret.mul(Color.mul(-state.getRay().getMax() / absorbtionDistance, absorbtionColor.copy().opposite()).exp());
+        }
         if (!inside || tir)
             ret.add(Color.mul(kr, state.traceReflection(new Ray(state.getPoint(), reflDir), 0)).mul(color));
         return ret;
@@ -101,6 +112,11 @@ public class GlassShader implements Shader {
             float wK = -neta;
             float arg = 1 - (neta * neta * (1 - (cos * cos)));
             Vector3 dir = new Vector3();
+            if (state.isBehind() && absorbtionDistance > 0) {
+                // this ray is inside the object and leaving it
+                // compute attenuation that occured along the ray
+                power.mul(Color.mul(-state.getRay().getMax() / absorbtionDistance, absorbtionColor.copy().opposite()).exp());
+            }
             if (arg < 0) {
                 // TIR
                 float dn = 2 * cos;
