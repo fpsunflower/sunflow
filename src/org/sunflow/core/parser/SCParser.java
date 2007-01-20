@@ -405,9 +405,13 @@ public class SCParser implements SceneParser {
             p.checkNextToken("aspect");
             api.parameter("aspect", p.getNextFloat());
             p.checkNextToken("fdist");
-            api.parameter("focusDistance", p.getNextFloat());
+            api.parameter("focus.distance", p.getNextFloat());
             p.checkNextToken("lensr");
-            api.parameter("lensRadius", p.getNextFloat());
+            api.parameter("lens.radius", p.getNextFloat());
+            if (p.peekNextToken("sides"))
+                api.parameter("lens.sides", p.getNextInt());
+            if (p.peekNextToken("rotation"))
+                api.parameter("lens.rotation", p.getNextFloat());
             name = api.getUniqueName("camera");
             api.camera(name, new ThinLens());
         } else if (p.peekNextToken("spherical")) {

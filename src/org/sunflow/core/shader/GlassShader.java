@@ -68,19 +68,22 @@ public class GlassShader implements Shader {
         float kr = 0.5f * (pPara * pPara + pPerp * pPerp);
         float kt = 1 - kr;
 
+        Color absorbtion = null;
+        if (inside && absorbtionDistance > 0) {
+            // this ray is inside the object and leaving it
+            // compute attenuation that occured along the ray
+            absorbtion = Color.mul(-state.getRay().getMax() / absorbtionDistance, absorbtionColor.copy().opposite()).exp();
+            if (absorbtion.isBlack())
+                return Color.BLACK; // nothing goes through
+        }
         // refracted ray
         Color ret = Color.black();
         if (!tir) {
             ret.madd(kt, state.traceRefraction(new Ray(state.getPoint(), refrDir), 0)).mul(color);
         }
-        if (inside && absorbtionDistance > 0) {
-            // this ray is inside the object and leaving it
-            // compute attenuation that occured along the ray
-            ret.mul(Color.mul(-state.getRay().getMax() / absorbtionDistance, absorbtionColor.copy().opposite()).exp());
-        }
         if (!inside || tir)
             ret.add(Color.mul(kr, state.traceReflection(new Ray(state.getPoint(), reflDir), 0)).mul(color));
-        return ret;
+        return absorbtion != null ? ret.mul(absorbtion) : ret;
     }
 
     public void scatterPhoton(ShadingState state, Color power) {
