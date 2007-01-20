@@ -353,6 +353,13 @@ public final class Color {
         b = 1 - b;
         return this;
     }
+    
+    public final Color clamp(float min, float max) {
+        r = MathUtils.clamp(r, min,max);
+        g = MathUtils.clamp(r, min,max);
+        b = MathUtils.clamp(r, min,max);
+        return this;
+    }
 
     public static final Color blend(Color c1, Color c2, float b) {
         return blend(c1, c2, b, new Color());

@@ -1,4 +1,6 @@
 v0.07.0
+* Added bucket dumping debugging option to bucket render - saves out unfiltered buckets as they are rendered
+* Fixed jitter option - added to SCParser image block
 * Added basic absorbtion model to GlassShader
 * Added ngon sampling to ThinLens for bokeh effects
 * Renamed MeshLight to TriangleMeshLight

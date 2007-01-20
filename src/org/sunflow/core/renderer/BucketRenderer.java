@@ -13,6 +13,7 @@ import org.sunflow.core.ShadingState;
 import org.sunflow.core.bucket.BucketOrderFactory;
 import org.sunflow.core.filter.BoxFilter;
 import org.sunflow.core.filter.FilterFactory;
+import org.sunflow.image.Bitmap;
 import org.sunflow.image.Color;
 import org.sunflow.math.MathUtils;
 import org.sunflow.math.QMC;
@@ -32,12 +33,14 @@ public class BucketRenderer implements ImageSampler {
     private int bucketSize;
     private int bucketCounter;
     private int[] bucketCoords;
+    private boolean dumpBuckets;
 
     // anti-aliasing
     private int minAADepth;
     private int maxAADepth;
     private int superSampling;
     private float contrastThreshold;
+    private boolean jitter;
     private boolean displayAA;
 
     // derived quantities
@@ -47,6 +50,7 @@ public class BucketRenderer implements ImageSampler {
     private int maxStepSize;
     private int[] sigma;
     private float thresh;
+    private boolean useJitter;
 
     // filtering
     private String filterName;
@@ -60,6 +64,8 @@ public class BucketRenderer implements ImageSampler {
         displayAA = false;
         contrastThreshold = 0.1f;
         filterName = "box";
+        jitter = false; // off by default
+        dumpBuckets = false; // for debugging only - not user settable
     }
 
     public boolean prepare(Options options, Scene scene, int w, int h) {
@@ -74,6 +80,7 @@ public class BucketRenderer implements ImageSampler {
         maxAADepth = options.getInt("aa.max", maxAADepth);
         superSampling = options.getInt("aa.samples", superSampling);
         displayAA = options.getBoolean("aa.display", displayAA);
+        jitter = options.getBoolean("aa.jitter", jitter);
         contrastThreshold = options.getFloat("aa.contrast", contrastThreshold);
 
         // limit bucket size and compute number of buckets in each direction
@@ -94,6 +101,7 @@ public class BucketRenderer implements ImageSampler {
             maxStepSize = minStepSize;
         else
             maxStepSize = minAADepth > 0 ? 1 << minAADepth : subPixelSize << (-minAADepth);
+        useJitter = jitter && maxAADepth > 0;
         // compute anti-aliasing contrast thresholds
         contrastThreshold = MathUtils.clamp(contrastThreshold, 0, 1);
         thresh = contrastThreshold * (float) Math.pow(2.0f, minAADepth);
@@ -119,6 +127,7 @@ public class BucketRenderer implements ImageSampler {
         int pixelMaxAA = (maxAADepth) < 0 ? -(1 << (-maxAADepth)) : (1 << maxAADepth);
         UI.printInfo(Module.BCKT, "  * Anti-aliasing:      [%dx%d] -> [%dx%d]", pixelMinAA, pixelMinAA, pixelMaxAA, pixelMaxAA);
         UI.printInfo(Module.BCKT, "  * Rays per sample:    %d", superSampling);
+        UI.printInfo(Module.BCKT, "  * Subpixel jitter:    %s", useJitter ? "on" : (jitter ? "auto-off" : "off"));
         UI.printInfo(Module.BCKT, "  * Contrast threshold: %.2f", contrastThreshold);
         UI.printInfo(Module.BCKT, "  * Filter type:        %s", filterName);
         UI.printInfo(Module.BCKT, "  * Filter size:        %.2f pixels", filter.getSize());
@@ -216,8 +225,8 @@ public class BucketRenderer implements ImageSampler {
                 int j = sx & (sigma.length - 1);
                 int k = sy & (sigma.length - 1);
                 int i = j * sigma.length + sigma[k];
-                float dx = maxAADepth >= 0 ? 0.5f : (float) sigma[k] / (float) sigma.length;
-                float dy = maxAADepth >= 0 ? 0.5f : (float) sigma[j] / (float) sigma.length;
+                float dx = useJitter ? (float) sigma[k] / (float) sigma.length : 0.5f;
+                float dy = useJitter ? (float) sigma[j] / (float) sigma.length : 0.5f;
                 float rx = (sx + dx) * invSubPixelSize;
                 float ry = (sy + dy) * invSubPixelSize;
                 ry = imageHeight - ry - 1;
@@ -227,6 +236,14 @@ public class BucketRenderer implements ImageSampler {
         for (int x = 0; x < sbw - 1; x += maxStepSize)
             for (int y = 0; y < sbh - 1; y += maxStepSize)
                 refineSamples(samples, sbw, x, y, maxStepSize, thresh, istate);
+        if (dumpBuckets) {
+            UI.printInfo(Module.BCKT, "Dumping bucket [%d, %d] to file ...", bx, by);
+            Bitmap bitmap = new Bitmap(sbw, sbh, true);
+            for (int y = sbh - 1, index = 0; y >= 0; y--)
+                for (int x = 0; x < sbw; x++, index++)
+                    bitmap.setPixel(x, y, samples[index].c.copy().toNonLinear());
+            bitmap.save(String.format("bucket_%04d_%04d.png", bx, by));
+        }
         if (displayAA) {
             // color coded image of what is visible
             float invArea = invSubPixelSize * invSubPixelSize;

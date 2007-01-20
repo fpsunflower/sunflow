@@ -186,6 +186,8 @@ public class SCParser implements SceneParser {
             api.parameter("aa.contrast", p.getNextFloat());
         if (p.peekNextToken("filter"))
             api.parameter("filter", p.getNextToken());
+        if (p.peekNextToken("jitter"))
+            api.parameter("aa.jitter", p.getNextBoolean());
         if (p.peekNextToken("show-aa")) {
             UI.printWarning(Module.API, "Deprecated: show-aa ignored");
             p.getNextBoolean();
