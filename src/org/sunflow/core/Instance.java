@@ -108,7 +108,8 @@ public class Instance implements RenderObject {
 
     public void prepareShadingState(ShadingState state) {
         geometry.prepareShadingState(state);
-        state.correctShadingNormal();
+        if (state.getNormal() != null && state.getGeoNormal() != null)
+            state.correctShadingNormal();
         // run modifier if it was provided
         if (state.getModifier() != null)
             state.getModifier().modify(state);

@@ -1,5 +1,5 @@
 Sunflow Global Illumination Rendering System 
-v0.06.3
+v0.07.0
 
 Contact: Christopher Kulla
          fpsunflower@users.sourceforge.net
@@ -15,14 +15,14 @@ Please consult the LICENSE file for license information.
 
 Quickstart:
 
-The fastest way to get started rendering images if you are not familiar with Java development is to get the binary release from the website. You will also need the latest JDK (to get the server VM) from http://www.java.com/.
+The fastest way to get started rendering images if you are not familiar with Java development is to get the binary release from the website. You will also need the latest Java SE JDK (to get the server VM) from http://java.sun.com/.
 
 Launch sunflow from the command prompt like this:
 
->> java -server -Xmx512M -jar sunflow.jar
+>> java -server -Xmx1024M -jar sunflow.jar
 
 IMPORTANT PERFORMANCE TIPS:
-* Change the -Xmx command line option to match the amount of RAM in your system.
+* Change the -Xmx command line option to match the amount of RAM in your system (example uses 1GB (or 1024M))
 * Make sure the server VM is being used. Unfortunately, Sun only ships it with the JDK, and doesn't install it in your path by default. Check your PATH environment variable if you have trouble.
 
 Add -h to the end of command line for a list of command line options.
@@ -35,7 +35,7 @@ Keep in mind that this is still an early version. At the moment you will need to
 
 Build instructions:
 
-Download the latest JDK (5.0 at the time of this writing) if you don't have it already. Please note that the source code makes use of some new features like generics. Keep this in mind if you are trying to compile/run the code under a different JVM.
+Download the latest JDK (6.0 at the time of this writing) if you don't have it already. Please note that the source code makes use of some new features like generics. Keep this in mind if you are trying to compile/run the code under a different JVM.
 
 Create a main directory to hold the code (for example, "sunflow") and unzip the contents of the source package into it, preserving sub-directories. Create the "classes" subdirectory if your unzip program did not. You may now compile the software from the main directory by running:
 

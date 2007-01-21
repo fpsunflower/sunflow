@@ -353,16 +353,18 @@ public class SunflowGUI extends javax.swing.JFrame implements UserInterface {
                 }
             }
             if (runBenchmark) {
-                //new Benchmark(showFrame).execute();
+                SunflowAPI.runSystemCheck();
                 new Benchmark().execute();
                 return;
             }
             if (runRTBenchmark) {
+                SunflowAPI.runSystemCheck();
                 new RealtimeBenchmark(showFrame, threads);
                 return;
             }
             if (input == null)
                 usage(false);
+            SunflowAPI.runSystemCheck();
             if (frameStart < frameStop && showFrame) {
                 UI.printWarning(Module.GUI, "Animations should not be rendered without -nogui - forcing GUI off anyway");
                 showFrame = false;
@@ -440,6 +442,7 @@ public class SunflowGUI extends javax.swing.JFrame implements UserInterface {
             if (screenRes.getWidth() <= DEFAULT_WIDTH || screenRes.getHeight() <= DEFAULT_HEIGHT)
                 gui.setExtendedState(MAXIMIZED_BOTH);
             gui.tileWindowMenuItem.doClick();
+            SunflowAPI.runSystemCheck();
         }
     }
 
