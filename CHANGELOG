@@ -1,4 +1,4 @@
-v0.07.0
+v0.07.1
 * Added Modifier concept - used to implement bump/normal mapping at the moment
 * Added bucket dumping debugging option to bucket render - saves out unfiltered buckets as they are rendered
 * Fixed jitter option - added to SCParser image block

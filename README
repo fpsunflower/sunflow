@@ -1,5 +1,5 @@
 Sunflow Global Illumination Rendering System 
-v0.07.0
+v0.07.1
 
 Contact: Christopher Kulla
          fpsunflower@users.sourceforge.net
@@ -22,13 +22,14 @@ Launch sunflow from the command prompt like this:
 >> java -server -Xmx1024M -jar sunflow.jar
 
 IMPORTANT PERFORMANCE TIPS:
-* Change the -Xmx command line option to match the amount of RAM in your system (example uses 1GB (or 1024M))
-* Make sure the server VM is being used. Unfortunately, Sun only ships it with the JDK, and doesn't install it in your path by default. Check your PATH environment variable if you have trouble.
+* Change the -Xmx command line option to match the amount of RAM in your system (example uses 1GB)
+* Make sure the server VM is being used. Unfortunately, on 32 bit Windows, Sun only ships the server VM with the JDK, and doesn't install it in your path by default. Check your PATH environment variable if you have trouble.
 
 Add -h to the end of command line for a list of command line options.
 
-You can find some simple demo scenes on the website's data distribution (unzip them into the same directory). A simple blender script is also available from the website.
+You can find some simple demo scenes on the website's data distribution. A simple blender script is also available from the website.
 
+DISCLAIMER:
 Keep in mind that this is still an early version. At the moment you will need to dig around the scene files in order to get the most out of the software. If you have any questions, feel free to e-mail me at the adress at the top.
 
 ----------------------------------------------------------------
@@ -43,7 +44,7 @@ Create a main directory to hold the code (for example, "sunflow") and unzip the 
 
 once the compiling is complete, run the code with:
 
->> java -cp classes;janino.jar SunflowGUI
+>> java -cp classes;janino.jar -server -Xmx1024M SunflowGUI
 
 The tips above apply here as well (-Xmx and -server command line options).
 
@@ -61,7 +62,7 @@ Here is a quick explanation of the basic rendering options.
 
 Anti-aliasing:
 
-The most important controls are minAA and maxAA. These control the under/over-sampling of the image. The image will be first sampled at the rate prescribed by minAA. Then, based on color and surface normal differences, the image will be refined up to the rate prescribed by maxAA.
+The most important controls are aa.min and aa.max. These control the under/over-sampling of the image. The image will be first sampled at the rate prescribed by aa.min. Then, based on color and surface normal differences, the image will be refined up to the rate prescribed by aa.max.
 
 A value of 0 corresponds to 1 sample per pixel.
 A value of -1 corresponds to 1 sample every 2 pixels (1 per 2x2 block)
@@ -80,16 +81,15 @@ Examples:
 
 Filtering:
 
-Image quality is also affected by filtering. If you use oversampling (positive min or max AA), you will want to turn this on. Here are some suggested filter widths:
-
-box:             1x1
-triangle:        2x2
-gaussian:        2x2
-catmull-rom:     4x4 (fixed size)
-mitchell:        4x4 (fixed size)
-lanczos:         4x4 (fixed size)
-blackman-harris: 5x5
-sinc:            6x6
+Image quality is also affected by filtering. If you use oversampling (positive min or max AA), you will want to turn this on. Here are the names of the built-in filters:
+  * box
+  * triangle
+  * gaussian
+  * catmull-rom
+  * mitchell
+  * lanczos
+  * blackman-harris
+  * sinc
 
 Box and triangle are best for previews as they are small and fast. The other filters are recommended for final image rendering.
 
@@ -97,11 +97,11 @@ Bucket rendering:
 
 Sunflow proceses the image to be rendered in small squares called buckets. The size of these buckets can be controlled by a pixel width. Each rendering thread will be a assigned a single bucket. You may not get the bucket size you expect if you try to make them really small or really big, as there are some hard-coded limits to prevent excessive memory usage or excessive overhead.
 
-The bucket ordering simply affects the order in which the buckets appear. They shouldn't have too much of an effect on rendering speed.
+The bucket ordering simply affects the order in which the buckets appear. They shouldn't have too much of an effect on overall rendering speed.
 
 Soft shadows:
 
-Area lights automatically create soft shadows in your scene. Once you have the proper meshlight exported, you can control the quality of shadows by changing the samples value. Please note this value is a number of rays PER triangle. Complex meshes made up of many triangles can become quite costly. The best is to restrict yourself to simple planes (2 triangles).
+Area lights automatically create soft shadows in your scene. Once you have the proper meshlight exported, you can control the quality of shadows by changing the samples value. Please note this value is a number of rays PER triangle. Complex meshes made up of many triangles can become quite costly. The best is to restrict yourself to simple quads (2 triangles).
 
 Global illumination:
 

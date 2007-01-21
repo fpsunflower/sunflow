@@ -52,7 +52,7 @@ import org.sunflow.system.UI.Module;
  * scene.
  */
 public class SunflowAPI {
-    public static final String VERSION = "0.07.0";
+    public static final String VERSION = "0.07.1";
     public static final String DEFAULT_OPTIONS = "::options";
 
     private Scene scene;
