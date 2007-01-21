@@ -14,6 +14,7 @@ import org.sunflow.system.UI.Module;
  */
 public class Texture {
     private String filename;
+    private boolean isLinear;
     private Bitmap bitmap;
     private int loaded;
 
@@ -22,8 +23,9 @@ public class Texture {
      * 
      * @param filename image file to load
      */
-    Texture(String filename) {
+    Texture(String filename, boolean isLinear) {
         this.filename = filename;
+        this.isLinear = isLinear;
         loaded = 0;
     }
 
@@ -32,7 +34,7 @@ public class Texture {
             return;
         try {
             UI.printInfo(Module.TEX, "Reading texture bitmap from: \"%s\" ...", filename);
-            bitmap = new Bitmap(filename);
+            bitmap = new Bitmap(filename, isLinear);
             if (bitmap.getWidth() == 0 || bitmap.getHeight() == 0)
                 bitmap = null;
         } catch (IOException e) {

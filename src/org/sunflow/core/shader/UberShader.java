@@ -36,10 +36,10 @@ public class UberShader implements Shader {
         String filename;
         filename = pl.getString("diffuse.texture", null);
         if (filename != null)
-            diffmap = TextureCache.getTexture(api.resolveTextureFilename(filename));
+            diffmap = TextureCache.getTexture(api.resolveTextureFilename(filename), false);
         filename = pl.getString("specular.texture", null);
         if (filename != null)
-            specmap = TextureCache.getTexture(api.resolveTextureFilename(filename));
+            specmap = TextureCache.getTexture(api.resolveTextureFilename(filename), false);
         diffBlend = MathUtils.clamp(pl.getFloat("diffuse.blend", diffBlend), 0, 1);
         specBlend = MathUtils.clamp(pl.getFloat("specular.blend", diffBlend), 0, 1);
         glossyness = MathUtils.clamp(pl.getFloat("glossyness", glossyness), 0, 1);

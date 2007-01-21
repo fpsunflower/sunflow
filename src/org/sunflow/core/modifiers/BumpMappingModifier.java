@@ -6,6 +6,7 @@ import org.sunflow.core.ParameterList;
 import org.sunflow.core.ShadingState;
 import org.sunflow.core.Texture;
 import org.sunflow.core.TextureCache;
+import org.sunflow.math.OrthoNormalBasis;
 
 public class BumpMappingModifier implements Modifier {
     private Texture bumpTexture;
@@ -19,7 +20,7 @@ public class BumpMappingModifier implements Modifier {
     public boolean update(ParameterList pl, SunflowAPI api) {
         String filename = pl.getString("texture", null);
         if (filename != null)
-            bumpTexture = TextureCache.getTexture(api.resolveTextureFilename(filename));
+            bumpTexture = TextureCache.getTexture(api.resolveTextureFilename(filename), true);
         scale = pl.getFloat("scale", scale);
         return bumpTexture != null;
     }
@@ -27,5 +28,6 @@ public class BumpMappingModifier implements Modifier {
     public void modify(ShadingState state) {
         // apply bump
         state.getNormal().set(bumpTexture.getBump(state.getUV().x, state.getUV().y, state.getBasis(), scale));
+        state.setBasis(OrthoNormalBasis.makeFromW(state.getNormal()));
     }
 }

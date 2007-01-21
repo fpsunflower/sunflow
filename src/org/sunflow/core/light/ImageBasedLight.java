@@ -50,7 +50,7 @@ public class ImageBasedLight implements PrimitiveList, LightSource, Shader {
 
         String filename = pl.getString("texture", null);
         if (filename != null)
-            texture = TextureCache.getTexture(api.resolveTextureFilename(filename));
+            texture = TextureCache.getTexture(api.resolveTextureFilename(filename), true);
 
         // no texture provided
         if (texture == null)

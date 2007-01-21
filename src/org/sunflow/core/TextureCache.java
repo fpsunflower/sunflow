@@ -24,13 +24,13 @@ public final class TextureCache {
      * @return texture object
      * @see Texture
      */
-    public synchronized static Texture getTexture(String filename) {
+    public synchronized static Texture getTexture(String filename, boolean isLinear) {
         if (textures.containsKey(filename)) {
             UI.printInfo(Module.TEX, "Using cached copy for file \"%s\" ...", filename);
             return textures.get(filename);
         }
         UI.printInfo(Module.TEX, "Using file \"%s\" ...", filename);
-        Texture t = new Texture(filename);
+        Texture t = new Texture(filename, isLinear);
         textures.put(filename, t);
         return t;
     }

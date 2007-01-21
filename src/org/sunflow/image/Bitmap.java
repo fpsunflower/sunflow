@@ -18,7 +18,7 @@ public class Bitmap {
     private int height;
     private boolean isHDR;
 
-    public Bitmap(String filename) throws IOException {
+    public Bitmap(String filename, boolean isLinear) throws IOException {
         if (filename.endsWith(".hdr")) {
             isHDR = true;
             // load radiance rgbe file
@@ -199,7 +199,7 @@ public class Bitmap {
                             pix |= (read[1] & 0xFF) << 8;
                             pix |= (read[0] & 0xFF);
                             // replicate pixel
-                            pix = Color.rgbToLinear(pix);
+                            pix = isLinear ? pix : Color.rgbToLinear(pix);
                             for (j = 0; j <= r; j++, pix_ptr++)
                                 pixels[pix_ptr] = pix;
                         } else {
@@ -211,7 +211,7 @@ public class Bitmap {
                                 pix = ((read[2] & 0xFF) << 16);
                                 pix |= ((read[1] & 0xFF) << 8);
                                 pix |= ((read[0] & 0xFF));
-                                pixels[pix_ptr] = Color.rgbToLinear(pix);
+                                pixels[pix_ptr] = isLinear ? pix : Color.rgbToLinear(pix);
                             }
                         }
                     }
@@ -225,7 +225,7 @@ public class Bitmap {
                         pix = ((read[2] & 0xFF) << 16);
                         pix |= ((read[1] & 0xFF) << 8);
                         pix |= ((read[0] & 0xFF));
-                        pixels[pix_ptr] = Color.rgbToLinear(pix);
+                        pixels[pix_ptr] = isLinear ? pix : Color.rgbToLinear(pix);
                     }
                     break;
                 default:
@@ -254,7 +254,7 @@ public class Bitmap {
             for (int y = 0, index = 0; y < height; y++) {
                 for (int x = 0; x < width; x++, index++) {
                     int rgb = bi.getRGB(x, height - 1 - y);
-                    pixels[index] = Color.rgbToLinear(rgb);
+                    pixels[index] = isLinear ? rgb : Color.rgbToLinear(rgb);
                 }
             }
         }
