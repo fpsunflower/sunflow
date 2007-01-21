@@ -17,6 +17,7 @@ import org.sunflow.core.Geometry;
 import org.sunflow.core.ImageSampler;
 import org.sunflow.core.Instance;
 import org.sunflow.core.LightSource;
+import org.sunflow.core.Modifier;
 import org.sunflow.core.Options;
 import org.sunflow.core.ParameterList;
 import org.sunflow.core.PrimitiveList;
@@ -331,6 +332,33 @@ public class SunflowAPI {
     }
 
     /**
+     * Defines a modifier with a given name. If the modifier object is
+     * <code>null</code>, the modifier with the given name will be updated
+     * (if it exists).
+     * 
+     * @param name a unique name given to the modifier
+     * @param modifier a modifier object
+     */
+    public final void modifier(String name, Modifier modifier) {
+        if (modifier != null) {
+            // we are declaring a shader for the first time
+            if (renderObjects.has(name)) {
+                UI.printError(Module.API, "Unable to declare modifier \"%s\", name is already in use", name);
+                parameterList.clear(true);
+                return;
+            }
+            renderObjects.put(name, modifier);
+        }
+        // update existing shader (only if it is valid)
+        if (lookupModifier(name) != null)
+            update(name);
+        else {
+            UI.printError(Module.API, "Unable to update modifier \"%s\" - modifier object was not found", name);
+            parameterList.clear(true);
+        }
+    }
+
+    /**
      * Defines a geometry with a given name. The geometry is built from the
      * specified {@link PrimitiveList}. If the primitives object is
      * <code>null</code>, the geometry with the given name will be updated
@@ -525,6 +553,17 @@ public class SunflowAPI {
      */
     public final Shader lookupShader(String name) {
         return renderObjects.lookupShader(name);
+    }
+
+    /**
+     * Retrieve a modifier object by its name, or <code>null</code> if no
+     * modifier was found, or if the specified object is not a modifier.
+     * 
+     * @param name modifier name
+     * @return the modifier object associated with that name
+     */
+    public final Modifier lookupModifier(String name) {
+        return renderObjects.lookupModifier(name);
     }
 
     /**

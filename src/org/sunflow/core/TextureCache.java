@@ -26,10 +26,10 @@ public final class TextureCache {
      */
     public synchronized static Texture getTexture(String filename) {
         if (textures.containsKey(filename)) {
-            UI.printInfo(Module.TEX, "Using cached file \"%s\" ...", filename);
+            UI.printInfo(Module.TEX, "Using cached copy for file \"%s\" ...", filename);
             return textures.get(filename);
         }
-        UI.printInfo(Module.TEX, "Loading file \"%s\" ...", filename);
+        UI.printInfo(Module.TEX, "Using file \"%s\" ...", filename);
         Texture t = new Texture(filename);
         textures.put(filename, t);
         return t;

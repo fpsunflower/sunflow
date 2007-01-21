@@ -230,6 +230,7 @@ public class JuliaFractal implements PrimitiveList {
         state.getPoint().z += state.getNormal().z * epsilon * 20;
 
         state.setShader(parent.getShader(0));
+        state.setModifier(parent.getModifier(0));
     }
 
     private static float length(float w, float x, float y, float z) {

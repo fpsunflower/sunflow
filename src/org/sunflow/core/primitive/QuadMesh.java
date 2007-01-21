@@ -377,6 +377,7 @@ public class QuadMesh implements PrimitiveList {
             state.setBasis(OrthoNormalBasis.makeFromW(state.getNormal()));
         int shaderIndex = faceShaders == null ? 0 : (faceShaders[primID] & 0xFF);
         state.setShader(parent.getShader(shaderIndex));
+        state.setModifier(parent.getModifier(shaderIndex));
     }
 
     protected Point3 getPoint(int i) {

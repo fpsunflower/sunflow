@@ -77,6 +77,7 @@ public class ParticleSurface implements PrimitiveList {
         state.getNormal().normalize();
 
         state.setShader(state.getInstance().getShader(0));
+        state.setModifier(state.getInstance().getModifier(0));
         // into object space
         Vector3 worldNormal = state.getInstance().transformNormalObjectToWorld(state.getNormal());
         state.getNormal().set(worldNormal);

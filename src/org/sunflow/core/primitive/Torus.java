@@ -82,6 +82,7 @@ public class Torus implements PrimitiveList {
         state.getUV().x = (float) (theta / (2 * Math.PI));
         state.getUV().y = (float) ((phi + Math.PI / 2) / Math.PI);
         state.setShader(parent.getShader(0));
+        state.setModifier(parent.getModifier(0));
         // into world space
         Vector3 worldNormal = parent.transformNormalObjectToWorld(state.getNormal());
         state.getNormal().set(worldNormal);

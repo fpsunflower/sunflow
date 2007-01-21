@@ -32,6 +32,7 @@ public final class ShadingState implements Iterable<LightSample> {
     private double qmcD0I;
     private double qmcD1I;
     private Shader shader;
+    private Modifier modifier;
     private int diffuseDepth;
     private int reflectionDepth;
     private int refractionDepth;
@@ -139,6 +140,14 @@ public final class ShadingState implements Iterable<LightSample> {
         return server.shadeHit(this);
     }
 
+    final void correctShadingNormal() {
+        // correct shading normals pointing the wrong way
+        if (Vector3.dot(n, ng) < 0) {
+            n.negate();
+            basis.flipW();
+        }
+    }
+    
     public final void faceforward() {
         // make sure we are on the right side of the material
         if (r.dot(ng) < 0) {
@@ -149,11 +158,6 @@ public final class ShadingState implements Iterable<LightSample> {
             n.negate();
             basis.flipW();
             behind = true;
-        }
-        // correct shading normals pointing the wrong way
-        if (Vector3.dot(n, ng) < 0) {
-            n.negate();
-            basis.flipW();
         }
         cosND = Math.max(-r.dot(n), 0); // can't be negative
         // offset the shaded point away from the surface to prevent
@@ -271,6 +275,19 @@ public final class ShadingState implements Iterable<LightSample> {
      */
     public final void setShader(Shader shader) {
         this.shader = shader;
+    }
+
+    final Modifier getModifier() {
+        return modifier;
+    }
+
+    /**
+     * Record which modifier should be applied to the intersected surface
+     * 
+     * @param modifier modifier to use the change this shading state
+     */
+    public final void setModifier(Modifier modifier) {
+        this.modifier = modifier;
     }
 
     /**

@@ -74,6 +74,7 @@ public abstract class CubeGrid implements PrimitiveList {
         state.getGeoNormal().set(state.getNormal());
         state.setBasis(OrthoNormalBasis.makeFromW(state.getNormal()));
         state.setShader(parent.getShader(0));
+        state.setModifier(parent.getModifier(0));
     }
 
     public void intersectPrimitive(Ray r, int primID, IntersectionState state) {

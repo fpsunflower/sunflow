@@ -14,6 +14,7 @@ public class Instance implements RenderObject {
     private BoundingBox bounds;
     private Geometry geometry;
     private Shader[] shaders;
+    private Modifier[] modifiers;
 
     public boolean update(ParameterList pl, SunflowAPI api) {
         String geometryName = pl.getString("geometry", null);
@@ -39,6 +40,16 @@ public class Instance implements RenderObject {
             }
         } else {
             // re-use existing shader array
+        }
+        String[] modifierNames = pl.getStringArray("modifiers", null);
+        if (modifierNames != null) {
+            // new modifier names have been provided
+            modifiers = new Modifier[modifierNames.length];
+            for (int i = 0; i < modifiers.length; i++) {
+                modifiers[i] = api.lookupModifier(modifierNames[i]);
+                if (modifiers[i] == null)
+                    UI.printWarning(Module.GEOM, "Modifier \"%s\" was not declared yet - ignoring", modifierNames[i]);
+            }
         }
         Matrix4 transform = pl.getMatrix("transform", o2w);
         if (transform != o2w) {
@@ -71,6 +82,14 @@ public class Instance implements RenderObject {
         }
     }
 
+    public void removeModifier(Modifier m) {
+        if (modifiers != null) {
+            for (int i = 0; i < modifiers.length; i++)
+                if (modifiers[i] == m)
+                    modifiers[i] = null;
+        }
+    }
+
     public BoundingBox getBounds() {
         return bounds;
     }
@@ -89,12 +108,22 @@ public class Instance implements RenderObject {
 
     public void prepareShadingState(ShadingState state) {
         geometry.prepareShadingState(state);
+        state.correctShadingNormal();
+        // run modifier if it was provided
+        if (state.getModifier() != null)
+            state.getModifier().modify(state);
     }
 
     public Shader getShader(int i) {
         if (shaders == null || i < 0 || i >= shaders.length)
             return null;
         return shaders[i];
+    }
+
+    public Modifier getModifier(int i) {
+        if (modifiers == null || i < 0 || i >= modifiers.length)
+            return null;
+        return modifiers[i];
     }
 
     public Point3 transformObjectToWorld(Point3 p) {

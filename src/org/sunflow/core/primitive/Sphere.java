@@ -53,6 +53,7 @@ public class Sphere implements PrimitiveList {
         v.y = 2 * (float) Math.PI * state.getNormal().x;
         v.z = 0;
         state.setShader(parent.getShader(0));
+        state.setModifier(parent.getModifier(0));
         // into world space
         Vector3 worldNormal = parent.transformNormalObjectToWorld(state.getNormal());
         v = parent.transformVectorObjectToWorld(v);
@@ -81,7 +82,7 @@ public class Sphere implements PrimitiveList {
             state.setIntersection(0, 0, 0);
         }
     }
-    
+
     public PrimitiveList getBakingPrimitives() {
         return null;
     }

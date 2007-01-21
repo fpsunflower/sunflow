@@ -25,9 +25,11 @@ import org.sunflow.core.camera.SphericalLens;
 import org.sunflow.core.camera.ThinLens;
 import org.sunflow.core.light.DirectionalSpotlight;
 import org.sunflow.core.light.ImageBasedLight;
-import org.sunflow.core.light.TriangleMeshLight;
 import org.sunflow.core.light.SphereLight;
 import org.sunflow.core.light.SunSkyLight;
+import org.sunflow.core.light.TriangleMeshLight;
+import org.sunflow.core.modifiers.BumpMappingModifier;
+import org.sunflow.core.modifiers.NormalMapModifier;
 import org.sunflow.core.primitive.Background;
 import org.sunflow.core.primitive.BanchoffSurface;
 import org.sunflow.core.primitive.CornellBox;
@@ -126,6 +128,9 @@ public class SCParser implements SceneParser {
                     parseCamera(api);
                 } else if (token.equals("shader")) {
                     if (!parseShader(api))
+                        return false;
+                } else if (token.equals("modifier")) {
+                    if (!parseModifier(api))
                         return false;
                 } else if (token.equals("override")) {
                     api.shaderOverride(p.getNextToken(), p.getNextBoolean());
@@ -610,12 +615,36 @@ public class SCParser implements SceneParser {
         return true;
     }
 
+    private boolean parseModifier(SunflowAPI api) throws ParserException, IOException {
+        p.checkNextToken("{");
+        p.checkNextToken("name");
+        String name = p.getNextToken();
+        UI.printInfo(Module.API, "Reading shader: %s ...", name);
+        p.checkNextToken("type");
+        if (p.peekNextToken("bump")) {
+            p.checkNextToken("texture");
+            api.parameter("texture", p.getNextToken());
+            p.checkNextToken("scale");
+            api.parameter("scale", p.getNextFloat());
+            api.modifier(name, new BumpMappingModifier());
+        } else if (p.peekNextToken("normalmap")) {
+            p.checkNextToken("texture");
+            api.parameter("texture", p.getNextToken());
+            api.modifier(name, new NormalMapModifier());
+        } else {
+            UI.printWarning(Module.API, "Unrecognized modifier type: %s", p.getNextToken());
+        }
+        p.checkNextToken("}");
+        return true;
+    }
+
     private void parseObjectBlock(SunflowAPI api) throws ParserException, IOException {
         p.checkNextToken("{");
         boolean noInstance = false;
         Matrix4 transform = null;
         String name = null;
         String[] shaders = null;
+        String[] modifiers = null;
         if (p.peekNextToken("noinstance")) {
             // this indicates that the geometry is to be created, but not
             // instanced into the scene
@@ -631,6 +660,13 @@ public class SCParser implements SceneParser {
                 p.checkNextToken("shader");
                 shaders = new String[] { p.getNextToken() };
             }
+            if (p.peekNextToken("modifiers")) {
+                int n = p.getNextInt();
+                modifiers = new String[n];
+                for (int i = 0; i < n; i++)
+                    modifiers[i] = p.getNextToken();
+            } else if (p.peekNextToken("modifier"))
+                modifiers = new String[] { p.getNextToken() };
             if (p.peekNextToken("transform"))
                 transform = parseMatrix();
         }
@@ -717,6 +753,8 @@ public class SCParser implements SceneParser {
                 float radius = p.getNextFloat();
                 api.parameter("transform", Matrix4.translation(x, y, z).multiply(Matrix4.scale(radius)));
                 api.parameter("shaders", shaders);
+                if (modifiers != null)
+                    api.parameter("modifiers", modifiers);
                 api.instance(name + ".instance", name);
                 noInstance = true; // disable future auto-instancing because
                 // instance has already been created
@@ -905,6 +943,8 @@ public class SCParser implements SceneParser {
         if (!noInstance) {
             // create instance
             api.parameter("shaders", shaders);
+            if (modifiers != null)
+                api.parameter("modifiers", modifiers);
             if (transform != null)
                 api.parameter("transform", transform);
             api.instance(name + ".instance", name);
@@ -932,6 +972,16 @@ public class SCParser implements SceneParser {
             shaders = new String[] { p.getNextToken() };
         }
         api.parameter("shaders", shaders);
+        String[] modifiers = null;
+        if (p.peekNextToken("modifiers")) {
+            int n = p.getNextInt();
+            modifiers = new String[n];
+            for (int i = 0; i < n; i++)
+                modifiers[i] = p.getNextToken();
+        } else if (p.peekNextToken("modifier"))
+            modifiers = new String[] { p.getNextToken() };
+        if (modifiers != null)
+            api.parameter("modifiers", modifiers);
         api.instance(name, geoname);
         p.checkNextToken("}");
     }

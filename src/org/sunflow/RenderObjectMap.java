@@ -6,6 +6,7 @@ import org.sunflow.core.Camera;
 import org.sunflow.core.Geometry;
 import org.sunflow.core.Instance;
 import org.sunflow.core.LightSource;
+import org.sunflow.core.Modifier;
 import org.sunflow.core.Options;
 import org.sunflow.core.ParameterList;
 import org.sunflow.core.PrimitiveList;
@@ -23,7 +24,7 @@ final class RenderObjectMap {
     private boolean rebuildLightList;
 
     private enum RenderObjectType {
-        UNKNOWN, SHADER, GEOMETRY, INSTANCE, LIGHT, CAMERA, OPTIONS
+        UNKNOWN, SHADER, MODIFIER, GEOMETRY, INSTANCE, LIGHT, CAMERA, OPTIONS
     }
 
     RenderObjectMap() {
@@ -53,6 +54,16 @@ final class RenderObjectMap {
                     if (i != null) {
                         UI.printWarning(Module.API, "Removing shader \"%s\" from instance \"%s\"", name, e.getKey());
                         i.removeShader(s);
+                    }
+                }
+                break;
+            case MODIFIER:
+                Modifier m = obj.getModifier();
+                for (FastHashMap.Entry<String, RenderObjectHandle> e : renderObjects) {
+                    Instance i = e.getValue().getInstance();
+                    if (i != null) {
+                        UI.printWarning(Module.API, "Removing modifier \"%s\" from instance \"%s\"", name, e.getKey());
+                        i.removeModifier(m);
                     }
                 }
                 break;
@@ -158,6 +169,10 @@ final class RenderObjectMap {
         renderObjects.put(name, new RenderObjectHandle(shader));
     }
 
+    final void put(String name, Modifier modifier) {
+        renderObjects.put(name, new RenderObjectHandle(modifier));
+    }
+
     final void put(String name, PrimitiveList primitives) {
         renderObjects.put(name, new RenderObjectHandle(primitives));
     }
@@ -217,6 +232,13 @@ final class RenderObjectMap {
         return (handle == null) ? null : handle.getShader();
     }
 
+    final Modifier lookupModifier(String name) {
+        if (name == null)
+            return null;
+        RenderObjectHandle handle = renderObjects.get(name);
+        return (handle == null) ? null : handle.getModifier();
+    }
+
     final LightSource lookupLight(String name) {
         if (name == null)
             return null;
@@ -231,6 +253,11 @@ final class RenderObjectMap {
         private RenderObjectHandle(Shader shader) {
             obj = shader;
             type = RenderObjectType.SHADER;
+        }
+
+        private RenderObjectHandle(Modifier modifier) {
+            obj = modifier;
+            type = RenderObjectType.MODIFIER;
         }
 
         private RenderObjectHandle(Tesselatable tesselatable) {
@@ -273,6 +300,10 @@ final class RenderObjectMap {
 
         private Shader getShader() {
             return (type == RenderObjectType.SHADER) ? (Shader) obj : null;
+        }
+
+        private Modifier getModifier() {
+            return (type == RenderObjectType.MODIFIER) ? (Modifier) obj : null;
         }
 
         private Geometry getGeometry() {
