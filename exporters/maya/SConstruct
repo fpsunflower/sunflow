@@ -10,7 +10,7 @@ if sys.platform == 'linux2' or sys.platform == 'linux-i386':
 	SharedLibrary('sunflow_80', main_80_obj, LIBS = Split("Foundation OpenMaya"), LIBPATH = ["/usr/aw/maya8.0/lib/"])
 else:
 	# Compiler system environment paths.
-	sdk_base="C:\\Program Files\\Microsoft Platform SDK\\"
+	sdk_base="C:\Program Files\Microsoft Platform SDK for Windows Server 2003 R2\\"
 	
 	c_path ="%s\\Bin\\win64\\x86\\AMD64;"  % (sdk_base)
 	c_incl ="%s\\Include;%s\\INCLUDE\\crt" % (sdk_base, sdk_base)
@@ -39,11 +39,18 @@ else:
 	envRelease['ENV']['INCLUDE'] = c_incl
 	envRelease['ENV']['LIB'] = c_lib
 	
-	envRelease.SharedLibrary('sunflow',
-	                         'main.cpp',
+	main_80_obj = envRelease.SharedObject('main_70', 'main.cpp', CPPPATH = ["C:\\Program Files\\Alias\\Maya8.0\\include"]   , CPPDEFINES=Split('NDEBUG WIN32 _WINDOWS NT_PLUGIN REQUIRE_IOSTREAM Bits64_'))
+	main_85_obj = envRelease.SharedObject('main_80', 'main.cpp', CPPPATH = ["C:\\Program Files\\Autodesk\\Maya8.5\\include"], CPPDEFINES=Split('NDEBUG WIN32 _WINDOWS NT_PLUGIN REQUIRE_IOSTREAM Bits64_'))
+
+	envRelease.SharedLibrary('sunflow_80',
+	                         main_80_obj,
 	                         SHLIBSUFFIX='.mll',
 	                         LIBS=Split("Foundation OpenMaya bufferoverflowU"),
 	                         LIBPATH=["C:\\Program Files\\Alias\\Maya8.0\\lib"],
-	                         CPPPATH=["C:\\Program Files\\Alias\\Maya8.0\\include"],
-	                         CPPDEFINES=Split('NDEBUG WIN32 _WINDOWS NT_PLUGIN REQUIRE_IOSTREAM Bits64_'),
+	                         LINKFLAGS=Split('/export:initializePlugin /export:uninitializePlugin'))
+	envRelease.SharedLibrary('sunflow_85',
+	                         main_85_obj,
+	                         SHLIBSUFFIX='.mll',
+	                         LIBS=Split("Foundation OpenMaya bufferoverflowU"),
+	                         LIBPATH=["C:\\Program Files\\Autodesk\\Maya8.5\\lib"],
 	                         LINKFLAGS=Split('/export:initializePlugin /export:uninitializePlugin'))
