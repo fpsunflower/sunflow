@@ -33,6 +33,7 @@ public class Benchmark implements BenchmarkTest, UserInterface, Display {
     private boolean showOutput;
     private boolean showBenchmarkOutput;
     private boolean saveOutput;
+    private int threads;
     private int[] referenceImage;
     private int[] validationImage;
     private int errorThreshold;
@@ -51,11 +52,16 @@ public class Benchmark implements BenchmarkTest, UserInterface, Display {
     }
 
     public Benchmark(int resolution, boolean showOutput, boolean showBenchmarkOutput, boolean saveOutput) {
+        this(resolution, showOutput, showBenchmarkOutput, saveOutput, 0);
+    }
+
+    public Benchmark(int resolution, boolean showOutput, boolean showBenchmarkOutput, boolean saveOutput, int threads) {
         UI.set(this);
         this.resolution = resolution;
         this.showOutput = showOutput;
         this.showBenchmarkOutput = showBenchmarkOutput;
         this.saveOutput = saveOutput;
+        this.threads= threads;
         errorThreshold = 6;
         // fetch reference image from resources (jar file or classpath)
         if (saveOutput)
@@ -91,7 +97,7 @@ public class Benchmark implements BenchmarkTest, UserInterface, Display {
 
         public void build() {
             // settings
-            parameter("threads", 0);
+            parameter("threads", threads);
             // spawn regular priority threads
             parameter("threads.lowPriority", false);
             parameter("resolutionX", resolution);
