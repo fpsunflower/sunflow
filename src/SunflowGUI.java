@@ -921,6 +921,11 @@ public class SunflowGUI extends javax.swing.JFrame implements UserInterface {
                 }
                 if (api != null) {
                     try {
+                        if (currentFile != null) {
+                            String dir = new File(currentFile).getAbsoluteFile().getParent();
+                            api.addIncludeSearchPath(dir);
+                            api.addIncludeSearchPath(dir);
+                        }
                         api.build();
                     } catch (Exception e) {
                         UI.printError(Module.GUI, "Build terminated abnormally: %s", e.getMessage());
