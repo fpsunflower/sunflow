@@ -5,6 +5,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.StringReader;
+import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
 import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
@@ -840,7 +841,7 @@ public class SCParser implements SceneParser {
             p.checkNextToken("segments");
             api.parameter("segments", p.getNextInt());
             p.checkNextToken("width");
-            api.parameter("width", p.getNextFloat());
+            api.parameter("widths", p.getNextFloat());
             p.checkNextToken("points");
             api.parameter("points", "point", "vertex", parseFloatArray(p.getNextInt()));
             api.geometry(name, new Hair());
@@ -919,10 +920,15 @@ public class SCParser implements SceneParser {
                 UI.printWarning(Module.API, "Deprecated object type: \"dlasurface\" - please use \"particles\" instead");
             p.checkNextToken("filename");
             String filename = p.getNextToken();
+            boolean littleEndian = false;
+            if (p.peekNextToken("little_endian"))
+                littleEndian = true;
             UI.printInfo(Module.USER, "Loading particle file: %s", filename);
             File file = new File(filename);
             FileInputStream stream = new FileInputStream(filename);
             MappedByteBuffer map = stream.getChannel().map(FileChannel.MapMode.READ_ONLY, 0, file.length());
+            if (littleEndian)
+                map.order(ByteOrder.LITTLE_ENDIAN);
             FloatBuffer buffer = map.asFloatBuffer();
             float[] data = new float[buffer.capacity()];
             for (int i = 0; i < data.length; i++)
