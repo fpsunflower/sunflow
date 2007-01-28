@@ -44,9 +44,7 @@ public class Benchmark implements BenchmarkTest, UserInterface, Display {
             System.out.println("  -regen                        Regenerate reference images for a variety of sizes");
             System.out.println("  -bench [threads] [resolution] Run a single iteration of the benchmark using the specified thread count and image resolution");
             System.out.println("                                Default: threads=0 (auto-detect cpus), resolution=256");
-            return;
-        }
-        if (args[0].equals("-regen")) {
+        } else if (args[0].equals("-regen")) {
             int[] sizes = { 32, 64, 96, 128, 256, 384, 512 };
             for (int s : sizes) {
                 // run a single iteration to generate the reference image
