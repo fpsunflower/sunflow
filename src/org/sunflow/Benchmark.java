@@ -39,11 +39,30 @@ public class Benchmark implements BenchmarkTest, UserInterface, Display {
     private int errorThreshold;
 
     public static void main(String[] args) {
-        int[] sizes = { 32, 64, 96, 128, 256, 384, 512 };
-        for (int s : sizes) {
-            // run a single iteration to generate the image
-            Benchmark b = new Benchmark(s, true, false, true);
-            b.kernelMain();
+        if (args.length == 0) {
+            System.out.println("Benchmark options:");
+            System.out.println("  -regen                        Regenerate reference images for a variety of sizes");
+            System.out.println("  -bench [threads] [resolution] Run a single iteration of the benchmark using the specified thread count and image resolution");
+            System.out.println("                                Default: threads=0 (auto-detect cpus), resolution=256");
+            return;
+        }
+        if (args[0].equals("-regen")) {
+            int[] sizes = { 32, 64, 96, 128, 256, 384, 512 };
+            for (int s : sizes) {
+                // run a single iteration to generate the reference image
+                Benchmark b = new Benchmark(s, true, false, true);
+                b.kernelMain();
+            }
+        } else if (args[0].equals("-bench")) {
+            int threads = 0, resolution = 256;
+            if (args.length > 1)
+                threads = Integer.parseInt(args[1]);
+            if (args.length > 2)
+                resolution = Integer.parseInt(args[2]);
+            Benchmark benchmark = new Benchmark(resolution, false, true, false, threads);
+            benchmark.kernelBegin();
+            benchmark.kernelMain();
+            benchmark.kernelEnd();
         }
     }
 
@@ -61,7 +80,7 @@ public class Benchmark implements BenchmarkTest, UserInterface, Display {
         this.showOutput = showOutput;
         this.showBenchmarkOutput = showBenchmarkOutput;
         this.saveOutput = saveOutput;
-        this.threads= threads;
+        this.threads = threads;
         errorThreshold = 6;
         // fetch reference image from resources (jar file or classpath)
         if (saveOutput)
