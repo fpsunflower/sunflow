@@ -418,8 +418,6 @@ public class BucketRenderer implements ImageSampler {
                 return true;
             if (shader != sample.shader)
                 return true;
-            if (shader == null)
-                return false;
             if (Color.hasContrast(c, sample.c, thresh))
                 return true;
             float dot = (nx * sample.nx + ny * sample.ny + nz * sample.nz);
