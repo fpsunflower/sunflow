@@ -240,30 +240,20 @@ public class BoundingIntervalHierarchy implements AccelerationStructure {
                     // primitives
                     // create leaves, update and recurse
                     int nextIndex = tempTree.getSize();
-                    // allocate child - for right clip
+                    // allocate child - for bvh2 node
                     tempTree.add(0);
                     tempTree.add(0);
                     tempTree.add(0);
-                    // allocate child - for future nodes
-                    tempTree.add(0);
-                    tempTree.add(0);
-                    tempTree.add(0);
-                    // write left clip
+                    // write left/right clip node
                     stats.updateInner();
                     stats.updateLeaf(depth, 0);
-                    tempTree.set(nodeIndex + 0, (axis << 30) | nextIndex);
-                    tempTree.set(nodeIndex + 1, Float.floatToRawIntBits(nodeR));
-                    tempTree.set(nodeIndex + 2, Float.floatToRawIntBits(Float.POSITIVE_INFINITY));
-                    // write right clip
-                    stats.updateInner();
-                    stats.updateLeaf(depth + 1, 0);
-                    tempTree.set(nextIndex + 0, (axis << 30) | ((nextIndex - 3) + 3));
-                    tempTree.set(nextIndex + 1, Float.floatToRawIntBits(Float.NEGATIVE_INFINITY));
-                    tempTree.set(nextIndex + 2, Float.floatToRawIntBits(nodeL));
+                    tempTree.set(nodeIndex + 0, (axis << 30) | (1 << 29) | nextIndex);
+                    tempTree.set(nodeIndex + 1, Float.floatToRawIntBits(nodeL));
+                    tempTree.set(nodeIndex + 2, Float.floatToRawIntBits(nodeR));
                     // update nodebox and recurse
                     nodeBox[2 * axis + 0] = nodeL;
                     nodeBox[2 * axis + 1] = nodeR;
-                    subdivide(left, rightOrig, tempTree, indices, gridBox, nodeBox, nextIndex + 3, depth + 2, stats);
+                    subdivide(left, rightOrig, tempTree, indices, gridBox, nodeBox, nextIndex, depth + 1, stats);
                     return;
                 }
             }
@@ -474,8 +464,8 @@ public class BoundingIntervalHierarchy implements AccelerationStructure {
         while (true) {
             pushloop: while (true) {
                 int tn = tree[node];
-                int axis = tn & (3 << 30);
-                int offset = tn & ~(3 << 30);
+                int axis = tn & (7 << 29);
+                int offset = tn & ~(7 << 29);
                 switch (axis) {
                     case 0: {
                         // x axis
@@ -566,7 +556,7 @@ public class BoundingIntervalHierarchy implements AccelerationStructure {
                         intervalMax = (tf <= intervalMax) ? tf : intervalMax;
                         continue;
                     }
-                    default: {
+                    case 3 << 30: {
                         // leaf - test some objects
                         int n = tree[node + 1];
                         while (n > 0) {
@@ -576,6 +566,38 @@ public class BoundingIntervalHierarchy implements AccelerationStructure {
                         }
                         break pushloop;
                     }
+                    case 1 << 29: {
+                        float tf = (Float.intBitsToFloat(tree[node + offsetXFront]) - orgX) * invDirX;
+                        float tb = (Float.intBitsToFloat(tree[node + offsetXBack]) - orgX) * invDirX;
+                        node = offset;
+                        intervalMin = intervalMin > tf ? intervalMin : tf;
+                        intervalMax = intervalMax < tb ? intervalMax : tb;
+                        if (intervalMin > intervalMax)
+                            break pushloop;
+                        continue;
+                    }
+                    case 3 << 29: {
+                        float tf = (Float.intBitsToFloat(tree[node + offsetYFront]) - orgY) * invDirY;
+                        float tb = (Float.intBitsToFloat(tree[node + offsetYBack]) - orgY) * invDirY;
+                        node = offset;
+                        intervalMin = intervalMin > tf ? intervalMin : tf;
+                        intervalMax = intervalMax < tb ? intervalMax : tb;
+                        if (intervalMin > intervalMax)
+                            break pushloop;
+                        continue;
+                    }
+                    case 5 << 29: {
+                        float tf = (Float.intBitsToFloat(tree[node + offsetZFront]) - orgZ) * invDirZ;
+                        float tb = (Float.intBitsToFloat(tree[node + offsetZBack]) - orgZ) * invDirZ;
+                        node = offset;
+                        intervalMin = intervalMin > tf ? intervalMin : tf;
+                        intervalMax = intervalMax < tb ? intervalMax : tb;
+                        if (intervalMin > intervalMax)
+                            break pushloop;
+                        continue;
+                    }
+                    default:
+                        return; // should not happen
                 } // switch
             } // traversal loop
             do {

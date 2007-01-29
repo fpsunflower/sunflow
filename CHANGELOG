@@ -1,3 +1,13 @@
+v0.07.2
+* Implemented BVH2 case properly in BoundingIntervalHierarchy (needs benchmarking)
+* Added binary STL format to FileMesh
+* Upgraded to Janino 2.5.4
+* Improvements to Geometry class to handle tesselation failures
+* Created FileMesh class for on-demand loading of meshes (supports RA3/OBJ)
+* Tweaks to Benchmark class for third parties
+* Small bugfixes
+* Added little_endian option for particle files
+
 v0.07.1
 * Added Modifier concept - used to implement bump/normal mapping at the moment
 * Added bucket dumping debugging option to bucket render - saves out unfiltered buckets as they are rendered

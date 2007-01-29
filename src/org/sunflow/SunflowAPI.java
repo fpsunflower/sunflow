@@ -52,7 +52,7 @@ import org.sunflow.system.UI.Module;
  * scene.
  */
 public class SunflowAPI {
-    public static final String VERSION = "0.07.1";
+    public static final String VERSION = "0.07.2";
     public static final String DEFAULT_OPTIONS = "::options";
 
     private Scene scene;
@@ -65,12 +65,14 @@ public class SunflowAPI {
     private int currentFrame;
 
     /**
-     * This is a quick system test which verifies that the user has launched Java properly
+     * This is a quick system test which verifies that the user has launched
+     * Java properly
+     * 
      * @return
      */
     public static void runSystemCheck() {
         final long RECOMMENDED_MAX_SIZE = 800;
-        long maxMb = Runtime.getRuntime().maxMemory() / 1048576; 
+        long maxMb = Runtime.getRuntime().maxMemory() / 1048576;
         if (maxMb < RECOMMENDED_MAX_SIZE)
             UI.printError(Module.API, "JVM available memory is below %d MB (found %d MB only).\nPlease make sure you launched the program with the -Xmx command line options.", RECOMMENDED_MAX_SIZE, maxMb);
         String compiler = System.getProperty("java.vm.name");
@@ -321,6 +323,18 @@ public class SunflowAPI {
      */
     public final String resolveTextureFilename(String filename) {
         return textureSearchPath.resolvePath(filename);
+    }
+
+    /**
+     * Attempts to resolve the specified filename by checking it against the
+     * include search path.
+     * 
+     * @param filename filename
+     * @return a path which matches the filename, or filename if no matches are
+     *         found
+     */
+    public final String resolveIncludeFilename(String filename) {
+        return includeSearchPath.resolvePath(filename);
     }
 
     /**

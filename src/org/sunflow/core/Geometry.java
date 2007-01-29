@@ -1,6 +1,7 @@
 package org.sunflow.core;
 
 import org.sunflow.SunflowAPI;
+import org.sunflow.core.accel.NullAccelerator;
 import org.sunflow.math.BoundingBox;
 import org.sunflow.math.Matrix4;
 import org.sunflow.system.UI;
@@ -11,6 +12,7 @@ public class Geometry implements RenderObject {
     private PrimitiveList primitives;
     private AccelerationStructure accel;
     private int builtAccel;
+    private int builtTess;
     private String acceltype;
 
     /**
@@ -24,6 +26,7 @@ public class Geometry implements RenderObject {
         primitives = null;
         accel = null;
         builtAccel = 0;
+        builtTess = 0;
         acceltype = null;
     }
 
@@ -37,13 +40,16 @@ public class Geometry implements RenderObject {
         this.primitives = primitives;
         accel = null;
         builtAccel = 0;
+        builtTess = 1; // already tesselated
     }
 
     public boolean update(ParameterList pl, SunflowAPI api) {
         acceltype = pl.getString("accel", acceltype);
         // clear up old tesselation if it exists
-        if (tesselatable != null)
+        if (tesselatable != null) {
             primitives = null;
+            builtTess = 0;
+        }
         // clear acceleration structure so it will be rebuilt
         accel = null;
         builtAccel = 0;
@@ -58,44 +64,73 @@ public class Geometry implements RenderObject {
     }
 
     BoundingBox getWorldBounds(Matrix4 o2w) {
-        return primitives == null ? tesselatable.getWorldBounds(o2w) : primitives.getWorldBounds(o2w);
+        if (primitives == null) {
+
+            BoundingBox b = tesselatable.getWorldBounds(o2w);
+            if (b != null)
+                return b;
+            if (builtTess == 0)
+                tesselate();
+            if (primitives == null)
+                return null; // failed tesselation, return infinite bounding
+                                // box
+        }
+        return primitives.getWorldBounds(o2w);
     }
 
     void intersect(Ray r, IntersectionState state) {
+        if (builtTess == 0)
+            tesselate();
         if (builtAccel == 0)
             build();
         accel.intersect(r, state);
+    }
+
+    private synchronized void tesselate() {
+        // double check flag
+        if (builtTess != 0)
+            return;
+        if (tesselatable != null && primitives == null) {
+            UI.printInfo(Module.GEOM, "Tesselating geometry ...");
+            primitives = tesselatable.tesselate();
+            if (primitives == null)
+                UI.printError(Module.GEOM, "Tesselation failed - geometry will be discarded");
+            else
+                UI.printDetailed(Module.GEOM, "Tesselation produced %d primitives", primitives.getNumPrimitives());
+        }
+        builtTess = 1;
     }
 
     private synchronized void build() {
         // double check flag
         if (builtAccel != 0)
             return;
-
-        if (tesselatable != null) {
-            UI.printInfo(Module.GEOM, "Tesselating geometry ...");
-            primitives = tesselatable.tesselate();
+        if (primitives != null) {
+            int n = primitives.getNumPrimitives();
+            if (n >= 1000)
+                UI.printInfo(Module.GEOM, "Building acceleration structure for %d primitives ...", n);
+            accel = AccelerationStructureFactory.create(acceltype, n, true);
+            accel.build(primitives);
+        } else {
+            // create an empty accelerator to avoid having to check for null
+            // pointers in the intersect method
+            accel = new NullAccelerator();
         }
-
-        int n = primitives.getNumPrimitives();
-        if (n >= 1000)
-            UI.printInfo(Module.GEOM, "Building acceleration structure for %d primitives ...", n);
-
-        accel = AccelerationStructureFactory.create(acceltype, n, true);
-        accel.build(primitives);
         builtAccel = 1;
     }
 
     void prepareShadingState(ShadingState state) {
         primitives.prepareShadingState(state);
     }
-    
+
     public PrimitiveList getBakingPrimitives() {
-        if (builtAccel != 0)
-            build();
+        if (builtTess == 0)
+            tesselate();
+        if (primitives == null)
+            return null;
         return primitives.getBakingPrimitives();
     }
-    
+
     PrimitiveList getPrimitiveList() {
         return primitives;
     }

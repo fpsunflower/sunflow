@@ -15,8 +15,7 @@ Description     :       Export to Sunflow renderer http://sunflow.sourceforge.ne
 
 ##  imports  ##
 
-import Blender, os, sys, time
-
+import Blender, os, sys, time, struct
 from Blender import Mathutils, NMesh, Lamp, Object, Scene, Mesh, Material, Draw, BGL
 from math import *
 
@@ -295,7 +294,7 @@ def export_camera(cam):
 
 
 ## Export method for meshes
-def export_geometry(obj):
+def export_geometry(obj, filename):
       #mesh = "";verts="";faces="";numverts=""
       islight = obj.name.startswith("meshlight")
       if islight:
@@ -304,12 +303,59 @@ def export_geometry(obj):
           print "o exporting mesh " + obj.name+"..."
       # get the mesh data
       mesh = NMesh.GetRawFromObject(obj.name)
-      mesh.transform(obj.getMatrix(), 1)
+      if islight:
+          mesh.transform(obj.getMatrix(), 1)
       verts = mesh.verts
       faces = mesh.faces
-
+      numfaces = faces.__len__()
       numverts = verts.__len__()
-
+      if numfaces > 100000:
+          print "   -> large mesh detected - creating binary ra3 file"
+          ra3filename = filename.replace(".sc", "_%s.ra3" % obj.name)
+          RA3FILE = open(ra3filename, 'wb')
+          print "   -> creating \"%s\" ..." % ra3filename
+          print "   -> counting triangles ..."
+          numtris = 0
+          for face in faces:
+                  num = len(face.v)
+                  if num == 4:
+                          numtris = numtris + 2
+                  elif num == 3:
+                          numtris = numtris + 1
+          print "   -> writing %s points" % numverts
+          RA3FILE.write(struct.pack("<II", numverts, numtris))
+          for vert in verts:
+                  RA3FILE.write(struct.pack("<fff", vert.co[0], vert.co[1], vert.co[2]))
+          print "   -> writing %s triangles" % numtris
+          for face in faces:
+                      num = len(face.v)
+                      if num == 4:
+                              RA3FILE.write(struct.pack("<III", face.v[0].index, face.v[1].index, face.v[2].index))
+                              RA3FILE.write(struct.pack("<III", face.v[0].index, face.v[2].index, face.v[3].index))
+                      elif num == 3:
+                              RA3FILE.write(struct.pack("<III", face.v[0].index, face.v[1].index, face.v[2].index))
+          RA3FILE.close()
+          print "   -> done writing file"
+          FILE.write("\n\nobject {\n")
+          if len(mesh.materials) == 1:
+                  FILE.write("\tshader \"" + mesh.materials[0].name + ".shader\"\n")
+          elif len(mesh.materials) > 1:
+                  FILE.write("\tshaders %d\n" % (len(mesh.materials)))
+                  for mat in mesh.materials:
+                          FILE.write("\t\t\"" + mat.name + ".shader\"\n")
+          else:
+                  FILE.write("\tshader def\n")
+          mat = obj.getMatrix()
+          FILE.write("\ttransform col\n\t\t%s %s %s %s\n\t\t%s %s %s %s\n\t\t%s %s %s %s\n\t\t%s %s %s %s\n" % (
+                                        mat[0][0], mat[0][1], mat[0][2], mat[0][3], 
+                                        mat[1][0], mat[1][1], mat[1][2], mat[1][3], 
+                                        mat[2][0], mat[2][1], mat[2][2], mat[2][3], 
+                                        mat[3][0], mat[3][1], mat[3][2], mat[3][3]))
+          FILE.write("\ttype file-mesh\n")
+          FILE.write("\tname \"" + obj.name + "\"\n")
+          FILE.write("\tfilename \"%s\"\n" % os.path.basename(ra3filename))
+          FILE.write("}\n")
+          return
       if numverts > 0:
               if islight:
                       FILE.write("\n\nlight {\n")
@@ -332,6 +378,12 @@ def export_geometry(obj):
                                       FILE.write("\t\t\"" + mat.name + ".shader\"\n")
                       else:
                               FILE.write("\tshader def\n")
+                      mat = obj.getMatrix()
+                      FILE.write("\ttransform col\n\t\t%s %s %s %s\n\t\t%s %s %s %s\n\t\t%s %s %s %s\n\t\t%s %s %s %s\n" % (
+                                                    mat[0][0], mat[0][1], mat[0][2], mat[0][3], 
+                                                    mat[1][0], mat[1][1], mat[1][2], mat[1][3], 
+                                                    mat[2][0], mat[2][1], mat[2][2], mat[2][3], 
+                                                    mat[3][0], mat[3][1], mat[3][2], mat[3][3]))
                       FILE.write("\ttype generic-mesh\n")
                       FILE.write("\tname \"" + obj.name + "\"\n")
 
@@ -350,7 +402,7 @@ def export_geometry(obj):
               allflat = True
               for face in faces:
                       num = len(face.v)
-                      smooth = face.smooth <> 0
+                      smooth = face.smooth != 0
                       allsmooth &= smooth
                       allflat &= not smooth
                       if num == 4:
@@ -370,7 +422,7 @@ def export_geometry(obj):
                               FILE.write("\tnormals facevarying\n")
                               for face in faces:
                                       num = len(face.v)
-                                      if face.smooth <> 0:
+                                      if face.smooth != 0:
                                           if num == 4:
                                               index0 = face.v[0].index
                                               index1 = face.v[1].index
@@ -432,7 +484,7 @@ def export_geometry(obj):
 def exportfile(filename):
       global FILE, SCENE, IM_HEIGHT, IM_WIDTH, TEXTURES, OBJECTS, LAYERS, IBLLIGHT, EXP_ANIM
 
-      SCENE     = Blender.Scene.getCurrent()
+      SCENE     = Blender.Scene.GetCurrent()
       IM_HEIGHT = SCENE.getRenderingContext().imageSizeY()
       IM_WIDTH  = SCENE.getRenderingContext().imageSizeX()
       TEXTURES  = Blender.Texture.Get()
@@ -495,7 +547,7 @@ public void build() {
 	                  export_lights(object)
                   if object.getType() == 'Mesh' or object.getType() == 'Surf':
                      if object.name.startswith("meshlight"):
-                            export_geometry(object)
+                            export_geometry(object, filename)
           if ANIM == 0:
               FILE.write("\n\ninclude \"%s\"\n" % (os.path.basename(filename).replace(".sc", ".geo.sc")))
               FILE.close()
@@ -508,7 +560,7 @@ public void build() {
              if object.users > 1 and object.layers[0] in LAYERS:
                  if object.getType() == 'Mesh' or object.getType() == 'Surf':
                     if not object.name.startswith("meshlight"):
-                        export_geometry(object)
+                        export_geometry(object, filename)
           FILE.close()
 
       if ANIM == 1:

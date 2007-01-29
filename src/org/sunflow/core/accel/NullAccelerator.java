@@ -11,6 +11,7 @@ public class NullAccelerator implements AccelerationStructure {
 
     public NullAccelerator() {
         primitives = null;
+        n = 0;
     }
 
     public void build(PrimitiveList primitives) {

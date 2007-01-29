@@ -59,6 +59,7 @@ import org.sunflow.core.shader.UberShader;
 import org.sunflow.core.shader.ViewCausticsShader;
 import org.sunflow.core.shader.ViewGlobalPhotonsShader;
 import org.sunflow.core.shader.ViewIrradianceShader;
+import org.sunflow.core.tesselatable.FileMesh;
 import org.sunflow.core.tesselatable.Gumbo;
 import org.sunflow.core.tesselatable.Teapot;
 import org.sunflow.image.Color;
@@ -942,6 +943,11 @@ public class SCParser implements SceneParser {
             p.checkNextToken("radius");
             api.parameter("radius", p.getNextFloat());
             api.geometry(name, new ParticleSurface());
+        } else if (type.equals("file-mesh")) {
+            UI.printInfo(Module.API, "Reading file mesh: %s ... ", name);
+            p.checkNextToken("filename");
+            api.parameter("filename", p.getNextToken());
+            api.geometry(name, new FileMesh());
         } else {
             UI.printWarning(Module.API, "Unrecognized object type: %s", p.getNextToken());
             noInstance = true;

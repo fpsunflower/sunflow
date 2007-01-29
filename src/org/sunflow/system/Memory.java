@@ -2,9 +2,10 @@ package org.sunflow.system;
 
 public final class Memory {
     public static final String sizeof(int[] array) {
-        if (array == null)
-            return "0b";
-        long bytes = 4 * array.length;
+        return bytesToString(array == null ? 0 : 4 * array.length);
+    }
+    
+    public static final String bytesToString(long bytes) {
         if (bytes < 1024)
             return String.format("%db", bytes);
         if (bytes < 1024 * 1024)
