@@ -233,20 +233,16 @@ public class BoundingIntervalHierarchy implements AccelerationStructure {
             if (nodeL > nodeBox[2 * axis + 0] && nodeR < nodeBox[2 * axis + 1]) {
                 float nodeBoxW = nodeBox[2 * axis + 1] - nodeBox[2 * axis + 0];
                 float nodeNewW = nodeR - nodeL;
+                // node box is too big compare to space occupied by primitives?
                 if (1.3f * nodeNewW < nodeBoxW) {
                     stats.updateBVH2();
-                    // create clips to create empty space
-                    // node box is too big compare to space occupied by
-                    // primitives
-                    // create leaves, update and recurse
                     int nextIndex = tempTree.getSize();
-                    // allocate child - for bvh2 node
+                    // allocate child
                     tempTree.add(0);
                     tempTree.add(0);
                     tempTree.add(0);
-                    // write left/right clip node
+                    // write bvh2 clip node
                     stats.updateInner();
-                    stats.updateLeaf(depth, 0);
                     tempTree.set(nodeIndex + 0, (axis << 30) | (1 << 29) | nextIndex);
                     tempTree.set(nodeIndex + 1, Float.floatToRawIntBits(nodeL));
                     tempTree.set(nodeIndex + 2, Float.floatToRawIntBits(nodeR));
@@ -570,8 +566,8 @@ public class BoundingIntervalHierarchy implements AccelerationStructure {
                         float tf = (Float.intBitsToFloat(tree[node + offsetXFront]) - orgX) * invDirX;
                         float tb = (Float.intBitsToFloat(tree[node + offsetXBack]) - orgX) * invDirX;
                         node = offset;
-                        intervalMin = intervalMin > tf ? intervalMin : tf;
-                        intervalMax = intervalMax < tb ? intervalMax : tb;
+                        intervalMin = (tf >= intervalMin) ? tf : intervalMin;
+                        intervalMax = (tb <= intervalMax) ? tb : intervalMax;
                         if (intervalMin > intervalMax)
                             break pushloop;
                         continue;
@@ -580,8 +576,8 @@ public class BoundingIntervalHierarchy implements AccelerationStructure {
                         float tf = (Float.intBitsToFloat(tree[node + offsetYFront]) - orgY) * invDirY;
                         float tb = (Float.intBitsToFloat(tree[node + offsetYBack]) - orgY) * invDirY;
                         node = offset;
-                        intervalMin = intervalMin > tf ? intervalMin : tf;
-                        intervalMax = intervalMax < tb ? intervalMax : tb;
+                        intervalMin = (tf >= intervalMin) ? tf : intervalMin;
+                        intervalMax = (tb <= intervalMax) ? tb : intervalMax;
                         if (intervalMin > intervalMax)
                             break pushloop;
                         continue;
@@ -590,8 +586,8 @@ public class BoundingIntervalHierarchy implements AccelerationStructure {
                         float tf = (Float.intBitsToFloat(tree[node + offsetZFront]) - orgZ) * invDirZ;
                         float tb = (Float.intBitsToFloat(tree[node + offsetZBack]) - orgZ) * invDirZ;
                         node = offset;
-                        intervalMin = intervalMin > tf ? intervalMin : tf;
-                        intervalMax = intervalMax < tb ? intervalMax : tb;
+                        intervalMin = (tf >= intervalMin) ? tf : intervalMin;
+                        intervalMax = (tb <= intervalMax) ? tb : intervalMax;
                         if (intervalMin > intervalMax)
                             break pushloop;
                         continue;
