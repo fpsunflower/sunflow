@@ -59,6 +59,7 @@ import org.sunflow.core.shader.UberShader;
 import org.sunflow.core.shader.ViewCausticsShader;
 import org.sunflow.core.shader.ViewGlobalPhotonsShader;
 import org.sunflow.core.shader.ViewIrradianceShader;
+import org.sunflow.core.tesselatable.BezierMesh;
 import org.sunflow.core.tesselatable.FileMesh;
 import org.sunflow.core.tesselatable.Gumbo;
 import org.sunflow.core.tesselatable.Teapot;
@@ -950,6 +951,26 @@ public class SCParser implements SceneParser {
             if (p.peekNextToken("smooth_normals"))
                 api.parameter("smooth_normals", p.getNextBoolean());
             api.geometry(name, new FileMesh());
+        } else if (type.equals("bezier-mesh")) {
+            UI.printInfo(Module.API, "Reading bezier mesh: %s ... ", name);
+            p.checkNextToken("n");
+            int nu, nv;
+            api.parameter("nu", nu = p.getNextInt());
+            api.parameter("nv", nv = p.getNextInt());
+            if (p.peekNextToken("wrap")) {
+                api.parameter("uwrap", p.getNextBoolean());
+                api.parameter("vwrap", p.getNextBoolean());
+            }
+            p.checkNextToken("points");
+            float[] points = new float[3 * nu * nv];
+            for (int i = 0; i < points.length; i++)
+                points[i] = p.getNextFloat();
+            api.parameter("points", "point", "vertex", points);
+            if (p.peekNextToken("subdivs"))
+                api.parameter("subdivs", p.getNextInt());
+            if (p.peekNextToken("smooth"))
+                api.parameter("smooth", p.getNextBoolean());
+            api.geometry(name, (Tesselatable) new BezierMesh());
         } else {
             UI.printWarning(Module.API, "Unrecognized object type: %s", p.getNextToken());
             noInstance = true;

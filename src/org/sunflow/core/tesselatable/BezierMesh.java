@@ -8,6 +8,7 @@ import org.sunflow.core.PrimitiveList;
 import org.sunflow.core.Ray;
 import org.sunflow.core.ShadingState;
 import org.sunflow.core.Tesselatable;
+import org.sunflow.core.ParameterList.FloatParameter;
 import org.sunflow.core.ParameterList.InterpolationType;
 import org.sunflow.core.primitive.TriangleMesh;
 import org.sunflow.core.primitive.QuadMesh;
@@ -16,12 +17,18 @@ import org.sunflow.math.Matrix4;
 import org.sunflow.math.OrthoNormalBasis;
 import org.sunflow.math.Point3;
 import org.sunflow.math.Vector3;
+import org.sunflow.system.UI;
+import org.sunflow.system.UI.Module;
 
 public class BezierMesh implements PrimitiveList, Tesselatable {
     private int subdivs;
     private boolean smooth;
     private boolean quads;
     private float[][] patches;
+
+    public BezierMesh() {
+        this(null);
+    }
 
     public BezierMesh(float[][] patches) {
         subdivs = 8;
@@ -200,7 +207,48 @@ public class BezierMesh implements PrimitiveList, Tesselatable {
         subdivs = pl.getInt("subdivs", subdivs);
         smooth = pl.getBoolean("smooth", smooth);
         quads = pl.getBoolean("quads", quads);
-        return subdivs > 0;
+        int nu = pl.getInt("nu", 0);
+        int nv = pl.getInt("nv", 0);
+        pl.setVertexCount(nu * nv);
+        boolean uwrap = pl.getBoolean("uwrap", false);
+        boolean vwrap = pl.getBoolean("vwrap", false);
+        FloatParameter points = pl.getPointArray("points");
+        if (points != null && points.interp == InterpolationType.VERTEX) {
+            int numUPatches = uwrap ? nu / 3 : (nu - 4) / 3 + 1;
+            int numVPatches = vwrap ? nv / 3 : (nv - 4) / 3 + 1;
+            if (numUPatches < 1 || numVPatches < 1) {
+                UI.printError(Module.GEOM, "Invalid number of patches for bezier mesh - ignoring");
+                return false;
+            }
+            // generate patches
+            patches = new float[numUPatches * numVPatches][];
+            for (int v = 0, p = 0; v < numVPatches; v++) {
+                for (int u = 0; u < numUPatches; u++, p++) {
+                    float[] patch = patches[p] = new float[16 * 3];
+                    int up = u * 3;
+                    int vp = v * 3;
+                    for (int pv = 0; pv < 4; pv++) {
+                        for (int pu = 0; pu < 4; pu++) {
+                            int meshU = (up + pu) % nu;
+                            int meshV = (vp + pv) % nv;
+                            // copy point
+                            patch[3 * (pv * 4 + pu) + 0] = points.data[3 * (meshU + nu * meshV) + 0];
+                            patch[3 * (pv * 4 + pu) + 1] = points.data[3 * (meshU + nu * meshV) + 1];
+                            patch[3 * (pv * 4 + pu) + 2] = points.data[3 * (meshU + nu * meshV) + 2];
+                        }
+                    }
+                }
+            }
+        }
+        if (subdivs < 1) {
+            UI.printError(Module.GEOM, "Invalid subdivisions for bezier mesh - ignoring");
+            return false;
+        }
+        if (patches == null) {
+            UI.printError(Module.GEOM, "No patch data present in bezier mesh - ignoring");
+            return false;
+        }
+        return true;
     }
 
     public int getNumPrimitives() {
