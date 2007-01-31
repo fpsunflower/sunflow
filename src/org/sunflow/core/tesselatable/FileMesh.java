@@ -22,6 +22,8 @@ import org.sunflow.core.ParameterList.InterpolationType;
 import org.sunflow.core.primitive.TriangleMesh;
 import org.sunflow.math.BoundingBox;
 import org.sunflow.math.Matrix4;
+import org.sunflow.math.Point3;
+import org.sunflow.math.Vector3;
 import org.sunflow.system.Memory;
 import org.sunflow.system.UI;
 import org.sunflow.system.UI.Module;
@@ -29,7 +31,8 @@ import org.sunflow.util.FloatArray;
 import org.sunflow.util.IntArray;
 
 public class FileMesh implements Tesselatable {
-    String filename = null;
+    private String filename = null;
+    private boolean smoothNormals = false;
 
     public BoundingBox getWorldBounds(Matrix4 o2w) {
         // world bounds can't be computed without reading file
@@ -59,13 +62,7 @@ public class FileMesh implements Tesselatable {
                     tris[i] = ints.get(2 + verts.length + i);
                 stream.close();
                 UI.printInfo(Module.GEOM, "RA3 -   * Creating mesh ...");
-                // create geometry
-                ParameterList pl = new ParameterList();
-                pl.addIntegerArray("triangles", tris);
-                pl.addPoints("points", InterpolationType.VERTEX, verts);
-                TriangleMesh m = new TriangleMesh();
-                if (m.update(pl, null))
-                    return m;
+                return generate(tris, verts, smoothNormals);
             } catch (FileNotFoundException e) {
                 e.printStackTrace();
                 UI.printError(Module.GEOM, "Unable to read mesh file \"%s\" - file not found", filename);
@@ -109,12 +106,7 @@ public class FileMesh implements Tesselatable {
                 }
                 file.close();
                 UI.printInfo(Module.GEOM, "OBJ -   * Creating mesh ...");
-                ParameterList pl = new ParameterList();
-                pl.addIntegerArray("triangles", tris.trim());
-                pl.addPoints("points", InterpolationType.VERTEX, verts.trim());
-                TriangleMesh m = new TriangleMesh();
-                if (m.update(pl, null))
-                    return m;
+                return generate(tris.trim(), verts.trim(), smoothNormals);
             } catch (FileNotFoundException e) {
                 e.printStackTrace();
                 UI.printError(Module.GEOM, "Unable to read mesh file \"%s\" - file not found", filename);
@@ -159,12 +151,9 @@ public class FileMesh implements Tesselatable {
                 file.close();
                 // create geometry
                 UI.printInfo(Module.GEOM, "STL -   * Creating mesh ...");
-                ParameterList pl = new ParameterList();
-                pl.addIntegerArray("triangles", tris);
-                pl.addPoints("points", InterpolationType.VERTEX, verts);
-                TriangleMesh m = new TriangleMesh();
-                if (m.update(pl, null))
-                    return m;
+                if (smoothNormals)
+                    UI.printWarning(Module.GEOM, "STL - format does not support shared vertices - normal smoothing disabled");
+                return generate(tris, verts, false);
             } catch (FileNotFoundException e) {
                 e.printStackTrace();
                 UI.printError(Module.GEOM, "Unable to read mesh file \"%s\" - file not found", filename);
@@ -177,10 +166,60 @@ public class FileMesh implements Tesselatable {
         return null;
     }
 
+    private TriangleMesh generate(int[] tris, float[] verts, boolean smoothNormals) {
+        ParameterList pl = new ParameterList();
+        pl.addIntegerArray("triangles", tris);
+        pl.addPoints("points", InterpolationType.VERTEX, verts);
+        if (smoothNormals) {
+            float[] normals = new float[verts.length]; // filled with 0's
+            Point3 p0 = new Point3();
+            Point3 p1 = new Point3();
+            Point3 p2 = new Point3();
+            Vector3 n = new Vector3();
+            for (int i3 = 0; i3 < tris.length; i3 += 3) {
+                int v0 = tris[i3 + 0];
+                int v1 = tris[i3 + 1];
+                int v2 = tris[i3 + 2];
+                p0.set(verts[3 * v0 + 0], verts[3 * v0 + 1], verts[3 * v0 + 2]);
+                p1.set(verts[3 * v1 + 0], verts[3 * v1 + 1], verts[3 * v1 + 2]);
+                p2.set(verts[3 * v2 + 0], verts[3 * v2 + 1], verts[3 * v2 + 2]);
+                Point3.normal(p0, p1, p2, n); // compute normal
+                // add face normal to each vertex
+                // note that these are not normalized so this in fact weights
+                // each normal by the area of the triangle
+                normals[3 * v0 + 0] += n.x;
+                normals[3 * v0 + 1] += n.y;
+                normals[3 * v0 + 2] += n.z;
+                normals[3 * v1 + 0] += n.x;
+                normals[3 * v1 + 1] += n.y;
+                normals[3 * v1 + 2] += n.z;
+                normals[3 * v2 + 0] += n.x;
+                normals[3 * v2 + 1] += n.y;
+                normals[3 * v2 + 2] += n.z;
+            }
+            // normalize all the vectors
+            for (int i3 = 0; i3 < normals.length; i3 += 3) {
+                n.set(normals[i3 + 0], normals[i3 + 1], normals[i3 + 2]);
+                n.normalize();
+                normals[i3 + 0] = n.x;
+                normals[i3 + 1] = n.y;
+                normals[i3 + 2] = n.z;
+            }
+            pl.addVectors("normals", InterpolationType.VERTEX, normals);
+        }
+        TriangleMesh m = new TriangleMesh();
+        if (m.update(pl, null))
+            return m;
+        // something failed in creating the mesh, the error message will be
+        // printed by the mesh itself - no need to repeat it here
+        return null;
+    }
+
     public boolean update(ParameterList pl, SunflowAPI api) {
         String file = pl.getString("filename", null);
         if (file != null)
             filename = api.resolveIncludeFilename(file);
+        smoothNormals = pl.getBoolean("smooth_normals", smoothNormals);
         return filename != null;
     }
 

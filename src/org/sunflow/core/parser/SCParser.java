@@ -947,6 +947,8 @@ public class SCParser implements SceneParser {
             UI.printInfo(Module.API, "Reading file mesh: %s ... ", name);
             p.checkNextToken("filename");
             api.parameter("filename", p.getNextToken());
+            if (p.peekNextToken("smooth_normals"))
+                api.parameter("smooth_normals", p.getNextBoolean());
             api.geometry(name, new FileMesh());
         } else {
             UI.printWarning(Module.API, "Unrecognized object type: %s", p.getNextToken());

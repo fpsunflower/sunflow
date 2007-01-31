@@ -105,6 +105,19 @@ public final class Point3 {
         return new Vector3(nx, ny, nz);
     }
 
+    public static final Vector3 normal(Point3 p0, Point3 p1, Point3 p2, Vector3 dest) {
+        float edge1x = p1.x - p0.x;
+        float edge1y = p1.y - p0.y;
+        float edge1z = p1.z - p0.z;
+        float edge2x = p2.x - p0.x;
+        float edge2y = p2.y - p0.y;
+        float edge2z = p2.z - p0.z;
+        dest.x = edge1y * edge2z - edge1z * edge2y;
+        dest.y = edge1z * edge2x - edge1x * edge2z;
+        dest.z = edge1x * edge2y - edge1y * edge2x;
+        return dest;
+    }
+    
     @Override
     public final String toString() {
         return String.format("(%.2f, %.2f, %.2f)", x, y, z);
