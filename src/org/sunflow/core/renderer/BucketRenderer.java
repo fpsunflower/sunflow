@@ -123,15 +123,21 @@ public class BucketRenderer implements ImageSampler {
         UI.printInfo(Module.BCKT, "  * Resolution:         %dx%d", imageWidth, imageHeight);
         UI.printInfo(Module.BCKT, "  * Bucket size:        %d", bucketSize);
         UI.printInfo(Module.BCKT, "  * Number of buckets:  %dx%d", numBucketsX, numBucketsY);
-        int pixelMinAA = (minAADepth) < 0 ? -(1 << (-minAADepth)) : (1 << minAADepth);
-        int pixelMaxAA = (maxAADepth) < 0 ? -(1 << (-maxAADepth)) : (1 << maxAADepth);
-        UI.printInfo(Module.BCKT, "  * Anti-aliasing:      [%dx%d] -> [%dx%d]", pixelMinAA, pixelMinAA, pixelMaxAA, pixelMaxAA);
+        if (minAADepth != maxAADepth)
+            UI.printInfo(Module.BCKT, "  * Anti-aliasing:      %s -> %s (adaptive)", aaDepthToString(minAADepth), aaDepthToString(maxAADepth));
+        else
+            UI.printInfo(Module.BCKT, "  * Anti-aliasing:      %s (fixed)", aaDepthToString(minAADepth));
         UI.printInfo(Module.BCKT, "  * Rays per sample:    %d", superSampling);
         UI.printInfo(Module.BCKT, "  * Subpixel jitter:    %s", useJitter ? "on" : (jitter ? "auto-off" : "off"));
         UI.printInfo(Module.BCKT, "  * Contrast threshold: %.2f", contrastThreshold);
         UI.printInfo(Module.BCKT, "  * Filter type:        %s", filterName);
         UI.printInfo(Module.BCKT, "  * Filter size:        %.2f pixels", filter.getSize());
         return true;
+    }
+
+    private String aaDepthToString(int depth) {
+        int pixelMinAA = (depth) < 0 ? -(1 << (-depth)) : (1 << depth);
+        return String.format("%s%d sample%s", depth < 0 ? "1/" : "", pixelMinAA * pixelMinAA, depth == 0 ? "" : "s");
     }
 
     public void render(Display display) {
