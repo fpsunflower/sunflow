@@ -114,17 +114,14 @@ public class TriangleMeshLight extends TriangleMesh implements Shader {
             Point3 p = state.getPoint();
             // vector towards each vertex of the light source
             Vector3 p0 = Point3.sub(getPoint(triangles[tri3 + 0]), p, new Vector3());
-            Vector3 p1 = Point3.sub(getPoint(triangles[tri3 + 1]), p, new Vector3());
-            Vector3 p2 = Point3.sub(getPoint(triangles[tri3 + 2]), p, new Vector3());
-
-            // if all three vertices are below the hemisphere, stop
-            if (Vector3.dot(p0, n) <= 0 && Vector3.dot(p1, n) <= 0 && Vector3.dot(p2, n) <= 0)
-                return;
-
             // cull triangle if it is facing the wrong way
             if (Vector3.dot(p0, ng) >= 0)
                 return;
-
+            Vector3 p1 = Point3.sub(getPoint(triangles[tri3 + 1]), p, new Vector3());
+            Vector3 p2 = Point3.sub(getPoint(triangles[tri3 + 2]), p, new Vector3());
+            // if all three vertices are below the hemisphere, stop
+            if (Vector3.dot(p0, n) <= 0 && Vector3.dot(p1, n) <= 0 && Vector3.dot(p2, n) <= 0)
+                return;
             p0.normalize();
             p1.normalize();
             p2.normalize();
