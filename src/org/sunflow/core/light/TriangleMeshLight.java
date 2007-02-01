@@ -121,6 +121,10 @@ public class TriangleMeshLight extends TriangleMesh implements Shader {
             if (Vector3.dot(p0, n) <= 0 && Vector3.dot(p1, n) <= 0 && Vector3.dot(p2, n) <= 0)
                 return;
 
+            // cull triangle if it is facing the wrong way
+            if (Vector3.dot(p0, ng) >= 0)
+                return;
+
             p0.normalize();
             p1.normalize();
             p2.normalize();
