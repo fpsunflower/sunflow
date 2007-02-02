@@ -1,5 +1,7 @@
 package org.sunflow.image;
 
+import org.sunflow.math.MathUtils;
+
 public final class RGBSpace {
     public static final RGBSpace ADOBE = new RGBSpace(0.6400f, 0.3300f, 0.2100f, 0.7100f, 0.1500f, 0.0600f, 0.31271f, 0.32902f, 2.2f, 0);
     public static final RGBSpace APPLE = new RGBSpace(0.6250f, 0.3400f, 0.2800f, 0.5950f, 0.1550f, 0.0700f, 0.31271f, 0.32902f, 1.8f, 0);
@@ -18,6 +20,8 @@ public final class RGBSpace {
     private final float xw, yw, zw;
     private final float rx, ry, rz, gx, gy, gz, bx, by, bz;
     private final float rw, gw, bw;
+    private final int[] GAMMA_CURVE;
+    private final int[] INV_GAMMA_CURVE;
 
     public RGBSpace(float xRed, float yRed, float xGreen, float yGreen, float xBlue, float yBlue, float xWhite, float yWhite, float gamma, float breakPoint) {
         this.gamma = gamma;
@@ -31,6 +35,15 @@ public final class RGBSpace {
             slope = 1;
             slopeMatch = 1;
             segmentOffset = 0;
+        }
+
+        // prepare gamma curves
+        GAMMA_CURVE = new int[256];
+        INV_GAMMA_CURVE = new int[256];
+        for (int i = 0; i < 256; i++) {
+            float c = i / 255.0f;
+            GAMMA_CURVE[i] = MathUtils.clamp((int) (gammaCorrect(c) * 255 + 0.5f), 0, 255);
+            INV_GAMMA_CURVE[i] = MathUtils.clamp((int) (ungammaCorrect(c) * 255 + 0.5f), 0, 255);
         }
 
         float xr = xRed;
@@ -132,6 +145,23 @@ public final class RGBSpace {
             return vp / slope;
         else
             return (float) Math.pow((vp + segmentOffset) / slopeMatch, gamma);
+    }
+
+    public final int rgbToNonLinear(int rgb) {
+        // gamma correct 24bit rgb value via tables
+        int rp = GAMMA_CURVE[(rgb >> 16) & 0xFF];
+        int gp = GAMMA_CURVE[(rgb >> 8) & 0xFF];
+        int bp = GAMMA_CURVE[rgb & 0xFF];
+        return (rp << 16) | (gp << 8) | bp;
+    }
+
+    public final int rgbToLinear(int rgb) {
+        // convert a packed RGB triplet to a linearized
+        // one by applying the proper LUT
+        int rp = INV_GAMMA_CURVE[(rgb >> 16) & 0xFF];
+        int gp = INV_GAMMA_CURVE[(rgb >> 8) & 0xFF];
+        int bp = INV_GAMMA_CURVE[rgb & 0xFF];
+        return (rp << 16) | (gp << 8) | bp;
     }
 
     public final String toString() {

@@ -23,8 +23,6 @@ public final class Color {
     }
 
     private static final float[] EXPONENT = new float[256];
-    private static final int[] SRGB_CURVE = new int[256];
-    private static final int[] SRGB_CURVE_INV = new int[256];
 
     static {
         EXPONENT[0] = 0;
@@ -41,29 +39,6 @@ public final class Color {
         }
     }
 
-    static {
-        float inv = 1.0f / 255;
-        for (int i = 0; i < 256; i++) {
-            float c = i * inv;
-            SRGB_CURVE[i] = MathUtils.clamp((int) (sRGBCurve(c) * 255 + 0.5f), 0, 255);
-            SRGB_CURVE_INV[i] = MathUtils.clamp((int) (sRGBCurveInverse(c) * 255 + 0.5f), 0, 255);
-        }
-    }
-
-    private static float sRGBCurve(float c) {
-        if (c <= 0.00304)
-            return 12.92f * c;
-        else
-            return (float) (1.055 * Math.pow(c, 1.0 / 2.4) - 0.055);
-    }
-
-    private static float sRGBCurveInverse(float c) {
-        if (c <= 0.03928)
-            return c / 12.92f;
-        else
-            return (float) Math.pow((c + 0.055) / 1.055, 2.4);
-    }
-
     public Color() {
     }
 
@@ -78,35 +53,17 @@ public final class Color {
     }
 
     public Color toNonLinear() {
-        r = sRGBCurve(r);
-        g = sRGBCurve(g);
-        b = sRGBCurve(b);
+        r = RGBSpace.SRGB.gammaCorrect(r);
+        g = RGBSpace.SRGB.gammaCorrect(g);
+        b = RGBSpace.SRGB.gammaCorrect(b);
         return this;
     }
 
     public Color toLinear() {
-        r = sRGBCurveInverse(r);
-        g = sRGBCurveInverse(g);
-        b = sRGBCurveInverse(b);
+        r = RGBSpace.SRGB.ungammaCorrect(r);
+        g = RGBSpace.SRGB.ungammaCorrect(g);
+        b = RGBSpace.SRGB.ungammaCorrect(b);
         return this;
-    }
-
-    public static int rgbToLinear(int rgb) {
-        // convert a packed RGB triplet to a linearized one by applying the
-        // proper LUT
-        int rp = SRGB_CURVE_INV[(rgb >> 16) & 0xFF];
-        int gp = SRGB_CURVE_INV[(rgb >> 8) & 0xFF];
-        int bp = SRGB_CURVE_INV[rgb & 0xFF];
-        return (rp << 16) | (gp << 8) | bp;
-    }
-
-    public static int rgbFromLinear(int rgb) {
-        // convert a packed RGB triple to non-linear one by applying the proper
-        // LUT
-        int rp = SRGB_CURVE[(rgb >> 16) & 0xFF];
-        int gp = SRGB_CURVE[(rgb >> 8) & 0xFF];
-        int bp = SRGB_CURVE[rgb & 0xFF];
-        return (rp << 16) | (gp << 8) | bp;
     }
 
     public Color(Color c) {

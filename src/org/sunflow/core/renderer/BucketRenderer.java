@@ -261,7 +261,7 @@ public class BucketRenderer implements ImageSampler {
                             int sx = x * subPixelSize + fs + i;
                             int sy = y * subPixelSize + fs + j;
                             int s = sx + sy * sbw;
-                            sampled += samples[s].sampled ? 1 : 0;
+                            sampled += samples[s].sampled() ? 1 : 0;
                         }
                     }
                     bucketRGB[index] = new Color(sampled * invArea);
@@ -327,13 +327,13 @@ public class BucketRenderer implements ImageSampler {
         ImageSample s01 = samples[i00 + dy];
         ImageSample s10 = samples[i00 + dx];
         ImageSample s11 = samples[i00 + dx + dy];
-        if (!s00.sampled)
+        if (!s00.sampled())
             computeSubPixel(s00, istate);
-        if (!s01.sampled)
+        if (!s01.sampled())
             computeSubPixel(s01, istate);
-        if (!s10.sampled)
+        if (!s10.sampled())
             computeSubPixel(s10, istate);
-        if (!s11.sampled)
+        if (!s11.sampled())
             computeSubPixel(s11, istate);
         if (stepSize > minStepSize) {
             if (s00.isDifferent(s01, thresh) || s00.isDifferent(s10, thresh) || s00.isDifferent(s11, thresh) || s01.isDifferent(s11, thresh) || s10.isDifferent(s11, thresh) || s01.isDifferent(s10, thresh)) {
@@ -355,14 +355,13 @@ public class BucketRenderer implements ImageSampler {
                     ImageSample.bilerp(samples[x + i + (y + j) * sbw], s00, s01, s10, s11, i * ds, j * ds);
     }
 
-    private static class ImageSample {
+    private static final class ImageSample {
         float rx, ry;
         int i, n;
         Color c;
         Instance instance;
         Shader shader;
         float nx, ny, nz;
-        boolean sampled;
 
         ImageSample(float rx, float ry, int i) {
             this.rx = rx;
@@ -372,19 +371,15 @@ public class BucketRenderer implements ImageSampler {
             c = null;
             instance = null;
             shader = null;
-            nx = ny = nz = 0;
-            sampled = false;
+            nx = ny = nz = 1;
         }
 
-        void set(ShadingState state) {
+        final void set(ShadingState state) {
             if (state == null)
                 c = Color.BLACK;
             else {
                 c = state.getResult();
-                if (c.isNan())
-                    UI.printError(Module.BCKT, "NaN shading sample!");
-                else if (c.isInf())
-                    UI.printError(Module.BCKT, "Inf shading sample!");
+                checkNanInf();
                 shader = state.getShader();
                 instance = state.getInstance();
                 if (state.getNormal() != null) {
@@ -393,48 +388,52 @@ public class BucketRenderer implements ImageSampler {
                     nz = state.getNormal().z;
                 }
             }
-            sampled = true;
+            n = 1;
         }
 
-        void add(ShadingState state) {
-            if (n == 0) {
+        final void add(ShadingState state) {
+            if (n == 0)
                 c = Color.black();
-                sampled = true;
-            }
             if (state != null) {
                 c.add(state.getResult());
-                if (state.getResult().isNan())
-                    UI.printError(Module.BCKT, "NaN shading sample!");
-                else if (state.getResult().isInf())
-                    UI.printError(Module.BCKT, "Inf shading sample!");
+                checkNanInf();
             }
             n++;
         }
 
-        void scale(float s) {
+        final void checkNanInf() {
+            if (c.isNan())
+                UI.printError(Module.BCKT, "NaN shading sample!");
+            else if (c.isInf())
+                UI.printError(Module.BCKT, "Inf shading sample!");
+
+        }
+
+        final void scale(float s) {
             c.mul(s);
         }
 
-        boolean processed() {
+        final boolean processed() {
             return c != null;
         }
+        
+        final boolean sampled() {
+            return n > 0;
+        }
 
-        boolean isDifferent(ImageSample sample, float thresh) {
+        final boolean isDifferent(ImageSample sample, float thresh) {
             if (instance != sample.instance)
                 return true;
             if (shader != sample.shader)
                 return true;
             if (Color.hasContrast(c, sample.c, thresh))
                 return true;
-            if (n == 0) {
-                // only compare normals if this pixel has not been averaged
-                float dot = (nx * sample.nx + ny * sample.ny + nz * sample.nz);
-                return dot < 0.9f;
-            }
-            return false;
+            // only compare normals if this pixel has not been averaged
+            float dot = (nx * sample.nx + ny * sample.ny + nz * sample.nz);
+            return dot < 0.9f;
         }
 
-        static ImageSample bilerp(ImageSample result, ImageSample i00, ImageSample i01, ImageSample i10, ImageSample i11, float dx, float dy) {
+        static final ImageSample bilerp(ImageSample result, ImageSample i00, ImageSample i01, ImageSample i10, ImageSample i11, float dx, float dy) {
             float k00 = (1.0f - dx) * (1.0f - dy);
             float k01 = (1.0f - dx) * dy;
             float k10 = dx * (1.0f - dy);
