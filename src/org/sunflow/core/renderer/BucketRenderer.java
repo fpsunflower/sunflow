@@ -426,8 +426,12 @@ public class BucketRenderer implements ImageSampler {
                 return true;
             if (Color.hasContrast(c, sample.c, thresh))
                 return true;
-            float dot = (nx * sample.nx + ny * sample.ny + nz * sample.nz);
-            return dot < 0.9f;
+            if (n == 0) {
+                // only compare normals if this pixel has not been averaged
+                float dot = (nx * sample.nx + ny * sample.ny + nz * sample.nz);
+                return dot < 0.9f;
+            }
+            return false;
         }
 
         static ImageSample bilerp(ImageSample result, ImageSample i00, ImageSample i01, ImageSample i10, ImageSample i11, float dx, float dy) {

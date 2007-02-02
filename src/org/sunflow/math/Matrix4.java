@@ -559,4 +559,28 @@ public final class Matrix4 {
         m.m33 = 1;
         return m;
     }
+
+    public final static Matrix4 blend(Matrix4 m0, Matrix4 m1, float t) {
+        Matrix4 m = new Matrix4();
+        m.m00 = (1 - t) * m0.m00 + t * m1.m00;
+        m.m01 = (1 - t) * m0.m01 + t * m1.m01;
+        m.m02 = (1 - t) * m0.m02 + t * m1.m02;
+        m.m03 = (1 - t) * m0.m03 + t * m1.m03;
+
+        m.m10 = (1 - t) * m0.m10 + t * m1.m10;
+        m.m11 = (1 - t) * m0.m11 + t * m1.m11;
+        m.m12 = (1 - t) * m0.m12 + t * m1.m12;
+        m.m13 = (1 - t) * m0.m13 + t * m1.m13;
+
+        m.m20 = (1 - t) * m0.m20 + t * m1.m20;
+        m.m21 = (1 - t) * m0.m21 + t * m1.m21;
+        m.m22 = (1 - t) * m0.m22 + t * m1.m22;
+        m.m23 = (1 - t) * m0.m23 + t * m1.m23;
+
+        m.m30 = (1 - t) * m0.m30 + t * m1.m30;
+        m.m31 = (1 - t) * m0.m31 + t * m1.m31;
+        m.m32 = (1 - t) * m0.m32 + t * m1.m32;
+        m.m33 = (1 - t) * m0.m33 + t * m1.m33;
+        return m;
+    }
 }

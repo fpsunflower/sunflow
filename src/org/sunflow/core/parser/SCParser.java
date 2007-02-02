@@ -387,29 +387,20 @@ public class SCParser implements SceneParser {
     private void parseCamera(SunflowAPI api) throws ParserException, IOException {
         p.checkNextToken("{");
         p.checkNextToken("type");
+        String type = p.getNextToken();
+        UI.printInfo(Module.API, "Reading %s camera ...", type);
+        parseCameraTransform(api);
         String name = null;
-        if (p.peekNextToken("pinhole")) {
-            UI.printInfo(Module.API, "Reading pinhole camera ...");
-            p.checkNextToken("eye");
-            api.parameter("eye", parsePoint());
-            p.checkNextToken("target");
-            api.parameter("target", parsePoint());
-            p.checkNextToken("up");
-            api.parameter("up", parseVector());
+        if (type.equals("pinhole")) {
             p.checkNextToken("fov");
             api.parameter("fov", p.getNextFloat());
             p.checkNextToken("aspect");
             api.parameter("aspect", p.getNextFloat());
             name = api.getUniqueName("camera");
             api.camera(name, new PinholeLens());
-        } else if (p.peekNextToken("thinlens")) {
+        } else if (type.equals("thinlens")) {
             UI.printInfo(Module.API, "Reading thinlens camera ...");
-            p.checkNextToken("eye");
-            api.parameter("eye", parsePoint());
-            p.checkNextToken("target");
-            api.parameter("target", parsePoint());
-            p.checkNextToken("up");
-            api.parameter("up", parseVector());
+            parseCameraTransform(api);
             p.checkNextToken("fov");
             api.parameter("fov", p.getNextFloat());
             p.checkNextToken("aspect");
@@ -424,24 +415,14 @@ public class SCParser implements SceneParser {
                 api.parameter("lens.rotation", p.getNextFloat());
             name = api.getUniqueName("camera");
             api.camera(name, new ThinLens());
-        } else if (p.peekNextToken("spherical")) {
+        } else if (type.equals("spherical")) {
             UI.printInfo(Module.API, "Reading spherical camera ...");
-            p.checkNextToken("eye");
-            api.parameter("eye", parsePoint());
-            p.checkNextToken("target");
-            api.parameter("target", parsePoint());
-            p.checkNextToken("up");
-            api.parameter("up", parseVector());
+            parseCameraTransform(api);
             name = api.getUniqueName("camera");
             api.camera(name, new SphericalLens());
-        } else if (p.peekNextToken("fisheye")) {
+        } else if (type.equals("fisheye")) {
             UI.printInfo(Module.API, "Reading spherical camera ...");
-            p.checkNextToken("eye");
-            api.parameter("eye", parsePoint());
-            p.checkNextToken("target");
-            api.parameter("target", parsePoint());
-            p.checkNextToken("up");
-            api.parameter("up", parseVector());
+            parseCameraTransform(api);
             name = api.getUniqueName("camera");
             api.camera(name, new FisheyeLens());
         } else
@@ -450,6 +431,37 @@ public class SCParser implements SceneParser {
         if (name != null) {
             api.parameter("camera", name);
             api.options(SunflowAPI.DEFAULT_OPTIONS);
+        }
+    }
+
+    private void parseCameraTransform(SunflowAPI api) throws ParserException, IOException {
+        if (p.peekNextToken("steps")) {
+            // motion blur camera
+            int n = p.getNextInt();
+            api.parameter("transform.steps", n);
+            for (int i = 0; i < n; i++)
+                parseCameraMatrix(i, api);
+        } else
+            parseCameraMatrix(-1, api);
+    }
+
+    private void parseCameraMatrix(int index, SunflowAPI api) throws IOException, ParserException {
+        String offset = index < 0 ? "" : String.format("[%d]", index);
+        if (p.peekNextToken("transform")) {
+            // advanced camera
+            api.parameter(String.format("transform%s", offset), parseMatrix());
+        } else {
+            if (index >= 0)
+                p.checkNextToken("{");
+            // regular camera specification
+            p.checkNextToken("eye");
+            api.parameter(String.format("eye%s", offset), parsePoint());
+            p.checkNextToken("target");
+            api.parameter(String.format("target%s", offset), parsePoint());
+            p.checkNextToken("up");
+            api.parameter(String.format("up%s", offset), parseVector());
+            if (index >= 0)
+                p.checkNextToken("}");
         }
     }
 
