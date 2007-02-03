@@ -25,10 +25,9 @@ public final class UI {
 
     /**
      * Sets the active user interface implementation. Passing <code>null</code>
-     * silences printing completely (by using the
+     * silences printing completely.
      * 
-     * @see SilentInterface).
-     * @param ui
+     * @param ui object to recieve all user interface calls
      */
     public final static void set(UserInterface ui) {
         if (ui == null)

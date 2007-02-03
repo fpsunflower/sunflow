@@ -53,7 +53,7 @@ public final class FloatArray {
     /**
      * Returns the number of elements added to the array.
      * 
-     * @return
+     * @return current size of the array
      */
     public final int getSize() {
         return size;
@@ -63,7 +63,7 @@ public final class FloatArray {
      * Return a copy of the array, trimmed to fit the size of its contents
      * exactly.
      * 
-     * @return
+     * @return a new array of exactly the right length
      */
     public final float[] trim() {
         if (size < array.length) {

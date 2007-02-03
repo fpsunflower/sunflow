@@ -5,7 +5,6 @@ public interface AccelerationStructure {
      * Construct an acceleration structure for the specified primitive list.
      * 
      * @param primitives
-     * @return
      */
     public void build(PrimitiveList primitives);
 

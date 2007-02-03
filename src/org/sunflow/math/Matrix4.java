@@ -299,7 +299,7 @@ public final class Matrix4 {
      * @param x x coordinate of the vector to multiply
      * @param y y coordinate of the vector to multiply
      * @param z z coordinate of the vector to multiply
-     * @return
+     * @return x coordinate transformation result
      */
     public final float transformVX(float x, float y, float z) {
         return m00 * x + m01 * y + m02 * z;
@@ -311,7 +311,7 @@ public final class Matrix4 {
      * @param x x coordinate of the vector to multiply
      * @param y y coordinate of the vector to multiply
      * @param z z coordinate of the vector to multiply
-     * @return
+     * @return y coordinate transformation result
      */
     public final float transformVY(float x, float y, float z) {
         return m10 * x + m11 * y + m12 * z;
@@ -323,7 +323,7 @@ public final class Matrix4 {
      * @param x x coordinate of the vector to multiply
      * @param y y coordinate of the vector to multiply
      * @param z z coordinate of the vector to multiply
-     * @return
+     * @return z coordinate transformation result
      */
     public final float transformVZ(float x, float y, float z) {
         return m20 * x + m21 * y + m22 * z;
@@ -335,7 +335,7 @@ public final class Matrix4 {
      * @param x x coordinate of the vector to multiply
      * @param y y coordinate of the vector to multiply
      * @param z z coordinate of the vector to multiply
-     * @return
+     * @return x coordinate transformation result
      */
     public final float transformTransposeVX(float x, float y, float z) {
         return m00 * x + m10 * y + m20 * z;
@@ -347,7 +347,7 @@ public final class Matrix4 {
      * @param x x coordinate of the vector to multiply
      * @param y y coordinate of the vector to multiply
      * @param z z coordinate of the vector to multiply
-     * @return
+     * @return y coordinate transformation result
      */
     public final float transformTransposeVY(float x, float y, float z) {
         return m01 * x + m11 * y + m21 * z;
@@ -359,7 +359,7 @@ public final class Matrix4 {
      * @param x x coordinate of the vector to multiply
      * @param y y coordinate of the vector to multiply
      * @param z z coordinate of the vector to multiply
-     * @return
+     * @return zcoordinate transformation result
      */
     public final float transformTransposeVZ(float x, float y, float z) {
         return m02 * x + m12 * y + m22 * z;
@@ -371,7 +371,7 @@ public final class Matrix4 {
      * @param x x coordinate of the vector to multiply
      * @param y y coordinate of the vector to multiply
      * @param z z coordinate of the vector to multiply
-     * @return
+     * @return x coordinate transformation result
      */
     public final float transformPX(float x, float y, float z) {
         return m00 * x + m01 * y + m02 * z + m03;
@@ -383,7 +383,7 @@ public final class Matrix4 {
      * @param x x coordinate of the vector to multiply
      * @param y y coordinate of the vector to multiply
      * @param z z coordinate of the vector to multiply
-     * @return
+     * @return y coordinate transformation result
      */
     public final float transformPY(float x, float y, float z) {
         return m10 * x + m11 * y + m12 * z + m13;
@@ -395,7 +395,7 @@ public final class Matrix4 {
      * @param x x coordinate of the vector to multiply
      * @param y y coordinate of the vector to multiply
      * @param z z coordinate of the vector to multiply
-     * @return
+     * @return z coordinate transformation result
      */
     public final float transformPZ(float x, float y, float z) {
         return m20 * x + m21 * y + m22 * z + m23;

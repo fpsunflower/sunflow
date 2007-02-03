@@ -19,7 +19,7 @@ public class IrregularSpectralCurve extends SpectralCurve {
      * nanometers. Array lengths must match.
      * 
      * @param wavelengths sampled wavelengths in nm
-     * @param spectrum amplitude of the curve at the sampled points
+     * @param amplitudes amplitude of the curve at the sampled points
      */
     public IrregularSpectralCurve(float[] wavelengths, float[] amplitudes) {
         this.wavelengths = wavelengths;

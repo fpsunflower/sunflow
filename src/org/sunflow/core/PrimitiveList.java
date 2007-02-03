@@ -41,7 +41,6 @@ public interface PrimitiveList extends RenderObject {
      * Intersect the specified primitive in local space.
      * 
      * @param r ray in the object's local space
-     * @param parent instance currently being intersected
      * @param primID primitive index to intersect
      * @param state intersection state
      */
@@ -49,11 +48,8 @@ public interface PrimitiveList extends RenderObject {
 
     /**
      * Prepare the specified {@link ShadingState} by setting all of its internal
-     * parameters. The provided instance can be used to transform between object
-     * and world space.
+     * parameters.
      * 
-     * @param parent instance which was hit
-     * @param primID primitive index which was hit
      * @param state shading state to fill in
      */
     public void prepareShadingState(ShadingState state);

@@ -21,6 +21,7 @@ import org.sunflow.core.Modifier;
 import org.sunflow.core.Options;
 import org.sunflow.core.ParameterList;
 import org.sunflow.core.PrimitiveList;
+import org.sunflow.core.RenderObject;
 import org.sunflow.core.Scene;
 import org.sunflow.core.SceneParser;
 import org.sunflow.core.Shader;
@@ -66,9 +67,7 @@ public class SunflowAPI {
 
     /**
      * This is a quick system test which verifies that the user has launched
-     * Java properly
-     * 
-     * @return
+     * Java properly.
      */
     public static void runSystemCheck() {
         final long RECOMMENDED_MAX_SIZE = 800;
@@ -637,10 +636,11 @@ public class SunflowAPI {
     }
 
     /**
-     * Render using the specified image sampler object and the specified
-     * display.
+     * Render using the specified options and the specified display. If the
+     * specified options do not exist - defaults will be used.
      * 
-     * @param sampler image sampler
+     * @param optionsName name of the {@link RenderObject} which contains the
+     *            options
      * @param display display object
      */
     public final void render(String optionsName, Display display) {

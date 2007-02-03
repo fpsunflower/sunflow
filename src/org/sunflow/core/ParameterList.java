@@ -142,7 +142,7 @@ public class ParameterList {
      * values are not permitted.
      * 
      * @param name parameter name
-     * @param value parameter value
+     * @param array parameter value
      */
     public void addIntegerArray(String name, int[] array) {
         if (array == null)
@@ -155,7 +155,7 @@ public class ParameterList {
      * values are not permitted.
      * 
      * @param name parameter name
-     * @param value parameter value
+     * @param array parameter value
      */
     public void addStringArray(String name, String[] array) {
         if (array == null)
@@ -169,7 +169,7 @@ public class ParameterList {
      * 
      * @param name parameter name
      * @param interp interpolation type
-     * @param value parameter value
+     * @param data parameter value
      */
     public void addFloats(String name, InterpolationType interp, float[] data) {
         if (data == null) {
@@ -185,7 +185,7 @@ public class ParameterList {
      * 
      * @param name parameter name
      * @param interp interpolation type
-     * @param value parameter value
+     * @param data parameter value
      */
     public void addPoints(String name, InterpolationType interp, float[] data) {
         if (data == null || data.length % 3 != 0) {
@@ -201,7 +201,7 @@ public class ParameterList {
      * 
      * @param name parameter name
      * @param interp interpolation type
-     * @param value parameter value
+     * @param data parameter value
      */
 
     public void addVectors(String name, InterpolationType interp, float[] data) {
@@ -218,7 +218,7 @@ public class ParameterList {
      * 
      * @param name parameter name
      * @param interp interpolation type
-     * @param value parameter value
+     * @param data parameter value
      */
     public void addTexCoords(String name, InterpolationType interp, float[] data) {
         if (data == null || data.length % 2 != 0) {
@@ -234,7 +234,7 @@ public class ParameterList {
      * 
      * @param name parameter name
      * @param interp interpolation type
-     * @param value parameter value
+     * @param data parameter value
      */
     public void addMatrices(String name, InterpolationType interp, float[] data) {
         if (data == null || data.length % 16 != 0) {

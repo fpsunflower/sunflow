@@ -39,7 +39,6 @@ public final class IntersectionState {
      * 
      * @return <code>true</code> if a hit has been recorded,
      *         <code>false</code> otherwise
-     * @see #setIntersection(Primitive, float, float)
      */
     public final boolean hit() {
         return instance != null;
@@ -52,7 +51,6 @@ public final class IntersectionState {
      * @param object reference to the object beeing intersected
      * @param u u surface parameter of the intersection point
      * @param v v surface parameter of the intersection point
-     * @see Primitive#intersect(Ray, IntersectionState)
      */
     public final void setIntersection(Instance object, float u, float v) {
         instance = object;

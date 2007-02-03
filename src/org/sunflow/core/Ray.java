@@ -14,7 +14,7 @@ public final class Ray {
     public float dx, dy, dz;
     private float tMin;
     private float tMax;
-    private static final float EPSILON = 0;//0.01f;
+    private static final float EPSILON = 0;// 0.01f;
 
     private Ray() {
     }
@@ -152,7 +152,6 @@ public final class Ray {
      * @param t distance to be tested
      * @return <code>true</code> if t falls between the minimum and maximum
      *         distance of this ray, <code>false</code> otherwise
-     * @see Primitive
      */
     public final boolean isInside(float t) {
         return (tMin < t) && (t < tMax);

@@ -15,7 +15,6 @@ public interface Shader extends RenderObject {
      * 
      * @param state current render state
      * @return color emitted or reflected by the shader
-     * @see Primitive#prepareShadingState(ShadingState)
      */
     public Color getRadiance(ShadingState state);
 

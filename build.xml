@@ -135,5 +135,5 @@
 		</zip>
 	</target>
 
-	<target name="default-build" depends="dist" />
+	<target name="default-build" depends="dist, javadoc" />
 </project>
