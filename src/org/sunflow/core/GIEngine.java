@@ -32,6 +32,8 @@ public interface GIEngine {
      * the specified surface point.
      * 
      * @param state current render state describing the point to be computed
+     * @param diffuseReflectance diffuse albedo of the point being shaded, this
+     *            can be used for importance tracking
      * @return irradiance from indirect diffuse illumination at the specified
      *         point
      */

@@ -11,6 +11,10 @@ import org.sunflow.math.Point3;
 import org.sunflow.math.QMC;
 import org.sunflow.math.Vector3;
 
+/**
+ * Represents a point to be shaded and provides various options for the shading
+ * of this point, including spawning of new rays.
+ */
 public final class ShadingState implements Iterable<LightSample> {
     private IntersectionState istate;
     private LightServer server;
@@ -127,8 +131,11 @@ public final class ShadingState implements Iterable<LightSample> {
         this.r = r;
     }
 
+    /**
+     * Create objects needed for surface shading: point, normal, texture
+     * coordinates and basis.
+     */
     public final void init() {
-        // prepare variables needed for shading
         p = new Point3();
         n = new Vector3();
         tex = new Point2();
@@ -136,6 +143,11 @@ public final class ShadingState implements Iterable<LightSample> {
         basis = null;
     }
 
+    /**
+     * Run the shader at this surface point.
+     * 
+     * @return shaded result
+     */
     public final Color shade() {
         return server.shadeHit(this);
     }
@@ -147,7 +159,12 @@ public final class ShadingState implements Iterable<LightSample> {
             basis.flipW();
         }
     }
-    
+
+    /**
+     * Flip the surface normals to ensure they are facing the current ray. This
+     * method also offsets the shading point away from the surface so that new
+     * rays will not intersect the same surface again by mistake.
+     */
     public final void faceforward() {
         // make sure we are on the right side of the material
         if (r.dot(ng) < 0) {
@@ -167,18 +184,40 @@ public final class ShadingState implements Iterable<LightSample> {
         p.z += 0.001f * ng.z;
     }
 
+    /**
+     * Get x coordinate of the pixel being shaded.
+     * 
+     * @return pixel x coordinate
+     */
     public final float getRasterX() {
         return rx;
     }
 
+    /**
+     * Get y coordinate of the pixel being shaded.
+     * 
+     * @return pixel y coordinate
+     */
     public final float getRasterY() {
         return ry;
     }
 
+    /**
+     * Cosine between the shading normal and the ray. This is set by
+     * {@link #faceforward()}.
+     * 
+     * @return cosine between shading normal and the ray
+     */
     public final float getCosND() {
         return cosND;
     }
 
+    /**
+     * Returns true if the ray hit the surface from behind. This is set by
+     * {@link #faceforward()}.
+     * 
+     * @return <code>true</code> if the surface was hit from behind.
+     */
     public final boolean isBehind() {
         return behind;
     }
@@ -187,26 +226,51 @@ public final class ShadingState implements Iterable<LightSample> {
         return istate;
     }
 
+    /**
+     * Get u barycentric coordinate of the intersection point.
+     * 
+     * @return u barycentric coordinate
+     */
     public final float getU() {
         return hitU;
     }
 
+    /**
+     * Get v barycentric coordinate of the intersection point.
+     * 
+     * @return v barycentric coordinate
+     */
     public final float getV() {
         return hitV;
     }
 
+    /**
+     * Get the instance which was intersected
+     * 
+     * @return intersected instance object
+     */
     public final Instance getInstance() {
         return instance;
     }
 
+    /**
+     * Get the primitive ID which was intersected
+     * 
+     * @return intersected primitive ID
+     */
     public final int getPrimitiveID() {
         return primitiveID;
     }
 
-    public final void setResult(Color c) {
+    final void setResult(Color c) {
         result = c;
     }
 
+    /**
+     * Get the result of shading this point
+     * 
+     * @return shaded result
+     */
     public final Color getResult() {
         return result;
     }
@@ -215,12 +279,24 @@ public final class ShadingState implements Iterable<LightSample> {
         return server;
     }
 
+    /**
+     * Add the specified light sample to the list of lights to be used
+     * 
+     * @param sample a valid light sample
+     */
     public final void addSample(LightSample sample) {
         // add to list
         sample.next = lightSample;
         lightSample = sample;
     }
 
+    /**
+     * Get a QMC sample from an infinite sequence.
+     * 
+     * @param j sample number (starts from 0)
+     * @param dim dimension to sample
+     * @return pseudo-random value in [0,1)
+     */
     public final double getRandom(int j, int dim) {
         switch (dim) {
             case 0:
@@ -232,6 +308,16 @@ public final class ShadingState implements Iterable<LightSample> {
         }
     }
 
+    /**
+     * Get a QMC sample from a finite sequence of n elements. This provides
+     * better stratification than the infinite version, but does not allow for
+     * adaptive sampling.
+     * 
+     * @param j sample number (starts from 0)
+     * @param dim dimension to sample
+     * @param n number of samples
+     * @return pseudo-random value in [0,1)
+     */
     public final double getRandom(int j, int dim, int n) {
         switch (dim) {
             case 0:
@@ -263,6 +349,11 @@ public final class ShadingState implements Iterable<LightSample> {
         return includeSpecular;
     }
 
+    /**
+     * Get the shader to be used to shade this surface.
+     * 
+     * @return shader to be used
+     */
     public final Shader getShader() {
         return shader;
     }
@@ -416,6 +507,14 @@ public final class ShadingState implements Iterable<LightSample> {
         return c != null ? c.getWorldToCamera() : Matrix4.IDENTITY;
     }
 
+    /**
+     * Get the three triangle corners in object space if the hit object is a
+     * mesh, returns false otherwise.
+     * 
+     * @param p array of 3 points
+     * @return <code>true</code> if the points were read succesfully,
+     *         <code>false</code>otherwise
+     */
     public final boolean getTrianglePoints(Point3[] p) {
         PrimitiveList prims = instance.getGeometry().getPrimitiveList();
         if (prims instanceof TriangleMesh) {
@@ -430,7 +529,7 @@ public final class ShadingState implements Iterable<LightSample> {
 
     /**
      * Initialize the use of light samples. Prepares a list of visible lights
-     * from the specified point and normal.
+     * from the current point.
      */
     public final void initLightSamples() {
         server.initLightSamples(this);
@@ -449,6 +548,7 @@ public final class ShadingState implements Iterable<LightSample> {
      * reflection is assumed to be glossy.
      * 
      * @param r ray to trace
+     * @param i instance number of this sample
      * @return color observed along specified ray.
      */
     public final Color traceGlossy(Ray r, int i) {
@@ -460,6 +560,7 @@ public final class ShadingState implements Iterable<LightSample> {
      * reflection is assumed to be specular.
      * 
      * @param r ray to trace
+     * @param i instance number of this sample
      * @return color observed along specified ray.
      */
     public final Color traceReflection(Ray r, int i) {
@@ -470,6 +571,7 @@ public final class ShadingState implements Iterable<LightSample> {
      * Returns the color obtained by recursively tracing the specified ray.
      * 
      * @param r ray to trace
+     * @param i instance number of this sample
      * @return color observed along specified ray.
      */
     public final Color traceRefraction(Ray r, int i) {
@@ -480,17 +582,22 @@ public final class ShadingState implements Iterable<LightSample> {
         return server.traceRefraction(this, r, i);
     }
 
+    /**
+     * Trace transparency, this is equivalent to tracing a refraction ray in the
+     * incoming ray direction.
+     * 
+     * @return color observed behind the current shading point
+     */
     public final Color traceTransparency() {
-        return traceRefraction(new Ray(p, r.getDirection()), 0);
+        return traceRefraction(new Ray(p.x, p.y, p.z, r.dx, r.dy, r.dz), 0);
     }
 
     /**
-     * Trace a shadow ray against the scene, determine if the ray interestected
-     * anything.
+     * Trace a shadow ray against the scene, and computes the accumulated
+     * opacity along the ray.
      * 
      * @param r ray to trace
-     * @return <code>true</code> if the ray interesected anything,
-     *         <code>false</code> otherwise
+     * @return opacity along the shadow ray
      */
     public final Color traceShadow(Ray r) {
         return server.getScene().traceShadow(r, istate);
@@ -549,9 +656,10 @@ public final class ShadingState implements Iterable<LightSample> {
     }
 
     /**
-     * Returns the radiance estimate given by the global photon map if present
+     * Returns the glboal diffuse radiance estimate given by the current
+     * {@link GIEngine} if present.
      * 
-     * @return global photon map radiance estimate
+     * @return global diffuse radiance estimate
      */
     public final Color getGlobalRadiance() {
         return server.getGlobalRadiance(this);
@@ -559,9 +667,10 @@ public final class ShadingState implements Iterable<LightSample> {
 
     /**
      * Gets the total irradiance reaching the current point from diffuse
-     * surfaces. For final gather rays, this returns the total irradiance at the
-     * intersection point.
+     * surfaces.
      * 
+     * @param diffuseReflectance diffuse reflectance at the current point, can
+     *            be used for importance tracking
      * @return indirect diffuse irradiance reaching the point
      */
     public final Color getIrradiance(Color diffuseReflectance) {
@@ -580,10 +689,27 @@ public final class ShadingState implements Iterable<LightSample> {
         return server.traceFinalGather(this, r, i);
     }
 
+    /**
+     * Simple black and white ambient occlusion.
+     * 
+     * @param samples number of sample rays
+     * @param maxDist maximum length of the rays
+     * @return occlusion color
+     */
     public final Color occlusion(int samples, float maxDist) {
         return occlusion(samples, maxDist, Color.WHITE, Color.BLACK);
     }
 
+    /**
+     * Ambient occlusion routine, returns a value between bright and dark
+     * depending on the amount of geometric occlusion in the scene.
+     * 
+     * @param samples number of sample rays
+     * @param maxDist maximum length of the rays
+     * @param bright color when nothing is occluded
+     * @param dark color when fully occluded
+     * @return occlusion color
+     */
     public final Color occlusion(int samples, float maxDist, Color bright, Color dark) {
         if (n == null) {
             // in case we got called on a geometry without orientation
@@ -613,6 +739,13 @@ public final class ShadingState implements Iterable<LightSample> {
         return result.mul(1.0f / samples);
     }
 
+    /**
+     * Computes a plain diffuse response to the current light samples and global
+     * illumination.
+     * 
+     * @param diff diffuse color
+     * @return shaded result
+     */
     public final Color diffuse(Color diff) {
         // integrate a diffuse function
         Color lr = Color.black();
@@ -624,6 +757,15 @@ public final class ShadingState implements Iterable<LightSample> {
         return lr.mul(diff).mul(1.0f / (float) Math.PI);
     }
 
+    /**
+     * Computes a phong specular response to the current light samples and
+     * global illumination.
+     * 
+     * @param spec specular color
+     * @param power phong exponent
+     * @param numRays number of glossy rays to trace
+     * @return shaded color
+     */
     public final Color specularPhong(Color spec, float power, int numRays) {
         // integrate a phong specular function
         Color lr = Color.black();
@@ -665,6 +807,9 @@ public final class ShadingState implements Iterable<LightSample> {
         return lr;
     }
 
+    /**
+     * Allows iteration over current light samples.
+     */
     public Iterator<LightSample> iterator() {
         return new LightSampleIterator(lightSample);
     }

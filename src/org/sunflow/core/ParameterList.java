@@ -251,6 +251,14 @@ public class ParameterList {
             UI.printWarning(Module.API, "Parameter %s was already defined -- overwriting", name);
     }
 
+    /**
+     * Get the specified string parameter from this list.
+     * 
+     * @param name name of the parameter
+     * @param defaultValue value to return if not found
+     * @return the value of the parameter specified or default value if not
+     *         found
+     */
     public String getString(String name, String defaultValue) {
         Parameter p = list.get(name);
         if (isValidParameter(name, ParameterType.STRING, InterpolationType.NONE, 1, p))
@@ -258,6 +266,14 @@ public class ParameterList {
         return defaultValue;
     }
 
+    /**
+     * Get the specified string array parameter from this list.
+     * 
+     * @param name name of the parameter
+     * @param defaultValue value to return if not found
+     * @return the value of the parameter specified or default value if not
+     *         found
+     */
     public String[] getStringArray(String name, String[] defaultValue) {
         Parameter p = list.get(name);
         if (isValidParameter(name, ParameterType.STRING, InterpolationType.NONE, -1, p))
@@ -265,6 +281,14 @@ public class ParameterList {
         return defaultValue;
     }
 
+    /**
+     * Get the specified integer parameter from this list.
+     * 
+     * @param name name of the parameter
+     * @param defaultValue value to return if not found
+     * @return the value of the parameter specified or default value if not
+     *         found
+     */
     public int getInt(String name, int defaultValue) {
         Parameter p = list.get(name);
         if (isValidParameter(name, ParameterType.INT, InterpolationType.NONE, 1, p))
@@ -272,6 +296,13 @@ public class ParameterList {
         return defaultValue;
     }
 
+    /**
+     * Get the specified integer array parameter from this list.
+     * 
+     * @param name name of the parameter
+     * @return the value of the parameter specified or <code>null</code> if
+     *         not found
+     */
     public int[] getIntArray(String name) {
         Parameter p = list.get(name);
         if (isValidParameter(name, ParameterType.INT, InterpolationType.NONE, -1, p))
@@ -279,6 +310,14 @@ public class ParameterList {
         return null;
     }
 
+    /**
+     * Get the specified boolean parameter from this list.
+     * 
+     * @param name name of the parameter
+     * @param defaultValue value to return if not found
+     * @return the value of the parameter specified or default value if not
+     *         found
+     */
     public boolean getBoolean(String name, boolean defaultValue) {
         Parameter p = list.get(name);
         if (isValidParameter(name, ParameterType.BOOL, InterpolationType.NONE, 1, p))
@@ -286,6 +325,14 @@ public class ParameterList {
         return defaultValue;
     }
 
+    /**
+     * Get the specified float parameter from this list.
+     * 
+     * @param name name of the parameter
+     * @param defaultValue value to return if not found
+     * @return the value of the parameter specified or default value if not
+     *         found
+     */
     public float getFloat(String name, float defaultValue) {
         Parameter p = list.get(name);
         if (isValidParameter(name, ParameterType.FLOAT, InterpolationType.NONE, 1, p))
@@ -293,6 +340,14 @@ public class ParameterList {
         return defaultValue;
     }
 
+    /**
+     * Get the specified color parameter from this list.
+     * 
+     * @param name name of the parameter
+     * @param defaultValue value to return if not found
+     * @return the value of the parameter specified or default value if not
+     *         found
+     */
     public Color getColor(String name, Color defaultValue) {
         Parameter p = list.get(name);
         if (isValidParameter(name, ParameterType.COLOR, InterpolationType.NONE, 1, p))
@@ -300,6 +355,14 @@ public class ParameterList {
         return defaultValue;
     }
 
+    /**
+     * Get the specified point parameter from this list.
+     * 
+     * @param name name of the parameter
+     * @param defaultValue value to return if not found
+     * @return the value of the parameter specified or default value if not
+     *         found
+     */
     public Point3 getPoint(String name, Point3 defaultValue) {
         Parameter p = list.get(name);
         if (isValidParameter(name, ParameterType.POINT, InterpolationType.NONE, 1, p))
@@ -307,6 +370,14 @@ public class ParameterList {
         return defaultValue;
     }
 
+    /**
+     * Get the specified vector parameter from this list.
+     * 
+     * @param name name of the parameter
+     * @param defaultValue value to return if not found
+     * @return the value of the parameter specified or default value if not
+     *         found
+     */
     public Vector3 getVector(String name, Vector3 defaultValue) {
         Parameter p = list.get(name);
         if (isValidParameter(name, ParameterType.VECTOR, InterpolationType.NONE, 1, p))
@@ -314,6 +385,14 @@ public class ParameterList {
         return defaultValue;
     }
 
+    /**
+     * Get the specified texture coordinate parameter from this list.
+     * 
+     * @param name name of the parameter
+     * @param defaultValue value to return if not found
+     * @return the value of the parameter specified or default value if not
+     *         found
+     */
     public Point2 getTexCoord(String name, Point2 defaultValue) {
         Parameter p = list.get(name);
         if (isValidParameter(name, ParameterType.TEXCOORD, InterpolationType.NONE, 1, p))
@@ -321,6 +400,14 @@ public class ParameterList {
         return defaultValue;
     }
 
+    /**
+     * Get the specified matrix parameter from this list.
+     * 
+     * @param name name of the parameter
+     * @param defaultValue value to return if not found
+     * @return the value of the parameter specified or default value if not
+     *         found
+     */
     public Matrix4 getMatrix(String name, Matrix4 defaultValue) {
         Parameter p = list.get(name);
         if (isValidParameter(name, ParameterType.MATRIX, InterpolationType.NONE, 1, p))
@@ -328,22 +415,57 @@ public class ParameterList {
         return defaultValue;
     }
 
+    /**
+     * Get the specified float array parameter from this list.
+     * 
+     * @param name name of the parameter
+     * @return the value of the parameter specified or <code>null</code> if
+     *         not found
+     */
     public FloatParameter getFloatArray(String name) {
         return getFloatParameter(name, ParameterType.FLOAT, list.get(name));
     }
 
+    /**
+     * Get the specified point array parameter from this list.
+     * 
+     * @param name name of the parameter
+     * @return the value of the parameter specified or <code>null</code> if
+     *         not found
+     */
     public FloatParameter getPointArray(String name) {
         return getFloatParameter(name, ParameterType.POINT, list.get(name));
     }
 
+    /**
+     * Get the specified vector array parameter from this list.
+     * 
+     * @param name name of the parameter
+     * @return the value of the parameter specified or <code>null</code> if
+     *         not found
+     */
     public FloatParameter getVectorArray(String name) {
         return getFloatParameter(name, ParameterType.VECTOR, list.get(name));
     }
 
+    /**
+     * Get the specified texture coordinate array parameter from this list.
+     * 
+     * @param name name of the parameter
+     * @return the value of the parameter specified or <code>null</code> if
+     *         not found
+     */
     public FloatParameter getTexCoordArray(String name) {
         return getFloatParameter(name, ParameterType.TEXCOORD, list.get(name));
     }
 
+    /**
+     * Get the specified matrix array parameter from this list.
+     * 
+     * @param name name of the parameter
+     * @return the value of the parameter specified or <code>null</code> if
+     *         not found
+     */
     public FloatParameter getMatrixArray(String name) {
         return getFloatParameter(name, ParameterType.MATRIX, list.get(name));
     }
@@ -393,6 +515,12 @@ public class ParameterList {
         return p.getFloats();
     }
 
+    /**
+     * Represents an array of floating point values. This can store single
+     * float, points, vectors, texture coordinates or matrices. The parameter
+     * should be interpolated over the surface according to the interp parameter
+     * when applicable.
+     */
     public static final class FloatParameter {
         public final InterpolationType interp;
         public final float[] data;

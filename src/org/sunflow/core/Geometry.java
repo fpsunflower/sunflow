@@ -7,6 +7,12 @@ import org.sunflow.math.Matrix4;
 import org.sunflow.system.UI;
 import org.sunflow.system.UI.Module;
 
+/**
+ * This class represent a geometric object in its native object space. These
+ * object are not rendered directly, they must be instanced via {@link Instance}.
+ * This class performs all the bookkeeping needed for on-demand tesselation and
+ * acceleration structure building.
+ */
 public class Geometry implements RenderObject {
     private Tesselatable tesselatable;
     private PrimitiveList primitives;
@@ -19,7 +25,7 @@ public class Geometry implements RenderObject {
      * Create a geometry from the specified tesselatable object. The actual
      * renderable primitives will be generated on demand.
      * 
-     * @param tesselatable
+     * @param tesselatable tesselation object
      */
     public Geometry(Tesselatable tesselatable) {
         this.tesselatable = tesselatable;
@@ -31,9 +37,10 @@ public class Geometry implements RenderObject {
     }
 
     /**
-     * Create a geometry from the specified primitive aggregate
+     * Create a geometry from the specified primitive aggregate. The
+     * acceleration structure for this object will be built on demand.
      * 
-     * @param primitives
+     * @param primitives primitive list object
      */
     public Geometry(PrimitiveList primitives) {
         tesselatable = null;
@@ -73,7 +80,7 @@ public class Geometry implements RenderObject {
                 tesselate();
             if (primitives == null)
                 return null; // failed tesselation, return infinite bounding
-                                // box
+            // box
         }
         return primitives.getWorldBounds(o2w);
     }
@@ -123,7 +130,7 @@ public class Geometry implements RenderObject {
         primitives.prepareShadingState(state);
     }
 
-    public PrimitiveList getBakingPrimitives() {
+    PrimitiveList getBakingPrimitives() {
         if (builtTess == 0)
             tesselate();
         if (primitives == null)

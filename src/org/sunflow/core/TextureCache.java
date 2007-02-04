@@ -21,6 +21,7 @@ public final class TextureCache {
      * otherwise, a new texture is created.
      * 
      * @param filename image file to load
+     * @param isLinear is the texture gamma corrected?
      * @return texture object
      * @see Texture
      */
@@ -35,6 +36,10 @@ public final class TextureCache {
         return t;
     }
 
+    /**
+     * Flush all textures from the cache, this will cause them to be reloaded
+     * anew the next time they are accessed.
+     */
     public synchronized static void flush() {
         UI.printInfo(Module.TEX, "Flushing texture cache");
         textures.clear();

@@ -22,6 +22,7 @@ public class Texture {
      * Creates a new texture from the specfied file.
      * 
      * @param filename image file to load
+     * @param isLinear is the texture gamma corrected already?
      */
     Texture(String filename, boolean isLinear) {
         this.filename = filename;

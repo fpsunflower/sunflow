@@ -10,7 +10,7 @@ import org.sunflow.system.UI;
 import org.sunflow.system.UI.Module;
 
 /**
- * Represents a entire scene, defined as a collection of objects viewed by a
+ * Represents a entire scene, defined as a collection of instances viewed by a
  * camera.
  */
 public class Scene {
@@ -39,7 +39,7 @@ public class Scene {
     private boolean lowPriority;
 
     /**
-     * Creates an empty scene with default anti-aliasing parameters.
+     * Creates an empty scene.
      */
     public Scene() {
         lightServer = new LightServer(this);
@@ -138,6 +138,20 @@ public class Scene {
         bakingInstance = instance;
     }
 
+    /**
+     * Get the radiance seen through a particular pixel
+     * 
+     * @param istate intersection state for ray tracing
+     * @param rx pixel x coordinate
+     * @param ry pixel y coordinate
+     * @param lensU DOF sampling variable
+     * @param lensV DOF sampling variable
+     * @param time motion blur sampling variable
+     * @param instance QMC instance seed
+     * @return a shading state for the intersected primitive, or
+     *         <code>null</code> if nothing is seen through the specifieFd
+     *         point
+     */
     public ShadingState getRadiance(IntersectionState istate, float rx, float ry, double lensU, double lensV, double time, int instance) {
         if (bakingPrimitives == null) {
             Ray r = camera.getRay(rx, ry, imageWidth, imageHeight, lensU, lensV, time);
@@ -165,6 +179,11 @@ public class Scene {
         }
     }
 
+    /**
+     * Get scene world space bounding box.
+     * 
+     * @return scene bounding box
+     */
     public BoundingBox getBounds() {
         return instanceList.getWorldBounds(null);
     }
@@ -193,6 +212,14 @@ public class Scene {
         bakingAccel.intersect(r, state);
     }
 
+    /**
+     * Render the scene using the specified options, image sampler and display.
+     * 
+     * @param options rendering options object
+     * @param sampler image sampler
+     * @param display display to send the final image to, a default display will
+     *            be created if <code>null</code>
+     */
     public void render(Options options, ImageSampler sampler, Display display) {
         if (display == null)
             display = new FrameDisplay();
@@ -267,6 +294,14 @@ public class Scene {
         UI.printInfo(Module.SCENE, "Done.");
     }
 
+    /**
+     * Create a photon map as prescribed by the given {@link PhotonStore}.
+     * 
+     * @param map object that will recieve shot photons
+     * @param type type of photons being shot
+     * @param seed QMC seed parameter
+     * @return <code>true</code> upon success
+     */
     public boolean calculatePhotons(PhotonStore map, String type, int seed) {
         return lightServer.calculatePhotons(map, type, seed);
     }

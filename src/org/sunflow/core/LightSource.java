@@ -5,13 +5,13 @@ import org.sunflow.math.Point3;
 import org.sunflow.math.Vector3;
 
 /**
- * The <code>LightSource</code> interface is used to represent any light
- * emitting primitive. It permits efficient sampling of direct illumination.
+ * This interface is used to represent any light emitting primitive. It permits
+ * efficient sampling of direct illumination and photon shooting.
  */
 public interface LightSource extends RenderObject {
     /**
      * Get the maximum number of samples that can be taken from this light
-     * source.
+     * source. This is currently only used for statistics reporting.
      * 
      * @return maximum number of samples to be taken from this light source
      */
@@ -29,7 +29,7 @@ public interface LightSource extends RenderObject {
      * @param state current state, including point to be shaded
      * @see LightSample
      */
-    void getSamples(ShadingState state);
+    public void getSamples(ShadingState state);
 
     /**
      * Gets a photon to emit from this light source by setting each of the
@@ -44,7 +44,7 @@ public interface LightSource extends RenderObject {
      * @param dir direction to shoot the photon in
      * @param power power of the photon
      */
-    void getPhoton(double randX1, double randY1, double randX2, double randY2, Point3 p, Vector3 dir, Color power);
+    public void getPhoton(double randX1, double randY1, double randX2, double randY2, Point3 p, Vector3 dir, Color power);
 
     /**
      * Get the total power emitted by this light source. Lights that have 0
@@ -52,5 +52,5 @@ public interface LightSource extends RenderObject {
      * 
      * @return light source power
      */
-    float getPower();
+    public float getPower();
 }

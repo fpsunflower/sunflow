@@ -21,7 +21,7 @@ public interface Display {
     /**
      * Prepare the specified area to be rendered. This may be used to highlight
      * the work in progress area or simply to setup the display driver to
-     * recieve the specified portion of the image
+     * receive the specified portion of the image
      * 
      * @param x x coordinate of the bucket within the image
      * @param y y coordinate of the bucket within the image
@@ -36,8 +36,9 @@ public interface Display {
      * Update the current image with a bucket of data. The region is guarenteed
      * to be within the bounds created by the call to imageBegin. No clipping is
      * necessary. Colors are passed in unprocessed. It is up the display driver
-     * to do any type of quantization needed. The array of colors will be
-     * exactly <code>w * h</code> long and in row major order.
+     * to do any type of quantization, gamma compensation or tone-mapping
+     * needed. The array of colors will be exactly <code>w * h</code> long and
+     * in row major order.
      * 
      * @param x x coordinate of the bucket within the image
      * @param y y coordinate of the bucket within the image
@@ -54,7 +55,7 @@ public interface Display {
      * screen which will overlap. The region is guarenteed to be within the
      * bounds created by the call to imageBegin. No clipping is necessary.
      * Colors are passed in unprocessed. It is up the display driver to do any
-     * type of quantization needed.
+     * type of quantization , gamma compensation or tone-mapping needed.
      * 
      * @param x x coordinate of the region within the image
      * @param y y coordinate of the region within the image

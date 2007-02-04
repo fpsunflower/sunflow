@@ -8,6 +8,11 @@ import org.sunflow.math.Vector3;
 import org.sunflow.system.UI;
 import org.sunflow.system.UI.Module;
 
+/**
+ * This class represents a camera to the renderer. It handles the mapping of
+ * camera space to world space, as well as the mounting of {@link CameraLens}
+ * objects which compute the actual projection.
+ */
 public class Camera implements RenderObject {
     private final CameraLens lens;
     private Matrix4[] c2w;
@@ -70,6 +75,23 @@ public class Camera implements RenderObject {
         return true;
     }
 
+    /**
+     * Generate a ray passing though the specified point on the image plane.
+     * Additional random variables are provided for the lens to optionally
+     * compute depth-of-field or motion blur effects. Note that the camera may
+     * return <code>null</code> for invalid arguments or for pixels which
+     * don't project to anything.
+     * 
+     * @param x x pixel coordinate
+     * @param y y pixel coordinate
+     * @param imageWidth width of the image in pixels
+     * @param imageHeight height of the image in pixels
+     * @param lensX a random variable in [0,1) to be used for DOF sampling
+     * @param lensY a random variable in [0,1) to be used for DOF sampling
+     * @param time a random variable in [0,1) to be used for motion blur
+     *            sampling
+     * @return a ray passing through the specified pixel, or <code>null</code>
+     */
     public Ray getRay(float x, float y, int imageWidth, int imageHeight, double lensX, double lensY, double time) {
         Ray r = lens.getRay(x, y, imageWidth, imageHeight, lensX, lensY, time);
         if (r != null) {
@@ -100,10 +122,20 @@ public class Camera implements RenderObject {
         return new Ray(c2w == null ? new Point3(0, 0, 0) : c2w[0].transformP(new Point3(0, 0, 0)), p);
     }
 
+    /**
+     * Returns a transformation matrix mapping camera space to world space.
+     * 
+     * @return a transformation matrix
+     */
     Matrix4 getCameraToWorld() {
         return c2w == null ? Matrix4.IDENTITY : c2w[0];
     }
 
+    /**
+     * Returns a transformation matrix mapping world space to camera space.
+     * 
+     * @return a transformation matrix
+     */
     Matrix4 getWorldToCamera() {
         return w2c == null ? Matrix4.IDENTITY : w2c[0];
     }

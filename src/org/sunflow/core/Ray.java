@@ -115,6 +115,9 @@ public final class Ray {
         return r;
     }
 
+    /**
+     * Normalize the direction component of the ray.
+     */
     public void normalize() {
         float in = 1.0f / (float) Math.sqrt(dx * dx + dy * dy + dz * dz);
         dx *= in;
@@ -123,7 +126,7 @@ public final class Ray {
     }
 
     /**
-     * Gets the minimum distance along the ray. Usually a small epsilon above 0.
+     * Gets the minimum distance along the ray - usually 0.
      * 
      * @return value of the smallest distance along the ray
      */
@@ -140,6 +143,11 @@ public final class Ray {
         return tMax;
     }
 
+    /**
+     * Creates a vector to represent the direction of the ray.
+     * 
+     * @return a vector equal to the direction of this ray
+     */
     public final Vector3 getDirection() {
         return new Vector3(dx, dy, dz);
     }

@@ -29,7 +29,8 @@ public interface PrimitiveList extends RenderObject {
 
     /**
      * Retrieve the bounding box component of a particular primitive in object
-     * space.
+     * space. Even indexes get minimum values, while odd indexes get the maximum
+     * values for each axis.
      * 
      * @param primID primitive index
      * @param i bounding box side index
@@ -43,6 +44,8 @@ public interface PrimitiveList extends RenderObject {
      * @param r ray in the object's local space
      * @param primID primitive index to intersect
      * @param state intersection state
+     * @see Ray#setMax(float)
+     * @see IntersectionState#setIntersection(int, float, float)
      */
     public void intersectPrimitive(Ray r, int primID, IntersectionState state);
 
@@ -56,11 +59,11 @@ public interface PrimitiveList extends RenderObject {
 
     /**
      * Create a new {@link PrimitiveList} object suitable for baking lightmaps.
-     * This usually means a set of primitives laid out in the unit square UV
-     * space. This method is optional, object which do not support it should
-     * simply return <code>null</code>.
+     * This means a set of primitives laid out in the unit square UV space. This
+     * method is optional, objects which do not support it should simply return
+     * <code>null</code>.
      * 
-     * @return a baking {@link PrimitiveList}
+     * @return a list of baking primitives
      */
     public PrimitiveList getBakingPrimitives();
 }

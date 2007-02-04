@@ -6,7 +6,7 @@ package org.sunflow.core;
 public interface CausticPhotonMapInterface extends PhotonStore {
     /**
      * Retrieve caustic photons at the specified shading location and add them
-     * as lights samples.
+     * as diffuse light samples.
      * 
      * @param state
      */

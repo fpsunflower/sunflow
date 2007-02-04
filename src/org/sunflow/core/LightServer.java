@@ -115,10 +115,8 @@ class LightServer {
         t.start();
         // count total number of light samples
         int numLightSamples = 0;
-        for (int i = 0; i < lights.length; i++) {
-            assert lights[i].getNumSamples() >= 0;
+        for (int i = 0; i < lights.length; i++)
             numLightSamples += lights[i].getNumSamples();
-        }
         // initialize gi engine
         if (giEngine != null) {
             if (!giEngine.init(scene))

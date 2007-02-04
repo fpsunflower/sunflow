@@ -8,6 +8,11 @@ import org.sunflow.math.Vector3;
 import org.sunflow.system.UI;
 import org.sunflow.system.UI.Module;
 
+/**
+ * This represents an instance of a {@link Geometry} into the scene. This class
+ * maps object space to world space and maintains a list of shaders and
+ * modifiers attached to the surface.
+ */
 public class Instance implements RenderObject {
     private Matrix4 o2w;
     private Matrix4 w2o;
@@ -66,14 +71,29 @@ public class Instance implements RenderObject {
         return true;
     }
 
+    /**
+     * Recompute world space bounding box of this instance.
+     */
     public void updateBounds() {
         bounds = geometry.getWorldBounds(o2w);
     }
 
+    /**
+     * Checks to see if this instance is relative to the specified geometry.
+     * 
+     * @param g geometry to check against
+     * @return <code>true</code> if the instanced geometry is equals to g,
+     *         <code>false</code> otherwise
+     */
     public boolean hasGeometry(Geometry g) {
         return geometry == g;
     }
 
+    /**
+     * Remove the specified shader from the instance's list if it is being used.
+     * 
+     * @param s shader to remove
+     */
     public void removeShader(Shader s) {
         if (shaders != null) {
             for (int i = 0; i < shaders.length; i++)
@@ -82,6 +102,12 @@ public class Instance implements RenderObject {
         }
     }
 
+    /**
+     * Remove the specified modifier from the instance's list if it is being
+     * used.
+     * 
+     * @param m modifier to remove
+     */
     public void removeModifier(Modifier m) {
         if (modifiers != null) {
             for (int i = 0; i < modifiers.length; i++)
@@ -90,15 +116,20 @@ public class Instance implements RenderObject {
         }
     }
 
+    /**
+     * Get the world space bounding box for this instance.
+     * 
+     * @return bounding box in world space
+     */
     public BoundingBox getBounds() {
         return bounds;
     }
 
-    public int getNumPrimitives() {
+    int getNumPrimitives() {
         return geometry.getNumPrimitives();
     }
 
-    public void intersect(Ray r, IntersectionState state) {
+    void intersect(Ray r, IntersectionState state) {
         Ray localRay = r.transform(w2o);
         state.current = this;
         geometry.intersect(localRay, state);
@@ -106,6 +137,12 @@ public class Instance implements RenderObject {
         r.setMax(localRay.getMax());
     }
 
+    /**
+     * Prepare the shading state for shader invocation. This also runs the
+     * currently attached surface modifier.
+     * 
+     * @param state shading state to be prepared
+     */
     public void prepareShadingState(ShadingState state) {
         geometry.prepareShadingState(state);
         if (state.getNormal() != null && state.getGeoNormal() != null)
@@ -115,43 +152,98 @@ public class Instance implements RenderObject {
             state.getModifier().modify(state);
     }
 
+    /**
+     * Get a shader for the instance's list.
+     * 
+     * @param i index into the shader list
+     * @return requested shader, or <code>null</code> if the input is invalid
+     */
     public Shader getShader(int i) {
         if (shaders == null || i < 0 || i >= shaders.length)
             return null;
         return shaders[i];
     }
 
+    /**
+     * Get a modifier for the instance's list.
+     * 
+     * @param i index into the modifier list
+     * @return requested modifier, or <code>null</code> if the input is
+     *         invalid
+     */
     public Modifier getModifier(int i) {
         if (modifiers == null || i < 0 || i >= modifiers.length)
             return null;
         return modifiers[i];
     }
 
+    /**
+     * Transform the given point from object space to world space. A new
+     * {@link Point3} object is returned.
+     * 
+     * @param p object space position to transform
+     * @return transformed position
+     */
     public Point3 transformObjectToWorld(Point3 p) {
         return o2w == null ? new Point3(p) : o2w.transformP(p);
     }
 
+    /**
+     * Transform the given point from world space to object space. A new
+     * {@link Point3} object is returned.
+     * 
+     * @param p world space position to transform
+     * @return transformed position
+     */
     public Point3 transformWorldToObject(Point3 p) {
         return o2w == null ? new Point3(p) : w2o.transformP(p);
     }
 
+    /**
+     * Transform the given normal from object space to world space. A new
+     * {@link Vector3} object is returned.
+     * 
+     * @param n object space normal to transform
+     * @return transformed normal
+     */
     public Vector3 transformNormalObjectToWorld(Vector3 n) {
         return o2w == null ? new Vector3(n) : w2o.transformTransposeV(n);
     }
 
+    /**
+     * Transform the given normal from world space to object space. A new
+     * {@link Vector3} object is returned.
+     * 
+     * @param n world space normal to transform
+     * @return transformed normal
+     */
     public Vector3 transformNormalWorldToObject(Vector3 n) {
         return o2w == null ? new Vector3(n) : o2w.transformTransposeV(n);
     }
 
+    /**
+     * Transform the given vector from object space to world space. A new
+     * {@link Vector3} object is returned.
+     * 
+     * @param v object space vector to transform
+     * @return transformed vector
+     */
     public Vector3 transformVectorObjectToWorld(Vector3 v) {
         return o2w == null ? new Vector3(v) : o2w.transformV(v);
     }
 
+    /**
+     * Transform the given vector from world space to object space. A new
+     * {@link Vector3} object is returned.
+     * 
+     * @param v world space vector to transform
+     * @return transformed vector
+     */
     public Vector3 transformVectorWorldToObject(Vector3 v) {
         return o2w == null ? new Vector3(v) : w2o.transformV(v);
     }
 
-    public PrimitiveList getBakingPrimitives() {
+    PrimitiveList getBakingPrimitives() {
         return geometry.getBakingPrimitives();
     }
 
