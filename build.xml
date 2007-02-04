@@ -1,139 +1,122 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project name="Sunflow" default="default-build" basedir=".">
+<project name="Sunflow" default="release">
 	<!-- This needs to change with every release -->
 	<property name="sunflow.version" value="0.07.2" />
+	<property name="sunflow.jdk.level" value="5" />
+	<property name="sunflow.zip.comment" value="Sunflow rendering system v${sunflow.version}" />
+	<property name="sunflow.libs" value="janino.jar" />
+	<property name="sunflow.jar.filename" value="sunflow.jar" />
 
+	<!-- Basic targets -->
 	<target name="init">
-		<property name="src.dir" value="${basedir}/src" />
-		<property name="build.dir" value="${basedir}/build" />
-		<property name="javadoc.dir" value="${build.dir}/javadoc" />
-		<property name="build.classses.dir" value="${build.dir}/classes" />
-		<property name="release.sunflow.basedir" value="${build.dir}/release" />
-		<property name="release.sunflow.dir" value="${release.sunflow.basedir}/sunflow" />
-		<property name="sunflow.jar.file.name" value="${release.sunflow.dir}/sunflow.jar" />
-		<property name="janino.jar.file.name" value="${release.sunflow.dir}/janino.jar" />
-		<property name="meta.dir" value="${src.dir}/META-INF" />
-		<property name="sunflow.mf" value="${meta.dir}/sunflow.mf" />
-		<property name="sunflow.resources" value="${basedir}/resources" />
-		<property name="dist.src.zip" value="${basedir}/sunflow-src-v${sunflow.version}.zip" />
-		<property name="dist.bin.zip" value="${basedir}/sunflow-bin-v${sunflow.version}.zip" />
-		<property name="dist.data.zip" value="${basedir}/sunflow-data-v${sunflow.version}.zip" />
-		<property name="sunflow.comment" value="Sunflow rendering system v${sunflow.version}" />
-		<available file="${sunflow.resources}" type="dir" property="golden.present" />
+		<property name="src.dir" value="src" />
+		<property name="resources.dir" value="resources" />
+		<available file="${resources.dir}" type="dir" property="resources.present" />
+		<property name="build.dir" value="build" />
+		<property name="release.dir" value="release" />
+		<!-- build folder contains temporary files needed to create release level files -->
+		<property name="build.classes.dir" value="${build.dir}/classes" />
+		<property name="build.manifest" value="${build.dir}/sunflow.mf" />
+		<property name="build.jar" value="${build.dir}/sunflow.jar" />
+		<!-- release folder contains files which may be distributed in some way or another -->
+		<property name="release.javadoc.dir" value="${build.dir}/javadoc" />
+		<property name="release.src.zip" value="${release.dir}/sunflow-src-v${sunflow.version}.zip" />
+		<property name="release.bin.zip" value="${release.dir}/sunflow-bin-v${sunflow.version}.zip" />
+		<property name="release.data.zip" value="${release.dir}/sunflow-data-v${sunflow.version}.zip" />
 	</target>
 
-	<target name="clean" depends="init" description="Remove build files.">
+	<target name="clean" depends="init" description="Remove build files created this scripts">
 		<delete dir="${build.dir}" />
-		<delete dir="${meta.dir}" />
+		<delete dir="${release.dir}" />
 	</target>
 
-	<target name="compile" depends="init" description="Compile sunflow source code to folder ${classes.sunflow.dir}">
-		<mkdir dir="${build.classses.dir}" />
-		<property name="sunflow.jdk.level" value="5" />
-		<javac srcdir="${src.dir}" destdir="${build.classses.dir}" excludes="examples/*.java" includes="**/*.java" source="${sunflow.jdk.level}" target="${sunflow.jdk.level}" optimize="true">
-			<classpath>
-				<fileset dir="${basedir}">
-					<include name="janino.jar" />
-				</fileset>
-			</classpath>
-		</javac>
+
+	<!-- build directory targets -->
+	<target name="compile" depends="init" description="Compile source">
+		<mkdir dir="${build.classes.dir}" />
+		<javac srcdir="${src.dir}" destdir="${build.classes.dir}" source="${sunflow.jdk.level}" target="${sunflow.jdk.level}" classpath="${sunflow.libs}" />
 	</target>
 
-	<target name="manifest-sunflow" description="Create the Sunflow jar manifest">
-		<mkdir dir="${meta.dir}" />
-		<echo file="${sunflow.mf}" append="false" message="Manifest-Version: 1.0${line.separator}Main-Class: SunflowGUI${line.separator}Class-Path: janino.jar${line.separator}" />
+	<target name="create_manifest" description="Create the Sunflow jar manifest">
+		<echo file="${build.manifest}" append="false" message="Manifest-Version: 1.0${line.separator}Main-Class: SunflowGUI${line.separator}Class-Path: janino.jar${line.separator}" />
 	</target>
 
-	<target name="golden" depends="init, compile" unless="golden.present" description="Regerenates golden images for Benchmark">
-		<mkdir dir="${sunflow.resources}" />
-		<java classpath="${build.classses.dir}:janino.jar" classname="org.sunflow.Benchmark" maxmemory="1g" fork="true" jvmargs="-server">
-			<arg value="-regen" />
-		</java>
-	</target>
-
-	<target name="jar-janino" depends="init" description="Copy janino.jar to the release directory">
-		<copy file="${basedir}/janino.jar" tofile="${janino.jar.file.name}" />
-	</target>
-
-	<target name="jar-sunflow" depends="compile, manifest-sunflow, golden, jar-janino" description="Build a jar file of the sunflow classes in ${build.dir}/release-sunflow">
-		<mkdir dir="${release.sunflow.basedir}" />
-		<mkdir dir="${release.sunflow.dir}" />
-		<jar jarfile="${sunflow.jar.file.name}" manifest="${sunflow.mf}">
-			<fileset dir="${build.classses.dir}" />
-			<fileset dir="${basedir}">
-				<filename name="resources/*.png" />
-			</fileset>
+	<target name="jars" depends="compile, create_manifest" if="resources.present" description="Create jar files required for execution">
+		<mkdir dir="${release.dir}" />
+		<jar jarfile="${release.dir}/${sunflow.jar.filename}" manifest="${build.manifest}">
+			<fileset dir="${build.classes.dir}" />
+			<fileset dir="${resources.dir}" includes="*.png" />
 		</jar>
+		<copy todir="${release.dir}" file="${sunflow.libs}" />
 	</target>
 
-	<target name="build-sunflow" depends="jar-sunflow" description="Build sunflow in ${release.sunflow.dir}">
-		<copy todir="${release.sunflow.dir}">
-			<fileset dir="${basedir}">
-				<include name="janino.jar" />
-			</fileset>
-		</copy>
-		<echo message="sunflow has been built" />
+	<!-- release directory targets -->
+	<target name="zips" depends="jars" description="Create release zip files">
+		<mkdir dir="${release.dir}" />
+		<zip destfile="${release.bin.zip}" comment="${sunflow.zip.comment} - Binary release">
+			<zipfileset dir="${release.dir}" includes="*.jar" prefix="sunflow" />
+			<zipfileset dir="." includes="CHANGELOG" prefix="sunflow" />
+			<zipfileset dir="." includes="LICENSE" prefix="sunflow" />
+			<zipfileset dir="." includes="README" prefix="sunflow" />
+			<zipfileset dir="." includes="sunflow.bat" prefix="sunflow" />
+			<zipfileset dir="." includes="sunflow.sh" prefix="sunflow" />
+		</zip>
+		<zip destfile="${release.src.zip}" comment="${sunflow.zip.comment} - Source code release">
+			<zipfileset dir="exporters" prefix="sunflow/exporters" />
+			<zipfileset dir="resources" prefix="sunflow/resources" />
+			<zipfileset dir="classes" prefix="sunflow/classes" excludes="**/*.class **/org/**" />
+			<zipfileset dir="src" prefix="sunflow/src" />
+			<zipfileset dir="." includes="build.xml" prefix="sunflow" />
+			<zipfileset dir="." includes="${sunflow.libs}" prefix="sunflow" />
+			<zipfileset dir="." includes="CHANGELOG" prefix="sunflow" />
+			<zipfileset dir="." includes="LICENSE" prefix="sunflow" />
+			<zipfileset dir="." includes="README" prefix="sunflow" />
+		</zip>
+		<zip destfile="${release.data.zip}" comment="${sunflow.zip.comment} - Example data files">
+			<zipfileset dir="examples" prefix="sunflow/examples" />
+		</zip>
 	</target>
 
-	<target name="javadoc" depends="init" description="Create the java docs in ${build.dir}/javadoc">
-		<mkdir dir="${javadoc.dir}" />
-		<javadoc destdir="${javadoc.dir}" access="protected" use="true" notree="false" nonavbar="false" noindex="false" splitindex="true" author="true" version="true" nodeprecatedlist="false" nodeprecated="false" sourcepath="${src.dir}" doctitle="Sunflow">
+	<target name="javadoc" depends="init" description="Generate documentation">
+		<mkdir dir="${release.javadoc.dir}" />
+		<javadoc classpath="${sunflow.libs}" destdir="${release.javadoc.dir}" access="protected" use="true" notree="false" nonavbar="false" noindex="false" splitindex="true" author="true" version="true" nodeprecatedlist="false" nodeprecated="false" sourcepath="${src.dir}" doctitle="Sunflow v${sunflow.version}">
 			<packageset dir="${src.dir}" defaultexcludes="yes">
 				<include name="**" />
 			</packageset>
 		</javadoc>
 	</target>
 
-	<target name="run" depends="init, jar-sunflow" description="Run SunflowGUI">
-		<java jar="${sunflow.jar.file.name}" maxmemory="1g" fork="true" />
+	<target name="release" depends="zips, javadoc" />
+
+	<!-- Sample execution targets-->
+	<target name="generate_resources" depends="init, compile" unless="resources.present" description="Regerenates golden images for Benchmark">
+		<mkdir dir="${resources.dir}" />
+		<java classpath="${build.classes.dir}:${sunflow.libs}" classname="org.sunflow.Benchmark" maxmemory="1g" fork="true" jvmargs="-server">
+			<arg value="-regen" />
+		</java>
 	</target>
 
-	<target name="bench1" depends="init, jar-sunflow" description="Run the sunflow Benchmark once">
-		<java classpath="${sunflow.jar.file.name}" classname="org.sunflow.Benchmark" maxmemory="1g" jvmargs="-server" fork="true">
+	<target name="run" depends="jars" description="Run SunflowGUI">
+		<java jar="${release.dir}/${sunflow.jar.filename}" maxmemory="1g" fork="true">
+			<jvmarg value="-server" />
+		</java>
+	</target>
+
+	<target name="bench1" depends="jars" description="Run the Sunflow benchmark once">
+		<java classpath="${release.dir}/${sunflow.jar.filename}" classname="org.sunflow.Benchmark" maxmemory="1g" fork="true">
+			<jvmarg value="-server" />
 			<arg value="-bench" />
 			<arg value="0" />
 			<arg value="128" />
 		</java>
 	</target>
 
-	<target name="bench1uni" depends="init, jar-sunflow" description="Run the sunflow Benchmark once (single threaded)">
-		<java classpath="${sunflow.jar.file.name}" classname="org.sunflow.Benchmark" maxmemory="1g" jvmargs="-server" fork="true">
+	<target name="bench1uni" depends="jars" description="Run the sunflow Benchmark once (single threaded)">
+		<java classpath="${release.dir}/${sunflow.jar.filename}" classname="org.sunflow.Benchmark" maxmemory="1g" fork="true">
+			<jvmarg value="-server" />
 			<arg value="-bench" />
 			<arg value="1" />
 			<arg value="128" />
 		</java>
 	</target>
-
-	<target name="dist" depends="init, clean" description="Create release zip files">
-		<delete file="${dist.src.zip}" quiet="true" />
-		<delete file="${dist.bin.zip}" quiet="true" />
-		<delete file="${dist.data.zip}" quiet="true" />
-		<zip destfile="${dist.src.zip}" comment="${sunflow.comment} - Source code release">
-			<zipfileset dir="exporters" prefix="sunflow/exporters" />
-			<zipfileset dir="resources" prefix="sunflow/resources" />
-			<!-- FIXME: just create an empty directory called classes in the zip -->
-			<zipfileset dir="classes" prefix="sunflow/classes" excludes="**" />
-			<zipfileset dir="src" prefix="sunflow/src" />
-			<zipfileset dir="." includes="build.xml" prefix="sunflow" />
-			<zipfileset dir="." includes="CHANGELOG" prefix="sunflow" />
-			<zipfileset dir="." includes="janino.jar" prefix="sunflow" />
-			<zipfileset dir="." includes="LICENSE" prefix="sunflow" />
-			<zipfileset dir="." includes="README" prefix="sunflow" />
-		</zip>
-		<zip destfile="${dist.bin.zip}" comment="${sunflow.comment} - Binary release">
-			<zipfileset dir="." includes="build.xml" prefix="sunflow" />
-			<zipfileset dir="." includes="CHANGELOG" prefix="sunflow" />
-			<zipfileset dir="." includes="sunflow.jar" prefix="sunflow" />
-			<zipfileset dir="." includes="janino.jar" prefix="sunflow" />
-			<zipfileset dir="." includes="LICENSE" prefix="sunflow" />
-			<zipfileset dir="." includes="README" prefix="sunflow" />
-			<zipfileset dir="." includes="sunflow.bat" prefix="sunflow" />
-			<zipfileset dir="." includes="sunflow.sh" prefix="sunflow" />
-		</zip>
-		<zip destfile="${dist.data.zip}" comment="${sunflow.comment} - Example data files">
-			<zipfileset dir="examples" prefix="sunflow/examples" />
-		</zip>
-	</target>
-
-	<target name="default-build" depends="dist, javadoc" />
 </project>
