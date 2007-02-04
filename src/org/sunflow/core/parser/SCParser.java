@@ -26,6 +26,7 @@ import org.sunflow.core.camera.SphericalLens;
 import org.sunflow.core.camera.ThinLens;
 import org.sunflow.core.light.DirectionalSpotlight;
 import org.sunflow.core.light.ImageBasedLight;
+import org.sunflow.core.light.PointLight;
 import org.sunflow.core.light.SphereLight;
 import org.sunflow.core.light.SunSkyLight;
 import org.sunflow.core.light.TriangleMeshLight;
@@ -1089,10 +1090,9 @@ public class SCParser implements SceneParser {
                 pow = parseColor();
             }
             p.checkNextToken("p");
-            float px = p.getNextFloat();
-            float py = p.getNextFloat();
-            float pz = p.getNextFloat();
-            api.pointLight(api.getUniqueName("pointLight"), px, py, pz, pow);
+            api.parameter("center", parsePoint());
+            api.parameter("power", pow);
+            api.light(api.getUniqueName("pointlight"), new PointLight());
         } else if (p.peekNextToken("spherical")) {
             UI.printInfo(Module.API, "Reading spherical light ...");
             p.checkNextToken("color");

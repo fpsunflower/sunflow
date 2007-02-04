@@ -19,7 +19,7 @@
 		<property name="build.manifest" value="${build.dir}/sunflow.mf" />
 		<property name="build.jar" value="${build.dir}/sunflow.jar" />
 		<!-- release folder contains files which may be distributed in some way or another -->
-		<property name="release.javadoc.dir" value="${build.dir}/javadoc" />
+		<property name="release.javadoc.dir" value="${release.dir}/javadoc" />
 		<property name="release.src.zip" value="${release.dir}/sunflow-src-v${sunflow.version}.zip" />
 		<property name="release.bin.zip" value="${release.dir}/sunflow-bin-v${sunflow.version}.zip" />
 		<property name="release.data.zip" value="${release.dir}/sunflow-data-v${sunflow.version}.zip" />

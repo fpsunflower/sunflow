@@ -27,7 +27,6 @@ import org.sunflow.core.SceneParser;
 import org.sunflow.core.Shader;
 import org.sunflow.core.Tesselatable;
 import org.sunflow.core.ParameterList.InterpolationType;
-import org.sunflow.core.light.PointLight;
 import org.sunflow.core.parser.RA2Parser;
 import org.sunflow.core.parser.RA3Parser;
 import org.sunflow.core.parser.SCParser;
@@ -85,15 +84,15 @@ public class SunflowAPI {
     }
 
     /**
-     * The default constructor is only available to sub-classes.
+     * Creates an empty scene.
      */
-    protected SunflowAPI() {
+    public SunflowAPI() {
         reset();
     }
 
     /**
-     * Reset the state of the API completely. The scene, shader table and all
-     * rendering options are set back to their default values.
+     * Reset the state of the API completely. The object table is cleared, and
+     * all search paths areset back to their default values.
      */
     public final void reset() {
         scene = new Scene();
@@ -108,7 +107,9 @@ public class SunflowAPI {
 
     /**
      * Returns a name currently not being used by any other object. The returned
-     * name is of the form "prefix_n" where n is an integer starting at 1.
+     * name is of the form "prefix_n" where n is an integer starting at 1. Only
+     * a simple linear search is performed, so this method should be used only
+     * when there is no other way to guarentee uniqueness.
      * 
      * @param prefix name prefix
      * @return a unique name not used by any rendering object
@@ -271,7 +272,8 @@ public class SunflowAPI {
     }
 
     /**
-     * Remove the specified render object.
+     * Remove the specified render object. Note that this may cause the removal
+     * of other objects which depended on it.
      * 
      * @param name name of the object to remove
      */
@@ -446,7 +448,8 @@ public class SunflowAPI {
     /**
      * Instance the specified geometry into the scene. If geoname is
      * <code>null</code>, the specified instance object will be updated (if
-     * it exists).
+     * it exists). It is not possible to change the instancing relationship
+     * after the instance has been created.
      * 
      * @param name instance name
      * @param geoname name of the geometry to instance
@@ -496,7 +499,8 @@ public class SunflowAPI {
     /**
      * Defines a camera with a given name. The camera is built from the
      * specified {@link CameraLens}. If the lens object is <code>null</code>,
-     * the camera with the given name will be updated (if it exists).
+     * the camera with the given name will be updated (if it exists). It isn't
+     * possible to change the lens of an existing camera.
      * 
      * @param name camera name
      * @param lens camera lens to use
@@ -622,20 +626,6 @@ public class SunflowAPI {
     }
 
     /**
-     * Creats a point light with specified power
-     * 
-     * @param x x coordinate of the point light
-     * @param y y coordinate of the point light
-     * @param z z coordinate of the point light
-     * @param power light power
-     */
-    public final void pointLight(String name, float x, float y, float z, Color power) {
-        parameter("center", new Point3(x, y, z));
-        parameter("power", power);
-        light(name, new PointLight());
-    }
-
-    /**
      * Render using the specified options and the specified display. If the
      * specified options do not exist - defaults will be used.
      * 
@@ -715,7 +705,8 @@ public class SunflowAPI {
     }
 
     /**
-     * Retrieve the bounding box of the scene.
+     * Retrieve the bounding box of the scene. This method will be valid only
+     * after a first call to {@link #render(String, Display)} has been made.
      */
     public final BoundingBox getBounds() {
         return scene.getBounds();
