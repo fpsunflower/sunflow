@@ -128,7 +128,6 @@ public class SCParser implements SceneParser {
                     UI.printInfo(Module.API, "Reading trace depths ...");
                     parseTraceBlock(api);
                 } else if (token.equals("camera")) {
-                    UI.printInfo(Module.API, "Reading camera ...");
                     parseCamera(api);
                 } else if (token.equals("shader")) {
                     if (!parseShader(api))
@@ -391,17 +390,14 @@ public class SCParser implements SceneParser {
         String type = p.getNextToken();
         UI.printInfo(Module.API, "Reading %s camera ...", type);
         parseCameraTransform(api);
-        String name = null;
+        String name = api.getUniqueName("camera");
         if (type.equals("pinhole")) {
             p.checkNextToken("fov");
             api.parameter("fov", p.getNextFloat());
             p.checkNextToken("aspect");
             api.parameter("aspect", p.getNextFloat());
-            name = api.getUniqueName("camera");
             api.camera(name, new PinholeLens());
         } else if (type.equals("thinlens")) {
-            UI.printInfo(Module.API, "Reading thinlens camera ...");
-            parseCameraTransform(api);
             p.checkNextToken("fov");
             api.parameter("fov", p.getNextFloat());
             p.checkNextToken("aspect");
@@ -414,20 +410,18 @@ public class SCParser implements SceneParser {
                 api.parameter("lens.sides", p.getNextInt());
             if (p.peekNextToken("rotation"))
                 api.parameter("lens.rotation", p.getNextFloat());
-            name = api.getUniqueName("camera");
             api.camera(name, new ThinLens());
         } else if (type.equals("spherical")) {
-            UI.printInfo(Module.API, "Reading spherical camera ...");
-            parseCameraTransform(api);
-            name = api.getUniqueName("camera");
+            // no extra arguments
             api.camera(name, new SphericalLens());
         } else if (type.equals("fisheye")) {
-            UI.printInfo(Module.API, "Reading spherical camera ...");
-            parseCameraTransform(api);
-            name = api.getUniqueName("camera");
+            // no extra arguments
             api.camera(name, new FisheyeLens());
-        } else
+        } else {
             UI.printWarning(Module.API, "Unrecognized camera type: %s", p.getNextToken());
+            p.checkNextToken("}");
+            return;
+        }
         p.checkNextToken("}");
         if (name != null) {
             api.parameter("camera", name);
