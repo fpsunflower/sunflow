@@ -45,7 +45,7 @@
 		<mkdir dir="${release.dir}" />
 		<jar jarfile="${release.dir}/${sunflow.jar.filename}" manifest="${build.manifest}">
 			<fileset dir="${build.classes.dir}" />
-			<fileset dir="${resources.dir}" includes="*.png" />
+			<fileset dir="." includes="${resources.dir}/*.png" />
 		</jar>
 		<copy todir="${release.dir}" file="${sunflow.libs}" />
 	</target>
