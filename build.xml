@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project name="Sunflow" default="release">
 	<!-- This needs to change with every release -->
-	<property name="sunflow.version" value="0.07.2" />
+	<property name="sunflow.version" value="0.07.3" />
 	<property name="sunflow.jdk.level" value="5" />
 	<property name="sunflow.zip.comment" value="Sunflow rendering system v${sunflow.version}" />
 	<property name="sunflow.libs" value="janino.jar" />

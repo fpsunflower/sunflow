@@ -52,7 +52,7 @@ import org.sunflow.system.UI.Module;
  * scene.
  */
 public class SunflowAPI {
-    public static final String VERSION = "0.07.2";
+    public static final String VERSION = "0.07.3";
     public static final String DEFAULT_OPTIONS = "::options";
 
     private Scene scene;
@@ -614,18 +614,6 @@ public class SunflowAPI {
     }
 
     /**
-     * Sets a global shader override to the specified shader name. If the shader
-     * is not found, the overriding is disabled. The second parameter controls
-     * whether the override applies to the photon tracing process.
-     * 
-     * @param name shader name
-     * @param photonOverride apply override to photon tracing phase
-     */
-    public final void shaderOverride(String name, boolean photonOverride) {
-        scene.setShaderOverride(lookupShader(name), photonOverride);
-    }
-
-    /**
      * Render using the specified options and the specified display. If the
      * specified options do not exist - defaults will be used.
      * 
@@ -640,6 +628,19 @@ public class SunflowAPI {
             opt = new Options();
         scene.setCamera(lookupCamera(opt.getString("camera", null)));
 
+        // shader override
+        String shaderOverrideName = opt.getString("override.shader", "none");
+        boolean overridePhotons = opt.getBoolean("override.photons", false);
+        
+        if (shaderOverrideName.equals("none"))
+            scene.setShaderOverride(null, false);
+        else {
+            Shader shader = lookupShader(shaderOverrideName);
+            if (shader == null)
+                UI.printWarning(Module.API, "Unable to find shader \"%s\" for override, disabling", shaderOverrideName);
+            scene.setShaderOverride(shader, overridePhotons);
+        }
+        
         // baking
         String bakingInstanceName = opt.getString("baking.instance", null);
         if (bakingInstanceName != null) {

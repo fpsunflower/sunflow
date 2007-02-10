@@ -136,7 +136,9 @@ public class SCParser implements SceneParser {
                     if (!parseModifier(api))
                         return false;
                 } else if (token.equals("override")) {
-                    api.shaderOverride(p.getNextToken(), p.getNextBoolean());
+                    api.parameter("override.shader", p.getNextToken());
+                    api.parameter("override.photons", p.getNextBoolean());
+                    api.options(SunflowAPI.DEFAULT_OPTIONS);
                 } else if (token.equals("object")) {
                     parseObjectBlock(api);
                 } else if (token.equals("instance")) {

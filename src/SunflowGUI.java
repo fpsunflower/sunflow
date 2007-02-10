@@ -411,8 +411,10 @@ public class SunflowGUI extends javax.swing.JFrame implements UserInterface {
                 api.parameter("sampler", sampler);
                 api.options(SunflowAPI.DEFAULT_OPTIONS);
                 if (shaderOverride != null) {
-                    api.shader("ambocc", shaderOverride);
-                    api.shaderOverride("ambocc", true);
+                    api.shader("cmdline_override", shaderOverride);
+                    api.parameter("override.shader", "cmdline_override");
+                    api.parameter("override.photons", true);
+                    api.options(SunflowAPI.DEFAULT_OPTIONS);
                 }
                 // create display
                 Display display;

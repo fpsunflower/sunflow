@@ -1,3 +1,6 @@
+v0.07.3
+* Moved shaderOverride to an option
+
 v0.07.2
 * Filled in and corrected javadoc comments in org.sunflow.core package
 * Upgraded to Janino 2.5.5
