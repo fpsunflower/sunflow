@@ -929,23 +929,29 @@ public class SCParser implements SceneParser {
         } else if (type.equals("particles") || type.equals("dlasurface")) {
             if (type.equals("dlasurface"))
                 UI.printWarning(Module.API, "Deprecated object type: \"dlasurface\" - please use \"particles\" instead");
-            p.checkNextToken("filename");
-            String filename = p.getNextToken();
-            boolean littleEndian = false;
-            if (p.peekNextToken("little_endian"))
-                littleEndian = true;
-            UI.printInfo(Module.USER, "Loading particle file: %s", filename);
-            File file = new File(filename);
-            FileInputStream stream = new FileInputStream(filename);
-            MappedByteBuffer map = stream.getChannel().map(FileChannel.MapMode.READ_ONLY, 0, file.length());
-            if (littleEndian)
-                map.order(ByteOrder.LITTLE_ENDIAN);
-            FloatBuffer buffer = map.asFloatBuffer();
-            float[] data = new float[buffer.capacity()];
-            for (int i = 0; i < data.length; i++)
-                data[i] = buffer.get(i);
-            stream.close();
-            api.parameter("particles", "point", "vertex", data);
+            float[] data;
+            if (p.peekNextToken("filename")) {
+                String filename = api.resolveIncludeFilename(p.getNextToken());
+                boolean littleEndian = false;
+                if (p.peekNextToken("little_endian"))
+                    littleEndian = true;
+                UI.printInfo(Module.USER, "Loading particle file: %s", filename);
+                File file = new File(filename);
+                FileInputStream stream = new FileInputStream(filename);
+                MappedByteBuffer map = stream.getChannel().map(FileChannel.MapMode.READ_ONLY, 0, file.length());
+                if (littleEndian)
+                    map.order(ByteOrder.LITTLE_ENDIAN);
+                FloatBuffer buffer = map.asFloatBuffer();
+                data = new float[buffer.capacity()];
+                for (int i = 0; i < data.length; i++)
+                    data[i] = buffer.get(i);
+                stream.close();
+                api.parameter("particles", "point", "vertex", data);
+            } else {
+                p.checkNextToken("points");
+                int n = p.getNextInt();
+                data = parseFloatArray(n * 3); // read 3n points
+            }
             if (p.peekNextToken("num"))
                 api.parameter("num", p.getNextInt());
             else

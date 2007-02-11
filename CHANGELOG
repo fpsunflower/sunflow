@@ -1,4 +1,6 @@
 v0.07.3
+* Particle point positions can now be specified inline in the scene file
+* Particle data files can now be scene relative (via include paths)
 * Improved motion blur sampling
 * Moved shaderOverride to an option
 
