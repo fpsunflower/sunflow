@@ -1,4 +1,5 @@
 v0.07.3
+* Improved motion blur sampling
 * Moved shaderOverride to an option
 
 v0.07.2

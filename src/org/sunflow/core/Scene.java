@@ -154,6 +154,15 @@ public class Scene {
      */
     public ShadingState getRadiance(IntersectionState istate, float rx, float ry, double lensU, double lensV, double time, int instance) {
         if (bakingPrimitives == null) {
+            // warp the time sample by a tent filter - this helps simulates the
+            // behaviour of a standard shutter as explained here:
+            // "Shutter Efficiency and Temporal Sampling" by "Ian Stephenson"
+            // http://www.dctsystems.co.uk/Text/shutter.pdf
+            if (time < 0.5)
+                time = -1 + Math.sqrt(2 * time);
+            else
+                time = 1 - Math.sqrt(2 - 2 * time);
+            time = 0.5 * (time + 1);
             Ray r = camera.getRay(rx, ry, imageWidth, imageHeight, lensU, lensV, time);
             return r != null ? lightServer.getRadiance(rx, ry, instance, r, istate) : null;
         } else {
