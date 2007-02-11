@@ -946,12 +946,12 @@ public class SCParser implements SceneParser {
                 for (int i = 0; i < data.length; i++)
                     data[i] = buffer.get(i);
                 stream.close();
-                api.parameter("particles", "point", "vertex", data);
             } else {
                 p.checkNextToken("points");
                 int n = p.getNextInt();
                 data = parseFloatArray(n * 3); // read 3n points
             }
+            api.parameter("particles", "point", "vertex", data);
             if (p.peekNextToken("num"))
                 api.parameter("num", p.getNextInt());
             else
