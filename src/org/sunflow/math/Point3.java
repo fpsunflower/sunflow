@@ -92,6 +92,13 @@ public final class Point3 {
         return dest;
     }
 
+    public static final Point3 blend(Point3 p0, Point3 p1, float blend, Point3 dest) {
+        dest.x = (1 - blend) * p0.x + blend * p1.x;
+        dest.y = (1 - blend) * p0.y + blend * p1.y;
+        dest.z = (1 - blend) * p0.z + blend * p1.z;
+        return dest;
+    }
+
     public static final Vector3 normal(Point3 p0, Point3 p1, Point3 p2) {
         float edge1x = p1.x - p0.x;
         float edge1y = p1.y - p0.y;
@@ -117,7 +124,7 @@ public final class Point3 {
         dest.z = edge1x * edge2y - edge1y * edge2x;
         return dest;
     }
-    
+
     @Override
     public final String toString() {
         return String.format("(%.2f, %.2f, %.2f)", x, y, z);
