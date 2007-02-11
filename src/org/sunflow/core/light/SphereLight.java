@@ -1,6 +1,7 @@
 package org.sunflow.core.light;
 
 import org.sunflow.SunflowAPI;
+import org.sunflow.core.Instance;
 import org.sunflow.core.LightSample;
 import org.sunflow.core.LightSource;
 import org.sunflow.core.ParameterList;
@@ -36,15 +37,6 @@ public class SphereLight implements LightSource, Shader {
         r2 = radius * radius;
         center = pl.getPoint("center", center);
         return true;
-    }
-
-    public void init(String name, SunflowAPI api) {
-        api.light(name, this);
-        api.geometry(name + ".geo", new Sphere());
-        api.shader(name + ".shader", this);
-        api.parameter("shaders", name + ".shader");
-        api.parameter("transform", Matrix4.translation(center.x, center.y, center.z).multiply(Matrix4.scale(radius)));
-        api.instance(name + ".instance", name + ".geo");
     }
 
     public int getNumSamples() {
@@ -153,5 +145,9 @@ public class SphereLight implements LightSource, Shader {
 
     public void scatterPhoton(ShadingState state, Color power) {
         // do not scatter photons
+    }
+
+    public Instance createInstance() {
+        return Instance.createTemporary(new Sphere(), Matrix4.translation(center.x, center.y, center.z).multiply(Matrix4.scale(radius)), this);
     }
 }

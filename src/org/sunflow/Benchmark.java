@@ -10,6 +10,7 @@ import org.sunflow.core.Display;
 import org.sunflow.core.Tesselatable;
 import org.sunflow.core.camera.PinholeLens;
 import org.sunflow.core.display.FileDisplay;
+import org.sunflow.core.display.FrameDisplay;
 import org.sunflow.core.light.TriangleMeshLight;
 import org.sunflow.core.primitive.Sphere;
 import org.sunflow.core.primitive.TriangleMesh;
@@ -33,6 +34,7 @@ public class Benchmark implements BenchmarkTest, UserInterface, Display {
     private boolean showOutput;
     private boolean showBenchmarkOutput;
     private boolean saveOutput;
+    private boolean showWindow;
     private int threads;
     private int[] referenceImage;
     private int[] validationImage;
@@ -44,6 +46,7 @@ public class Benchmark implements BenchmarkTest, UserInterface, Display {
             System.out.println("  -regen                        Regenerate reference images for a variety of sizes");
             System.out.println("  -bench [threads] [resolution] Run a single iteration of the benchmark using the specified thread count and image resolution");
             System.out.println("                                Default: threads=0 (auto-detect cpus), resolution=256");
+            System.out.println("  -show                         Render the benchmark scene into a window without performing validation");
         } else if (args[0].equals("-regen")) {
             int[] sizes = { 32, 64, 96, 128, 256, 384, 512 };
             for (int s : sizes) {
@@ -57,10 +60,13 @@ public class Benchmark implements BenchmarkTest, UserInterface, Display {
                 threads = Integer.parseInt(args[1]);
             if (args.length > 2)
                 resolution = Integer.parseInt(args[2]);
-            Benchmark benchmark = new Benchmark(resolution, false, true, false, threads);
+            Benchmark benchmark = new Benchmark(resolution, false, true, false, threads, false);
             benchmark.kernelBegin();
             benchmark.kernelMain();
             benchmark.kernelEnd();
+        } else if (args[0].equals("-show")) {
+            Benchmark benchmark = new Benchmark(512, true, true, false, 0, true);
+            benchmark.kernelMain();
         }
     }
 
@@ -69,15 +75,16 @@ public class Benchmark implements BenchmarkTest, UserInterface, Display {
     }
 
     public Benchmark(int resolution, boolean showOutput, boolean showBenchmarkOutput, boolean saveOutput) {
-        this(resolution, showOutput, showBenchmarkOutput, saveOutput, 0);
+        this(resolution, showOutput, showBenchmarkOutput, saveOutput, 0, false);
     }
 
-    public Benchmark(int resolution, boolean showOutput, boolean showBenchmarkOutput, boolean saveOutput, int threads) {
+    public Benchmark(int resolution, boolean showOutput, boolean showBenchmarkOutput, boolean saveOutput, int threads, boolean showWindow) {
         UI.set(this);
         this.resolution = resolution;
         this.showOutput = showOutput;
         this.showBenchmarkOutput = showBenchmarkOutput;
         this.saveOutput = saveOutput;
+        this.showWindow = showWindow;
         this.threads = threads;
         errorThreshold = 6;
         // fetch reference image from resources (jar file or classpath)
@@ -109,7 +116,7 @@ public class Benchmark implements BenchmarkTest, UserInterface, Display {
     private class BenchmarkScene extends SunflowAPI {
         public BenchmarkScene() {
             build();
-            render(SunflowAPI.DEFAULT_OPTIONS, saveOutput ? new FileDisplay(String.format("resources/golden_%04X.png", resolution)) : Benchmark.this);
+            render(SunflowAPI.DEFAULT_OPTIONS, showWindow ? new FrameDisplay() : saveOutput ? new FileDisplay(String.format("resources/golden_%04X.png", resolution)) : Benchmark.this);
         }
 
         public void build() {
@@ -187,8 +194,7 @@ public class Benchmark implements BenchmarkTest, UserInterface, Display {
             parameter("triangles", new int[] { 0, 1, 2, 2, 3, 0 });
             parameter("radiance", emit);
             parameter("samples", 8);
-            TriangleMeshLight light = new TriangleMeshLight();
-            light.init("light", this);
+            light("light", new TriangleMeshLight());
 
             // spheres
             parameter("eta", 1.6f);

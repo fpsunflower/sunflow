@@ -15,7 +15,7 @@ class LightServer {
     private Scene scene;
 
     // lighting
-    private LightSource[] lights;
+    LightSource[] lights;
 
     // shading override
     private Shader shaderOverride;

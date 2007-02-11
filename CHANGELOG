@@ -1,4 +1,6 @@
 v0.07.3
+* Changed cornellbox primitive into the light block in the .sc parser
+* Light objects can now specify their geometric represtentation at runtime
 * Particle point positions can now be specified inline in the scene file
 * Particle data files can now be scene relative (via include paths)
 * Improved motion blur sampling

@@ -53,4 +53,14 @@ public interface LightSource extends RenderObject {
      * @return light source power
      */
     public float getPower();
+
+    /**
+     * Create an instance which represents the geometry of this light source.
+     * This instance will be created just before and removed immediately after
+     * rendering. Non-area light sources can return <code>null</code> to
+     * indicate that no geometry needs to be created.
+     * 
+     * @return an instance describing the light source
+     */
+    public Instance createInstance();
 }

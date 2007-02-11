@@ -1,6 +1,7 @@
 package org.sunflow.core.primitive;
 
 import org.sunflow.SunflowAPI;
+import org.sunflow.core.Instance;
 import org.sunflow.core.IntersectionState;
 import org.sunflow.core.LightSample;
 import org.sunflow.core.LightSource;
@@ -82,15 +83,6 @@ public class CornellBox implements PrimitiveList, Shader, LightSource {
         radiance = pl.getColor("radiance", radiance);
         samples = pl.getInt("samples", samples);
         return true;
-    }
-
-    public void init(String name, SunflowAPI api) {
-        // register with the api properly
-        api.geometry(name, this);
-        api.shader(name + ".shader", this);
-        api.parameter("shaders", name + ".shader");
-        api.instance(name + ".instance", name);
-        api.light(name + ".light", this);
     }
 
     public BoundingBox getBounds() {
@@ -449,5 +441,9 @@ public class CornellBox implements PrimitiveList, Shader, LightSource {
 
     public PrimitiveList getBakingPrimitives() {
         return null;
+    }
+
+    public Instance createInstance() {
+        return Instance.createTemporary(this, null, this);
     }
 }

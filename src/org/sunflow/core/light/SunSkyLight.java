@@ -1,6 +1,7 @@
 package org.sunflow.core.light;
 
 import org.sunflow.SunflowAPI;
+import org.sunflow.core.Instance;
 import org.sunflow.core.IntersectionState;
 import org.sunflow.core.LightSample;
 import org.sunflow.core.LightSource;
@@ -199,15 +200,6 @@ public class SunSkyLight implements LightSource, PrimitiveList, Shader {
         return true;
     }
 
-    public void init(String name, SunflowAPI api) {
-        // register this object with the api properly
-        api.geometry(name, this);
-        api.shader(name + ".shader", this);
-        api.parameter("shaders", name + ".shader");
-        api.instance(name + ".instance", name);
-        api.light(name + ".light", this);
-    }
-
     private Color getSkyRGB(Vector3 dir) {
         if (dir.z < 0)
             return Color.BLACK;
@@ -331,5 +323,9 @@ public class SunSkyLight implements LightSource, PrimitiveList, Shader {
         dest.y = (float) Math.cos(phi);
         dest.z = (float) (sin_phi * Math.sin(theta));
         return dest;
+    }
+
+    public Instance createInstance() {
+        return Instance.createTemporary(this, null, this);
     }
 }

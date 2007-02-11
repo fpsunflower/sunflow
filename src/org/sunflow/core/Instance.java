@@ -21,6 +21,22 @@ public class Instance implements RenderObject {
     private Shader[] shaders;
     private Modifier[] modifiers;
 
+    public static Instance createTemporary(PrimitiveList primitives, Matrix4 transform, Shader shader) {
+        Instance i = new Instance();
+        i.o2w = transform;
+        if (transform != null) {
+            i.w2o = transform.inverse();
+            if (i.w2o == null) {
+                UI.printError(Module.GEOM, "Unable to compute transform inverse - determinant is: %g", i.o2w.determinant());
+                return null;
+            }
+        }
+        i.geometry = new Geometry(primitives);
+        i.shaders = new Shader[] { shader };
+        i.updateBounds();
+        return i;
+    }
+
     public boolean update(ParameterList pl, SunflowAPI api) {
         String geometryName = pl.getString("geometry", null);
         if (geometry == null || geometryName != null) {

@@ -6,36 +6,55 @@ import org.sunflow.math.Matrix4;
 
 final class InstanceList implements PrimitiveList {
     private Instance[] instances;
+    private Instance[] lights;
 
     InstanceList() {
         instances = new Instance[0];
+        clearLightSources();
     }
 
     InstanceList(Instance[] instances) {
         this.instances = instances;
+        clearLightSources();
+    }
+
+    void addLightSourceInstances(Instance[] lights) {
+        this.lights = lights;
+    }
+
+    void clearLightSources() {
+        lights = new Instance[0];
     }
 
     public final float getPrimitiveBound(int primID, int i) {
-        return instances[primID].getBounds().getBound(i);
+        if (primID < instances.length)
+            return instances[primID].getBounds().getBound(i);
+        else
+            return lights[primID - instances.length].getBounds().getBound(i);
     }
 
     public final BoundingBox getWorldBounds(Matrix4 o2w) {
         BoundingBox bounds = new BoundingBox();
         for (Instance i : instances)
             bounds.include(i.getBounds());
+        for (Instance i: lights)
+            bounds.include(i.getBounds());
         return bounds;
     }
 
     public final void intersectPrimitive(Ray r, int primID, IntersectionState state) {
-        instances[primID].intersect(r, state);
+        if (primID < instances.length)
+            instances[primID].intersect(r, state);
+        else
+            lights[primID - instances.length].intersect(r, state);
     }
 
     public final int getNumPrimitives() {
-        return instances.length;
+        return instances.length + lights.length;
     }
 
     public final int getNumPrimitives(int primID) {
-        return instances[primID].getNumPrimitives();
+        return primID < instances.length ? instances[primID].getNumPrimitives() : lights[primID - instances.length].getNumPrimitives();
     }
 
     public final void prepareShadingState(ShadingState state) {
@@ -43,7 +62,6 @@ final class InstanceList implements PrimitiveList {
     }
 
     public boolean update(ParameterList pl, SunflowAPI api) {
-        // TODO: build accelstructure into this (?)
         return true;
     }
 

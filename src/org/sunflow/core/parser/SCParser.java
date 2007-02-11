@@ -793,31 +793,6 @@ public class SCParser implements SceneParser {
                 api.parameter("point2", parsePoint());
             }
             api.geometry(name, new Plane());
-        } else if (type.equals("cornellbox")) {
-            UI.printInfo(Module.API, "Reading cornell box ...");
-            if (transform != null)
-                UI.printWarning(Module.API, "Instancing is not supported on cornell box -- ignoring transform");
-            p.checkNextToken("corner0");
-            api.parameter("corner0", parsePoint());
-            p.checkNextToken("corner1");
-            api.parameter("corner1", parsePoint());
-            p.checkNextToken("left");
-            api.parameter("leftColor", parseColor());
-            p.checkNextToken("right");
-            api.parameter("rightColor", parseColor());
-            p.checkNextToken("top");
-            api.parameter("topColor", parseColor());
-            p.checkNextToken("bottom");
-            api.parameter("bottomColor", parseColor());
-            p.checkNextToken("back");
-            api.parameter("backColor", parseColor());
-            p.checkNextToken("emit");
-            api.parameter("radiance", parseColor());
-            if (p.peekNextToken("samples"))
-                api.parameter("samples", p.getNextInt());
-            new CornellBox().init(name, api);
-            noInstance = true; // instancing is handled natively by the init
-            // method
         } else if (type.equals("generic-mesh")) {
             UI.printInfo(Module.API, "Reading generic mesh: %s ... ", name);
             // parse vertices
@@ -1076,8 +1051,7 @@ public class SCParser implements SceneParser {
             }
             api.parameter("points", "point", "vertex", points);
             api.parameter("triangles", triangles);
-            TriangleMeshLight mesh = new TriangleMeshLight();
-            mesh.init(name, api);
+            api.light(name, new TriangleMeshLight());
         } else if (p.peekNextToken("point")) {
             UI.printInfo(Module.API, "Reading point light ...");
             Color pow;
@@ -1108,8 +1082,7 @@ public class SCParser implements SceneParser {
             api.parameter("radius", p.getNextFloat());
             p.checkNextToken("samples");
             api.parameter("samples", p.getNextInt());
-            SphereLight light = new SphereLight();
-            light.init(api.getUniqueName("spherelight"), api);
+            api.light(api.getUniqueName("spherelight"), new SphereLight());
         } else if (p.peekNextToken("directional")) {
             UI.printInfo(Module.API, "Reading directional light ...");
             p.checkNextToken("source");
@@ -1145,8 +1118,7 @@ public class SCParser implements SceneParser {
             else
                 UI.printWarning(Module.API, "Samples keyword not found - defaulting to %d", samples);
             api.parameter("samples", samples);
-            ImageBasedLight ibl = new ImageBasedLight();
-            ibl.init(api.getUniqueName("ibl"), api);
+            api.light(api.getUniqueName("ibl"), new ImageBasedLight());
         } else if (p.peekNextToken("meshlight")) {
             p.checkNextToken("name");
             String name = p.getNextToken();
@@ -1173,8 +1145,7 @@ public class SCParser implements SceneParser {
             p.checkNextToken("triangles");
             int nt = p.getNextInt();
             api.parameter("triangles", parseIntArray(nt * 3));
-            TriangleMeshLight mesh = new TriangleMeshLight();
-            mesh.init(name, api);
+            api.light(name, new TriangleMeshLight());
         } else if (p.peekNextToken("sunsky")) {
             p.checkNextToken("up");
             api.parameter("up", parseVector());
@@ -1186,8 +1157,28 @@ public class SCParser implements SceneParser {
             api.parameter("turbidity", p.getNextFloat());
             if (p.peekNextToken("samples"))
                 api.parameter("samples", p.getNextInt());
-            SunSkyLight sunsky = new SunSkyLight();
-            sunsky.init(api.getUniqueName("sunsky"), api);
+            api.light(api.getUniqueName("sunsky"), new SunSkyLight());
+        } else if (p.peekNextToken("cornellbox")) {
+            UI.printInfo(Module.API, "Reading cornell box ...");
+            p.checkNextToken("corner0");
+            api.parameter("corner0", parsePoint());
+            p.checkNextToken("corner1");
+            api.parameter("corner1", parsePoint());
+            p.checkNextToken("left");
+            api.parameter("leftColor", parseColor());
+            p.checkNextToken("right");
+            api.parameter("rightColor", parseColor());
+            p.checkNextToken("top");
+            api.parameter("topColor", parseColor());
+            p.checkNextToken("bottom");
+            api.parameter("bottomColor", parseColor());
+            p.checkNextToken("back");
+            api.parameter("backColor", parseColor());
+            p.checkNextToken("emit");
+            api.parameter("radiance", parseColor());
+            if (p.peekNextToken("samples"))
+                api.parameter("samples", p.getNextInt());
+            api.light(api.getUniqueName("cornellbox"), new CornellBox());
         } else
             UI.printWarning(Module.API, "Unrecognized object type: %s", p.getNextToken());
         p.checkNextToken("}");

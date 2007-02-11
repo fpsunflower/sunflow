@@ -1,6 +1,7 @@
 package org.sunflow.core.light;
 
 import org.sunflow.SunflowAPI;
+import org.sunflow.core.Instance;
 import org.sunflow.core.IntersectionState;
 import org.sunflow.core.LightSample;
 import org.sunflow.core.LightSource;
@@ -129,20 +130,6 @@ public class ImageBasedLight implements PrimitiveList, LightSource, Shader {
         return true;
     }
 
-    public void init(String name, SunflowAPI api) {
-        // register this object with the api properly
-        api.geometry(name, this);
-        if (api.lookupGeometry(name) == null) {
-            // quit if we don't see our geometry in here (error message
-            // will have already been printed)
-            return;
-        }
-        api.shader(name + ".shader", this);
-        api.parameter("shaders", name + ".shader");
-        api.instance(name + ".instance", name);
-        api.light(name + ".light", this);
-    }
-
     public void prepareShadingState(ShadingState state) {
         if (state.includeLights())
             state.setShader(this);
@@ -262,5 +249,9 @@ public class ImageBasedLight implements PrimitiveList, LightSource, Shader {
 
     public float getPower() {
         return 0;
+    }
+
+    public Instance createInstance() {
+        return Instance.createTemporary(this, null, this);
     }
 }

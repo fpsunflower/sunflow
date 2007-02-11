@@ -1,5 +1,7 @@
 package org.sunflow.core;
 
+import java.util.ArrayList;
+
 import org.sunflow.core.display.FrameDisplay;
 import org.sunflow.image.Color;
 import org.sunflow.math.BoundingBox;
@@ -221,6 +223,42 @@ public class Scene {
         bakingAccel.intersect(r, state);
     }
 
+    private void createAreaLightInstances() {
+        ArrayList<Instance> infiniteAreaLights = null;
+        ArrayList<Instance> areaLights = null;
+        // create an area light instance from each light source if possible
+        for (LightSource l : lightServer.lights) {
+            Instance lightInstance = l.createInstance();
+            if (lightInstance != null) {
+                if (lightInstance.getBounds() == null) {
+                    if (infiniteAreaLights == null)
+                        infiniteAreaLights = new ArrayList<Instance>();
+                    infiniteAreaLights.add(lightInstance);
+                } else {
+                    if (areaLights == null)
+                        areaLights = new ArrayList<Instance>();
+                    areaLights.add(lightInstance);
+                }
+            }
+        }
+        // add area light sources to the list of instances if they exist
+        if (infiniteAreaLights != null && infiniteAreaLights.size() > 0)
+            infiniteInstanceList.addLightSourceInstances(infiniteAreaLights.toArray(new Instance[infiniteAreaLights.size()]));
+        else
+            infiniteInstanceList.clearLightSources();
+        if (areaLights != null && areaLights.size() > 0)
+            instanceList.addLightSourceInstances(areaLights.toArray(new Instance[areaLights.size()]));
+        else
+            instanceList.clearLightSources();
+        // FIXME: this _could_ be done incrementally to avoid top-level rebuilds each frame
+        rebuildAccel = true;
+    }
+
+    private void removeAreaLightInstances() {
+        infiniteInstanceList.clearLightSources();
+        instanceList.clearLightSources();
+    }
+
     /**
      * Render the scene using the specified options, image sampler and display.
      * 
@@ -264,6 +302,9 @@ public class Scene {
         imageWidth = MathUtils.clamp(imageWidth, 1, 1 << 14);
         imageHeight = MathUtils.clamp(imageHeight, 1, 1 << 14);
 
+        // prepare lights
+        createAreaLightInstances();
+
         // get acceleration structure info
         // count scene primitives
         long numPrimitives = 0;
@@ -297,6 +338,8 @@ public class Scene {
         sampler.prepare(options, this, imageWidth, imageHeight);
         sampler.render(display);
         lightServer.showStats();
+        // discard area lights
+        removeAreaLightInstances();
         // discard baking tesselation/accel structure
         bakingPrimitives = null;
         bakingAccel = null;

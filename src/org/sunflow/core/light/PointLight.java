@@ -1,6 +1,7 @@
 package org.sunflow.core.light;
 
 import org.sunflow.SunflowAPI;
+import org.sunflow.core.Instance;
 import org.sunflow.core.LightSample;
 import org.sunflow.core.LightSource;
 import org.sunflow.core.ParameterList;
@@ -56,5 +57,9 @@ public class PointLight implements LightSource {
 
     public float getPower() {
         return power.getLuminance();
+    }
+
+    public Instance createInstance() {
+        return null;
     }
 }
