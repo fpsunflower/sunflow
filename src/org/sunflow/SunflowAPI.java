@@ -631,7 +631,7 @@ public class SunflowAPI {
         // shader override
         String shaderOverrideName = opt.getString("override.shader", "none");
         boolean overridePhotons = opt.getBoolean("override.photons", false);
-        
+
         if (shaderOverrideName.equals("none"))
             scene.setShaderOverride(null, false);
         else {
@@ -640,7 +640,7 @@ public class SunflowAPI {
                 UI.printWarning(Module.API, "Unable to find shader \"%s\" for override, disabling", shaderOverrideName);
             scene.setShaderOverride(shader, overridePhotons);
         }
-        
+
         // baking
         String bakingInstanceName = opt.getString("baking.instance", null);
         if (bakingInstanceName != null) {
