@@ -12,8 +12,8 @@ import org.sunflow.util.FastHashMap;
  * or extend a certain class. Many plugins may be registered and created at a
  * later time by recalling their unique name only.
  * 
- * @param <T> Default constructible type all plugins will implement or derive
- *            from
+ * @param <T> Default constructible type or interface all plugins will derive
+ *            from or implement
  */
 public final class Plugins<T> {
     private final FastHashMap<String, Class<? extends T>> pluginClasses;
@@ -21,7 +21,7 @@ public final class Plugins<T> {
 
     /**
      * Create an empty plugin list. You must specify <code>T.class</code> as
-     * an argument so that
+     * an argument.
      * 
      * @param baseClass
      */
@@ -39,6 +39,8 @@ public final class Plugins<T> {
      *         if not found or invalid
      */
     public T createObject(String name) {
+        if (name == null || name.equals("null") || name.equals("none"))
+            return null;
         Class<? extends T> c = pluginClasses.get(name);
         if (c == null) {
             UI.printError(Module.API, "Cannot create object of type \"%s\" - type was not found", name);
@@ -53,6 +55,17 @@ public final class Plugins<T> {
             UI.printError(Module.API, "Cannot create object of type \"%s\" - %s", name, e.getLocalizedMessage());
             return null;
         }
+    }
+
+    /**
+     * Check this plugin list for the presence of the specified type name
+     * 
+     * @param name plugin type name
+     * @return <code>true</code> if this name has been registered,
+     *         <code>false</code> otherwise
+     */
+    public boolean hasType(String name) {
+        return pluginClasses.get(name) != null;
     }
 
     /**
