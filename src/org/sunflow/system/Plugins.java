@@ -69,6 +69,21 @@ public final class Plugins<T> {
     }
 
     /**
+     * Generate a unique plugin type name which has not yet been registered.
+     * This is meant to be used when the actual type name is not crucial, but
+     * succesfully registration is.
+     * 
+     * @param prefix a prefix to be used in generating the unique name
+     * @return a unique plugin type name not yet in use
+     */
+    public String generateUniqueName(String prefix) {
+        String type;
+        for (int i = 1; hasType(type = String.format("%s_%d", prefix, i)); i++) {
+        }
+        return type;
+    }
+
+    /**
      * Define a new plugin type from java source code. The code string contains
      * import declarations and a class body only. The implemented type is
      * implicitly the one of the plugin list being registered against.If the

@@ -518,11 +518,10 @@ public class SCParser implements SceneParser {
             api.parameter("color", parseColor());
             api.shader(name, "constant");
         } else if (p.peekNextToken("janino")) {
-            p.checkNextToken("typename");
-            String typename = p.getNextToken();
-            String code = p.getNextCodeBlock();
-            if (!PluginRegistry.shaderPlugins.registerPlugin(typename, code))
+            String typename = p.peekNextToken("typename") ? p.getNextToken() : PluginRegistry.shaderPlugins.generateUniqueName("janino_shader");
+            if (!PluginRegistry.shaderPlugins.registerPlugin(typename, p.getNextCodeBlock()))
                 return false;
+            api.shader(name, typename);
         } else if (p.peekNextToken("id")) {
             api.shader(name, "show_instance_id");
         } else if (p.peekNextToken("uber")) {
@@ -760,9 +759,8 @@ public class SCParser implements SceneParser {
             api.parameter("points", "point", "vertex", parseFloatArray(p.getNextInt()));
             api.geometry(name, "hair");
         } else if (type.equals("janino-tesselatable")) {
-            p.checkNextToken("typename");
-            String typename = p.getNextToken();
             UI.printInfo(Module.API, "Reading procedural primitive: %s ... ", name);
+            String typename = p.peekNextToken("typename") ? p.getNextToken() : PluginRegistry.shaderPlugins.generateUniqueName("janino_shader");
             if (!PluginRegistry.tesselatablePlugins.registerPlugin(typename, p.getNextCodeBlock()))
                 noInstance = true;
             else

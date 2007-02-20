@@ -103,13 +103,9 @@ public class SunflowAPI {
      * @return a unique name not used by any rendering object
      */
     public final String getUniqueName(String prefix) {
-        // generate a unique name based on the given prefix
-        int counter = 1;
         String name;
-        do {
-            name = String.format("%s_%d", prefix, counter);
-            counter++;
-        } while (renderObjects.has(name));
+        for (int i = 1; renderObjects.has(name = String.format("%s_%d", prefix, i)); i++) {
+        }
         return name;
     }
 
