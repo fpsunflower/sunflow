@@ -3,16 +3,14 @@ package org.sunflow.core.filter;
 import org.sunflow.core.Filter;
 
 public class GaussianFilter implements Filter {
-    private float s;
     private float es2;
 
-    public GaussianFilter(float size) {
-        s = size;
-        es2 = (float) -Math.exp(-s * s);
+    public GaussianFilter() {
+        es2 = (float) -Math.exp(-getSize() * getSize());
     }
 
     public float getSize() {
-        return s;
+        return 3.0f;
     }
 
     public float get(float x, float y) {

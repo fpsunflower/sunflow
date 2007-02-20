@@ -20,7 +20,7 @@ public interface PhotonStore {
      * 
      * @param sceneBounds scene bounding box
      */
-    void prepare(BoundingBox sceneBounds);
+    void prepare(Options options, BoundingBox sceneBounds);
 
     /**
      * Store the specified photon.

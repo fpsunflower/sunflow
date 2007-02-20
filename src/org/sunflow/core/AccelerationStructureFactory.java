@@ -1,9 +1,6 @@
 package org.sunflow.core;
 
-import org.sunflow.core.accel.BoundingIntervalHierarchy;
-import org.sunflow.core.accel.KDTree;
-import org.sunflow.core.accel.NullAccelerator;
-import org.sunflow.core.accel.UniformGrid;
+import org.sunflow.PluginRegistry;
 import org.sunflow.system.UI;
 import org.sunflow.system.UI.Module;
 
@@ -12,30 +9,25 @@ class AccelerationStructureFactory {
         if (name == null || name.equals("auto")) {
             if (primitives) {
                 if (n > 20000000)
-                    return new UniformGrid();
+                    name = "uniformgrid";
                 else if (n > 2000000)
-                    return new BoundingIntervalHierarchy();
+                    name = "bih";
                 else if (n > 2)
-                    return new KDTree();
+                    name = "kdtree";
                 else
-                    return new NullAccelerator();
+                    name = "null";
             } else {
                 if (n > 2)
-                    return new BoundingIntervalHierarchy();
+                    name = "bih";
                 else
-                    return new NullAccelerator();
+                    name = "null";
             }
-        } else if (name.equals("uniformgrid"))
-            return new UniformGrid();
-        else if (name.equals("null"))
-            return new NullAccelerator();
-        else if (name.equals("kdtree"))
-            return new KDTree();
-        else if (name.equals("bih"))
-            return new BoundingIntervalHierarchy();
-        else {
+        }
+        AccelerationStructure accel = PluginRegistry.accelPlugins.createObject(name);
+        if (accel == null) {
             UI.printWarning(Module.ACCEL, "Unrecognized intersection accelerator \"%s\" - using auto", name);
             return create(null, n, primitives);
         }
+        return accel;
     }
 }

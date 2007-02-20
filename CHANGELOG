@@ -1,4 +1,10 @@
 v0.07.3
+* Updated examples
+* Moved scene parsers to plugin system
+* Moved photon maps to plugin system
+* Replaced object factories with PluginRegistry lookups
+* Updated all parsers
+* Added PluginRegistry and modified SunflowAPI to create objects through it instead of requiring users to create objects themselves
 * Changed cornellbox primitive into the light block in the .sc parser
 * Light objects can now specify their geometric represtentation at runtime
 * Particle point positions can now be specified inline in the scene file

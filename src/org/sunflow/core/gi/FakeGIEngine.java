@@ -18,14 +18,6 @@ public class FakeGIEngine implements GIEngine {
     private Color sky;
     private Color ground;
 
-    public FakeGIEngine(Options options) {
-        up = options.getVector("gi.fake.up", new Vector3(0, 1, 0)).normalize();
-        sky = options.getColor("gi.fake.sky", Color.WHITE).copy();
-        ground = options.getColor("gi.fake.ground", Color.BLACK).copy();
-        sky.mul((float) Math.PI);
-        ground.mul((float) Math.PI);
-    }
-
     public Color getIrradiance(ShadingState state, Color diffuseReflectance) {
         float cosTheta = Vector3.dot(up, state.getNormal());
         float sin2 = (1 - cosTheta * cosTheta);
@@ -40,7 +32,12 @@ public class FakeGIEngine implements GIEngine {
         return Color.BLACK;
     }
 
-    public boolean init(Scene scene) {
+    public boolean init(Options options, Scene scene) {
+        up = options.getVector("gi.fake.up", new Vector3(0, 1, 0)).normalize();
+        sky = options.getColor("gi.fake.sky", Color.WHITE).copy();
+        ground = options.getColor("gi.fake.ground", Color.BLACK).copy();
+        sky.mul((float) Math.PI);
+        ground.mul((float) Math.PI);
         return true;
     }
 }

@@ -1,16 +1,8 @@
 package org.sunflow;
 
 import org.sunflow.core.Display;
-import org.sunflow.core.Tesselatable;
-import org.sunflow.core.camera.PinholeLens;
 import org.sunflow.core.display.FastDisplay;
 import org.sunflow.core.display.FileDisplay;
-import org.sunflow.core.light.DirectionalSpotlight;
-import org.sunflow.core.primitive.Plane;
-import org.sunflow.core.shader.DiffuseShader;
-import org.sunflow.core.shader.ShinyDiffuseShader;
-import org.sunflow.core.tesselatable.Gumbo;
-import org.sunflow.core.tesselatable.Teapot;
 import org.sunflow.image.Color;
 import org.sunflow.math.Matrix4;
 import org.sunflow.math.Point3;
@@ -47,7 +39,7 @@ public class RealtimeBenchmark extends SunflowAPI {
         parameter("up", up);
         parameter("fov", 45.0f);
         String name = getUniqueName("camera");
-        camera(name, new PinholeLens());
+        camera(name, "pinhole");
         parameter("camera", name);
         options(SunflowAPI.DEFAULT_OPTIONS);
         // geometry
@@ -88,7 +80,7 @@ public class RealtimeBenchmark extends SunflowAPI {
         parameter("dir", new Vector3(15.5945f, 30.0581f, -45.967f));
         parameter("radius", 60.0f);
         parameter("radiance", Color.white().mul(3));
-        light("light", new DirectionalSpotlight());
+        light("light", "directional");
 
         // gi-engine
         parameter("gi.engine", "fake");
@@ -99,15 +91,15 @@ public class RealtimeBenchmark extends SunflowAPI {
 
         // shaders
         parameter("diffuse", Color.white().mul(0.5f));
-        shader("default", new DiffuseShader());
+        shader("default", "diffuse");
         parameter("diffuse", Color.white().mul(0.5f));
         parameter("shiny", 0.2f);
-        shader("refl", new ShinyDiffuseShader());
+        shader("refl", "shiny_diffuse");
         // objects
 
         // teapot
         parameter("subdivs", 10);
-        geometry("teapot", (Tesselatable) new Teapot());
+        geometry("teapot", "teapot");
         parameter("shaders", "default");
         Matrix4 m = Matrix4.IDENTITY;
         m = Matrix4.scale(0.075f).multiply(m);
@@ -118,7 +110,7 @@ public class RealtimeBenchmark extends SunflowAPI {
 
         // gumbo
         parameter("subdivs", 10);
-        geometry("gumbo", (Tesselatable) new Gumbo());
+        geometry("gumbo", "gumbo");
         m = Matrix4.IDENTITY;
         m = Matrix4.scale(0.5f).multiply(m);
         m = Matrix4.rotateZ((float) Math.toRadians(25f)).multiply(m);
@@ -130,7 +122,7 @@ public class RealtimeBenchmark extends SunflowAPI {
         // ground plane
         parameter("center", new Point3(0, 0, 0));
         parameter("normal", new Vector3(0, 0, 1));
-        geometry("ground", new Plane());
+        geometry("ground", "plane");
         parameter("shaders", "refl");
         instance("ground.instance", "ground");
     }

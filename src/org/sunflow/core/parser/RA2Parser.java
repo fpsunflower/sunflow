@@ -11,9 +11,6 @@ import java.nio.channels.FileChannel;
 
 import org.sunflow.SunflowAPI;
 import org.sunflow.core.SceneParser;
-import org.sunflow.core.camera.PinholeLens;
-import org.sunflow.core.primitive.TriangleMesh;
-import org.sunflow.core.shader.SimpleShader;
 import org.sunflow.math.Point3;
 import org.sunflow.math.Vector3;
 import org.sunflow.system.Parser;
@@ -39,9 +36,9 @@ public class RA2Parser implements SceneParser {
                 triangles[i] = i;
             // create geo
             api.parameter("triangles", triangles);
-            api.geometry(filename, new TriangleMesh());
+            api.geometry(filename, "triangle_mesh");
             // create shader
-            api.shader(filename + ".shader", new SimpleShader());
+            api.shader(filename + ".shader", "simple");
             // create instance
             api.parameter("shaders", filename + ".shader");
             api.instance(filename + ".instance", filename);
@@ -85,7 +82,7 @@ public class RA2Parser implements SceneParser {
             api.parameter("up", up);
             String name = api.getUniqueName("camera");
             api.parameter("fov", 80f);
-            api.camera(name, new PinholeLens());
+            api.camera(name, "pinhole");
             api.parameter("camera", name);
             api.parameter("resolutionX", 1024);
             api.parameter("resolutionY", 1024);

@@ -25,7 +25,7 @@ public interface GIEngine {
      * @return <code>true</code> if the init phase succeeded,
      *         <code>false</code> otherwise
      */
-    public boolean init(Scene scene);
+    public boolean init(Options options, Scene scene);
 
     /**
      * Return the incomming irradiance due to indirect diffuse illumination at

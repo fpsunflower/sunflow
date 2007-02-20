@@ -5,7 +5,6 @@ import java.io.IOException;
 
 import org.sunflow.SunflowAPI;
 import org.sunflow.core.SceneParser;
-import org.sunflow.core.primitive.Hair;
 import org.sunflow.system.Parser;
 import org.sunflow.system.UI;
 import org.sunflow.system.Parser.ParserException;
@@ -101,7 +100,7 @@ public class ShaveRibParser implements SceneParser {
 
                 String name = String.format("%s[%d]", filename, index);
                 UI.printInfo(Module.USER, "RIB - Creating hair object \"%s\"", name);
-                api.geometry(name, new Hair());
+                api.geometry(name, "hair");
                 api.instance(name + ".instance", name);
 
                 UI.printInfo(Module.USER, "RIB - Searching for next curve group ...");

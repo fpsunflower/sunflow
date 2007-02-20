@@ -3,14 +3,8 @@ package org.sunflow.core.filter;
 import org.sunflow.core.Filter;
 
 public class SincFilter implements Filter {
-    private float s;
-
-    public SincFilter(float size) {
-        s = size;
-    }
-
     public float getSize() {
-        return s;
+        return 4;
     }
 
     public float get(float x, float y) {

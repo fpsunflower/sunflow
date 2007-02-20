@@ -354,7 +354,7 @@ public class Scene {
      * @param seed QMC seed parameter
      * @return <code>true</code> upon success
      */
-    public boolean calculatePhotons(PhotonStore map, String type, int seed) {
-        return lightServer.calculatePhotons(map, type, seed);
+    public boolean calculatePhotons(PhotonStore map, String type, int seed, Options options) {
+        return lightServer.calculatePhotons(map, type, seed, options);
     }
 }

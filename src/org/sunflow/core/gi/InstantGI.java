@@ -23,14 +23,6 @@ public class InstantGI implements GIEngine {
     private int numBias;
     private PointLight[][] virtualLights;
 
-    public InstantGI(Options options) {
-        numPhotons = options.getInt("gi.igi.samples", 64);
-        numSets = options.getInt("gi.igi.sets", 1);
-        c = options.getFloat("gi.igi.c", 0.00003f);
-        numBias = options.getInt("gi.igi.bias_samples", 0);
-        virtualLights = null;
-    }
-
     public Color getGlobalRadiance(ShadingState state) {
         Point3 p = state.getPoint();
         Vector3 n = state.getNormal();
@@ -51,7 +43,12 @@ public class InstantGI implements GIEngine {
         return pow == null ? Color.BLACK : pow.copy().mul(1.0f / maxAvgPow);
     }
 
-    public boolean init(Scene scene) {
+    public boolean init(Options options, Scene scene) {
+        numPhotons = options.getInt("gi.igi.samples", 64);
+        numSets = options.getInt("gi.igi.sets", 1);
+        c = options.getFloat("gi.igi.c", 0.00003f);
+        numBias = options.getInt("gi.igi.bias_samples", 0);
+        virtualLights = null;
         if (numSets < 1)
             numSets = 1;
         UI.printInfo(Module.LIGHT, "Instant Global Illumination settings:");
@@ -63,7 +60,7 @@ public class InstantGI implements GIEngine {
         if (numPhotons > 0) {
             for (int i = 0, seed = 0; i < virtualLights.length; i++, seed += numPhotons) {
                 PointLightStore map = new PointLightStore();
-                if (!scene.calculatePhotons(map, "virtual", seed))
+                if (!scene.calculatePhotons(map, "virtual", seed, options))
                     return false;
                 virtualLights[i] = map.virtualLights.toArray(new PointLight[map.virtualLights.size()]);
                 UI.printInfo(Module.LIGHT, "Stored %d virtual point lights for set %d of %d", virtualLights[i].length, i + 1, numSets);
@@ -147,7 +144,7 @@ public class InstantGI implements GIEngine {
             return numPhotons;
         }
 
-        public void prepare(BoundingBox sceneBounds) {
+        public void prepare(Options options, BoundingBox sceneBounds) {
         }
 
         public void store(ShadingState state, Vector3 dir, Color power, Color diffuse) {

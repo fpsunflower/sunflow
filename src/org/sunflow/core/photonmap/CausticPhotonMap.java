@@ -29,17 +29,16 @@ public final class CausticPhotonMap implements CausticPhotonMapInterface {
     private float maxRadius;
     private int numEmit;
 
-    public CausticPhotonMap(Options options) {
+    public void prepare(Options options, BoundingBox sceneBounds) {
+        // get options
         numEmit = options.getInt("caustics.emit", 10000);
         gatherNum = options.getInt("caustics.gather", 50);
         gatherRadius = options.getFloat("caustics.radius", 0.5f);
         filterValue = options.getFloat("caustics.filter", 1.1f);
+        // init
         bounds = new BoundingBox();
         maxPower = 0;
         maxRadius = 0;
-    }
-
-    public void prepare(BoundingBox sceneBounds) {
         photonList = new ArrayList<Photon>();
         photonList.add(null);
         photons = null;

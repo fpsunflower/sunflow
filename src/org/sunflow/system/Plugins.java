@@ -39,7 +39,7 @@ public final class Plugins<T> {
      *         if not found or invalid
      */
     public T createObject(String name) {
-        if (name == null || name.equals("null") || name.equals("none"))
+        if (name == null || name.equals("none"))
             return null;
         Class<? extends T> c = pluginClasses.get(name);
         if (c == null) {
@@ -81,6 +81,7 @@ public final class Plugins<T> {
      * @return <code>true</code> if the code compiled and registered
      *         successfully, <code>false</code> otherwise
      */
+    @SuppressWarnings("unchecked")
     public boolean registerPlugin(String name, String sourceCode) {
         try {
             ClassBodyEvaluator cbe = new ClassBodyEvaluator();

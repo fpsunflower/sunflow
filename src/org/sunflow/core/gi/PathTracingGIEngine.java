@@ -14,15 +14,8 @@ import org.sunflow.system.UI.Module;
 public class PathTracingGIEngine implements GIEngine {
     private int samples;
 
-    public PathTracingGIEngine(Options options) {
+    public boolean init(Options options, Scene scene) {
         samples = options.getInt("gi.path.samples", 16);
-    }
-
-    public boolean requiresPhotons() {
-        return false;
-    }
-
-    public boolean init(Scene scene) {
         samples = Math.max(0, samples);
         UI.printInfo(Module.LIGHT, "Path tracer settings:");
         UI.printInfo(Module.LIGHT, "  * Samples: %d", samples);

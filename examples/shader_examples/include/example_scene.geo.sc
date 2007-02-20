@@ -3,12 +3,8 @@
 image {
    resolution 800 600
    aa 0 2
+   filter mitchell
 }
-
-accel bih
-filter mitchell
-bucket 32 row
-
 
 %% camera
 

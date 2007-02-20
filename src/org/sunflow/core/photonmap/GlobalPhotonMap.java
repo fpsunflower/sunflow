@@ -3,6 +3,7 @@ package org.sunflow.core.photonmap;
 import java.util.ArrayList;
 
 import org.sunflow.core.GlobalPhotonMapInterface;
+import org.sunflow.core.Options;
 import org.sunflow.core.ShadingState;
 import org.sunflow.image.Color;
 import org.sunflow.math.BoundingBox;
@@ -26,17 +27,19 @@ public final class GlobalPhotonMap implements GlobalPhotonMapInterface {
     private float maxRadius;
     private int numEmit;
 
-    public GlobalPhotonMap(int numEmit, int numGather, float gatherRadius) {
-        this.numEmit = numEmit;
-        this.numGather = numGather;
-        this.gatherRadius = gatherRadius;
+    public GlobalPhotonMap() {
         bounds = new BoundingBox();
         hasRadiance = false;
         maxPower = 0;
         maxRadius = 0;
     }
 
-    public void prepare(BoundingBox sceneBounds) {
+    public void prepare(Options options, BoundingBox sceneBounds) {
+        // get settings
+        numEmit = options.getInt("gi.irr-cache.gmap.emit", 100000);
+        numGather = options.getInt("gi.irr-cache.gmap.gather", 50);
+        gatherRadius = options.getFloat("gi.irr-cache.gmap.radius", 0.5f);
+        // init
         photonList = new ArrayList<Photon>();
         photonList.add(null);
         photons = null;

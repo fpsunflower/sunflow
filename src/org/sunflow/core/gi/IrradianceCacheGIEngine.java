@@ -2,14 +2,13 @@ package org.sunflow.core.gi;
 
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
+import org.sunflow.PluginRegistry;
 import org.sunflow.core.GIEngine;
 import org.sunflow.core.GlobalPhotonMapInterface;
 import org.sunflow.core.Options;
 import org.sunflow.core.Ray;
 import org.sunflow.core.Scene;
 import org.sunflow.core.ShadingState;
-import org.sunflow.core.photonmap.GlobalPhotonMap;
-import org.sunflow.core.photonmap.GridPhotonMap;
 import org.sunflow.image.Color;
 import org.sunflow.math.MathUtils;
 import org.sunflow.math.OrthoNormalBasis;
@@ -28,7 +27,8 @@ public class IrradianceCacheGIEngine implements GIEngine {
     private ReentrantReadWriteLock rwl;
     private GlobalPhotonMapInterface globalPhotonMap;
 
-    public IrradianceCacheGIEngine(Options options) {
+    public boolean init(Options options, Scene scene) {
+        // get settings
         samples = options.getInt("gi.irr-cache.samples", 256);
         tolerance = options.getFloat("gi.irr-cache.tolerance", 0.05f);
         invTolerance = 1.0f / tolerance;
@@ -36,22 +36,7 @@ public class IrradianceCacheGIEngine implements GIEngine {
         maxSpacing = options.getFloat("gi.irr-cache.max_spacing", 5.00f);
         root = null;
         rwl = new ReentrantReadWriteLock();
-        globalPhotonMap = null;
-        String gmap = options.getString("gi.irr-cache.gmap", null);
-        if (gmap == null || gmap.equals("none"))
-            return;
-        int numEmit = options.getInt("gi.irr-cache.gmap.emit", 100000);
-        int gather = options.getInt("gi.irr-cache.gmap.gather", 50);
-        float radius = options.getFloat("gi.irr-cache.gmap.radius", 0.5f);
-        if (gmap.equals("kd"))
-            globalPhotonMap = new GlobalPhotonMap(numEmit, gather, radius);
-        else if (gmap.equals("grid"))
-            globalPhotonMap = new GridPhotonMap(numEmit, gather, radius);
-        else
-            UI.printWarning(Module.LIGHT, "Unrecognized global photon map type \"%s\" - ignoring", gmap);
-    }
-
-    public boolean init(Scene scene) {
+        globalPhotonMap = PluginRegistry.globalPhotonMapPlugins.createObject(options.getString("gi.irr-cache.gmap", null));
         // check settings
         samples = Math.max(0, samples);
         minSpacing = Math.max(0.001f, minSpacing);
@@ -68,7 +53,7 @@ public class IrradianceCacheGIEngine implements GIEngine {
         Vector3 ext = scene.getBounds().getExtents();
         root = new Node(scene.getBounds().getCenter(), 1.0001f * MathUtils.max(ext.x, ext.y, ext.z));
         // init global photon map
-        return (globalPhotonMap != null) ? scene.calculatePhotons(globalPhotonMap, "global", 0) : true;
+        return (globalPhotonMap != null) ? scene.calculatePhotons(globalPhotonMap, "global", 0, options) : true;
     }
 
     public Color getGlobalRadiance(ShadingState state) {

@@ -1,5 +1,6 @@
 package org.sunflow.core.bucket;
 
+import org.sunflow.PluginRegistry;
 import org.sunflow.core.BucketOrder;
 import org.sunflow.system.UI;
 import org.sunflow.system.UI.Module;
@@ -14,26 +15,11 @@ public class BucketOrderFactory {
                 flip = true;
             }
         }
-        BucketOrder o = null;
-        if (order.equals("row"))
-            o = new RowBucketOrder();
-        else if (order.equals("column"))
-            o = new ColumnBucketOrder();
-        else if (order.equals("diagonal"))
-            o = new DiagonalBucketOrder();
-        else if (order.equals("spiral"))
-            o = new SpiralBucketOrder();
-        else if (order.equals("hilbert"))
-            o = new HilbertBucketOrder();
-        else if (order.equals("random"))
-            o = new RandomBucketOrder();
+        BucketOrder o = PluginRegistry.bucketOrderPlugins.createObject(order);
         if (o == null) {
             UI.printWarning(Module.BCKT, "Unrecognized bucket ordering: \"%s\" - using hilbert", order);
-            return new HilbertBucketOrder();
-        } else {
-            if (flip)
-                o = new InvertedBucketOrder(o);
-            return o;
+            return create("hilbert");
         }
+        return flip ? new InvertedBucketOrder(o) : o;
     }
 }

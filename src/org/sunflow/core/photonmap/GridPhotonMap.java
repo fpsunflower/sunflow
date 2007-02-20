@@ -3,6 +3,7 @@ package org.sunflow.core.photonmap;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import org.sunflow.core.GlobalPhotonMapInterface;
+import org.sunflow.core.Options;
 import org.sunflow.core.ShadingState;
 import org.sunflow.image.Color;
 import org.sunflow.math.BoundingBox;
@@ -30,17 +31,19 @@ public class GridPhotonMap implements GlobalPhotonMapInterface {
             71143, 106721, 160073, 240101, 360163, 540217, 810343, 1215497,
             1823231, 2734867, 4102283, 6153409, 9230113, 13845163 };
 
-    public GridPhotonMap(int numEmit, int numGather, float gatherRadius) {
-        this.numEmit = numEmit;
-        this.numGather = numGather;
-        this.gatherRadius = gatherRadius;
+    public GridPhotonMap() {
         numStoredPhotons = 0;
         hashSize = 0; // number of unique IDs in the hash
         rwl = new ReentrantReadWriteLock();
         numEmit = 100000;
     }
 
-    public void prepare(BoundingBox sceneBounds) {
+    public void prepare(Options options, BoundingBox sceneBounds) {
+        // get settings
+        numEmit = options.getInt("gi.irr-cache.gmap.emit", 100000);
+        numGather = options.getInt("gi.irr-cache.gmap.gather", 50);
+        gatherRadius = options.getFloat("gi.irr-cache.gmap.radius", 0.5f);
+
         bounds = new BoundingBox(sceneBounds);
         bounds.enlargeUlps();
         Vector3 w = bounds.getExtents();

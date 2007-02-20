@@ -58,6 +58,7 @@ import org.sunflow.core.photonmap.GlobalPhotonMap;
 import org.sunflow.core.photonmap.GridPhotonMap;
 import org.sunflow.core.primitive.BanchoffSurface;
 import org.sunflow.core.primitive.Box;
+import org.sunflow.core.primitive.CornellBox;
 import org.sunflow.core.primitive.Hair;
 import org.sunflow.core.primitive.JuliaFractal;
 import org.sunflow.core.primitive.ParticleSurface;
@@ -89,6 +90,9 @@ import org.sunflow.core.shader.TexturedShinyDiffuseShader;
 import org.sunflow.core.shader.TexturedWardShader;
 import org.sunflow.core.shader.UVShader;
 import org.sunflow.core.shader.UberShader;
+import org.sunflow.core.shader.ViewCausticsShader;
+import org.sunflow.core.shader.ViewGlobalPhotonsShader;
+import org.sunflow.core.shader.ViewIrradianceShader;
 import org.sunflow.core.shader.WireframeShader;
 import org.sunflow.core.tesselatable.BezierMesh;
 import org.sunflow.core.tesselatable.FileMesh;
@@ -147,7 +151,6 @@ public final class PluginRegistry {
     static {
         // shaders
         shaderPlugins.registerPlugin("ambient_occlusion", AmbientOcclusionShader.class);
-        shaderPlugins.registerPlugin("anisotropic_ward", AnisotropicWardShader.class);
         shaderPlugins.registerPlugin("constant", ConstantShader.class);
         shaderPlugins.registerPlugin("diffuse", DiffuseShader.class);
         shaderPlugins.registerPlugin("glass", GlassShader.class);
@@ -155,6 +158,7 @@ public final class PluginRegistry {
         shaderPlugins.registerPlugin("phong", PhongShader.class);
         shaderPlugins.registerPlugin("shiny_diffuse", ShinyDiffuseShader.class);
         shaderPlugins.registerPlugin("uber", UberShader.class);
+        shaderPlugins.registerPlugin("ward", AnisotropicWardShader.class);
         shaderPlugins.registerPlugin("wireframe", WireframeShader.class);
 
         // textured shaders
@@ -171,6 +175,9 @@ public final class PluginRegistry {
         shaderPlugins.registerPlugin("show_uvs", UVShader.class);
         shaderPlugins.registerPlugin("show_instance_id", IDShader.class);
         shaderPlugins.registerPlugin("show_primitive_id", PrimIDShader.class);
+        shaderPlugins.registerPlugin("view_caustics", ViewCausticsShader.class);
+        shaderPlugins.registerPlugin("view_global", ViewGlobalPhotonsShader.class);
+        shaderPlugins.registerPlugin("view_irradiance", ViewIrradianceShader.class);
     }
 
     static {
@@ -187,6 +194,7 @@ public final class PluginRegistry {
         lightSourcePlugins.registerPlugin("sphere", SphereLight.class);
         lightSourcePlugins.registerPlugin("sunsky", SunSkyLight.class);
         lightSourcePlugins.registerPlugin("triangle_mesh", TriangleMeshLight.class);
+        lightSourcePlugins.registerPlugin("cornell_box", CornellBox.class);
     }
 
     static {

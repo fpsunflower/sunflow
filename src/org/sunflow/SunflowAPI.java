@@ -27,14 +27,6 @@ import org.sunflow.core.SceneParser;
 import org.sunflow.core.Shader;
 import org.sunflow.core.Tesselatable;
 import org.sunflow.core.ParameterList.InterpolationType;
-import org.sunflow.core.parser.RA2Parser;
-import org.sunflow.core.parser.RA3Parser;
-import org.sunflow.core.parser.SCParser;
-import org.sunflow.core.parser.ShaveRibParser;
-import org.sunflow.core.parser.TriParser;
-import org.sunflow.core.renderer.BucketRenderer;
-import org.sunflow.core.renderer.ProgressiveRenderer;
-import org.sunflow.core.renderer.SimpleRenderer;
 import org.sunflow.image.Color;
 import org.sunflow.math.BoundingBox;
 import org.sunflow.math.Matrix4;
@@ -56,8 +48,6 @@ public class SunflowAPI {
     public static final String DEFAULT_OPTIONS = "::options";
 
     private Scene scene;
-    private BucketRenderer bucketRenderer;
-    private ProgressiveRenderer progressiveRenderer;
     private SearchPath includeSearchPath;
     private SearchPath textureSearchPath;
     private ParameterList parameterList;
@@ -96,8 +86,6 @@ public class SunflowAPI {
      */
     public final void reset() {
         scene = new Scene();
-        bucketRenderer = new BucketRenderer();
-        progressiveRenderer = new ProgressiveRenderer();
         includeSearchPath = new SearchPath("include");
         textureSearchPath = new SearchPath("texture");
         parameterList = new ParameterList();
@@ -339,19 +327,24 @@ public class SunflowAPI {
     }
 
     /**
-     * Defines a shader with a given name. If the shader object is
+     * Defines a shader with a given name. If the shader type name is left
      * <code>null</code>, the shader with the given name will be updated (if
      * it exists).
      * 
      * @param name a unique name given to the shader
-     * @param shader a shader object
+     * @param shaderType a shader plugin type
      */
-    public final void shader(String name, Shader shader) {
-        if (shader != null) {
+    public final void shader(String name, String shaderType) {
+        if (shaderType != null) {
             // we are declaring a shader for the first time
             if (renderObjects.has(name)) {
                 UI.printError(Module.API, "Unable to declare shader \"%s\", name is already in use", name);
                 parameterList.clear(true);
+                return;
+            }
+            Shader shader = PluginRegistry.shaderPlugins.createObject(shaderType);
+            if (shader == null) {
+                UI.printError(Module.API, "Unable to create shader of type \"%s\"", shaderType);
                 return;
             }
             renderObjects.put(name, shader);
@@ -366,19 +359,24 @@ public class SunflowAPI {
     }
 
     /**
-     * Defines a modifier with a given name. If the modifier object is
+     * Defines a modifier with a given name. If the modifier type name is left
      * <code>null</code>, the modifier with the given name will be updated
      * (if it exists).
      * 
      * @param name a unique name given to the modifier
-     * @param modifier a modifier object
+     * @param modifierType a modifier plugin type name
      */
-    public final void modifier(String name, Modifier modifier) {
-        if (modifier != null) {
+    public final void modifier(String name, String modifierType) {
+        if (modifierType != null) {
             // we are declaring a shader for the first time
             if (renderObjects.has(name)) {
                 UI.printError(Module.API, "Unable to declare modifier \"%s\", name is already in use", name);
                 parameterList.clear(true);
+                return;
+            }
+            Modifier modifier = PluginRegistry.modifierPlugins.createObject(modifierType);
+            if (modifier == null) {
+                UI.printError(Module.API, "Unable to create modifier of type \"%s\"", modifierType);
                 return;
             }
             renderObjects.put(name, modifier);
@@ -394,48 +392,40 @@ public class SunflowAPI {
 
     /**
      * Defines a geometry with a given name. The geometry is built from the
-     * specified {@link PrimitiveList}. If the primitives object is
+     * specified type. Note that geometries may be created from
+     * {@link Tesselatable} objects or {@link PrimitiveList} objects. This means
+     * that two seperate plugin lists will be searched for the geometry type.
+     * {@link Tesselatable} objects are search first. If the type name is left
      * <code>null</code>, the geometry with the given name will be updated
      * (if it exists).
      * 
      * @param name a unique name given to the geometry
-     * @param primitives primitives to create the geometry from
+     * @param typeName a tesselatable or primitive plugin type name
      */
-    public final void geometry(String name, PrimitiveList primitives) {
-        if (primitives != null) {
+    public final void geometry(String name, String typeName) {
+        if (typeName != null) {
             // we are declaring a geometry for the first time
             if (renderObjects.has(name)) {
                 UI.printError(Module.API, "Unable to declare geometry \"%s\", name is already in use", name);
                 parameterList.clear(true);
                 return;
             }
-            renderObjects.put(name, primitives);
-        }
-        if (lookupGeometry(name) != null)
-            update(name);
-        else {
-            UI.printError(Module.API, "Unable to update geometry \"%s\" - geometry object was not found", name);
-            parameterList.clear(true);
-        }
-    }
-
-    /**
-     * Defines a geometry with a given name. The geometry is built from the
-     * specified {@link Tesselatable}. If the object is <code>null</code>,
-     * the geometry with the given name will be updated (if it exists).
-     * 
-     * @param name a unique name given to the geometry
-     * @param tesselatable the tesselatable object to create the geometry from
-     */
-    public final void geometry(String name, Tesselatable tesselatable) {
-        if (tesselatable != null) {
-            // we are declaring a geometry for the first time
-            if (renderObjects.has(name)) {
-                UI.printError(Module.API, "Unable to declare geometry \"%s\", name is already in use", name);
-                parameterList.clear(true);
-                return;
+            // check tesselatable first
+            if (PluginRegistry.tesselatablePlugins.hasType(typeName)) {
+                Tesselatable tesselatable = PluginRegistry.tesselatablePlugins.createObject(typeName);
+                if (tesselatable == null) {
+                    UI.printError(Module.API, "Unable to create tesselatable object of type \"%s\"", typeName);
+                    return;
+                }
+                renderObjects.put(name, tesselatable);
+            } else {
+                PrimitiveList primitives = PluginRegistry.primitivePlugins.createObject(typeName);
+                if (primitives == null) {
+                    UI.printError(Module.API, "Unable to create primitive of type \"%s\"", typeName);
+                    return;
+                }
+                renderObjects.put(name, primitives);
             }
-            renderObjects.put(name, tesselatable);
         }
         if (lookupGeometry(name) != null)
             update(name);
@@ -448,8 +438,8 @@ public class SunflowAPI {
     /**
      * Instance the specified geometry into the scene. If geoname is
      * <code>null</code>, the specified instance object will be updated (if
-     * it exists). It is not possible to change the instancing relationship
-     * after the instance has been created.
+     * it exists). In order to change the instancing relationship of an existing
+     * instance, you should use the "geometry" string attribute.
      * 
      * @param name instance name
      * @param geoname name of the geometry to instance
@@ -474,16 +464,24 @@ public class SunflowAPI {
     }
 
     /**
-     * Adds the specified light to the scene.
+     * Defines a light source with a given name. If the light type name is left
+     * <code>null</code>, the light source with the given name will be
+     * updated (if it exists).
      * 
-     * @param light light source object
+     * @param name a unique name given to the light source
+     * @param lightType a light source plugin type name
      */
-    public final void light(String name, LightSource light) {
-        if (light != null) {
+    public final void light(String name, String lightType) {
+        if (lightType != null) {
             // we are declaring this light for the first time
             if (renderObjects.has(name)) {
                 UI.printError(Module.API, "Unable to declare light \"%s\", name is already in use", name);
                 parameterList.clear(true);
+                return;
+            }
+            LightSource light = PluginRegistry.lightSourcePlugins.createObject(lightType);
+            if (light == null) {
+                UI.printError(Module.API, "Unable to create light source of type \"%s\"", lightType);
                 return;
             }
             renderObjects.put(name, light);
@@ -498,19 +496,25 @@ public class SunflowAPI {
 
     /**
      * Defines a camera with a given name. The camera is built from the
-     * specified {@link CameraLens}. If the lens object is <code>null</code>,
-     * the camera with the given name will be updated (if it exists). It isn't
-     * possible to change the lens of an existing camera.
+     * specified camera lens type plugin. If the lens type name is left
+     * <code>null</code>, the camera with the given name will be updated (if
+     * it exists). It is not currently possible to change the lens of a camera
+     * after it has been created.
      * 
      * @param name camera name
      * @param lens camera lens to use
      */
-    public final void camera(String name, CameraLens lens) {
-        if (lens != null) {
+    public final void camera(String name, String lensType) {
+        if (lensType != null) {
             // we are declaring this camera for the first time
             if (renderObjects.has(name)) {
                 UI.printError(Module.API, "Unable to declare camera \"%s\", name is already in use", name);
                 parameterList.clear(true);
+                return;
+            }
+            CameraLens lens = PluginRegistry.cameraLensPlugins.createObject(lensType);
+            if (lens == null) {
+                UI.printError(Module.API, "Unable to create a camera lens of type \"%s\"", lensType);
                 return;
             }
             renderObjects.put(name, new Camera(lens));
@@ -653,20 +657,7 @@ public class SunflowAPI {
         } else
             scene.setBakingInstance(null);
 
-        String samplerName = opt.getString("sampler", "bucket");
-        ImageSampler sampler = null;
-        if (samplerName.equals("none") || samplerName.equals("null"))
-            sampler = null;
-        else if (samplerName.equals("bucket"))
-            sampler = bucketRenderer;
-        else if (samplerName.equals("ipr"))
-            sampler = progressiveRenderer;
-        else if (samplerName.equals("fast"))
-            sampler = new SimpleRenderer();
-        else {
-            UI.printError(Module.API, "Unknown sampler type: %s - aborting", samplerName);
-            return;
-        }
+        ImageSampler sampler = PluginRegistry.imageSamplerPlugins.createObject(opt.getString("sampler", "bucket"));
         scene.render(opt, sampler, display);
     }
 
@@ -684,18 +675,9 @@ public class SunflowAPI {
         if (filename == null)
             return false;
         filename = includeSearchPath.resolvePath(filename);
-        SceneParser parser = null;
-        if (filename.endsWith(".sc"))
-            parser = new SCParser();
-        else if (filename.endsWith(".ra2"))
-            parser = new RA2Parser();
-        else if (filename.endsWith(".ra3"))
-            parser = new RA3Parser();
-        else if (filename.endsWith(".tri"))
-            parser = new TriParser();
-        else if (filename.endsWith(".rib"))
-            parser = new ShaveRibParser();
-        else {
+        String extension = filename.substring(filename.lastIndexOf('.') + 1);
+        SceneParser parser = PluginRegistry.parserPlugins.createObject(extension);
+        if (parser == null) {
             UI.printError(Module.API, "Unable to find a suitable parser for: \"%s\"", filename);
             return false;
         }

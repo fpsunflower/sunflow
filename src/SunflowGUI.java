@@ -43,7 +43,6 @@ import org.sunflow.Benchmark;
 import org.sunflow.RealtimeBenchmark;
 import org.sunflow.SunflowAPI;
 import org.sunflow.core.Display;
-import org.sunflow.core.Shader;
 import org.sunflow.core.TextureCache;
 import org.sunflow.core.accel.KDTree;
 import org.sunflow.core.display.FileDisplay;
@@ -51,14 +50,6 @@ import org.sunflow.core.display.FrameDisplay;
 import org.sunflow.core.display.ImgPipeDisplay;
 import org.sunflow.core.display.OpenExrDisplay;
 import org.sunflow.core.primitive.TriangleMesh;
-import org.sunflow.core.shader.AmbientOcclusionShader;
-import org.sunflow.core.shader.IDShader;
-import org.sunflow.core.shader.NormalShader;
-import org.sunflow.core.shader.PrimIDShader;
-import org.sunflow.core.shader.QuickGrayShader;
-import org.sunflow.core.shader.UVShader;
-import org.sunflow.core.shader.WireframeShader;
-import org.sunflow.image.Color;
 import org.sunflow.system.ImagePanel;
 import org.sunflow.system.Timer;
 import org.sunflow.system.UI;
@@ -184,7 +175,8 @@ public class SunflowGUI extends javax.swing.JFrame implements UserInterface {
             boolean noGI = false;
             boolean noCaustics = false;
             int pathGI = 0;
-            Shader shaderOverride = null;
+            float maxDist = 0;
+            String shaderOverride = null;
             int resolutionW = 0, resolutionH = 0;
             int aaMin = -5, aaMax = -5;
             int bucketSize = 0;
@@ -249,38 +241,38 @@ public class SunflowGUI extends javax.swing.JFrame implements UserInterface {
                 } else if (args[i].equals("-quick_ambocc")) {
                     if (i > args.length - 2)
                         usage(false);
-                    float d = Float.parseFloat(args[i + 1]);
-                    shaderOverride = new AmbientOcclusionShader(Color.WHITE, d);
+                    maxDist = Float.parseFloat(args[i + 1]);
+                    shaderOverride = "ambient_occlusion"; //new AmbientOcclusionShader(Color.WHITE, d);
                     i += 2;
                 } else if (args[i].equals("-quick_uvs")) {
                     if (i > args.length - 1)
                         usage(false);
-                    shaderOverride = new UVShader();
+                    shaderOverride = "show_uvs";
                     i++;
                 } else if (args[i].equals("-quick_normals")) {
                     if (i > args.length - 1)
                         usage(false);
-                    shaderOverride = new NormalShader();
+                    shaderOverride = "show_normals";
                     i++;
                 } else if (args[i].equals("-quick_id")) {
                     if (i > args.length - 1)
                         usage(false);
-                    shaderOverride = new IDShader();
+                    shaderOverride = "show_instance_id";
                     i++;
                 } else if (args[i].equals("-quick_prims")) {
                     if (i > args.length - 1)
                         usage(false);
-                    shaderOverride = new PrimIDShader();
+                    shaderOverride = "show_primitive_id";
                     i++;
                 } else if (args[i].equals("-quick_gray")) {
                     if (i > args.length - 1)
                         usage(false);
-                    shaderOverride = new QuickGrayShader();
+                    shaderOverride = "quick_gray";
                     i++;
                 } else if (args[i].equals("-quick_wire")) {
                     if (i > args.length - 1)
                         usage(false);
-                    shaderOverride = new WireframeShader();
+                    shaderOverride = "wireframe";
                     i++;
                 } else if (args[i].equals("-resolution")) {
                     if (i > args.length - 3)
@@ -411,6 +403,8 @@ public class SunflowGUI extends javax.swing.JFrame implements UserInterface {
                 api.parameter("sampler", sampler);
                 api.options(SunflowAPI.DEFAULT_OPTIONS);
                 if (shaderOverride != null) {
+                    if (shaderOverride.equals("ambient_occlusion"))
+                        api.parameter("maxdist", maxDist);
                     api.shader("cmdline_override", shaderOverride);
                     api.parameter("override.shader", "cmdline_override");
                     api.parameter("override.photons", true);

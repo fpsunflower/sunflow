@@ -1,7 +1,6 @@
 package org.sunflow.core;
 
-import org.sunflow.core.gi.GIEngineFactory;
-import org.sunflow.core.photonmap.CausticPhotonMap;
+import org.sunflow.PluginRegistry;
 import org.sunflow.image.Color;
 import org.sunflow.math.Point3;
 import org.sunflow.math.QMC;
@@ -95,16 +94,10 @@ class LightServer {
         maxDiffuseDepth = options.getInt("depths.diffuse", maxDiffuseDepth);
         maxReflectionDepth = options.getInt("depths.reflection", maxReflectionDepth);
         maxRefractionDepth = options.getInt("depths.refraction", maxRefractionDepth);
-        giEngine = GIEngineFactory.create(options);
+        String giEngineType = options.getString("gi.engine", null);
+        giEngine = PluginRegistry.giEnginePlugins.createObject(giEngineType);
         String caustics = options.getString("caustics", null);
-        if (caustics == null || caustics.equals("none"))
-            causticPhotonMap = null;
-        else if (caustics != null && caustics.equals("kd"))
-            causticPhotonMap = new CausticPhotonMap(options);
-        else {
-            UI.printWarning(Module.LIGHT, "Unrecognized caustics photon map engine \"%s\" - ignoring", caustics);
-            causticPhotonMap = null;
-        }
+        causticPhotonMap = PluginRegistry.causticPhotonMapPlugins.createObject(caustics);
 
         // validate options
         maxDiffuseDepth = Math.max(0, maxDiffuseDepth);
@@ -119,11 +112,11 @@ class LightServer {
             numLightSamples += lights[i].getNumSamples();
         // initialize gi engine
         if (giEngine != null) {
-            if (!giEngine.init(scene))
+            if (!giEngine.init(options, scene))
                 return false;
         }
 
-        if (!calculatePhotons(causticPhotonMap, "caustic", 0))
+        if (!calculatePhotons(causticPhotonMap, "caustic", 0, options))
             return false;
         t.end();
         cacheLookups = 0;
@@ -143,7 +136,7 @@ class LightServer {
         UI.printInfo(Module.LIGHT, "      - Diffuse          %d", maxDiffuseDepth);
         UI.printInfo(Module.LIGHT, "      - Reflection       %d", maxReflectionDepth);
         UI.printInfo(Module.LIGHT, "      - Refraction       %d", maxRefractionDepth);
-        UI.printInfo(Module.LIGHT, "  * GI engine            %s", options.getString("gi.engine", "none"));
+        UI.printInfo(Module.LIGHT, "  * GI engine            %s", giEngineType == null ? "none" : giEngineType);
         UI.printInfo(Module.LIGHT, "  * Caustics:            %s", caustics == null ? "none" : caustics);
         UI.printInfo(Module.LIGHT, "  * Shader override:     %b", shaderOverride);
         UI.printInfo(Module.LIGHT, "  * Photon override:     %b", shaderOverridePhotons);
@@ -168,7 +161,7 @@ class LightServer {
         UI.printInfo(Module.LIGHT, "  * Entry adds:          %d", cacheEntryAdditions);
     }
 
-    boolean calculatePhotons(final PhotonStore map, String type, final int seed) {
+    boolean calculatePhotons(final PhotonStore map, String type, final int seed, Options options) {
         if (map == null)
             return true;
         if (lights.length == 0) {
@@ -180,12 +173,12 @@ class LightServer {
         for (int i = 1; i < lights.length; i++)
             histogram[i] = histogram[i - 1] + lights[i].getPower();
         UI.printInfo(Module.LIGHT, "Tracing %s photons ...", type);
+        map.prepare(options, scene.getBounds());
         int numEmittedPhotons = map.numEmit();
         if (numEmittedPhotons <= 0 || histogram[histogram.length - 1] <= 0) {
             UI.printError(Module.LIGHT, "Photon mapping enabled, but no %s photons to emit", type);
             return false;
         }
-        map.prepare(scene.getBounds());
         UI.taskStart("Tracing " + type + " photons", 0, numEmittedPhotons);
         Thread[] photonThreads = new Thread[scene.getThreads()];
         final float scale = 1.0f / numEmittedPhotons;

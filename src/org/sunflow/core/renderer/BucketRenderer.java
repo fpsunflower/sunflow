@@ -1,5 +1,6 @@
 package org.sunflow.core.renderer;
 
+import org.sunflow.PluginRegistry;
 import org.sunflow.core.BucketOrder;
 import org.sunflow.core.Display;
 import org.sunflow.core.Filter;
@@ -12,7 +13,6 @@ import org.sunflow.core.Shader;
 import org.sunflow.core.ShadingState;
 import org.sunflow.core.bucket.BucketOrderFactory;
 import org.sunflow.core.filter.BoxFilter;
-import org.sunflow.core.filter.FilterFactory;
 import org.sunflow.image.Bitmap;
 import org.sunflow.image.Color;
 import org.sunflow.math.MathUtils;
@@ -107,11 +107,11 @@ public class BucketRenderer implements ImageSampler {
         thresh = contrastThreshold * (float) Math.pow(2.0f, minAADepth);
         // read filter settings from scene
         filterName = options.getString("filter", filterName);
-        filter = FilterFactory.get(filterName);
+        filter = PluginRegistry.filterPlugins.createObject(filterName);
         // adjust filter
         if (filter == null) {
             UI.printWarning(Module.BCKT, "Unrecognized filter type: \"%s\" - defaulting to box", filterName);
-            filter = new BoxFilter(1);
+            filter = new BoxFilter();
             filterName = "box";
         }
         fhs = filter.getSize() * 0.5f;

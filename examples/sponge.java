@@ -1,4 +1,4 @@
-import org.sunflow.SunflowAPI;
+import org.sunflow.*;
 import org.sunflow.core.*;
 import org.sunflow.core.camera.*;
 import org.sunflow.core.primitive.*;
@@ -16,22 +16,24 @@ public void build() {
     parameter("up", new Vector3(0.0f, 1.0f, 0.0f));
     parameter("fov", 45.0f);
     parameter("aspect", 2.0f);
-    camera("camera_outside", new PinholeLens());
+    camera("camera_outside", "pinhole");
 
     parameter("eye", new Point3(0, 0.2f, 0));
     parameter("target", new Point3(-1.0f, -0.5f, 0.5f));
     parameter("up", new Vector3(0.0f, 1.0f, 0.0f));
-    camera("camera_inside", new SphericalLens());
+    camera("camera_inside", "spherical");
     
     parameter("maxdist", 0.4f);
     parameter("samples", 16);
-    shader("ao_sponge", new AmbientOcclusionShader());
+    shader("ao_sponge", "ambient_occlusion");
     
     parameter("maxdist", 0.4f);
     parameter("samples", 128);
-    shader("ao_ground", new AmbientOcclusionShader());
+    shader("ao_ground", "ambient_occlusion");
 
-    geometry("sponge", new MengerSponge(depth));
+    PluginRegistry.primitivePlugins.registerPlugin("menger_sponge", MengerSponge.class);
+    parameter("depth", depth);
+    geometry("sponge", "menger_sponge");
     // Matrix4 m = null;
     // m = Matrix4.rotateX((float) Math.PI / 3);
     // m = m.multiply(Matrix4.rotateZ((float) Math.PI / 3));
@@ -41,7 +43,7 @@ public void build() {
     
     parameter("center", new Point3(0, -1.25f, 0.0f));
     parameter("normal", new Vector3(0.0f, 1.0f, 0.0f));
-    geometry("ground", new Plane());
+    geometry("ground", "plane");
     parameter("shaders", "ao_ground");
     instance("ground.instance", "ground");
 
@@ -63,14 +65,15 @@ public void build() {
     options(DEFAULT_OPTIONS);
 }
 
-private static class MengerSponge extends CubeGrid {
+public static class MengerSponge extends CubeGrid {
     private int depth;
 
-    MengerSponge(int depth) {
-        this.depth = depth;
+    public MengerSponge() {
+        depth = 3;
     }
     
     public boolean update(ParameterList pl, SunflowAPI api) {
+        depth = pl.getInt("depth", depth);
         int n = 1;
         for (int i = 0; i < depth; i++)
             n *= 3;

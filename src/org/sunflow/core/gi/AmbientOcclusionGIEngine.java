@@ -15,19 +15,16 @@ public class AmbientOcclusionGIEngine implements GIEngine {
     private int samples;
     private float maxDist;
 
-    public AmbientOcclusionGIEngine(Options options) {
+    public Color getGlobalRadiance(ShadingState state) {
+        return Color.BLACK;
+    }
+
+    public boolean init(Options options, Scene scene) {
         bright = options.getColor("gi.ambocc.bright", Color.WHITE);
         dark = options.getColor("gi.ambocc.dark", Color.BLACK);
         samples = options.getInt("gi.ambocc.samples", 32);
         maxDist = options.getFloat("gi.ambocc.maxdist", 0);
         maxDist = (maxDist <= 0) ? Float.POSITIVE_INFINITY : maxDist;
-    }
-
-    public Color getGlobalRadiance(ShadingState state) {
-        return Color.BLACK;
-    }
-
-    public boolean init(Scene scene) {
         return true;
     }
 
