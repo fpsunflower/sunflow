@@ -49,12 +49,12 @@ public class FrameDisplay implements Display {
         frame.imagePanel.imagePrepare(x, y, w, h, id);
     }
 
-    public void imageUpdate(int x, int y, int w, int h, Color[] data) {
-        frame.imagePanel.imageUpdate(x, y, w, h, data);
+    public void imageUpdate(int x, int y, int w, int h, Color[] data, float[] alpha) {
+        frame.imagePanel.imageUpdate(x, y, w, h, data, alpha);
     }
 
-    public void imageFill(int x, int y, int w, int h, Color c) {
-        frame.imagePanel.imageFill(x, y, w, h, c);
+    public void imageFill(int x, int y, int w, int h, Color c, float alpha) {
+        frame.imagePanel.imageFill(x, y, w, h, c, alpha);
     }
 
     public void imageEnd() {

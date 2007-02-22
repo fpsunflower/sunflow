@@ -78,15 +78,16 @@ public class SimpleRenderer implements ImageSampler {
         int bh = Math.min(32, imageHeight - y0);
 
         Color[] bucketRGB = new Color[bw * bh];
+        float[] bucketAlpha = new float[bw * bh];
 
         for (int y = 0, i = 0; y < bh; y++) {
             for (int x = 0; x < bw; x++, i++) {
                 ShadingState state = scene.getRadiance(istate, x0 + x, imageHeight - 1 - (y0 + y), 0.0, 0.0, 0.0, 0);
                 bucketRGB[i] = (state != null) ? state.getResult() : Color.BLACK;
+                bucketAlpha[i] = (state != null) ? 1 : 0;
             }
         }
         // update pixels
-        display.imageUpdate(x0, y0, bw, bh, bucketRGB);
+        display.imageUpdate(x0, y0, bw, bh, bucketRGB, bucketAlpha);
     }
-
 }

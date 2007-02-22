@@ -269,7 +269,7 @@ public class Benchmark implements BenchmarkTest, UserInterface, Display {
         // nothing needs to be done - image verification is done externally
     }
 
-    public void imageFill(int x, int y, int w, int h, Color c) {
+    public void imageFill(int x, int y, int w, int h, Color c, float alpha) {
         // this is not used
     }
 
@@ -277,7 +277,7 @@ public class Benchmark implements BenchmarkTest, UserInterface, Display {
         // this is not needed
     }
 
-    public void imageUpdate(int x, int y, int w, int h, Color[] data) {
+    public void imageUpdate(int x, int y, int w, int h, Color[] data, float[] alpha) {
         // copy bucket data to validation image
         for (int j = 0, index = 0; j < h; j++, y++)
             for (int i = 0, offset = x + resolution * (resolution - 1 - y); i < w; i++, index++, offset++)

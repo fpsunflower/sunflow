@@ -7,12 +7,14 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseWheelEvent;
 import java.awt.event.MouseWheelListener;
 import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
 
+import javax.imageio.ImageIO;
 import javax.swing.JPanel;
 import javax.swing.event.MouseInputAdapter;
 
 import org.sunflow.core.Display;
-import org.sunflow.image.Bitmap;
 import org.sunflow.image.Color;
 
 @SuppressWarnings("serial")
@@ -91,7 +93,12 @@ public class ImagePanel extends JPanel implements Display {
     }
 
     public void save(String filename) {
-        Bitmap.save(image, filename);
+        // Bitmap.save(image, filename);
+        try {
+            ImageIO.write(image, "png", new File(filename));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     private synchronized void drag(int dx, int dy) {
@@ -170,13 +177,13 @@ public class ImagePanel extends JPanel implements Display {
             // dull image if it has same resolution (75%)
             for (int y = 0; y < h; y++) {
                 for (int x = 0; x < w; x++) {
-                    int rgb = image.getRGB(x, y);
-                    image.setRGB(x, y, ((rgb & 0x00FEFEFE) >>> 1) + ((rgb & 0x00FCFCFC) >>> 2));
+                    int rgba = image.getRGB(x, y);
+                    image.setRGB(x, y, ((rgba & 0xFEFEFEFE) >>> 1) + ((rgba & 0xFCFCFCFC) >>> 2));
                 }
             }
         } else {
             // allocate new framebuffer
-            image = new BufferedImage(w, h, BufferedImage.TYPE_INT_RGB);
+            image = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
             // center
             this.w = w;
             this.h = h;
@@ -187,7 +194,7 @@ public class ImagePanel extends JPanel implements Display {
     }
 
     public synchronized void imagePrepare(int x, int y, int w, int h, int id) {
-        int border = BORDERS[id % BORDERS.length];
+        int border = BORDERS[id % BORDERS.length] | 0xFF000000;
         for (int by = 0; by < h; by++) {
             for (int bx = 0; bx < w; bx++) {
                 if (bx == 0 || bx == w - 1) {
@@ -202,22 +209,18 @@ public class ImagePanel extends JPanel implements Display {
         repaint();
     }
 
-    public synchronized void imageUpdate(int x, int y, int w, int h, Color[] data) {
-        if ((image == null) || (data == null))
-            return;
+    public synchronized void imageUpdate(int x, int y, int w, int h, Color[] data, float[] alpha) {
         for (int j = 0, index = 0; j < h; j++)
             for (int i = 0; i < w; i++, index++)
-                image.setRGB(x + i, y + j, data[index].copy().toNonLinear().toRGB());
+                image.setRGB(x + i, y + j, data[index].copy().clamp(0, 1).mul(1.0f / alpha[index]).toNonLinear().toRGBA(alpha[index]));
         repaint();
     }
 
-    public synchronized void imageFill(int x, int y, int w, int h, Color c) {
-        if ((image == null) || (c == null))
-            return;
-        int rgb = c.copy().toNonLinear().toRGB();
+    public synchronized void imageFill(int x, int y, int w, int h, Color c, float alpha) {
+        int rgba = c.copy().clamp(0, 1).mul(1.0f / alpha).toNonLinear().toRGBA(alpha);
         for (int j = 0, index = 0; j < h; j++)
             for (int i = 0; i < w; i++, index++)
-                image.setRGB(x + i, y + j, rgb);
+                image.setRGB(x + i, y + j, rgba);
         fastRepaint();
     }
 
@@ -251,6 +254,6 @@ public class ImagePanel extends JPanel implements Display {
         g.drawLine(x1, y0, x1, y1);
         g.drawLine(x1, y1, x0, y1);
         g.drawLine(x0, y1, x0, y0);
-        g.drawImage(image, x, y, iw, ih, this);
+        g.drawImage(image, x, y, iw, ih, java.awt.Color.BLACK, this);
     }
 }

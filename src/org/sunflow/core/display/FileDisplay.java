@@ -28,13 +28,13 @@ public class FileDisplay implements Display {
     public void imagePrepare(int x, int y, int w, int h, int id) {
     }
 
-    public void imageUpdate(int x, int y, int w, int h, Color[] data) {
+    public void imageUpdate(int x, int y, int w, int h, Color[] data, float[] alpha) {
         for (int j = 0, index = 0; j < h; j++)
             for (int i = 0; i < w; i++, index++)
                 bitmap.setPixel(x + i, bitmap.getHeight() - 1 - (y + j), data[index]);
     }
 
-    public void imageFill(int x, int y, int w, int h, Color c) {
+    public void imageFill(int x, int y, int w, int h, Color c, float alpha) {
         Color cg = c;
         for (int j = 0; j < h; j++)
             for (int i = 0; i < w; i++)

@@ -145,6 +145,18 @@ public final class Color {
         return (ir << 16) | (ig << 8) | ib;
     }
 
+    public final int toRGBA(float a) {
+        int ir = (int) (r * 255 + 0.5);
+        int ig = (int) (g * 255 + 0.5);
+        int ib = (int) (b * 255 + 0.5);
+        int ia = (int) (a * 255 + 0.5);
+        ir = MathUtils.clamp(ir, 0, 255);
+        ig = MathUtils.clamp(ig, 0, 255);
+        ib = MathUtils.clamp(ib, 0, 255);
+        ia = MathUtils.clamp(ia, 0, 255);
+        return (ia << 24) | (ir << 16) | (ig << 8) | ib;
+    }
+
     public final int toRGBE() {
         // encode the color into 32bits while preserving HDR using Ward's RGBE
         // technique

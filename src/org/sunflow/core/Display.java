@@ -46,8 +46,10 @@ public interface Display {
      * @param h height of the bucket in pixels
      * @param data bucket data, this array will be exactly <code>w * h</code>
      *            long
+     * @param alpha pixel coverage data, this array will be exactly
+     *            <code>w * h</code> long
      */
-    void imageUpdate(int x, int y, int w, int h, Color[] data);
+    void imageUpdate(int x, int y, int w, int h, Color[] data, float[] alpha);
 
     /**
      * Update the current image with a region of flat color. This is used by
@@ -62,8 +64,9 @@ public interface Display {
      * @param w with of the region in pixels
      * @param h height of the region in pixels
      * @param c color to fill the region with
+     * @param alpha pixel coverage
      */
-    void imageFill(int x, int y, int w, int h, Color c);
+    void imageFill(int x, int y, int w, int h, Color c, float alpha);
 
     /**
      * This call is made after the image has been rendered. This allows the

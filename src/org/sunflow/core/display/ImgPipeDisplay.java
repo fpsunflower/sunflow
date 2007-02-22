@@ -27,7 +27,7 @@ public class ImgPipeDisplay extends JPanel implements Display {
     public synchronized void imagePrepare(int x, int y, int w, int h, int id) {
     }
 
-    public synchronized void imageUpdate(int x, int y, int w, int h, Color[] data) {
+    public synchronized void imageUpdate(int x, int y, int w, int h, Color[] data, float[] alpha) {
         int xl = x;
         int xh = x + w - 1;
         int yl = ih - 1 - (y + h - 1);
@@ -53,7 +53,7 @@ public class ImgPipeDisplay extends JPanel implements Display {
         }
     }
 
-    public synchronized void imageFill(int x, int y, int w, int h, Color c) {
+    public synchronized void imageFill(int x, int y, int w, int h, Color c, float alpha) {
         int xl = x;
         int xh = x + w - 1;
         int yl = ih - 1 - (y + h - 1);

@@ -205,6 +205,7 @@ public class BucketRenderer implements ImageSampler {
         display.imagePrepare(x0, y0, bw, bh, threadID);
 
         Color[] bucketRGB = new Color[bw * bh];
+        float[] bucketAlpha = new float[bw * bh];
 
         // subpixel extents
         int sx0 = x0 * subPixelSize - fs;
@@ -265,6 +266,7 @@ public class BucketRenderer implements ImageSampler {
                         }
                     }
                     bucketRGB[index] = new Color(sampled * invArea);
+                    bucketAlpha[index] = 1.0f;
                 }
             }
         } else {
@@ -274,6 +276,7 @@ public class BucketRenderer implements ImageSampler {
                 float cx = x0 + 0.5f;
                 for (int x = 0; x < bw; x++, index++, cx++) {
                     Color c = Color.black();
+                    float a = 0;
                     float weight = 0.0f;
                     for (int j = -fs, sy = y * subPixelSize; j <= fs; j++, sy++) {
                         for (int i = -fs, sx = x * subPixelSize, s = sx + sy * sbw; i <= fs; i++, sx++, s++) {
@@ -285,16 +288,21 @@ public class BucketRenderer implements ImageSampler {
                                 continue;
                             float f = filter.get(dx, dy);
                             c.madd(f, samples[s].c);
+                            a += f * samples[s].alpha;
                             weight += f;
+
                         }
                     }
-                    c.mul(1.0f / weight);
+                    float invWeight = 1.0f / weight;
+                    c.mul(invWeight);
+                    a *= invWeight;
                     bucketRGB[index] = c;
+                    bucketAlpha[index] = a;
                 }
             }
         }
         // update pixels
-        display.imageUpdate(x0, y0, bw, bh, bucketRGB);
+        display.imageUpdate(x0, y0, bw, bh, bucketRGB, bucketAlpha);
     }
 
     private void computeSubPixel(ImageSample sample, IntersectionState istate) {
@@ -359,6 +367,7 @@ public class BucketRenderer implements ImageSampler {
         float rx, ry;
         int i, n;
         Color c;
+        float alpha;
         Instance instance;
         Shader shader;
         float nx, ny, nz;
@@ -369,6 +378,7 @@ public class BucketRenderer implements ImageSampler {
             this.i = i;
             n = 0;
             c = null;
+            alpha = 0;
             instance = null;
             shader = null;
             nx = ny = nz = 1;
@@ -387,6 +397,7 @@ public class BucketRenderer implements ImageSampler {
                     ny = state.getNormal().y;
                     nz = state.getNormal().z;
                 }
+                alpha = state.getInstance() == null ? 0 : 1;
             }
             n = 1;
         }
@@ -396,6 +407,7 @@ public class BucketRenderer implements ImageSampler {
                 c = Color.black();
             if (state != null) {
                 c.add(state.getResult());
+                alpha += state.getInstance() == null ? 0 : 1;
                 checkNanInf();
             }
             n++;
@@ -411,12 +423,13 @@ public class BucketRenderer implements ImageSampler {
 
         final void scale(float s) {
             c.mul(s);
+            alpha *= s;
         }
 
         final boolean processed() {
             return c != null;
         }
-        
+
         final boolean sampled() {
             return n > 0;
         }
@@ -427,6 +440,8 @@ public class BucketRenderer implements ImageSampler {
             if (shader != sample.shader)
                 return true;
             if (Color.hasContrast(c, sample.c, thresh))
+                return true;
+            if (Math.abs(alpha - sample.alpha) / (alpha + sample.alpha) > thresh)
                 return true;
             // only compare normals if this pixel has not been averaged
             float dot = (nx * sample.nx + ny * sample.ny + nz * sample.nz);
@@ -447,6 +462,7 @@ public class BucketRenderer implements ImageSampler {
             c.madd(k10, c10);
             c.madd(k11, c11);
             result.c = c;
+            result.alpha = k00 * i00.alpha + k01 * i01.alpha + k10 * i10.alpha + k11 * i11.alpha;
             return result;
         }
     }

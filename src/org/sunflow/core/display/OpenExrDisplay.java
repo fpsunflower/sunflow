@@ -92,19 +92,19 @@ public class OpenExrDisplay implements Display {
     public void imagePrepare(int x, int y, int w, int h, int id) {
     }
 
-    public synchronized void imageUpdate(int x, int y, int w, int h, Color[] data) {
+    public synchronized void imageUpdate(int x, int y, int w, int h, Color[] data, float[] alpha) {
         try {
             // figure out which openexr tile corresponds to this bucket
             int tx = x / tileSize;
             int ty = y / tileSize;
-            writeTile(tx, ty, w, h, data);
+            writeTile(tx, ty, w, h, data, alpha);
         } catch (IOException e) {
             UI.printError(Module.DISP, "EXR - %s", e.getMessage());
             e.printStackTrace();
         }
     }
 
-    public void imageFill(int x, int y, int w, int h, Color c) {
+    public void imageFill(int x, int y, int w, int h, Color c, float alpha) {
     }
 
     public void imageEnd() {
@@ -135,6 +135,8 @@ public class OpenExrDisplay implements Display {
         file.write("G".getBytes());
         file.write(chanOut);
         file.write("B".getBytes());
+        file.write(chanOut);
+        file.write("A".getBytes());
         file.write(chanOut);
         file.write(0);
 
@@ -212,8 +214,8 @@ public class OpenExrDisplay implements Display {
          * can actually increase the size of the data :) If that happens though,
          * it is not saved into the file, but discarded
          */
-        tmpbuf = new byte[tileSize * tileSize * channelSize * 3];
-        comprbuf = new byte[tileSize * tileSize * channelSize * 3 * 2];
+        tmpbuf = new byte[tileSize * tileSize * channelSize * 4];
+        comprbuf = new byte[tileSize * tileSize * channelSize * 4 * 2];
 
         tileOffsets = new long[tilesX][tilesY];
 
@@ -245,7 +247,7 @@ public class OpenExrDisplay implements Display {
                 file.write(ByteUtil.get8Bytes(tileOffsets[tx][ty]));
     }
 
-    private void writeTile(int tileX, int tileY, int w, int h, Color[] tile) throws IOException {
+    private void writeTile(int tileX, int tileY, int w, int h, Color[] tile, float[] alpha) throws IOException {
         byte[] rgb = new byte[4];
 
         // setting comprSize to max integer so without compression things
@@ -277,25 +279,36 @@ public class OpenExrDisplay implements Display {
         for (int ty = 0; ty < tileRangeY; ty++) {
             for (int tx = 0; tx < tileRangeX; tx++) {
                 float[] rgbf = tile[tx + ty * tileRangeX].getRGB();
-                for (int component = 0; component < 3; component++) {
+                if (channelType == FLOAT) {
+                    rgb = ByteUtil.get4Bytes(Float.floatToRawIntBits(alpha[tx + ty * tileRangeX]));
+                    tmpbuf[pixptr + 0] = rgb[0];
+                    tmpbuf[pixptr + 1] = rgb[1];
+                    tmpbuf[pixptr + 2] = rgb[2];
+                    tmpbuf[pixptr + 3] = rgb[3];
+                } else if (channelType == HALF) {
+                    rgb = ByteUtil.get2Bytes(ByteUtil.floatToHalf(alpha[tx + ty * tileRangeX]));
+                    tmpbuf[pixptr + 0] = rgb[0];
+                    tmpbuf[pixptr + 1] = rgb[1];
+                }
+                for (int component = 1; component <= 3; component++) {
                     if (channelType == FLOAT) {
-                        rgb = ByteUtil.get4Bytes(Float.floatToRawIntBits(rgbf[2 - component]));
+                        rgb = ByteUtil.get4Bytes(Float.floatToRawIntBits(rgbf[3 - component]));
                         tmpbuf[(channelBase * component) + pixptr + 0] = rgb[0];
                         tmpbuf[(channelBase * component) + pixptr + 1] = rgb[1];
                         tmpbuf[(channelBase * component) + pixptr + 2] = rgb[2];
                         tmpbuf[(channelBase * component) + pixptr + 3] = rgb[3];
                     } else if (channelType == HALF) {
-                        rgb = ByteUtil.get2Bytes(ByteUtil.floatToHalf(rgbf[2 - component]));
+                        rgb = ByteUtil.get2Bytes(ByteUtil.floatToHalf(rgbf[3 - component]));
                         tmpbuf[(channelBase * component) + pixptr + 0] = rgb[0];
                         tmpbuf[(channelBase * component) + pixptr + 1] = rgb[1];
                     }
                 }
                 pixptr += channelSize;
             }
-            pixptr += (tileRangeX * channelSize * 2);
+            pixptr += (tileRangeX * channelSize * 3);
         }
 
-        writeSize = tileRangeX * tileRangeY * channelSize * 3;
+        writeSize = tileRangeX * tileRangeY * channelSize * 4;
 
         if (compression != NO_COMPRESSION)
             comprSize = compress(compression, tmpbuf, writeSize, comprbuf);

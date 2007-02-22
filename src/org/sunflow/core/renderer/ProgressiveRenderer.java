@@ -113,7 +113,7 @@ public class ProgressiveRenderer implements ImageSampler {
                 Color c = state != null ? state.getResult() : Color.BLACK;
                 pixels++;
                 // fill region
-                display.imageFill(x, y, Math.min(ds, imageWidth - x), Math.min(ds, imageHeight - y), c);
+                display.imageFill(x, y, Math.min(ds, imageWidth - x), Math.min(ds, imageHeight - y), c, state == null ? 0 : 1);
             }
         }
         if (first.size >= 2 * TASK_SIZE) {
