@@ -212,12 +212,12 @@ public class ImagePanel extends JPanel implements Display {
     public synchronized void imageUpdate(int x, int y, int w, int h, Color[] data, float[] alpha) {
         for (int j = 0, index = 0; j < h; j++)
             for (int i = 0; i < w; i++, index++)
-                image.setRGB(x + i, y + j, data[index].copy().clamp(0, 1).mul(1.0f / alpha[index]).toNonLinear().toRGBA(alpha[index]));
+                image.setRGB(x + i, y + j, data[index].copy().mul(1.0f / alpha[index]).toNonLinear().toRGBA(alpha[index]));
         repaint();
     }
 
     public synchronized void imageFill(int x, int y, int w, int h, Color c, float alpha) {
-        int rgba = c.copy().clamp(0, 1).mul(1.0f / alpha).toNonLinear().toRGBA(alpha);
+        int rgba = c.copy().mul(1.0f / alpha).toNonLinear().toRGBA(alpha);
         for (int j = 0, index = 0; j < h; j++)
             for (int i = 0; i < w; i++, index++)
                 image.setRGB(x + i, y + j, rgba);
