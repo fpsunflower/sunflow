@@ -129,7 +129,7 @@ public class OpenExrDisplay implements Display {
         file.write(0);
         file.write("chlist".getBytes());
         file.write(0);
-        file.write(ByteUtil.get4Bytes(55));
+        file.write(ByteUtil.get4Bytes(73));
         file.write("R".getBytes());
         file.write(chanOut);
         file.write("G".getBytes());
