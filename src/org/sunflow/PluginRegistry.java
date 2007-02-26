@@ -56,6 +56,7 @@ import org.sunflow.core.parser.ShaveRibParser;
 import org.sunflow.core.photonmap.CausticPhotonMap;
 import org.sunflow.core.photonmap.GlobalPhotonMap;
 import org.sunflow.core.photonmap.GridPhotonMap;
+import org.sunflow.core.primitive.Background;
 import org.sunflow.core.primitive.BanchoffSurface;
 import org.sunflow.core.primitive.Box;
 import org.sunflow.core.primitive.CornellBox;
@@ -138,6 +139,7 @@ public final class PluginRegistry {
         primitivePlugins.registerPlugin("plane", Plane.class);
         primitivePlugins.registerPlugin("quad_mesh", QuadMesh.class);
         primitivePlugins.registerPlugin("torus", Torus.class);
+        primitivePlugins.registerPlugin("background", Background.class);
     }
 
     static {
