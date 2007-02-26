@@ -8,6 +8,7 @@ import org.sunflow.core.Ray;
 public class ThinLens implements CameraLens {
     private float au, av;
     private float aspect, fov;
+    private float shiftX, shiftY;
     private float focusDistance;
     private float lensRadius;
     private int lensSides;
@@ -27,6 +28,8 @@ public class ThinLens implements CameraLens {
         // get parameters
         fov = pl.getFloat("fov", fov);
         aspect = pl.getFloat("aspect", aspect);
+        shiftX = pl.getFloat("shift.x", shiftX);
+        shiftY = pl.getFloat("shift.y", shiftY);
         focusDistance = pl.getFloat("focus.distance", focusDistance);
         lensRadius = pl.getFloat("lens.radius", lensRadius);
         lensSides = pl.getInt("lens.sides", lensSides);
@@ -42,8 +45,8 @@ public class ThinLens implements CameraLens {
     }
 
     public Ray getRay(float x, float y, int imageWidth, int imageHeight, double lensX, double lensY, double time) {
-        float du = -au + ((2.0f * au * x) / (imageWidth - 1.0f));
-        float dv = -av + ((2.0f * av * y) / (imageHeight - 1.0f));
+        float du = shiftX * focusDistance - au + ((2.0f * au * x) / (imageWidth - 1.0f));
+        float dv = shiftY * focusDistance - av + ((2.0f * av * y) / (imageHeight - 1.0f));
 
         float eyeX, eyeY;
         if (lensSides < 3) {

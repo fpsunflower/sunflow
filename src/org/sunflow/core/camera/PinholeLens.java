@@ -8,10 +8,12 @@ import org.sunflow.core.Ray;
 public class PinholeLens implements CameraLens {
     private float au, av;
     private float aspect, fov;
+    private float shiftX, shiftY;
 
     public PinholeLens() {
         fov = 90;
         aspect = 1;
+        shiftX = shiftY = 0;
         update();
     }
 
@@ -19,6 +21,8 @@ public class PinholeLens implements CameraLens {
         // get parameters
         fov = pl.getFloat("fov", fov);
         aspect = pl.getFloat("aspect", aspect);
+        shiftX = pl.getFloat("shift.x", shiftX);
+        shiftY = pl.getFloat("shift.y", shiftY);
         update();
         return true;
     }
@@ -29,8 +33,8 @@ public class PinholeLens implements CameraLens {
     }
 
     public Ray getRay(float x, float y, int imageWidth, int imageHeight, double lensX, double lensY, double time) {
-        float du = -au + ((2.0f * au * x) / (imageWidth - 1.0f));
-        float dv = -av + ((2.0f * av * y) / (imageHeight - 1.0f));
+        float du = shiftX - au + ((2.0f * au * x) / (imageWidth - 1.0f));
+        float dv = shiftY - av + ((2.0f * av * y) / (imageHeight - 1.0f));
         return new Ray(0, 0, 0, du, dv, -1);
     }
 }

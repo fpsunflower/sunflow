@@ -1,4 +1,5 @@
 v0.07.3
+* Added camera shift option to pinhole and thinlens camera lenses
 * Updated examples
 * Moved scene parsers to plugin system
 * Moved photon maps to plugin system

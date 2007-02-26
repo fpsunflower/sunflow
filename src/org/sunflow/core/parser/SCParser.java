@@ -346,12 +346,20 @@ public class SCParser implements SceneParser {
             api.parameter("fov", p.getNextFloat());
             p.checkNextToken("aspect");
             api.parameter("aspect", p.getNextFloat());
+            if (p.peekNextToken("shift")) {
+                api.parameter("shift.x", p.getNextFloat());
+                api.parameter("shift.y", p.getNextFloat());
+            }
             api.camera(name, "pinhole");
         } else if (type.equals("thinlens")) {
             p.checkNextToken("fov");
             api.parameter("fov", p.getNextFloat());
             p.checkNextToken("aspect");
             api.parameter("aspect", p.getNextFloat());
+            if (p.peekNextToken("shift")) {
+                api.parameter("shift.x", p.getNextFloat());
+                api.parameter("shift.y", p.getNextFloat());
+            }
             p.checkNextToken("fdist");
             api.parameter("focus.distance", p.getNextFloat());
             p.checkNextToken("lensr");
