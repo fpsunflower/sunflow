@@ -40,7 +40,11 @@ public class AnisotropicWardShader implements Shader {
 
     private float brdf(Vector3 i, Vector3 o, OrthoNormalBasis basis) {
         float fr = 4 * (float) Math.PI * alphaX * alphaY;
-        fr *= (float) Math.sqrt(basis.untransformZ(i) * basis.untransformZ(o));
+        float p = basis.untransformZ(i) * basis.untransformZ(o);
+        if (p > 0)
+            fr *= (float) Math.sqrt(p);
+        else
+            fr = 0;
         Vector3 h = Vector3.add(i, o, new Vector3());
         basis.untransform(h);
         float hx = h.x / alphaX;
@@ -48,7 +52,8 @@ public class AnisotropicWardShader implements Shader {
         float hy = h.y / alphaY;
         hy *= hy;
         float hn = h.z * h.z;
-        fr = (float) Math.exp(-(hx + hy) / hn) / fr;
+        if (fr > 0)
+            fr = (float) Math.exp(-(hx + hy) / hn) / fr;
         return fr;
     }
 
