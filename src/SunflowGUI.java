@@ -242,7 +242,9 @@ public class SunflowGUI extends javax.swing.JFrame implements UserInterface {
                     if (i > args.length - 2)
                         usage(false);
                     maxDist = Float.parseFloat(args[i + 1]);
-                    shaderOverride = "ambient_occlusion"; //new AmbientOcclusionShader(Color.WHITE, d);
+                    shaderOverride = "ambient_occlusion"; // new
+                                                            // AmbientOcclusionShader(Color.WHITE,
+                                                            // d);
                     i += 2;
                 } else if (args[i].equals("-quick_uvs")) {
                     if (i > args.length - 1)

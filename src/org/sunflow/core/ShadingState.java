@@ -26,6 +26,7 @@ public final class ShadingState implements Iterable<LightSample> {
     private Vector3 ng;
     private OrthoNormalBasis basis;
     private float cosND;
+    private float bias;
     private boolean behind;
     private float hitU, hitV;
     private Instance instance;
@@ -125,6 +126,7 @@ public final class ShadingState implements Iterable<LightSample> {
         qmcD0I = QMC.halton(this.d, this.i);
         qmcD1I = QMC.halton(this.d + 1, this.i);
         result = null;
+        bias = 0.001f;
     }
 
     final void setRay(Ray r) {
@@ -179,9 +181,15 @@ public final class ShadingState implements Iterable<LightSample> {
         cosND = Math.max(-r.dot(n), 0); // can't be negative
         // offset the shaded point away from the surface to prevent
         // self-intersection errors
-        p.x += 0.001f * ng.x;
-        p.y += 0.001f * ng.y;
-        p.z += 0.001f * ng.z;
+        if (Math.abs(ng.x) > Math.abs(ng.y) && Math.abs(ng.x) > Math.abs(ng.z))
+            bias = Math.max(bias, 25 * Math.ulp(Math.abs(p.x)));
+        else if (Math.abs(ng.y) > Math.abs(ng.z))
+            bias = Math.max(bias, 25 * Math.ulp(Math.abs(p.y)));
+        else
+            bias = Math.max(bias, 25 * Math.ulp(Math.abs(p.z)));
+        p.x += bias * ng.x;
+        p.y += bias * ng.y;
+        p.z += bias * ng.z;
     }
 
     /**
@@ -576,9 +584,9 @@ public final class ShadingState implements Iterable<LightSample> {
      */
     public final Color traceRefraction(Ray r, int i) {
         // this assumes the refraction ray is pointing away from the normal
-        r.ox -= 0.002f * ng.x;
-        r.oy -= 0.002f * ng.y;
-        r.oz -= 0.002f * ng.z;
+        r.ox -= 2 * bias * ng.x;
+        r.oy -= 2 * bias * ng.y;
+        r.oz -= 2 * bias * ng.z;
         return server.traceRefraction(this, r, i);
     }
 
