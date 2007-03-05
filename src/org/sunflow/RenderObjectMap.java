@@ -129,8 +129,10 @@ final class RenderObjectMap {
                     i.updateBounds();
                     if (i.getBounds() == null)
                         numInfinite++;
-                    else
+                    else if (!i.getBounds().isEmpty())
                         numInstance++;
+                    else
+                        UI.printWarning(Module.API, "Discarding empty instance: \"%s\"", e.getKey());
                 }
             }
             Instance[] infinite = new Instance[numInfinite];
@@ -142,7 +144,7 @@ final class RenderObjectMap {
                     if (i.getBounds() == null) {
                         infinite[numInfinite] = i;
                         numInfinite++;
-                    } else {
+                    } else if (!i.getBounds().isEmpty()) {
                         instance[numInstance] = i;
                         numInstance++;
                     }
