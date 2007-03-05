@@ -132,7 +132,7 @@ final class RenderObjectMap {
                     else if (!i.getBounds().isEmpty())
                         numInstance++;
                     else
-                        UI.printWarning(Module.API, "Discarding empty instance: \"%s\"", e.getKey());
+                        UI.printWarning(Module.API, "Ignoring empty instance: \"%s\"", e.getKey());
                 }
             }
             Instance[] infinite = new Instance[numInfinite];
