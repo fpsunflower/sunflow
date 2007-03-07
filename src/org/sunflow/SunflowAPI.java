@@ -30,6 +30,7 @@ import org.sunflow.core.ParameterList.InterpolationType;
 import org.sunflow.image.Color;
 import org.sunflow.math.BoundingBox;
 import org.sunflow.math.Matrix4;
+import org.sunflow.math.Point2;
 import org.sunflow.math.Point3;
 import org.sunflow.math.Vector3;
 import org.sunflow.system.SearchPath;
@@ -186,6 +187,18 @@ public class SunflowAPI {
     public final void parameter(String name, Vector3 value) {
         parameterList.addVectors(name, InterpolationType.NONE, new float[] {
                 value.x, value.y, value.z });
+    }
+
+    /**
+     * Declare a parameter with the specified name and value. This parameter
+     * will be added to the currently active parameter list.
+     * 
+     * @param name parameter name
+     * @param value parameter value
+     */
+    public final void parameter(String name, Point2 value) {
+        parameterList.addTexCoords(name, InterpolationType.NONE, new float[] {
+                value.x, value.y });
     }
 
     /**
