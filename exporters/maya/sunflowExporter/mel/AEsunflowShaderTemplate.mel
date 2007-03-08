@@ -1,0 +1,61 @@
+global proc AEsunflowShaderTemplate( string $nodeName )
+{
+	AEswatchDisplay $nodeName;
+	editorTemplate -beginScrollLayout;
+	editorTemplate -addControl "shader";
+	editorTemplate -beginLayout "Diffuse Attributes" -collapse 1;
+		editorTemplate -l "Diffuse" -addControl "color";
+	editorTemplate -endLayout;
+	editorTemplate -beginLayout "Phong Attributes" -collapse 1;
+		editorTemplate -l "Diffuse" -addControl "color";
+		editorTemplate -l "Specular" -addControl "p_specular";
+		editorTemplate -l "Power" -addControl "p_power";
+		editorTemplate -l "Samples" -addControl "p_samples";
+	editorTemplate -endLayout;
+	editorTemplate -beginLayout "Amb-Occ Attributes" -collapse 1;		
+		editorTemplate -l "Bright" -addControl "color";
+		editorTemplate -l "Dark" -addControl "amb_dark";
+		editorTemplate -l "Samples" -addControl "amb_samples";
+		editorTemplate -l "Max Dist" -addControl "amb_maxdist";
+	editorTemplate -endLayout;
+	editorTemplate -beginLayout "Mirror Attributes" -collapse 1;		
+		editorTemplate -addControl "color";		
+	editorTemplate -endLayout;
+	editorTemplate -beginLayout "Glass Attributes" -collapse 1;		
+		editorTemplate -l "ETA" -addControl "glass_eta";
+		editorTemplate -l "Color" -addControl "color";
+		editorTemplate -l "Absorb Dist" -addControl "glass_adist";
+		editorTemplate -l "Absorb Color" -addControl "glass_acol";
+	editorTemplate -endLayout;
+	editorTemplate -beginLayout "Shiny Attributes" -collapse 1;		
+		editorTemplate -l "Color" -addControl "color";
+		editorTemplate -l "Reflection" -addControl "shiny_shiny";
+	editorTemplate -endLayout;
+	editorTemplate -beginLayout "Ward Attributes" -collapse 1;
+		editorTemplate -l "Diffuse" -addControl "color";
+		editorTemplate -l "Specular" -addControl "w_specular";
+		editorTemplate -l "U Power" -addControl "w_upower";
+		editorTemplate -l "V Power" -addControl "w_vpower";
+		editorTemplate -l "Samples" -addControl "w_samples";
+	editorTemplate -endLayout;
+	editorTemplate -beginLayout "Constant Attributes" -collapse 1;
+		editorTemplate -l "Color" -addControl "color";
+	editorTemplate -endLayout;
+	editorTemplate -beginLayout "Uber Attributes" -collapse 1;
+		editorTemplate -l "Diffuse" -addControl "color";
+		editorTemplate -l "Diffuse Texture" -addControl "u_diff_texture";
+		editorTemplate -l "Diffuse Blend" -addControl "u_diff_blend";
+		editorTemplate -l "Specular" -addControl "u_specular";
+		editorTemplate -l "Specular Texture" -addControl "u_spec_texture";
+		editorTemplate -l "Specular Blend" -addControl "u_spec_blend";
+		editorTemplate -l "Glossyness" -addControl "u_gloss";
+		editorTemplate -l "Samples" -addControl "u_samples";
+	editorTemplate -endLayout;
+	editorTemplate -l "Bump Mapping" -addControl "normalCamera";
+
+	// include/call base class/node attributes
+	AEdependNodeTemplate $nodeName;
+	
+	editorTemplate -addExtraControls;
+	editorTemplate -endScrollLayout;
+}

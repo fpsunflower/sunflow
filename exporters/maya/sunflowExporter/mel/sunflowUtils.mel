@@ -1,0 +1,68 @@
+global proc string sunflowGetPrefix() {
+	return "sunflow";
+}
+
+global proc string sunflowCheckGlobals(){
+	global string $EXPORTPATH;
+	global string $JAVAPATH;
+	global string $SUNFLOWPATH;
+	
+	readSunflowINI;
+	
+	string $sel[]= `ls -sl`;
+	string $globalsNode;
+	string $globalsNodes[] = stringArrayRemove({"<done>"},`lsType sunflowGlobalsNode`);	
+	if(size($globalsNodes)){
+		$globalsNode = $globalsNodes[0];
+		string $unusedNodes[] = stringArrayRemove({$globalsNode},$globalsNodes);
+		if(size($unusedNodes))
+			delete $unusedNodes;
+	}else{
+		$globalsNode = `createNode sunflowGlobalsNode`;
+	}
+	string $projPath = `workspace -q -rd`;
+	string $tmpPath = $projPath+"sunflowScenes/";
+	if(!`filetest -d $tmpPath`)
+		sysFile -makeDir $tmpPath;
+	//if(!`getAttr ($globalsNode+".exportPath")`)
+	setAttr -type "string" ($globalsNode+".exportPath") $tmpPath;
+	readSunflowINI;
+	setAttr -type "string" ($globalsNode+".javaPath") $JAVAPATH;
+	setAttr -type "string" ($globalsNode+".sunflowPath") $SUNFLOWPATH;
+	select $sel;
+	return $globalsNode;
+}
+
+
+
+
+
+global proc readSunflowINI(){
+	global string $EXPORTPATH;
+	global string $JAVAPATH;
+	global string $SUNFLOWPATH;
+	
+	string $pluginPath = `pluginInfo -q -p sunflowExport`;
+	string $iniPath = `substitute ".mll" $pluginPath ".ini"`;
+	$fileId=`fopen $iniPath "r"`;
+	string $nextLine = `fgetline $fileId`;
+	while ( size( $nextLine ) > 0 ) {
+		string $tokens[];
+		$numTokens = `tokenize $nextLine "=" $tokens`;
+		switch ($tokens[0]) {
+			case "exportPath":
+				$EXPORTPATH = `substitute "\n" $tokens[1] ""`;
+				break;
+			case "javaPath":
+				$JAVAPATH = `substitute "\n" $tokens[1] ""`;
+				break;
+			case "sunflowPath":
+				$SUNFLOWPATH = `substitute "\n" $tokens[1] ""`;
+				break;
+			default:
+				break;
+		}
+		$nextLine = `fgetline $fileId`;
+	}
+	fclose $fileId;	
+}
