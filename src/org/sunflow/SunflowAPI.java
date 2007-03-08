@@ -287,7 +287,7 @@ public class SunflowAPI {
      * @return <code>true</code> if the update was succesfull, or
      *         <code>false</code> if the update failed
      */
-    public boolean update(String name) {
+    private boolean update(String name) {
         boolean success = renderObjects.update(name, parameterList, this);
         parameterList.clear(success);
         return success;
