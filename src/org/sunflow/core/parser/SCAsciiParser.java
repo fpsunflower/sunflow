@@ -32,8 +32,11 @@ public class SCAsciiParser implements SceneParser {
                 } else if (peekTokens("geometry", "geo", "g")) {
                     String name = p.getNextToken();
                     String type = p.getNextToken();
-                    if (type.equals("incremental"))
+                    if (type.equals("incremental")) {
                         type = null;
+                        UI.printInfo(Module.API, "Updating geometry \"%s\" ...", name);
+                    } else
+                        UI.printInfo(Module.API, "Creating geometry \"%s\" ...", name);
                     api.geometry(name, type);
                 } else if (peekTokens("instance", "inst", "i")) {
                     String name = p.getNextToken();
@@ -44,20 +47,29 @@ public class SCAsciiParser implements SceneParser {
                 } else if (peekTokens("shader", "shd", "s")) {
                     String name = p.getNextToken();
                     String type = p.getNextToken();
-                    if (type.equals("incremental"))
+                    if (type.equals("incremental")) {
                         type = null;
+                        UI.printInfo(Module.API, "Updating shader \"%s\" ...", name);
+                    } else
+                        UI.printInfo(Module.API, "Creating shader \"%s\" ...", name);
                     api.shader(name, type);
                 } else if (peekTokens("modifier", "mod", "m")) {
                     String name = p.getNextToken();
                     String type = p.getNextToken();
-                    if (type.equals("incremental"))
+                    if (type.equals("incremental")) {
                         type = null;
+                        UI.printInfo(Module.API, "Updating modifier \"%s\" ...", name);
+                    } else
+                        UI.printInfo(Module.API, "Creating modifier \"%s\" ...", name);
                     api.modifier(name, type);
                 } else if (peekTokens("light", "l")) {
                     String name = p.getNextToken();
                     String type = p.getNextToken();
-                    if (type.equals("incremental"))
+                    if (type.equals("incremental")) {
                         type = null;
+                        UI.printInfo(Module.API, "Updating light \"%s\" ...", name);
+                    } else
+                        UI.printInfo(Module.API, "Creating light \"%s\" ...", name);
                     api.light(name, type);
                 } else if (peekTokens("camera", "cam", "c")) {
                     String name = p.getNextToken();
