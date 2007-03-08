@@ -55,9 +55,6 @@ MObject sunflowShaderNode::uber_gloss;
 MObject sunflowShaderNode::uber_samples;
 
 // Attributes
-MObject sunflowShaderNode::aTranslucenceCoeff;
-MObject sunflowShaderNode::aDiffuseReflectivity;
-MObject sunflowShaderNode::aIncandescence;
 MObject sunflowShaderNode::aOutColor;
 MObject sunflowShaderNode::aPointCamera;
 MObject sunflowShaderNode::aNormalCamera;
@@ -256,20 +253,8 @@ MStatus sunflowShaderNode::initialize()
 	uber_samples = nAttr.create("u_samples", "usa", MFnNumericData::kInt);
     MAKE_INPUT(nAttr);
 	CHECK_MSTATUS ( nAttr.setMin(1) );
-	CHECK_MSTATUS ( nAttr.setDefault(4) );
-
-	aTranslucenceCoeff = nAttr.create("translucenceCoeff", "tc", 
-									  MFnNumericData::kFloat);
-    MAKE_INPUT(nAttr);
-
-    aDiffuseReflectivity = nAttr.create("diffuseReflectivity", "drfl",
-										MFnNumericData::kFloat);
-    MAKE_INPUT(nAttr);
-    CHECK_MSTATUS ( nAttr.setDefault(0.8f) );
-
-    aIncandescence = nAttr.createColor( "incandescence", "ic" );
-    MAKE_INPUT(nAttr);
-
+	CHECK_MSTATUS ( nAttr.setDefault(4) );  
+   
     aOutColor = nAttr.createColor( "outColor", "oc" );
     MAKE_OUTPUT(nAttr);
 
@@ -446,10 +431,7 @@ MStatus sunflowShaderNode::initialize()
 	CHECK_MSTATUS ( addAttribute(uber_gloss) );
 	CHECK_MSTATUS ( addAttribute(uber_samples) );
 
-    CHECK_MSTATUS ( addAttribute(aTranslucenceCoeff) );
-    CHECK_MSTATUS ( addAttribute(aDiffuseReflectivity) );
-    CHECK_MSTATUS ( addAttribute(aColor) );
-    CHECK_MSTATUS ( addAttribute(aIncandescence) );
+    CHECK_MSTATUS ( addAttribute(aColor) );    
     CHECK_MSTATUS ( addAttribute(aPointCamera) );
     CHECK_MSTATUS ( addAttribute(aNormalCamera) );
     CHECK_MSTATUS ( addAttribute(aTriangleNormalCamera) );
@@ -467,10 +449,7 @@ MStatus sunflowShaderNode::initialize()
 	CHECK_MSTATUS ( addAttribute(aRayDepth) );
     CHECK_MSTATUS ( addAttribute(aReflectGain) );
 
-    CHECK_MSTATUS ( attributeAffects (aTranslucenceCoeff, aOutColor));
-    CHECK_MSTATUS ( attributeAffects (aDiffuseReflectivity, aOutColor));
-    CHECK_MSTATUS ( attributeAffects (aLightIntensity, aOutColor));
-    CHECK_MSTATUS ( attributeAffects (aIncandescence, aOutColor));
+    CHECK_MSTATUS ( attributeAffects (aLightIntensity, aOutColor));   
     CHECK_MSTATUS ( attributeAffects (aPointCamera, aOutColor));
     CHECK_MSTATUS ( attributeAffects (aNormalCamera, aOutColor));
     CHECK_MSTATUS ( attributeAffects (aTriangleNormalCamera, aOutColor));

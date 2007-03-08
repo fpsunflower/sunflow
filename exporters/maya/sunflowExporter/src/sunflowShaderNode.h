@@ -92,10 +92,7 @@ private:
 	static MObject uber_gloss;
 	static MObject uber_samples;
 
-	static MObject aColor;
-    static MObject aTranslucenceCoeff;
-    static MObject aDiffuseReflectivity;
-	static MObject aIncandescence;
+	static MObject aColor;    
 	static MObject aPointCamera;
 	static MObject aNormalCamera;
 	static MObject aLightDirection;
