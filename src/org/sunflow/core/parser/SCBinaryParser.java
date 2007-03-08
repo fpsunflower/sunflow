@@ -5,7 +5,6 @@ import java.io.EOFException;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.nio.charset.Charset;
 
 import org.sunflow.PluginRegistry;
 import org.sunflow.SunflowAPI;
@@ -20,7 +19,6 @@ import org.sunflow.system.UI;
 import org.sunflow.system.UI.Module;
 
 public class SCBinaryParser implements SceneParser {
-    private static final Charset UTF8 = Charset.forName("UTF-8");
     private DataInputStream stream;
     private String current;
 
@@ -238,7 +236,7 @@ public class SCBinaryParser implements SceneParser {
     private String getNextString() throws IOException {
         byte[] b = new byte[stream.readInt()];
         stream.read(b);
-        return new String(b, UTF8);
+        return new String(b, "UTF-8");
     }
 
     private int getNextCode() throws IOException {
