@@ -29,11 +29,12 @@
 #include <set>
 #include <vector>
 #include <string>
-
 #include "sunflowExportCmd.h"
 #include "sunflowShaderNode.h"
 
 // global variables:
+
+using namespace std;
 
 float resolutionAspectRatio = 4.0f / 3.0f;
 
@@ -66,7 +67,7 @@ void sunflowExportCmd::getCustomAttribute(MString &texture, MFloatVector &colorA
 				MPlug texturePlug = texNode.findPlug( "fileTextureName", &status );
 				if ( status == MS::kSuccess ){
 					texturePlug.getValue( texture );
-					std::cout << "Texture: " << texture << std::endl;
+					std::cout << "Texture: " << texture.asChar() << std::endl;
 				}
 			}
 		}
@@ -329,7 +330,7 @@ void sunflowExportCmd::exportMesh(const MDagPath& path, std::ofstream& file) {
 		MObject bumpObject;
 		if(getBumpFromShader(shader, texture, depth, bumpObject)){
 			MFnDependencyNode bumpNode(bumpObject);
-			file << "\tmodifier " << bumpNode.name() << std::endl;
+			file << "\tmodifier " << bumpNode.name().asChar() << std::endl;
 		}
         // instance this mesh directly
         file << "\ttransform col ";
@@ -585,7 +586,7 @@ MStatus sunflowExportCmd::doIt(const MArgList& args) {
 	MStatus status;
 
 	// Write out globals values from the first sunflowGlobalsNode
-	bool globalsWritten;
+	bool globalsWritten = false;
 	for (MItDependencyNodes it(MFn::kPluginDependNode ); !it.isDone(&status); it.next()) {		
 		MObject obj = it.item();		
 		MFnDependencyNode globals(obj,&status);
@@ -1026,7 +1027,7 @@ MStatus sunflowExportCmd::doIt(const MArgList& args) {
 									file << "\tname " << sNode.name().asChar() << std::endl;
 									file << "\ttype janino" << std::endl;
 									file << "<code>" << std::endl;
-									file << code << std::endl;
+									file << code.asChar() << std::endl;
 									file << "</code>" << std::endl; 
 									file << "}" << std::endl; 
 									file << std::endl;
@@ -1085,7 +1086,7 @@ MStatus sunflowExportCmd::doIt(const MArgList& args) {
 							default: break;
 						}
 						
-						std::cout << "sunflowShaderNode: " << sunflowShaderType[sunflowShader] << std::endl;						
+						std::cout << "sunflowShaderNode: " << sunflowShaderType[sunflowShader].asChar() << std::endl;						
 						shaderList.append(sNode.object());
 						break;
 					}	
@@ -1197,7 +1198,7 @@ MStatus sunflowExportCmd::doIt(const MArgList& args) {
 	
 	//MString cmd("c:/PROGRA~1/java/jdk1.6.0/bin/java -cp c:/temp/sunflow/classes;c:/temp/sunflow/janino.jar -server -Xmx1024M SunflowGUI "); //For testing dev versions
 	MString cmd("\""+javaPath);
-	cmd +="/java.exe\"";
+	cmd +="/java\"";
 	MString args(" -Xmx1024M -server -jar \"");
 	args += sunflowPath;
 	args += "/sunflow.jar\" ";
@@ -1245,20 +1246,17 @@ MStatus sunflowExportCmd::doIt(const MArgList& args) {
 	#include <sys/types.h>
 	#include <unistd.h>
 	#include <stdlib.h>
-	chdir( sunflowPath.asChar() );
-	MString cmd = cmd + args + "&";
-	int returnCode = system( cmd.asChar() );
+	cmd = cmd + args + "&";
+	system( cmd.asChar() );
 	#endif // LINUX
 
 	#if defined(OSX)
 	#include <sys/types.h>
 	#include <unistd.h>
 	#include <stdlib.h>
-	
 	chdir( sunflowPath.asChar() );
 	MString command = cmd + arg + "&";
-	int returnCode = system( cmd.asChar() );
-	}
+	system( cmd.asChar() );
 	#endif // OSX
 
     return MS::kSuccess;

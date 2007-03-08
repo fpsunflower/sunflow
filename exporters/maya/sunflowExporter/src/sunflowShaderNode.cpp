@@ -1,4 +1,3 @@
-#include <maya/MIOStream.h>
 #include <maya/MString.h>
 #include <maya/MTypeId.h>
 #include <maya/MPlug.h>
@@ -9,12 +8,13 @@
 #include <maya/MFnLightDataAttribute.h>
 #include <maya/MFloatVector.h>
 #include <maya/MFnEnumAttribute.h>
-#include <math.h>
-
-// add for raytracing api enhancement
-#include <maya/MRenderUtil.h>
-
+#include <maya/MRenderUtil.h> // add for raytracing api enhancement
 #include "sunflowShaderNode.h"
+#include <iostream>
+#include <cmath>
+
+using namespace std;
+
 // Static data
 MTypeId sunflowShaderNode::id( 0x00114154 );
 
@@ -341,7 +341,12 @@ MStatus sunflowShaderNode::initialize()
     CHECK_MSTATUS ( nAttr.setReadable(true) );
     //CHECK_MSTATUS ( nAttr.setWritable(false) );
 
+#if MAYA_API_VERSION > 700
     aLightBlindData = nAttr.createAddr("lightBlindData", "lbld");
+#else
+    aLightBlindData = nAttr.create("lightBlindData", "lbld", MFnNumericData::kLong);
+#endif
+    
     CHECK_MSTATUS ( nAttr.setStorable(false) );
     CHECK_MSTATUS ( nAttr.setHidden(true) );
     CHECK_MSTATUS ( nAttr.setReadable(true) );
@@ -356,8 +361,7 @@ MStatus sunflowShaderNode::initialize()
     CHECK_MSTATUS ( lAttr.setArray(true) );
     CHECK_MSTATUS ( lAttr.setStorable(false) );
     CHECK_MSTATUS ( lAttr.setHidden(true) );
-    CHECK_MSTATUS ( lAttr.setDefault(0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, true, true,
-					 false, 0.0f, 1.0f, NULL) );
+    CHECK_MSTATUS ( lAttr.setDefault(0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, true, true, false, 0.0f, 1.0f, 0) );
 
 	// rayOrigin
 	MObject RayX = nAttr.create( "rayOx", "rxo", MFnNumericData::kFloat, 0.0 );
@@ -378,13 +382,22 @@ MStatus sunflowShaderNode::initialize()
     CHECK_MSTATUS ( nAttr.setReadable(false) );
 
 	// objectId
+#if MAYA_API_VERSION > 700
 	aObjectId = nAttr.createAddr( "objectId", "oi" );
+#else
+    aObjectId = nAttr.create("objectId", "oi", MFnNumericData::kLong);
+#endif
+        
     CHECK_MSTATUS ( nAttr.setStorable(false) ); 
     CHECK_MSTATUS ( nAttr.setHidden(true) );
     CHECK_MSTATUS ( nAttr.setReadable(false) );
 
 	// raySampler
+#if MAYA_API_VERSION > 700
 	aRaySampler = nAttr.createAddr("raySampler", "rtr");
+#else
+    aRaySampler = nAttr.create("raySampler", "rtr", MFnNumericData::kLong, 0.0);
+#endif
     CHECK_MSTATUS ( nAttr.setStorable(false));
     CHECK_MSTATUS ( nAttr.setHidden(true) );
     CHECK_MSTATUS ( nAttr.setReadable(false) );
@@ -505,7 +518,7 @@ MColor sunflowShaderNode::getDiffuseComponent(MDataBlock& block){
 	MColor diffuse(0,0,0);
 
 	// get sample surface shading parameters   
-    MFloatVector& cameraPosition = block.inputValue( aPointCamera ).asFloatVector();
+    //MFloatVector& cameraPosition = block.inputValue( aPointCamera ).asFloatVector();
 	MFloatVector& surfaceNormal = block.inputValue( aNormalCamera, &status ).asFloatVector();
 		CHECK_MSTATUS( status );
 	
@@ -621,6 +634,7 @@ const MPlug&      plug,
 
 	int sunflowShader  = block.inputValue( aShader ).asInt();
 
+    MFloatVector white(3,1);
 	switch (sunflowShader) {
 		case 0: { //DIFFUSE
 					MColor diffuseC = getDiffuseComponent(block);
@@ -644,28 +658,28 @@ const MPlug&      plug,
 					resultColor[2] = surfaceColor[2];
 				} break;
 		case 3: { // MIRROR
-					MColor phongC = getPhongComponent(MFloatVector(3,1), 300, block);
+					MColor phongC = getPhongComponent(white, 300.0f, block);
 					resultColor[0] = phongC.r;
 					resultColor[1] = phongC.g;
 					resultColor[2] = phongC.b;
 				} break;
 		case 4: { // GLASS
 					MColor diffuseC = getDiffuseComponent(block);
-					MColor phongC = getPhongComponent(MFloatVector(3,1), 300, block);
+					MColor phongC = getPhongComponent(white, 300.0f, block);
 					resultColor[0] = ( diffuseC.r * surfaceColor[0] ) + phongC.r;
 					resultColor[1] = ( diffuseC.g * surfaceColor[1] ) + phongC.g;
 					resultColor[2] = ( diffuseC.b * surfaceColor[2] ) + phongC.b;
 				} break;
 		case 5: { // SHINY
 					MColor diffuseC = getDiffuseComponent(block);
-					MColor phongC = getPhongComponent(MFloatVector(3,1), 300, block);
+					MColor phongC = getPhongComponent(white, 300.0f, block);
 					resultColor[0] = ( diffuseC.r * surfaceColor[0] ) + phongC.r;
 					resultColor[1] = ( diffuseC.g * surfaceColor[1] ) + phongC.g;
 					resultColor[2] = ( diffuseC.b * surfaceColor[2] ) + phongC.b;
 				} break;
 		case 6: { // WARD
 					float upower = block.inputValue( ward_upower ).asFloat();
-					float vpower = block.inputValue( ward_vpower ).asFloat();
+					//float vpower = block.inputValue( ward_vpower ).asFloat();
 					MFloatVector& specularColor  = block.inputValue( ward_specular ).asFloatVector();
 
 					MColor diffuseC = getDiffuseComponent(block);

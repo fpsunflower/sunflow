@@ -7,7 +7,7 @@ global proc string sunflowCheckGlobals(){
 	global string $JAVAPATH;
 	global string $SUNFLOWPATH;
 	
-	readSunflowINI;
+//	readSunflowINI;
 	
 	string $sel[]= `ls -sl`;
 	string $globalsNode;
@@ -26,9 +26,9 @@ global proc string sunflowCheckGlobals(){
 		sysFile -makeDir $tmpPath;
 	//if(!`getAttr ($globalsNode+".exportPath")`)
 	setAttr -type "string" ($globalsNode+".exportPath") $tmpPath;
-	readSunflowINI;
-	setAttr -type "string" ($globalsNode+".javaPath") $JAVAPATH;
-	setAttr -type "string" ($globalsNode+".sunflowPath") $SUNFLOWPATH;
+//	readSunflowINI;
+//	setAttr -type "string" ($globalsNode+".javaPath") $JAVAPATH;
+//	setAttr -type "string" ($globalsNode+".sunflowPath") $SUNFLOWPATH;
 	select $sel;
 	return $globalsNode;
 }
@@ -42,8 +42,9 @@ global proc readSunflowINI(){
 	global string $JAVAPATH;
 	global string $SUNFLOWPATH;
 	
-	string $pluginPath = `pluginInfo -q -p sunflowExport`;
+	string $pluginPath = `pluginInfo -q -p sunflow`;
 	string $iniPath = `substitute ".mll" $pluginPath ".ini"`;
+	$iniPath = `substitute ".so" $iniPath ".ini"`;
 	$fileId=`fopen $iniPath "r"`;
 	string $nextLine = `fgetline $fileId`;
 	while ( size( $nextLine ) > 0 ) {

@@ -1,3 +1,5 @@
+#ifndef _SUNFLOW_EXPORT_CMD_H_
+#define _SUNFLOW_EXPORT_CMD_H_
 /////////////////////////////////////////////////////////////////////////////////////////
 //Sunflow Export Command
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -7,6 +9,7 @@
 #include <maya/MFnDependencyNode.h>
 #include <maya/MColor.h>
 #include <maya/MObjectArray.h>
+#include <fstream>
 
 class sunflowExportCmd : public MPxCommand
 {
@@ -39,3 +42,5 @@ public:
 	MObjectArray shaderList;
 	bool findShaderInList(MString shader);
 };
+
+#endif /* _SUNFLOW_EXPORT_CMD_H_ */

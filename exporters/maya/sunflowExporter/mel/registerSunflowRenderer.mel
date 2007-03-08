@@ -27,7 +27,7 @@ global proc registerSunflowRenderer()
 		-polyPrelightProcedure			""
 		-renderingEditorsSubMenuProcedure	""
 		-addGlobalsNode                     	"sunflowRenderGlobals"
-		-logoImageName                      	"sunflowRender.xpm"
+//		-logoImageName                      	"sunflowRender.xpm"
 		-logoCallbackProcedure              	"sunflowLogoCallback"
        sunflow;
 
