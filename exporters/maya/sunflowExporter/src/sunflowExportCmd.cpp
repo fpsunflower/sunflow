@@ -849,7 +849,7 @@ MStatus sunflowExportCmd::doIt(const MArgList& args) {
 						if(diffuseTexture.length())
 							file << "\ttexture " << diffuseTexture.asChar() << std::endl;
 						else
-							file << "\tdiff { \"sRGB nonlinear\" " << (diffuse.r * d) << " " << (diffuse.g * d) << " " << (diffuse.b * d) << " }" << std::endl;
+							file << "\tdiff { \"sRGB nonlinear\" " << (diffuse.x * d) << " " << (diffuse.y * d) << " " << (diffuse.z * d) << " }" << std::endl;
 						file << "\tspec { \"sRGB nonlinear\" " << (spec.r * reflectivity) << " " << (spec.g * reflectivity) << " " << (spec.b * reflectivity) << " } " << cosinePower << std::endl;
 						file << "}" << std::endl; 
 						file << std::endl;
