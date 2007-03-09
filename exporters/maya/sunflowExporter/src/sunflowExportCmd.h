@@ -32,6 +32,7 @@ public:
 	bool	areObjectAndParentsVisible(const MDagPath& path);
 	bool	isCameraRenderable(const MDagPath& path);
 	int		getAttributeInt(const std::string& node, const std::string& attributeName, int defaultValue);
+	float		getAttributeFloat(const std::string& node, const std::string& attributeName, float defaultValue);
 	bool	getShaderFromEngine(const MObject& obj, MFnDependencyNode& node);
 	bool	getShaderFromGeometry(const MDagPath& path, MFnDependencyNode& node);
 	void	exportMesh(const MDagPath& path, std::ofstream& file);

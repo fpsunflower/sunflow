@@ -221,6 +221,23 @@ int sunflowExportCmd::getAttributeInt(const std::string& node, const std::string
     return value;
 }
 
+float sunflowExportCmd::getAttributeFloat(const std::string& node, const std::string& attributeName, float defaultValue) {
+    MStatus status;
+    MSelectionList list;
+    status = list.add((node + "." + attributeName).c_str());
+    if (status != MS::kSuccess)
+        return defaultValue;
+    MPlug plug;
+    status = list.getPlug(0, plug);
+    if (status != MS::kSuccess)
+        return defaultValue;
+    float value;
+    status = plug.getValue(value);
+    if (status != MS::kSuccess)
+        return defaultValue;
+    return value;
+}
+
 bool sunflowExportCmd::getShaderFromEngine(const MObject& obj, MFnDependencyNode& node) {
     if (!obj.hasFn(MFn::kShadingEngine))
         return false; // not a shading engine
@@ -548,6 +565,8 @@ void sunflowExportCmd::exportCamera(const MDagPath& path, std::ofstream& file) {
     MVector up = camera.upDirection(space);
     double fov = camera.horizontalFieldOfView() * (180.0 / 3.1415926535897932384626433832795);
 
+	float pixelAspect = getAttributeFloat("defaultResolution", "deviceAspectRatio", 1.333333f);
+
     file << "% " << path.fullPathName().asChar() << std::endl;
     file << "camera {" << std::endl;
     file << "\ttype   pinhole" << std::endl;
@@ -555,7 +574,7 @@ void sunflowExportCmd::exportCamera(const MDagPath& path, std::ofstream& file) {
     file << "\ttarget " << (eye.x + dir.x) << " " << (eye.y + dir.y) << " " << (eye.z + dir.z) << std::endl;
     file << "\tup     " << up.x << " " << up.y << " " << up.z << std::endl;
     file << "\tfov    " << fov << std::endl;
-    file << "\taspect " << resolutionAspectRatio << std::endl;
+    file << "\taspect " << pixelAspect << std::endl;
     file << "}" << std::endl;
     file << std::endl;
 }
@@ -602,7 +621,7 @@ MStatus sunflowExportCmd::doIt(const MArgList& args) {
 		getCustomAttribute(sunflowPath, "sunflowPath", globals);
 		getCustomAttribute(javaPath, "javaPath", globals);
 		getCustomAttribute(exportPath, "exportPath", globals);		
-		exportPath += "sunflowTmp.sc";
+		exportPath += "/sunflowTmp.sc";
 
 		file.open(exportPath.asChar());
 
@@ -626,7 +645,7 @@ MStatus sunflowExportCmd::doIt(const MArgList& args) {
 		getCustomAttribute(maxSamples, "maxSamples", globals);
 
 		int resX = getAttributeInt("defaultResolution", "width" , 640);
-		int resY = getAttributeInt("defaultResolution", "height", 480);
+		int resY = getAttributeInt("defaultResolution", "height", 480);		
 
 		file << "image {" << std::endl;
 		file << "\tresolution " << resX << " " << resY << std::endl;
@@ -786,13 +805,18 @@ MStatus sunflowExportCmd::doIt(const MArgList& args) {
 			// output shaders
 			switch (sNode.object().apiType()) {
 				case MFn::kLambert: {
+					MFloatVector diffuse;
+					MString diffuseTexture;
+					getCustomAttribute(diffuseTexture, diffuse, "color", sNode);
 					MFnLambertShader shader(sNode.object());
 					file << "shader {" << std::endl;
 					file << "\tname " << sNode.name().asChar() << std::endl;
 					file << "\ttype diffuse" << std::endl;
-					MColor col = shader.color();
 					float d = shader.diffuseCoeff();
-					file << "\tdiff { \"sRGB nonlinear\" " << (col.r * d) << " " << (col.g * d) << " " << (col.b * d) << " }" << std::endl;
+					if(diffuseTexture.length())
+						file << "\ttexture " << diffuseTexture.asChar() << std::endl;
+					else
+						file << "\tdiff { \"sRGB nonlinear\" " << diffuse.x*d  << " " << diffuse.y*d << " " << diffuse.z*d << " }" << std::endl;
 					file << "}" << std::endl; 
 					file << std::endl;					
 					shaderList.append(sNode.object());
@@ -804,22 +828,28 @@ MStatus sunflowExportCmd::doIt(const MArgList& args) {
 						file << "shader {" << std::endl;
 						file << "\tname " << sNode.name().asChar() << std::endl;
 						file << "\ttype glass" << std::endl;
-						file << "\teta 1.6" << std::endl;
+						file << "\teta 1.5" << std::endl;
 						MColor col = shader.color();
-						float diffuse = shader.diffuseCoeff();						
-						file << "\tcolor { \"sRGB nonlinear\" " << (trans.r * diffuse) << " " << (trans.g * diffuse) << " " << (trans.b * diffuse) << " }" << std::endl;						
+						float diffuse = shader.diffuseCoeff();					
+						file << "\tcolor { \"sRGB nonlinear\" " << (trans.r * diffuse) << " " << (trans.g * diffuse) << " " << (trans.b * diffuse) << " }" << std::endl;
 						file << "}" << std::endl; 
 						file << std::endl;
 					}else{
+						MFloatVector diffuse;
+						MString diffuseTexture;
+						getCustomAttribute(diffuseTexture, diffuse, "color", sNode);
 						file << "shader {" << std::endl;
 						file << "\tname " << sNode.name().asChar() << std::endl;
 						file << "\ttype phong" << std::endl;
 						MColor col = shader.color();
-						float diffuse = shader.diffuseCoeff();
+						float d = shader.diffuseCoeff();
 						MColor spec = shader.specularColor();
 						float cosinePower = shader.cosPower();
 						float reflectivity = shader.reflectivity();
-						file << "\tdiff { \"sRGB nonlinear\" " << (col.r * diffuse) << " " << (col.g * diffuse) << " " << (col.b * diffuse) << " }" << std::endl;
+						if(diffuseTexture.length())
+							file << "\ttexture " << diffuseTexture.asChar() << std::endl;
+						else
+							file << "\tdiff { \"sRGB nonlinear\" " << (diffuse.r * d) << " " << (diffuse.g * d) << " " << (diffuse.b * d) << " }" << std::endl;
 						file << "\tspec { \"sRGB nonlinear\" " << (spec.r * reflectivity) << " " << (spec.g * reflectivity) << " " << (spec.b * reflectivity) << " } " << cosinePower << std::endl;
 						file << "}" << std::endl; 
 						file << std::endl;

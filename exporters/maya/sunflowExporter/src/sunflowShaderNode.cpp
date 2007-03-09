@@ -188,7 +188,7 @@ MStatus sunflowShaderNode::initialize()
 	MAKE_INPUT(nAttr);
 	CHECK_MSTATUS ( nAttr.setMin(0.0f) );
     CHECK_MSTATUS ( nAttr.setMax(3.0f) );
-    CHECK_MSTATUS ( nAttr.setDefault(3.3f) );
+    CHECK_MSTATUS ( nAttr.setDefault(1.33f) );
 	glass_absorbtion_distance = nAttr.create("glass_adist", "gad", MFnNumericData::kFloat);
 	MAKE_INPUT(nAttr);
 	CHECK_MSTATUS ( nAttr.setMin(0.0f) );

@@ -131,7 +131,7 @@
 				Name="VCLinkerTool"
 				AdditionalOptions="/subsystem:windows /incremental:no /machine:I386 /export:initializePlugin /export:uninitializePlugin"
 				AdditionalDependencies="Foundation.lib OpenMayaRender.lib OpenMaya.lib "
-				OutputFile="Release\sunflowExport.mll"
+				OutputFile="bin\sunflowExport.mll"
 				AdditionalLibraryDirectories="$(MAYA_LOCATION)\lib"
 				ProgramDatabaseFile="Release/sunflowExport.pdb"
 				ImportLibrary="Release/sunflowExport.lib"
