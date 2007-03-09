@@ -511,7 +511,7 @@ public class SunflowAPI {
      * after it has been created.
      * 
      * @param name camera name
-     * @param lens camera lens to use
+     * @param lensType a camera lens plugin type name
      */
     public final void camera(String name, String lensType) {
         if (lensType != null) {

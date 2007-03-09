@@ -1,7 +1,6 @@
 package org.sunflow.core.parser;
 
 import java.io.DataInputStream;
-import java.io.EOFException;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -40,11 +39,8 @@ public class SCBinaryParser implements SceneParser {
                     case 'g': {
                         String name = getNextString();
                         String type = getNextString();
-                        if (type.equals("incremental")) {
+                        if (type.equals("incremental"))
                             type = null;
-                            UI.printInfo(Module.API, "Updating geometry \"%s\" ...", name);
-                        } else
-                            UI.printInfo(Module.API, "Creating geometry \"%s\" ...", name);
                         api.geometry(name, type);
                         break;
                     }
@@ -59,33 +55,24 @@ public class SCBinaryParser implements SceneParser {
                     case 's': {
                         String name = getNextString();
                         String type = getNextString();
-                        if (type.equals("incremental")) {
+                        if (type.equals("incremental"))
                             type = null;
-                            UI.printInfo(Module.API, "Updating shader \"%s\" ...", name);
-                        } else
-                            UI.printInfo(Module.API, "Creating shader \"%s\" ...", name);
                         api.shader(name, type);
                         break;
                     }
                     case 'm': {
                         String name = getNextString();
                         String type = getNextString();
-                        if (type.equals("incremental")) {
+                        if (type.equals("incremental"))
                             type = null;
-                            UI.printInfo(Module.API, "Updating modifier \"%s\" ...", name);
-                        } else
-                            UI.printInfo(Module.API, "Creating modifier \"%s\" ...", name);
                         api.modifier(name, type);
                         break;
                     }
                     case 'l': {
                         String name = getNextString();
                         String type = getNextString();
-                        if (type.equals("incremental")) {
+                        if (type.equals("incremental"))
                             type = null;
-                            UI.printInfo(Module.API, "Updating light \"%s\" ...", name);
-                        } else
-                            UI.printInfo(Module.API, "Creating light \"%s\" ...", name);
                         api.light(name, type);
                         break;
                     }
