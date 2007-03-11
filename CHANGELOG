@@ -1,4 +1,5 @@
 v0.07.3
+* Bug fix when reading interpolation types on non-english operating systems
 * Added -translate command line parameter
 * Added translate() method to convert any file format into the new ones
 * New ascii/binary file formats (sca/scb)

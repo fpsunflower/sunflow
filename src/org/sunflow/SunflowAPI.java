@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.StringReader;
+import java.util.Locale;
 
 import org.codehaus.janino.ClassBodyEvaluator;
 import org.codehaus.janino.CompileException;
@@ -288,7 +289,7 @@ public class SunflowAPI implements SunflowAPIInterface {
     public final void parameter(String name, String type, String interpolation, float[] data) {
         InterpolationType interp;
         try {
-            interp = InterpolationType.valueOf(interpolation.toUpperCase());
+            interp = InterpolationType.valueOf(interpolation.toUpperCase(Locale.ENGLISH));
         } catch (IllegalArgumentException e) {
             UI.printError(Module.API, "Unknown interpolation type: %s -- ignoring parameter \"%s\"", interpolation, name);
             return;
