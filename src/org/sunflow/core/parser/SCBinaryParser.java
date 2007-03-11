@@ -23,11 +23,12 @@ public class SCBinaryParser extends SCAbstractParser {
     }
 
     protected float parseFloat() throws IOException {
-        return stream.readFloat();
+        return Float.intBitsToFloat(parseInt());
     }
 
     protected int parseInt() throws IOException {
-        return stream.readInt();
+        // note that we use readUnsignedByte(), not read() to get EOF exceptions
+        return stream.readUnsignedByte() | (stream.readUnsignedByte() << 8) | (stream.readUnsignedByte() << 16) | (stream.readUnsignedByte() << 24);
     }
 
     protected Matrix4 parseMatrix() throws IOException {
@@ -35,7 +36,7 @@ public class SCBinaryParser extends SCAbstractParser {
     }
 
     protected String parseString() throws IOException {
-        byte[] b = new byte[stream.readInt()];
+        byte[] b = new byte[parseInt()];
         stream.read(b);
         return new String(b, "UTF-8");
     }

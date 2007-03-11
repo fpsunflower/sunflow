@@ -30,16 +30,16 @@ public class BinaryFileSunflowAPI extends FileSunflowAPI {
     }
 
     protected void writeFloat(float value) {
-        try {
-            stream.writeFloat(value);
-        } catch (IOException e) {
-            throw new RuntimeException(e.getMessage());
-        }
+        writeInt(Float.floatToRawIntBits(value));
     }
 
     protected void writeInt(int value) {
         try {
-            stream.writeInt(value);
+            // little endian, LSB first
+            stream.write(value & 0xFF);
+            stream.write((value >>> 8) & 0xFF);
+            stream.write((value >>> 16) & 0xFF);
+            stream.write((value >>> 24) & 0xFF);
         } catch (IOException e) {
             throw new RuntimeException(e.getMessage());
         }
