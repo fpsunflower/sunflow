@@ -1,6 +1,7 @@
 package org.sunflow;
 
 import java.util.HashMap;
+import java.util.Locale;
 
 import org.sunflow.core.Display;
 import org.sunflow.core.ParameterList.InterpolationType;
@@ -207,7 +208,7 @@ public abstract class FileSunflowAPI implements SunflowAPIInterface {
     public void parameter(String name, String type, String interpolation, float[] data) {
         InterpolationType interp;
         try {
-            interp = InterpolationType.valueOf(interpolation.toUpperCase());
+            interp = InterpolationType.valueOf(interpolation.toUpperCase(Locale.ENGLISH));
         } catch (IllegalArgumentException e) {
             UI.printError(Module.API, "Unknown interpolation type: %s -- ignoring parameter \"%s\"", interpolation, name);
             return;
