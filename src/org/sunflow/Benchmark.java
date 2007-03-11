@@ -143,11 +143,6 @@ public class Benchmark implements BenchmarkTest, UserInterface, Display {
             parameter("camera", "main_camera");
             options(SunflowAPI.DEFAULT_OPTIONS);
             // cornell box
-            Color gray = new Color(0.70f, 0.70f, 0.70f);
-            Color blue = new Color(0.25f, 0.25f, 0.80f);
-            Color red = new Color(0.80f, 0.25f, 0.25f);
-            Color emit = new Color(15, 15, 15);
-
             float minX = -200;
             float maxX = 200;
             float minY = -160;
@@ -161,11 +156,11 @@ public class Benchmark implements BenchmarkTest, UserInterface, Display {
             int[] indices = new int[] { 0, 1, 2, 2, 3, 0, 4, 5, 6, 6, 7, 4, 1,
                     2, 5, 5, 6, 2, 2, 3, 6, 6, 7, 3, 0, 3, 4, 4, 7, 3 };
 
-            parameter("diffuse", gray);
+            parameter("diffuse", null, 0.70f, 0.70f, 0.70f);
             shader("gray_shader", "diffuse");
-            parameter("diffuse", red);
+            parameter("diffuse", null, 0.80f, 0.25f, 0.25f);
             shader("red_shader", "diffuse");
-            parameter("diffuse", blue);
+            parameter("diffuse", null, 0.25f, 0.25f, 0.80f);
             shader("blue_shader", "diffuse");
 
             // build walls
@@ -183,7 +178,7 @@ public class Benchmark implements BenchmarkTest, UserInterface, Display {
             parameter("points", "point", "vertex", new float[] { -50, maxY - 1,
                     -50, 50, maxY - 1, -50, 50, maxY - 1, 50, -50, maxY - 1, 50 });
             parameter("triangles", new int[] { 0, 1, 2, 2, 3, 0 });
-            parameter("radiance", emit);
+            parameter("radiance", null, 15, 15, 15);
             parameter("samples", 8);
             light("light", "triangle_mesh");
 
@@ -191,7 +186,7 @@ public class Benchmark implements BenchmarkTest, UserInterface, Display {
             parameter("eta", 1.6f);
             shader("Glass", "glass");
             sphere("glass_sphere", "Glass", -120, minY + 55, -150, 50);
-            parameter("color", new Color(0.70f, 0.70f, 0.70f));
+            parameter("color", null, 0.70f, 0.70f, 0.70f);
             shader("Mirror", "mirror");
             sphere("mirror_sphere", "Mirror", 100, minY + 60, -50, 50);
 

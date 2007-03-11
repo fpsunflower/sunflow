@@ -1,23 +1,24 @@
 package org.sunflow.core.parser;
 
-import java.io.FileNotFoundException;
+import java.io.EOFException;
 import java.io.IOException;
 
-import org.sunflow.PluginRegistry;
 import org.sunflow.SunflowAPI;
 import org.sunflow.core.SceneParser;
-import org.sunflow.image.Color;
+import org.sunflow.core.ParameterList.InterpolationType;
+import org.sunflow.image.ColorFactory;
 import org.sunflow.math.Matrix4;
 import org.sunflow.math.Point2;
 import org.sunflow.math.Point3;
 import org.sunflow.math.Vector3;
 import org.sunflow.system.Timer;
 import org.sunflow.system.UI;
-import org.sunflow.system.Parser.ParserException;
 import org.sunflow.system.UI.Module;
 
-public abstract class SCAbstractParser implements SceneParser {
-    private String current;
+abstract class SCAbstractParser implements SceneParser {
+    public enum Keyword {
+        PARAMETER, GEOMETRY, INSTANCE, SHADER, MODIFIER, LIGHT, CAMERA, OPTIONS, INCLUDE, PLUGIN, SEARCHPATH, STRING, BOOL, INT, FLOAT, COLOR, POINT, VECTOR, TEXCOORD, MATRIX, STRING_ARRAY, INT_ARRAY, FLOAT_ARRAY, POINT_ARRAY, VECTOR_ARRAY, TEXCOORD_ARRAY, MATRIX_ARRAY, END_OF_FILE,
+    }
 
     public boolean parse(String filename, SunflowAPI api) {
         Timer timer = new Timer();
@@ -25,72 +26,80 @@ public abstract class SCAbstractParser implements SceneParser {
         UI.printInfo(Module.API, "Parsing \"%s\" ...", filename);
         try {
             openParser(filename);
-            while (hasMoreData()) {
-                if (peekTokens("parameter", "param", "p")) {
-                    parseParameter(api);
-                } else if (peekTokens("geometry", "geo", "g")) {
-                    String name = parseString();
-                    String type = parseString();
-                    if (type.equals("incremental"))
-                        type = null;
-                    api.geometry(name, type);
-                } else if (peekTokens("instance", "inst", "i")) {
-                    String name = parseString();
-                    String geoname = parseString();
-                    if (geoname.equals("incremental"))
-                        geoname = null;
-                    api.instance(name, geoname);
-                } else if (peekTokens("shader", "shd", "s")) {
-                    String name = parseString();
-                    String type = parseString();
-                    if (type.equals("incremental"))
-                        type = null;
-                    api.shader(name, type);
-                } else if (peekTokens("modifier", "mod", "m")) {
-                    String name = parseString();
-                    String type = parseString();
-                    if (type.equals("incremental"))
-                        type = null;
-                    api.modifier(name, type);
-                } else if (peekTokens("light", "l")) {
-                    String name = parseString();
-                    String type = parseString();
-                    if (type.equals("incremental"))
-                        type = null;
-                    api.light(name, type);
-                } else if (peekTokens("camera", "cam", "c")) {
-                    String name = parseString();
-                    String type = parseString();
-                    if (type.equals("incremental"))
-                        type = null;
-                    api.camera(name, type);
-                } else if (peekTokens("options", "opt", "o")) {
-                    api.options(parseString());
-                } else if (peekTokens("include", "inc")) {
-                    String file = parseString();
-                    UI.printInfo(Module.API, "Including: \"%s\" ...", file);
-                    api.parse(file);
-                } else if (peekTokens("plugin", "plug")) {
-                    parsePlugin();
-                } else if (peekTokens("searchpath", "spath", "sp")) {
-                    if (peekTokens("include", "inc"))
-                        api.addIncludeSearchPath(parseString());
-                    else if (peekTokens("texture", "tex"))
-                        api.addTextureSearchPath(parseString());
-                    else
-                        UI.printWarning(Module.API, "Unrecognized search path type \"%s\"", current);
-                } else
-                    UI.printWarning(Module.API, "Unrecognized token \"%s\"", current);
+            parseloop: while (true) {
+                Keyword k = parseKeyword();
+                switch (k) {
+                    case PARAMETER:
+                        parseParameter(api);
+                        break;
+                    case GEOMETRY: {
+                        String name = parseString();
+                        String type = parseString();
+                        api.geometry(name, type);
+                        break;
+                    }
+                    case INSTANCE: {
+                        String name = parseString();
+                        String geoname = parseString();
+                        api.instance(name, geoname);
+                        break;
+                    }
+                    case SHADER: {
+                        String name = parseString();
+                        String type = parseString();
+                        api.shader(name, type);
+                        break;
+                    }
+                    case MODIFIER: {
+                        String name = parseString();
+                        String type = parseString();
+                        api.modifier(name, type);
+                        break;
+                    }
+                    case LIGHT: {
+                        String name = parseString();
+                        String type = parseString();
+                        api.light(name, type);
+                        break;
+                    }
+                    case CAMERA: {
+                        String name = parseString();
+                        String type = parseString();
+                        api.camera(name, type);
+                        break;
+                    }
+                    case OPTIONS: {
+                        api.options(parseString());
+                        break;
+                    }
+                    case INCLUDE: {
+                        String file = parseString();
+                        UI.printInfo(Module.API, "Including: \"%s\" ...", file);
+                        api.parse(file);
+                        break;
+                    }
+                    case PLUGIN: {
+                        parsePlugin(api);
+                        break;
+                    }
+                    case SEARCHPATH: {
+                        String type = parseString();
+                        api.searchpath(type, parseString());
+                        break;
+                    }
+                    case END_OF_FILE: {
+                        // clean exit
+                        break parseloop;
+                    }
+                    default: {
+                        UI.printWarning(Module.API, "Unexpected token %s", k);
+                        break;
+                    }
+                }
             }
             closeParser();
-        } catch (ParserException e) {
-            UI.printError(Module.API, "%s", e.getMessage());
-            e.printStackTrace();
-            return false;
-        } catch (FileNotFoundException e) {
-            UI.printError(Module.API, "%s", e.getMessage());
-            return false;
-        } catch (IOException e) {
+        } catch (Exception e) {
+            // catch all exceptions
             UI.printError(Module.API, "%s", e.getMessage());
             return false;
         }
@@ -99,114 +108,100 @@ public abstract class SCAbstractParser implements SceneParser {
         return true;
     }
 
-    private boolean peekTokens(String token, String... tokens) throws IOException {
-        if (current == null)
-            current = parseString();
-        if (current.equals(token)) {
-            current = null;
-            return true;
-        }
-        for (String t : tokens) {
-            if (current.equals(t)) {
-                current = null;
-                return true;
+    private void parseParameter(SunflowAPI api) throws IOException {
+        String name = parseString();
+        Keyword k = parseKeyword();
+        switch (k) {
+            case STRING: {
+                api.parameter(name, parseString());
+                break;
+            }
+            case BOOL: {
+                api.parameter(name, parseBoolean());
+                break;
+            }
+            case INT: {
+                api.parameter(name, parseInt());
+                break;
+            }
+            case FLOAT: {
+                api.parameter(name, parseFloat());
+                break;
+            }
+            case COLOR: {
+                String colorspace = parseString();
+                int req = ColorFactory.getRequiredDataValues(colorspace);
+                if (req == -2)
+                    api.parameter(name, colorspace); // call just to generate an error
+                else
+                    api.parameter(name, colorspace, parseFloatArray(req == -1 ? parseInt() : req));
+                break;
+            }
+            case POINT: {
+                api.parameter(name, parsePoint());
+                break;
+            }
+            case VECTOR: {
+                api.parameter(name, parseVector());
+                break;
+            }
+            case TEXCOORD: {
+                api.parameter(name, parseTexcoord());
+                break;
+            }
+            case MATRIX: {
+                api.parameter(name, parseMatrix());
+                break;
+            }
+            case STRING_ARRAY: {
+                int n = parseInt();
+                api.parameter(name, parseStringArray(n));
+                break;
+            }
+            case INT_ARRAY: {
+                int n = parseInt();
+                api.parameter(name, parseIntArray(n));
+                break;
+            }
+            case FLOAT_ARRAY: {
+                int n = parseInt();
+                api.parameter(name, "float", parseInterpolationType().toString(), parseFloatArray(n));
+                break;
+            }
+            case POINT_ARRAY: {
+                int n = parseInt();
+                api.parameter(name, "point", parseInterpolationType().toString(), parseFloatArray(3 * n));
+                break;
+            }
+            case VECTOR_ARRAY: {
+                int n = parseInt();
+                api.parameter(name, "vector", parseInterpolationType().toString(), parseFloatArray(3 * n));
+                break;
+            }
+            case TEXCOORD_ARRAY: {
+                int n = parseInt();
+                api.parameter(name, "texcoord", parseInterpolationType().toString(), parseFloatArray(2 * n));
+                break;
+            }
+            case MATRIX_ARRAY: {
+                int n = parseInt();
+                api.parameter(name, "matrix", parseInterpolationType().toString(), parseMatrixArray(n));
+                break;
+            }
+            case END_OF_FILE:
+                throw new EOFException();
+            default: {
+                UI.printWarning(Module.API, "Unexpected keyword: %s", k);
+                break;
             }
         }
-        return false;
     }
 
-    private void parseParameter(SunflowAPI api) throws IOException, ParserException {
-        String name = parseString();
-        if (peekTokens("string", "str", "s"))
-            api.parameter(name, parseString());
-        else if (peekTokens("boolean", "bool", "b"))
-            api.parameter(name, parseBoolean());
-        else if (peekTokens("integer", "int", "i"))
-            api.parameter(name, parseInt());
-        else if (peekTokens("float", "flt", "f"))
-            api.parameter(name, parseFloat());
-        else if (peekTokens("color", "col", "c"))
-            api.parameter(name, parseColor());
-        else if (peekTokens("point", "pnt", "p"))
-            api.parameter(name, parsePoint());
-        else if (peekTokens("vector", "vec", "v"))
-            api.parameter(name, parseVector());
-        else if (peekTokens("texcoord", "tex", "t"))
-            api.parameter(name, parseTexcoord());
-        else if (peekTokens("matrix", "mat", "m"))
-            api.parameter(name, parseMatrix());
-        else if (peekTokens("string[]", "str[]", "s[]")) {
-            int n = parseInt();
-            api.parameter(name, parseStringArray(n));
-        } else if (peekTokens("integer[]", "int[]", "i[]")) {
-            int n = parseInt();
-            api.parameter(name, parseIntArray(n));
-        } else if (peekTokens("float[]", "flt[]", "f[]")) {
-            int n = parseInt();
-            api.parameter(name, "float", parseInterpolationType(), parseFloatArray(n));
-        } else if (peekTokens("point[]", "pnt[]", "p[]")) {
-            int n = parseInt();
-            api.parameter(name, "point", parseInterpolationType(), parseFloatArray(3 * n));
-        } else if (peekTokens("vector[]", "vec[]", "v[]")) {
-            int n = parseInt();
-            api.parameter(name, "vector", parseInterpolationType(), parseFloatArray(3 * n));
-        } else if (peekTokens("texcoord[]", "tex[]", "t[]")) {
-            int n = parseInt();
-            api.parameter(name, "texcoord", parseInterpolationType(), parseFloatArray(2 * n));
-        } else if (peekTokens("matrix[]", "mat[]", "m[]")) {
-            int n = parseInt();
-            api.parameter(name, "matrix", parseInterpolationType(), parseMatrixArray(n));
-        } else {
-            // bad parameter type - warn and ignore
-            UI.printWarning(Module.API, "Unknown parameter type \"%s\" - ignoring");
-        }
-    }
-
-    private String parseInterpolationType() throws IOException {
-        String interp = "none";
-        if (peekTokens("none"))
-            interp = "none";
-        else if (peekTokens("vertex"))
-            interp = "vertex";
-        else if (peekTokens("facevarying"))
-            interp = "facevarying";
-        return interp;
-    }
-
-    private void parsePlugin() throws IOException, ParserException {
+    private void parsePlugin(SunflowAPI api) throws IOException {
         String type = parseString();
         String name = parseString();
         String code = parseVerbatimString();
-        if (type.equals("primitive"))
-            PluginRegistry.primitivePlugins.registerPlugin(name, code);
-        else if (type.equals("tesselatable"))
-            PluginRegistry.tesselatablePlugins.registerPlugin(name, code);
-        else if (type.equals("shader"))
-            PluginRegistry.shaderPlugins.registerPlugin(name, code);
-        else if (type.equals("modifier"))
-            PluginRegistry.modifierPlugins.registerPlugin(name, code);
-        else if (type.equals("camera_lens"))
-            PluginRegistry.cameraLensPlugins.registerPlugin(name, code);
-        else if (type.equals("light"))
-            PluginRegistry.lightSourcePlugins.registerPlugin(name, code);
-        else if (type.equals("accel"))
-            PluginRegistry.accelPlugins.registerPlugin(name, code);
-        else if (type.equals("bucket_order"))
-            PluginRegistry.bucketOrderPlugins.registerPlugin(name, code);
-        else if (type.equals("filter"))
-            PluginRegistry.filterPlugins.registerPlugin(name, code);
-        else if (type.equals("gi_engine"))
-            PluginRegistry.giEnginePlugins.registerPlugin(name, code);
-        else if (type.equals("caustic_photon_map"))
-            PluginRegistry.causticPhotonMapPlugins.registerPlugin(name, code);
-        else if (type.equals("global_photon_map"))
-            PluginRegistry.globalPhotonMapPlugins.registerPlugin(name, code);
-        else if (type.equals("image_sampler"))
-            PluginRegistry.imageSamplerPlugins.registerPlugin(name, code);
-        else if (type.equals("parser"))
-            PluginRegistry.parserPlugins.registerPlugin(name, code);
-        else
-            UI.printWarning(Module.API, "Unrecognized plugin type: \"%s\" - ignoring", type);
+        api.plugin(type, name, code);
     }
 
     private String[] parseStringArray(int size) throws IOException {
@@ -223,14 +218,14 @@ public abstract class SCAbstractParser implements SceneParser {
         return data;
     }
 
-    private float[] parseFloatArray(int size) throws IOException {
+    protected float[] parseFloatArray(int size) throws IOException {
         float[] data = new float[size];
         for (int i = 0; i < size; i++)
             data[i] = parseFloat();
         return data;
     }
 
-    private float[] parseMatrixArray(int size) throws IOException, ParserException {
+    private float[] parseMatrixArray(int size) throws IOException {
         float[] data = new float[16 * size];
         for (int i = 0, offset = 0; i < size; i++, offset += 16) {
             // copy the next matrix into a linear array - in row major order
@@ -241,6 +236,8 @@ public abstract class SCAbstractParser implements SceneParser {
         return data;
     }
 
+    protected abstract InterpolationType parseInterpolationType() throws IOException;
+
     // abstract methods - to be implemented by subclasses
 
     protected abstract void openParser(String filename) throws IOException;
@@ -248,6 +245,8 @@ public abstract class SCAbstractParser implements SceneParser {
     protected abstract void closeParser() throws IOException;
 
     protected abstract boolean hasMoreData() throws IOException;
+
+    protected abstract Keyword parseKeyword() throws IOException;
 
     protected abstract boolean parseBoolean() throws IOException;
 
@@ -266,6 +265,4 @@ public abstract class SCAbstractParser implements SceneParser {
     protected abstract Point2 parseTexcoord() throws IOException;
 
     protected abstract Matrix4 parseMatrix() throws IOException;
-
-    protected abstract Color parseColor() throws IOException;
 }

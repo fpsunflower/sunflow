@@ -3,7 +3,6 @@ package org.sunflow;
 import org.sunflow.core.Display;
 import org.sunflow.core.display.FastDisplay;
 import org.sunflow.core.display.FileDisplay;
-import org.sunflow.image.Color;
 import org.sunflow.math.Matrix4;
 import org.sunflow.math.Point3;
 import org.sunflow.math.Vector3;
@@ -79,20 +78,20 @@ public class RealtimeBenchmark extends SunflowAPI {
         parameter("source", new Point3(-15.5945f, -30.0581f, 45.967f));
         parameter("dir", new Vector3(15.5945f, 30.0581f, -45.967f));
         parameter("radius", 60.0f);
-        parameter("radiance", Color.white().mul(3));
+        parameter("radiance", null, 3, 3, 3);
         light("light", "directional");
 
         // gi-engine
         parameter("gi.engine", "fake");
-        parameter("gi.fake.sky", new Color(0.25f, 0.25f, 0.25f));
-        parameter("gi.fake.ground", new Color(0.01f, 0.01f, 0.5f));
+        parameter("gi.fake.sky", null, 0.25f, 0.25f, 0.25f);
+        parameter("gi.fake.ground", null, 0.01f, 0.01f, 0.5f);
         parameter("gi.fake.up", new Vector3(0, 0, 1));
         options(DEFAULT_OPTIONS);
 
         // shaders
-        parameter("diffuse", Color.white().mul(0.5f));
+        parameter("diffuse", null, 0.5f, 0.5f, 0.5f);
         shader("default", "diffuse");
-        parameter("diffuse", Color.white().mul(0.5f));
+        parameter("diffuse", null, 0.5f, 0.5f, 0.5f);
         parameter("shiny", 0.2f);
         shader("refl", "shiny_diffuse");
         // objects

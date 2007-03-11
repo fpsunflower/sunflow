@@ -243,8 +243,8 @@ public class SunflowGUI extends javax.swing.JFrame implements UserInterface {
                         usage(false);
                     maxDist = Float.parseFloat(args[i + 1]);
                     shaderOverride = "ambient_occlusion"; // new
-                                                            // AmbientOcclusionShader(Color.WHITE,
-                                                            // d);
+                    // AmbientOcclusionShader(Color.WHITE,
+                    // d);
                     i += 2;
                 } else if (args[i].equals("-quick_uvs")) {
                     if (i > args.length - 1)
@@ -921,8 +921,8 @@ public class SunflowGUI extends javax.swing.JFrame implements UserInterface {
                     try {
                         if (currentFile != null) {
                             String dir = new File(currentFile).getAbsoluteFile().getParent();
-                            api.addIncludeSearchPath(dir);
-                            api.addIncludeSearchPath(dir);
+                            api.searchpath("texture", dir);
+                            api.searchpath("include", dir);
                         }
                         api.build();
                     } catch (Exception e) {

@@ -27,7 +27,8 @@ import org.sunflow.core.SceneParser;
 import org.sunflow.core.Shader;
 import org.sunflow.core.Tesselatable;
 import org.sunflow.core.ParameterList.InterpolationType;
-import org.sunflow.image.Color;
+import org.sunflow.image.ColorFactory;
+import org.sunflow.image.ColorFactory.ColorSpecificationException;
 import org.sunflow.math.BoundingBox;
 import org.sunflow.math.Matrix4;
 import org.sunflow.math.Point2;
@@ -110,6 +111,39 @@ public class SunflowAPI {
         return name;
     }
 
+    public final void plugin(String type, String name, String code) {
+        if (type.equals("primitive"))
+            PluginRegistry.primitivePlugins.registerPlugin(name, code);
+        else if (type.equals("tesselatable"))
+            PluginRegistry.tesselatablePlugins.registerPlugin(name, code);
+        else if (type.equals("shader"))
+            PluginRegistry.shaderPlugins.registerPlugin(name, code);
+        else if (type.equals("modifier"))
+            PluginRegistry.modifierPlugins.registerPlugin(name, code);
+        else if (type.equals("camera_lens"))
+            PluginRegistry.cameraLensPlugins.registerPlugin(name, code);
+        else if (type.equals("light"))
+            PluginRegistry.lightSourcePlugins.registerPlugin(name, code);
+        else if (type.equals("accel"))
+            PluginRegistry.accelPlugins.registerPlugin(name, code);
+        else if (type.equals("bucket_order"))
+            PluginRegistry.bucketOrderPlugins.registerPlugin(name, code);
+        else if (type.equals("filter"))
+            PluginRegistry.filterPlugins.registerPlugin(name, code);
+        else if (type.equals("gi_engine"))
+            PluginRegistry.giEnginePlugins.registerPlugin(name, code);
+        else if (type.equals("caustic_photon_map"))
+            PluginRegistry.causticPhotonMapPlugins.registerPlugin(name, code);
+        else if (type.equals("global_photon_map"))
+            PluginRegistry.globalPhotonMapPlugins.registerPlugin(name, code);
+        else if (type.equals("image_sampler"))
+            PluginRegistry.imageSamplerPlugins.registerPlugin(name, code);
+        else if (type.equals("parser"))
+            PluginRegistry.parserPlugins.registerPlugin(name, code);
+        else
+            UI.printWarning(Module.API, "Unrecognized plugin type: \"%s\" - ignoring declaration of \"%s\"", type, name);
+    }
+
     /**
      * Declare a parameter with the specified name and value. This parameter
      * will be added to the currently active parameter list.
@@ -155,14 +189,19 @@ public class SunflowAPI {
     }
 
     /**
-     * Declare a parameter with the specified name and value. This parameter
-     * will be added to the currently active parameter list.
+     * Declare a color parameter in the given colorspace using the specified
+     * name and value. This parameter will be added to the currently active
+     * parameter list.
      * 
      * @param name parameter name
      * @param value parameter value
      */
-    public final void parameter(String name, Color value) {
-        parameterList.addColor(name, value);
+    public final void parameter(String name, String colorspace, float... data) {
+        try {
+            parameterList.addColor(name, ColorFactory.createColor(colorspace, data));
+        } catch (ColorSpecificationException e) {
+            UI.printError(Module.API, "Unable to specify color: %s - ignoring parameter \"%s\"", e.getMessage(), name);
+        }
     }
 
     /**
@@ -295,20 +334,19 @@ public class SunflowAPI {
 
     /**
      * Add the specified path to the list of directories which are searched
-     * automatically to resolve scene filenames.
+     * automatically to resolve scene filenames or textures. Currently the
+     * supported searchpath types are: "include" and "texture". All other types
+     * will be ignored.
      * 
      * @param path
      */
-    public final void addIncludeSearchPath(String path) {
-        includeSearchPath.addSearchPath(path);
-    }
-
-    /**
-     * Adds the specified path to the list of directories which are searched
-     * automatically to resolve texture filenames.
-     */
-    public final void addTextureSearchPath(String path) {
-        textureSearchPath.addSearchPath(path);
+    public final void searchpath(String type, String path) {
+        if (type.equals("include"))
+            includeSearchPath.addSearchPath(path);
+        else if (type.equals("texture"))
+            textureSearchPath.addSearchPath(path);
+        else
+            UI.printWarning(Module.API, "Invalid searchpath type: \"%s\"", type);
     }
 
     /**
@@ -344,7 +382,7 @@ public class SunflowAPI {
      * @param shaderType a shader plugin type
      */
     public final void shader(String name, String shaderType) {
-        if (shaderType != null) {
+        if (shaderType != null && !shaderType.equals("incremental")) {
             // we are declaring a shader for the first time
             if (renderObjects.has(name)) {
                 UI.printError(Module.API, "Unable to declare shader \"%s\", name is already in use", name);
@@ -376,7 +414,7 @@ public class SunflowAPI {
      * @param modifierType a modifier plugin type name
      */
     public final void modifier(String name, String modifierType) {
-        if (modifierType != null) {
+        if (modifierType != null && !modifierType.equals("incremental")) {
             // we are declaring a shader for the first time
             if (renderObjects.has(name)) {
                 UI.printError(Module.API, "Unable to declare modifier \"%s\", name is already in use", name);
@@ -412,7 +450,7 @@ public class SunflowAPI {
      * @param typeName a tesselatable or primitive plugin type name
      */
     public final void geometry(String name, String typeName) {
-        if (typeName != null) {
+        if (typeName != null && !typeName.equals("incremental")) {
             // we are declaring a geometry for the first time
             if (renderObjects.has(name)) {
                 UI.printError(Module.API, "Unable to declare geometry \"%s\", name is already in use", name);
@@ -454,7 +492,7 @@ public class SunflowAPI {
      * @param geoname name of the geometry to instance
      */
     public final void instance(String name, String geoname) {
-        if (geoname != null) {
+        if (geoname != null && !geoname.equals("incremental")) {
             // we are declaring this instance for the first time
             if (renderObjects.has(name)) {
                 UI.printError(Module.API, "Unable to declare instance \"%s\", name is already in use", name);
@@ -481,7 +519,7 @@ public class SunflowAPI {
      * @param lightType a light source plugin type name
      */
     public final void light(String name, String lightType) {
-        if (lightType != null) {
+        if (lightType != null && !lightType.equals("incremental")) {
             // we are declaring this light for the first time
             if (renderObjects.has(name)) {
                 UI.printError(Module.API, "Unable to declare light \"%s\", name is already in use", name);
@@ -514,7 +552,7 @@ public class SunflowAPI {
      * @param lensType a camera lens plugin type name
      */
     public final void camera(String name, String lensType) {
-        if (lensType != null) {
+        if (lensType != null && !lensType.equals("incremental")) {
             // we are declaring this camera for the first time
             if (renderObjects.has(name)) {
                 UI.printError(Module.API, "Unable to declare camera \"%s\", name is already in use", name);
