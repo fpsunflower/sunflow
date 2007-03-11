@@ -6,21 +6,12 @@ import java.io.IOException;
 
 import org.sunflow.core.ParameterList.InterpolationType;
 import org.sunflow.math.Matrix4;
-import org.sunflow.math.Point2;
-import org.sunflow.math.Point3;
-import org.sunflow.math.Vector3;
-import org.sunflow.system.UI;
-import org.sunflow.system.UI.Module;
 
 public class SCBinaryParser extends SCAbstractParser {
     private DataInputStream stream;
 
     protected void closeParser() throws IOException {
         stream.close();
-    }
-
-    protected boolean hasMoreData() throws IOException {
-        return stream.available() > 0;
     }
 
     protected void openParser(String filename) throws IOException {
@@ -43,30 +34,10 @@ public class SCBinaryParser extends SCAbstractParser {
         return new Matrix4(parseFloatArray(16), true);
     }
 
-    protected Point3 parsePoint() throws IOException {
-        float x = parseFloat();
-        float y = parseFloat();
-        float z = parseFloat();
-        return new Point3(x, y, z);
-    }
-
     protected String parseString() throws IOException {
         byte[] b = new byte[stream.readInt()];
         stream.read(b);
         return new String(b, "UTF-8");
-    }
-
-    protected Point2 parseTexcoord() throws IOException {
-        float x = parseFloat();
-        float y = parseFloat();
-        return new Point2(x, y);
-    }
-
-    protected Vector3 parseVector() throws IOException {
-        float x = parseFloat();
-        float y = parseFloat();
-        float z = parseFloat();
-        return new Vector3(x, y, z);
     }
 
     protected String parseVerbatimString() throws IOException {
@@ -85,8 +56,7 @@ public class SCBinaryParser extends SCAbstractParser {
             case 'p':
                 return InterpolationType.FACE;
             default:
-                UI.printWarning(Module.API, "Unknown byte found for interpolation type %c", (char) c);
-                return InterpolationType.NONE;
+                throw new IOException(String.format("Unknown byte found for interpolation type %c", (char) c));
         }
     }
 
@@ -113,15 +83,19 @@ public class SCBinaryParser extends SCAbstractParser {
                 // extended keywords (less frequent)
                 // note we don't use stream.read() here because we should throw
                 // an exception if the end of the file is reached
-                switch (stream.readUnsignedByte()) {
+                switch (code = stream.readUnsignedByte()) {
                     case 'i':
                         return Keyword.INCLUDE;
+                    case 'r':
+                        return Keyword.REMOVE;
+                    case 'f':
+                        return Keyword.FRAME;
                     case 'p':
                         return Keyword.PLUGIN;
                     case 's':
                         return Keyword.SEARCHPATH;
                     default:
-                        return null;
+                        throw new IOException(String.format("Unknown extended keyword code: %c", (char) code));
                 }
             }
             case 't': {
@@ -153,13 +127,14 @@ public class SCBinaryParser extends SCAbstractParser {
                     case 'm':
                         return isArray ? Keyword.MATRIX_ARRAY : Keyword.MATRIX;
                     default:
-                        return null;
+                        throw new IOException(String.format("Unknown datatype keyword code: %c", (char) type));
                 }
             }
             default:
                 if (code < 0)
-                    return Keyword.END_OF_FILE;
+                    return Keyword.END_OF_FILE; // normal end of file reached
+                else
+                    throw new IOException(String.format("Unknown keyword code: %c", (char) code));
         }
-        return null;
     }
 }

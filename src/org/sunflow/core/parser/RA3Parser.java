@@ -10,14 +10,13 @@ import java.nio.IntBuffer;
 import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
 
-import org.sunflow.SunflowAPI;
+import org.sunflow.SunflowAPIInterface;
 import org.sunflow.core.SceneParser;
-import org.sunflow.core.Shader;
 import org.sunflow.system.UI;
 import org.sunflow.system.UI.Module;
 
 public class RA3Parser implements SceneParser {
-    public boolean parse(String filename, SunflowAPI api) {
+    public boolean parse(String filename, SunflowAPIInterface api) {
         try {
             UI.printInfo(Module.USER, "RA3 - Reading geometry: \"%s\" ...", filename);
             File file = new File(filename);
@@ -44,18 +43,11 @@ public class RA3Parser implements SceneParser {
             api.parameter("points", "point", "vertex", verts);
             api.geometry(filename, "triangle_mesh");
 
-            // create shader
-            Shader s = api.lookupShader("ra3shader");
-            if (s == null) {
-                // create default shader
-                api.shader(filename + ".shader", "simple");
-                api.parameter("shaders", filename + ".shader");
-            } else {
-                // reuse existing shader
-                api.parameter("shaders", "ra3shader");
-            }
-
+            // create default shader (this will simply error out if the shader
+            // already exists)
+            api.shader("ra3shader", "simple");
             // create instance
+            api.parameter("shaders", "ra3shader");
             api.instance(filename + ".instance", filename);
         } catch (FileNotFoundException e) {
             e.printStackTrace();

@@ -155,6 +155,7 @@ public class SunflowGUI extends javax.swing.JFrame implements UserInterface {
             System.out.println("  -rtbench         Run realtime ray-tracing benchmark");
             System.out.println("  -frame n         Set frame number to the specified value");
             System.out.println("  -anim n1 n2      Render all frames between the two specified values (inclusive)");
+            System.out.println("  -translate file  Translate input scene to the specified filename");
             System.out.println("  -v verbosity     Set the verbosity level: 0=none,1=errors,2=warnings,3=info,4=detailed");
             System.out.println("  -h               Prints this message");
         }
@@ -186,6 +187,7 @@ public class SunflowGUI extends javax.swing.JFrame implements UserInterface {
             String filterType = null;
             boolean runBenchmark = false;
             boolean runRTBenchmark = false;
+            String translateFilename = null;
             int frameStart = 1, frameStop = 1;
             while (i < args.length) {
                 if (args[i].equals("-o")) {
@@ -337,6 +339,11 @@ public class SunflowGUI extends javax.swing.JFrame implements UserInterface {
                         usage(false);
                     UI.verbosity(Integer.parseInt(args[i + 1]));
                     i += 2;
+                } else if (args[i].equals("-translate")) {
+                    if (i > args.length - 2)
+                        usage(false);
+                    translateFilename = args[i + 1];
+                    i += 2;
                 } else if (args[i].equals("-h") || args[i].equals("-help")) {
                     usage(true);
                 } else {
@@ -359,6 +366,10 @@ public class SunflowGUI extends javax.swing.JFrame implements UserInterface {
             if (input == null)
                 usage(false);
             SunflowAPI.runSystemCheck();
+            if (translateFilename != null) {
+                SunflowAPI.translate(input, translateFilename);
+                return;
+            }
             if (frameStart < frameStop && showFrame) {
                 UI.printWarning(Module.GUI, "Animations should not be rendered without -nogui - forcing GUI off anyway");
                 showFrame = false;

@@ -10,6 +10,7 @@ import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
 
 import org.sunflow.SunflowAPI;
+import org.sunflow.SunflowAPIInterface;
 import org.sunflow.core.SceneParser;
 import org.sunflow.math.Point3;
 import org.sunflow.math.Vector3;
@@ -18,7 +19,7 @@ import org.sunflow.system.UI;
 import org.sunflow.system.UI.Module;
 
 public class RA2Parser implements SceneParser {
-    public boolean parse(String filename, SunflowAPI api) {
+    public boolean parse(String filename, SunflowAPIInterface api) {
         try {
             UI.printInfo(Module.USER, "RA2 - Reading geometry: \"%s\" ...", filename);
             File file = new File(filename);

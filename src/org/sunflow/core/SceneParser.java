@@ -1,6 +1,7 @@
 package org.sunflow.core;
 
 import org.sunflow.SunflowAPI;
+import org.sunflow.SunflowAPIInterface;
 
 /**
  * Simple interface to allow for scene creation from arbitrary file formats.
@@ -15,5 +16,5 @@ public interface SceneParser {
      * @return <code>true</code> upon sucess, or <code>false</code> if
      *         errors have occured.
      */
-    public boolean parse(String filename, SunflowAPI api);
+    public boolean parse(String filename, SunflowAPIInterface api);
 }

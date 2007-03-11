@@ -3,7 +3,7 @@ package org.sunflow.core.parser;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 
-import org.sunflow.SunflowAPI;
+import org.sunflow.SunflowAPIInterface;
 import org.sunflow.core.SceneParser;
 import org.sunflow.system.Parser;
 import org.sunflow.system.UI;
@@ -13,7 +13,7 @@ import org.sunflow.util.FloatArray;
 import org.sunflow.util.IntArray;
 
 public class ShaveRibParser implements SceneParser {
-    public boolean parse(String filename, SunflowAPI api) {
+    public boolean parse(String filename, SunflowAPIInterface api) {
         try {
             Parser p = new Parser(filename);
             p.checkNextToken("version");

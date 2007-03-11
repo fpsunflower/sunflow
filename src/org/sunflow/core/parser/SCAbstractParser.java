@@ -3,7 +3,7 @@ package org.sunflow.core.parser;
 import java.io.EOFException;
 import java.io.IOException;
 
-import org.sunflow.SunflowAPI;
+import org.sunflow.SunflowAPIInterface;
 import org.sunflow.core.SceneParser;
 import org.sunflow.core.ParameterList.InterpolationType;
 import org.sunflow.image.ColorFactory;
@@ -15,12 +15,12 @@ import org.sunflow.system.Timer;
 import org.sunflow.system.UI;
 import org.sunflow.system.UI.Module;
 
-abstract class SCAbstractParser implements SceneParser {
+public abstract class SCAbstractParser implements SceneParser {
     public enum Keyword {
-        PARAMETER, GEOMETRY, INSTANCE, SHADER, MODIFIER, LIGHT, CAMERA, OPTIONS, INCLUDE, PLUGIN, SEARCHPATH, STRING, BOOL, INT, FLOAT, COLOR, POINT, VECTOR, TEXCOORD, MATRIX, STRING_ARRAY, INT_ARRAY, FLOAT_ARRAY, POINT_ARRAY, VECTOR_ARRAY, TEXCOORD_ARRAY, MATRIX_ARRAY, END_OF_FILE,
+        PARAMETER, GEOMETRY, INSTANCE, SHADER, MODIFIER, LIGHT, CAMERA, OPTIONS, INCLUDE, REMOVE, FRAME, PLUGIN, SEARCHPATH, STRING, BOOL, INT, FLOAT, COLOR, POINT, VECTOR, TEXCOORD, MATRIX, STRING_ARRAY, INT_ARRAY, FLOAT_ARRAY, POINT_ARRAY, VECTOR_ARRAY, TEXCOORD_ARRAY, MATRIX_ARRAY, END_OF_FILE,
     }
 
-    public boolean parse(String filename, SunflowAPI api) {
+    public boolean parse(String filename, SunflowAPIInterface api) {
         Timer timer = new Timer();
         timer.start();
         UI.printInfo(Module.API, "Parsing \"%s\" ...", filename);
@@ -78,8 +78,19 @@ abstract class SCAbstractParser implements SceneParser {
                         api.parse(file);
                         break;
                     }
+                    case REMOVE: {
+                        api.remove(parseString());
+                        break;
+                    }
+                    case FRAME: {
+                        api.setCurrentFrame(parseInt());
+                        break;
+                    }
                     case PLUGIN: {
-                        parsePlugin(api);
+                        String type = parseString();
+                        String name = parseString();
+                        String code = parseVerbatimString();
+                        api.plugin(type, name, code);
                         break;
                     }
                     case SEARCHPATH: {
@@ -100,6 +111,7 @@ abstract class SCAbstractParser implements SceneParser {
             closeParser();
         } catch (Exception e) {
             // catch all exceptions
+            e.printStackTrace();
             UI.printError(Module.API, "%s", e.getMessage());
             return false;
         }
@@ -108,7 +120,7 @@ abstract class SCAbstractParser implements SceneParser {
         return true;
     }
 
-    private void parseParameter(SunflowAPI api) throws IOException {
+    private void parseParameter(SunflowAPIInterface api) throws IOException {
         String name = parseString();
         Keyword k = parseKeyword();
         switch (k) {
@@ -132,7 +144,8 @@ abstract class SCAbstractParser implements SceneParser {
                 String colorspace = parseString();
                 int req = ColorFactory.getRequiredDataValues(colorspace);
                 if (req == -2)
-                    api.parameter(name, colorspace); // call just to generate an error
+                    api.parameter(name, colorspace); // call just to generate
+                // an error
                 else
                     api.parameter(name, colorspace, parseFloatArray(req == -1 ? parseInt() : req));
                 break;
@@ -164,28 +177,33 @@ abstract class SCAbstractParser implements SceneParser {
                 break;
             }
             case FLOAT_ARRAY: {
+                String interp = parseInterpolationType().toString();
                 int n = parseInt();
-                api.parameter(name, "float", parseInterpolationType().toString(), parseFloatArray(n));
+                api.parameter(name, "float", interp, parseFloatArray(n));
                 break;
             }
             case POINT_ARRAY: {
+                String interp = parseInterpolationType().toString();
                 int n = parseInt();
-                api.parameter(name, "point", parseInterpolationType().toString(), parseFloatArray(3 * n));
+                api.parameter(name, "point", interp, parseFloatArray(3 * n));
                 break;
             }
             case VECTOR_ARRAY: {
+                String interp = parseInterpolationType().toString();
                 int n = parseInt();
-                api.parameter(name, "vector", parseInterpolationType().toString(), parseFloatArray(3 * n));
+                api.parameter(name, "vector", interp, parseFloatArray(3 * n));
                 break;
             }
             case TEXCOORD_ARRAY: {
+                String interp = parseInterpolationType().toString();
                 int n = parseInt();
-                api.parameter(name, "texcoord", parseInterpolationType().toString(), parseFloatArray(2 * n));
+                api.parameter(name, "texcoord", interp, parseFloatArray(2 * n));
                 break;
             }
             case MATRIX_ARRAY: {
+                String interp = parseInterpolationType().toString();
                 int n = parseInt();
-                api.parameter(name, "matrix", parseInterpolationType().toString(), parseMatrixArray(n));
+                api.parameter(name, "matrix", interp, parseMatrixArray(n));
                 break;
             }
             case END_OF_FILE:
@@ -195,13 +213,6 @@ abstract class SCAbstractParser implements SceneParser {
                 break;
             }
         }
-    }
-
-    private void parsePlugin(SunflowAPI api) throws IOException {
-        String type = parseString();
-        String name = parseString();
-        String code = parseVerbatimString();
-        api.plugin(type, name, code);
     }
 
     private String[] parseStringArray(int size) throws IOException {
@@ -236,6 +247,26 @@ abstract class SCAbstractParser implements SceneParser {
         return data;
     }
 
+    private Point3 parsePoint() throws IOException {
+        float x = parseFloat();
+        float y = parseFloat();
+        float z = parseFloat();
+        return new Point3(x, y, z);
+    }
+
+    private Vector3 parseVector() throws IOException {
+        float x = parseFloat();
+        float y = parseFloat();
+        float z = parseFloat();
+        return new Vector3(x, y, z);
+    }
+
+    private Point2 parseTexcoord() throws IOException {
+        float x = parseFloat();
+        float y = parseFloat();
+        return new Point2(x, y);
+    }
+
     protected abstract InterpolationType parseInterpolationType() throws IOException;
 
     // abstract methods - to be implemented by subclasses
@@ -243,8 +274,6 @@ abstract class SCAbstractParser implements SceneParser {
     protected abstract void openParser(String filename) throws IOException;
 
     protected abstract void closeParser() throws IOException;
-
-    protected abstract boolean hasMoreData() throws IOException;
 
     protected abstract Keyword parseKeyword() throws IOException;
 
@@ -257,12 +286,6 @@ abstract class SCAbstractParser implements SceneParser {
     protected abstract String parseString() throws IOException;
 
     protected abstract String parseVerbatimString() throws IOException;
-
-    protected abstract Point3 parsePoint() throws IOException;
-
-    protected abstract Vector3 parseVector() throws IOException;
-
-    protected abstract Point2 parseTexcoord() throws IOException;
 
     protected abstract Matrix4 parseMatrix() throws IOException;
 }

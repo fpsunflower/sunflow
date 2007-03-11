@@ -45,7 +45,7 @@ import org.sunflow.system.UI.Module;
  * implement the build method which may execute arbitrary code to create a
  * scene.
  */
-public class SunflowAPI {
+public class SunflowAPI implements SunflowAPIInterface {
     public static final String VERSION = "0.07.3";
     public static final String DEFAULT_OPTIONS = "::options";
 
@@ -84,7 +84,7 @@ public class SunflowAPI {
 
     /**
      * Reset the state of the API completely. The object table is cleared, and
-     * all search paths areset back to their default values.
+     * all search paths are set back to their default values.
      */
     public final void reset() {
         scene = new Scene();
@@ -789,11 +789,10 @@ public class SunflowAPI {
             }
             t.end();
             UI.printInfo(Module.API, "Compile time: " + t.toString());
-            if (api != null) {
-                String currentFolder = new File(filename).getAbsoluteFile().getParentFile().getAbsolutePath();
-                api.includeSearchPath.addSearchPath(currentFolder);
-                api.textureSearchPath.addSearchPath(currentFolder);
-            }
+            // allow relative paths
+            String currentFolder = new File(filename).getAbsoluteFile().getParentFile().getAbsolutePath();
+            api.includeSearchPath.addSearchPath(currentFolder);
+            api.textureSearchPath.addSearchPath(currentFolder);
             UI.printInfo(Module.API, "Build script running ...");
             t.start();
             api.setCurrentFrame(frameNumber);
@@ -805,6 +804,43 @@ public class SunflowAPI {
             api = api.parse(filename) ? api : null;
         }
         return api;
+    }
+
+    /**
+     * Translate specfied file into the native sunflow scene file format.
+     * 
+     * @param filename input filename
+     * @param outputFilename output filename
+     * @return <code>true</code> upon success, <code>false</code> otherwise
+     */
+    public static boolean translate(String filename, String outputFilename) {
+        SunflowAPIInterface api = null;
+        try {
+            if (outputFilename.endsWith(".sca"))
+                api = new AsciiFileSunflowAPI(outputFilename);
+            else if (outputFilename.endsWith(".scb"))
+                api = new BinaryFileSunflowAPI(outputFilename);
+            else {
+                UI.printError(Module.API, "Unable to determine output filetype: \"%s\"", outputFilename);
+                return false;
+            }
+        } catch (IOException e) {
+            UI.printError(Module.API, "Unable to create output file - %s", e.getMessage());
+            return false;
+        }
+        String extension = filename.substring(filename.lastIndexOf('.') + 1);
+        SceneParser parser = PluginRegistry.parserPlugins.createObject(extension);
+        if (parser == null) {
+            UI.printError(Module.API, "Unable to find a suitable parser for: \"%s\"", filename);
+            return false;
+        }
+        try {
+            return parser.parse(filename, api);
+        } catch (RuntimeException e) {
+            e.printStackTrace();
+            UI.printError(Module.API, "Error occured during translation: %s", e.getMessage());
+            return false;
+        }
     }
 
     /**

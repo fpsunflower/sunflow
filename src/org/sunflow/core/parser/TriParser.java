@@ -9,14 +9,14 @@ import java.nio.IntBuffer;
 import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel.MapMode;
 
-import org.sunflow.SunflowAPI;
+import org.sunflow.SunflowAPIInterface;
 import org.sunflow.core.SceneParser;
 import org.sunflow.system.Parser;
 import org.sunflow.system.UI;
 import org.sunflow.system.UI.Module;
 
 public class TriParser implements SceneParser {
-    public boolean parse(String filename, SunflowAPI api) {
+    public boolean parse(String filename, SunflowAPIInterface api) {
         try {
             UI.printInfo(Module.USER, "TRI - Reading geometry: \"%s\" ...", filename);
             Parser p = new Parser(filename);

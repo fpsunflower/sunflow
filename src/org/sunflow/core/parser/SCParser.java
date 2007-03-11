@@ -11,6 +11,7 @@ import java.nio.channels.FileChannel;
 
 import org.sunflow.PluginRegistry;
 import org.sunflow.SunflowAPI;
+import org.sunflow.SunflowAPIInterface;
 import org.sunflow.core.SceneParser;
 import org.sunflow.image.Color;
 import org.sunflow.image.ColorFactory;
@@ -35,7 +36,7 @@ public class SCParser implements SceneParser {
     public SCParser() {
     }
 
-    public boolean parse(String filename, SunflowAPI api) {
+    public boolean parse(String filename, SunflowAPIInterface api) {
         String localDir = new File(filename).getAbsoluteFile().getParentFile().getAbsolutePath();
         numLightSamples = 1;
         Timer timer = new Timer();
@@ -133,7 +134,7 @@ public class SCParser implements SceneParser {
         return true;
     }
 
-    private void parseImageBlock(SunflowAPI api) throws IOException, ParserException {
+    private void parseImageBlock(SunflowAPIInterface api) throws IOException, ParserException {
         p.checkNextToken("{");
         if (p.peekNextToken("resolution")) {
             api.parameter("resolutionX", p.getNextInt());
@@ -163,7 +164,7 @@ public class SCParser implements SceneParser {
         p.checkNextToken("}");
     }
 
-    private void parseBackgroundBlock(SunflowAPI api) throws IOException, ParserException, ColorSpecificationException {
+    private void parseBackgroundBlock(SunflowAPIInterface api) throws IOException, ParserException, ColorSpecificationException {
         p.checkNextToken("{");
         p.checkNextToken("color");
         api.parameter("color", null, parseColor().getRGB());
@@ -174,7 +175,7 @@ public class SCParser implements SceneParser {
         p.checkNextToken("}");
     }
 
-    private void parseFilter(SunflowAPI api) throws IOException, ParserException {
+    private void parseFilter(SunflowAPIInterface api) throws IOException, ParserException {
         UI.printWarning(Module.API, "Deprecated keyword \"filter\" - set this option in the image block");
         String name = p.getNextToken();
         api.parameter("filter", name);
@@ -186,7 +187,7 @@ public class SCParser implements SceneParser {
         }
     }
 
-    private void parsePhotonBlock(SunflowAPI api) throws ParserException, IOException {
+    private void parsePhotonBlock(SunflowAPIInterface api) throws ParserException, IOException {
         int numEmit = 0;
         boolean globalEmit = false;
         p.checkNextToken("{");
@@ -214,7 +215,7 @@ public class SCParser implements SceneParser {
         p.checkNextToken("}");
     }
 
-    private void parseGIBlock(SunflowAPI api) throws ParserException, IOException, ColorSpecificationException {
+    private void parseGIBlock(SunflowAPIInterface api) throws ParserException, IOException, ColorSpecificationException {
         p.checkNextToken("{");
         p.checkNextToken("type");
         if (p.peekNextToken("irr-cache")) {
@@ -279,7 +280,7 @@ public class SCParser implements SceneParser {
         p.checkNextToken("}");
     }
 
-    private void parseLightserverBlock(SunflowAPI api) throws ParserException, IOException {
+    private void parseLightserverBlock(SunflowAPIInterface api) throws ParserException, IOException {
         p.checkNextToken("{");
         if (p.peekNextToken("shadows")) {
             UI.printWarning(Module.API, "Deprecated: shadows setting ignored");
@@ -327,7 +328,7 @@ public class SCParser implements SceneParser {
         p.checkNextToken("}");
     }
 
-    private void parseTraceBlock(SunflowAPI api) throws ParserException, IOException {
+    private void parseTraceBlock(SunflowAPIInterface api) throws ParserException, IOException {
         p.checkNextToken("{");
         if (p.peekNextToken("diff"))
             api.parameter("depths.diffuse", p.getNextInt());
@@ -339,7 +340,7 @@ public class SCParser implements SceneParser {
         api.options(SunflowAPI.DEFAULT_OPTIONS);
     }
 
-    private void parseCamera(SunflowAPI api) throws ParserException, IOException {
+    private void parseCamera(SunflowAPIInterface api) throws ParserException, IOException {
         p.checkNextToken("{");
         p.checkNextToken("type");
         String type = p.getNextToken();
@@ -392,7 +393,7 @@ public class SCParser implements SceneParser {
         }
     }
 
-    private void parseCameraTransform(SunflowAPI api) throws ParserException, IOException {
+    private void parseCameraTransform(SunflowAPIInterface api) throws ParserException, IOException {
         if (p.peekNextToken("steps")) {
             // motion blur camera
             int n = p.getNextInt();
@@ -403,7 +404,7 @@ public class SCParser implements SceneParser {
             parseCameraMatrix(-1, api);
     }
 
-    private void parseCameraMatrix(int index, SunflowAPI api) throws IOException, ParserException {
+    private void parseCameraMatrix(int index, SunflowAPIInterface api) throws IOException, ParserException {
         String offset = index < 0 ? "" : String.format("[%d]", index);
         if (p.peekNextToken("transform")) {
             // advanced camera
@@ -423,7 +424,7 @@ public class SCParser implements SceneParser {
         }
     }
 
-    private boolean parseShader(SunflowAPI api) throws ParserException, IOException, ColorSpecificationException {
+    private boolean parseShader(SunflowAPIInterface api) throws ParserException, IOException, ColorSpecificationException {
         p.checkNextToken("{");
         p.checkNextToken("name");
         String name = p.getNextToken();
@@ -567,7 +568,7 @@ public class SCParser implements SceneParser {
         return true;
     }
 
-    private boolean parseModifier(SunflowAPI api) throws ParserException, IOException {
+    private boolean parseModifier(SunflowAPIInterface api) throws ParserException, IOException {
         p.checkNextToken("{");
         p.checkNextToken("name");
         String name = p.getNextToken();
@@ -590,7 +591,7 @@ public class SCParser implements SceneParser {
         return true;
     }
 
-    private void parseObjectBlock(SunflowAPI api) throws ParserException, IOException {
+    private void parseObjectBlock(SunflowAPIInterface api) throws ParserException, IOException {
         p.checkNextToken("{");
         boolean noInstance = false;
         Matrix4 transform = null;
@@ -810,7 +811,9 @@ public class SCParser implements SceneParser {
                 UI.printWarning(Module.API, "Deprecated object type: \"dlasurface\" - please use \"particles\" instead");
             float[] data;
             if (p.peekNextToken("filename")) {
-                String filename = api.resolveIncludeFilename(p.getNextToken());
+                // FIXME: this code should be moved into an on demand loading
+                // primitive
+                String filename = p.getNextToken();
                 boolean littleEndian = false;
                 if (p.peekNextToken("little_endian"))
                     littleEndian = true;
@@ -881,7 +884,7 @@ public class SCParser implements SceneParser {
         p.checkNextToken("}");
     }
 
-    private void parseInstanceBlock(SunflowAPI api) throws ParserException, IOException {
+    private void parseInstanceBlock(SunflowAPIInterface api) throws ParserException, IOException {
         p.checkNextToken("{");
         p.checkNextToken("name");
         String name = p.getNextToken();
@@ -915,7 +918,7 @@ public class SCParser implements SceneParser {
         p.checkNextToken("}");
     }
 
-    private void parseLightBlock(SunflowAPI api) throws ParserException, IOException, ColorSpecificationException {
+    private void parseLightBlock(SunflowAPIInterface api) throws ParserException, IOException, ColorSpecificationException {
         p.checkNextToken("{");
         p.checkNextToken("type");
         if (p.peekNextToken("mesh")) {

@@ -5,9 +5,6 @@ import java.io.IOException;
 import org.sunflow.core.ParameterList.InterpolationType;
 import org.sunflow.image.Color;
 import org.sunflow.math.Matrix4;
-import org.sunflow.math.Point2;
-import org.sunflow.math.Point3;
-import org.sunflow.math.Vector3;
 import org.sunflow.system.Parser;
 import org.sunflow.system.UI;
 import org.sunflow.system.Parser.ParserException;
@@ -33,26 +30,6 @@ public class SCAsciiParser extends SCAbstractParser {
         } else
             UI.printWarning(Module.API, "Unrecognized color space: %s", space);
         return c;
-    }
-
-    protected Point3 parsePoint() throws IOException {
-        float x = p.getNextFloat();
-        float y = p.getNextFloat();
-        float z = p.getNextFloat();
-        return new Point3(x, y, z);
-    }
-
-    protected Vector3 parseVector() throws IOException {
-        float x = p.getNextFloat();
-        float y = p.getNextFloat();
-        float z = p.getNextFloat();
-        return new Vector3(x, y, z);
-    }
-
-    protected Point2 parseTexcoord() throws IOException {
-        float x = p.getNextFloat();
-        float y = p.getNextFloat();
-        return new Point2(x, y);
     }
 
     protected Matrix4 parseMatrix() throws IOException {
@@ -110,10 +87,6 @@ public class SCAsciiParser extends SCAbstractParser {
         p.close();
     }
 
-    protected boolean hasMoreData() throws IOException {
-        return true;
-    }
-
     protected void openParser(String filename) throws IOException {
         p = new Parser(filename);
     }
@@ -135,7 +108,11 @@ public class SCAsciiParser extends SCAbstractParser {
     }
 
     protected String parseVerbatimString() throws IOException {
-        return p.getNextToken();
+        try {
+            return p.getNextCodeBlock();
+        } catch (ParserException e) {
+            throw new IOException(e.getMessage());
+        }
     }
 
     protected InterpolationType parseInterpolationType() throws IOException {
@@ -172,6 +149,10 @@ public class SCAsciiParser extends SCAbstractParser {
             return Keyword.OPTIONS;
         if (anyEqual(keyword, "include", "inc"))
             return Keyword.INCLUDE;
+        if (anyEqual(keyword, "remove"))
+            return Keyword.REMOVE;
+        if (anyEqual(keyword, "frame"))
+            return Keyword.FRAME;
         if (anyEqual(keyword, "plugin", "plug"))
             return Keyword.PLUGIN;
         if (anyEqual(keyword, "searchpath"))
@@ -210,7 +191,7 @@ public class SCAsciiParser extends SCAbstractParser {
             return Keyword.MATRIX_ARRAY;
         return null;
     }
-    
+
     private boolean anyEqual(String source, String... values) {
         for (String v : values)
             if (source.equals(v))

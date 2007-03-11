@@ -2,6 +2,16 @@ package org.sunflow.image;
 
 public final class ColorFactory {
     /**
+     * Return the name of the internal color space. This string can be used
+     * interchangeably with <code>null</code> in the following methods.
+     * 
+     * @return internal colorspace name
+     */
+    public static String getInternalColorspace() {
+        return "sRGB linear";
+    }
+
+    /**
      * Checks to see how many values are required to specify a color using the
      * given colorspace. This number can be variable for spectrum colors, in
      * which case the returned value is -1. If the colorspace name is invalid,
