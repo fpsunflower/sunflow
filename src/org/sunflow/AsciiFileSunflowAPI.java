@@ -38,7 +38,7 @@ public class AsciiFileSunflowAPI extends FileSunflowAPI {
     }
 
     protected void writeMatrix(Matrix4 value) {
-        writeString("row ");
+        writeString("row");
         for (float f : value.asRowMajor())
             writeFloat(f);
     }
