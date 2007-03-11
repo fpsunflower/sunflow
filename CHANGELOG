@@ -1,4 +1,9 @@
 v0.07.3
+* Added -translate command line parameter
+* Added translate() method to convert any file format into the new ones
+* New ascii/binary file formats (sca/scb)
+* Added new colorspace options for color parameters (blackbody/spectrum)
+* Changed the way colors are specified to SunflowAPI
 * Upgraded to Janino 2.5.6
 * Added camera shift option to pinhole and thinlens camera lenses
 * Updated examples
