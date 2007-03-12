@@ -29,6 +29,8 @@ public class SunSkyLight implements LightSource, PrimitiveList, Shader {
     // sunflow parameters
     private int numSkySamples;
     private OrthoNormalBasis basis;
+    private boolean groundExtendSky;
+    private Color groundColor;
     // parameters to the model
     private Vector3 sunDirWorld;
     private float turbidity;
@@ -83,6 +85,8 @@ public class SunSkyLight implements LightSource, PrimitiveList, Shader {
         sunDirWorld = new Vector3(1, 1, 1);
         turbidity = 6;
         basis = OrthoNormalBasis.makeFromWV(new Vector3(0, 0, 1), new Vector3(0, 1, 0));
+        groundExtendSky = false;
+        groundColor = Color.BLACK;
         initSunSky();
     }
 
@@ -195,14 +199,16 @@ public class SunSkyLight implements LightSource, PrimitiveList, Shader {
         numSkySamples = pl.getInt("samples", numSkySamples);
         sunDirWorld = pl.getVector("sundir", sunDirWorld);
         turbidity = pl.getFloat("turbidity", turbidity);
+        groundExtendSky = pl.getBoolean("ground.extendsky", groundExtendSky);
+        groundColor = pl.getColor("ground.color", groundColor);
         // recompute model
         initSunSky();
         return true;
     }
 
     private Color getSkyRGB(Vector3 dir) {
-        if (dir.z < 0)
-            return Color.BLACK;
+        if (dir.z < 0 && !groundExtendSky)
+            return groundColor;
         if (dir.z < 0.001f)
             dir.z = 0.001f;
         dir.normalize();
