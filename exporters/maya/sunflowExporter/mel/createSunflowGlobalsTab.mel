@@ -411,24 +411,6 @@ global proc createSunflowSystemFrame( string $sunflowGlobals, string $parent )
 	setUITemplate -popTemplate;
 }
 
-global proc saveSunflowINI(string $globalsNode){
-	
-	string $pluginPath = `pluginInfo -q -p sunflowExport`;
-	string $iniPath = `substitute ".mll" $pluginPath ".ini"`;
-	
-	print("Writing sunflow INI to file: "+$iniPath);	
-	
-	string $exportPath = `getAttr ($globalsNode+".exportPath")`;
-	string $javaPath = `getAttr ($globalsNode+".javaPath")`;
-	string $sunflowPath = `getAttr ($globalsNode+".sunflowPath")`;
-	
-	$fileId=`fopen $iniPath "w"`;
-	//fprint $fileId ("exportPath="+$exportPath+"\n");
-	fprint $fileId ("javaPath="+$javaPath+"\n");
-	fprint $fileId ("sunflowPath="+$sunflowPath+"\n");
-	fclose $fileId;
-}
-
 global proc int sunflowSetExportPath( string $dirName, string $fileType )
 {
 	string $sunflowGlobals = sunflowCheckGlobals();	
@@ -441,7 +423,7 @@ global proc int sunflowSetJavaPath( string $dirName, string $fileType )
 {
 	string $sunflowGlobals = sunflowCheckGlobals();
 	setAttr -type "string" ($sunflowGlobals+".javaPath") $dirName;
-//	saveSunflowINI($sunflowGlobals);
+	writeSunflowINI($sunflowGlobals);
 	updateSunflowSystemFrameUI();
 	return 1;
 }
@@ -450,7 +432,7 @@ global proc int sunflowSetSunflowPath( string $dirName, string $fileType )
 {
 	string $sunflowGlobals = sunflowCheckGlobals();	
 	setAttr -type "string" ($sunflowGlobals+".sunflowPath") $dirName;
-	//saveSunflowINI($sunflowGlobals);
+	writeSunflowINI($sunflowGlobals);
 	updateSunflowSystemFrameUI();
 	return 1;
 }
