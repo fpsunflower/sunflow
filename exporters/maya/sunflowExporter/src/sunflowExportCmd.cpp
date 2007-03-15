@@ -755,7 +755,37 @@ MStatus sunflowExportCmd::doIt(const MArgList& args) {
 			file << std::endl;
 		}
 
-		getCustomAttribute(materialOverride, "materialOverride", globals);		
+		paramPlug = globals.findPlug( "skyNode", &status );
+		MPlugArray connectedPlugs;
+		if(paramPlug.connectedTo(connectedPlugs,true,false,&status) && connectedPlugs.length()){
+			MFnDependencyNode skyNode(connectedPlugs[0].node());
+			paramPlug = skyNode.findPlug( "sunLight", &status );
+			if(paramPlug.connectedTo(connectedPlugs,true,false,&status) && connectedPlugs.length()){
+				if(connectedPlugs[0].node().apiType() == MFn::kDirectionalLight){
+					std::cout << "SunLight: " << connectedPlugs[0].name().asChar() << endl;
+					MFnDirectionalLight light(connectedPlugs[0].node());
+					//MDagPath lightPath(light.lightDirection);
+					//MMatrix o2w = lightPath.inclusiveMatrix();
+					MFloatVector dir(light.lightDirection(0,MSpace::kWorld, &status));
+					//dir = dir * o2w;
+					float turbidity;
+					getCustomAttribute(turbidity, "skyTurbidity", globals);
+					float samples;
+					getCustomAttribute(samples, "skySamples", globals);
+					file << "light {" << std::endl;
+					file << "\ttype sunsky" << std::endl;
+					file << "\tup 0 1 0" << std::endl;
+					file << "\teast 0 0 1" << std::endl;
+					file << "\tsundir " << -dir.x << " " << -dir.y << " " << -dir.z << std::endl;
+					file << "\tturbidity " << turbidity << std::endl;
+					file << "\tsamples " << samples << std::endl;
+					file << "}" << std::endl;
+					file << std::endl;
+				}
+			}
+		}
+
+		getCustomAttribute(materialOverride, "materialOverride", globals);
 		getCustomAttribute(ambOverrideDist, "ambOverrideDist", globals);
 
 		globalsWritten=true;
@@ -1159,20 +1189,7 @@ MStatus sunflowExportCmd::doIt(const MArgList& args) {
                 if (!areObjectAndParentsVisible(path)) continue;
                 if (exportedSun) continue;
                 std::cout << "Exporting sunlight: " << path.fullPathName().asChar() << " ..." << std::endl;
-                exportedSun = true;
-                MMatrix o2w = path.inclusiveMatrix();
-                MVector dir(0, 0, 1);
-                dir = dir * o2w;
-                MFnDirectionalLight light(path);
-                file << "light {" << std::endl;
-                file << "\ttype sunsky" << std::endl;
-                file << "\tup 0 1 0" << std::endl;
-                file << "\teast 0 0 1" << std::endl;
-                file << "\tsundir " << dir.x << " " << dir.y << " " << dir.z << std::endl;
-                file << "\tturbidity 2" << std::endl;
-                file << "\tsamples " << light.numShadowSamples() << std::endl;
-                file << "}" << std::endl;
-                file << std::endl;
+                exportedSun = true;               
             } break;
             case MFn::kAreaLight: {
                 if (!areObjectAndParentsVisible(path)) continue;

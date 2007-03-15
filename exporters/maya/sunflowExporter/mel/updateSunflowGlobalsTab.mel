@@ -13,6 +13,7 @@ global proc updateSunflowGlobalsTab()
 	updateSunflowSamplingFrameUI();
 	updateSunflowPhotonFrameUI();
 	updateSunflowGIFrameUI();
+	updateSunflowEnvironmentFrameUI();
 	updateSunflowOverrideFrameUI();
 	updateSunflowSystemFrameUI();
 }

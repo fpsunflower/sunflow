@@ -4,6 +4,7 @@
 #include "sunflowGlobalsNode.h"
 #include "sunflowExportCmd.h"
 #include "sunflowShaderNode.h"
+#include "sunflowSkyNode.h"
 
 MStatus initializePlugin( MObject obj )
 { 
@@ -21,11 +22,16 @@ MStatus initializePlugin( MObject obj )
     status = plugin.registerCommand("sunflowExportCmd", sunflowExportCmd::creator );
 	if (!status) status.perror("registerCommand: sunflowExportCmd");
 
-	const MString UserClassify( "shader/surface" );  
+	const MString UserClassify( "shader/surface" );
 	status = plugin.registerNode( "sunflowShader", sunflowShaderNode::id, 
                          sunflowShaderNode::creator, sunflowShaderNode::initialize,
                          MPxNode::kDependNode, &UserClassify );
 	if (!status) status.perror("registerNode: sunflowShaderNode");
+
+	status = plugin.registerNode( "sunflowSkyNode", sunflowSkyNode::id, 
+						 &sunflowSkyNode::creator, &sunflowSkyNode::initialize,
+						 MPxNode::kLocatorNode );
+	if (!status)  status.perror("registerNode: sunflowSkyNode");
 
 	status = MGlobal::executeCommand("source sunflowStartup.mel");
 	status = plugin.registerUI("sunflowStartup", "sunflowShutdown");
@@ -49,6 +55,9 @@ MStatus uninitializePlugin( MObject obj)
 
 	status = plugin.deregisterNode( sunflowShaderNode::id );
 	if (!status) status.perror("deregisterNode: sunflowShaderNode");
+
+	status = plugin.deregisterNode( sunflowSkyNode::id );
+	if (!status) status.perror("deregisterNode: sunflowSkyNode");
 
 	//MGlobal::executeCommandOnIdle("unregisterSunflowRenderer");
 	return status;

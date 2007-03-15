@@ -2,6 +2,7 @@
 #include <maya/MFnEnumAttribute.h>
 #include <maya/MFnNumericAttribute.h>
 #include <maya/MFnTypedAttribute.h>
+#include <maya/MFnMessageAttribute.h>
 #include <maya/MGlobal.h>
 
 #include "sunflowGlobalsNode.h"
@@ -16,6 +17,9 @@ MObject sunflowGlobalsNode::enablePhotons;
 MObject sunflowGlobalsNode::Photons;
 MObject sunflowGlobalsNode::PhotonsKd;
 MObject sunflowGlobalsNode::PhotonsRadius;
+MObject sunflowGlobalsNode::diffuseDepth;
+MObject sunflowGlobalsNode::reflectionDepth;
+MObject sunflowGlobalsNode::refractionDepth;
 MObject sunflowGlobalsNode::enableGI;
 MObject sunflowGlobalsNode::GIMode;
 MObject sunflowGlobalsNode::PTSamples;
@@ -27,10 +31,13 @@ MObject sunflowGlobalsNode::ICSamples;
 MObject sunflowGlobalsNode::ICTolerance;
 MObject sunflowGlobalsNode::ICSpacingMin;
 MObject sunflowGlobalsNode::ICSpacingMax;
-MObject sunflowGlobalsNode::diffuseDepth;
-MObject sunflowGlobalsNode::reflectionDepth;
-MObject sunflowGlobalsNode::refractionDepth;
 MObject sunflowGlobalsNode::exportPath;
+MObject sunflowGlobalsNode::skyNode;
+MObject sunflowGlobalsNode::skySize;
+MObject sunflowGlobalsNode::skyResolution;
+MObject sunflowGlobalsNode::skyTurbidity;
+MObject sunflowGlobalsNode::skySamples;
+MObject sunflowGlobalsNode::skyExposure;
 MObject sunflowGlobalsNode::materialOverride;
 MObject sunflowGlobalsNode::ambOverrideDist;
 MObject sunflowGlobalsNode::javaPath;
@@ -46,6 +53,7 @@ MStatus sunflowGlobalsNode::initialize(){
 	MFnTypedAttribute   tAttr;
 	MFnEnumAttribute	enumAttr;
 	MFnNumericAttribute	numericAttr;
+	MFnMessageAttribute skyAttr;
 
 	preset = enumAttr.create( "preset", "p", 0, &stat );
 	stat = enumAttr.addField( "draft", 0 );
@@ -151,6 +159,30 @@ MStatus sunflowGlobalsNode::initialize(){
 	refractionDepth = numericAttr.create("refractionDepth", "frd", MFnNumericData::kInt, 1, &stat);
 	stat = addAttribute (refractionDepth);
 		if (!stat) { stat.perror("addAttribute refractionDepth"); return stat;}
+
+	skyNode = skyAttr.create( "skyNode", "sn", &stat );
+	stat = addAttribute (skyNode);
+		if (!stat) { stat.perror("addAttribute skyNode"); return stat;}
+
+	skySize = numericAttr.create("skySize", "sks", MFnNumericData::kFloat, 0.5, &stat);
+	stat = addAttribute (skySize);
+		if (!stat) { stat.perror("addAttribute SkySize"); return stat;}
+
+	skyResolution = numericAttr.create("skyResolution", "skr", MFnNumericData::kInt, 3, &stat);
+	stat = addAttribute (skyResolution);
+		if (!stat) { stat.perror("addAttribute skyResolution"); return stat;}
+
+	skyTurbidity = numericAttr.create("skyTurbidity", "skt", MFnNumericData::kFloat, 5, &stat);
+	stat = addAttribute (skyTurbidity);
+		if (!stat) { stat.perror("addAttribute skyTurbidity"); return stat;}
+
+	skySamples = numericAttr.create( "skySamples", "ssa",	MFnNumericData::kInt, 16, &stat );
+	stat = addAttribute (skySamples);
+		if (!stat) { stat.perror("addAttribute SkySamples"); return stat;}
+
+	skyExposure = numericAttr.create("skyExposure", "ske", MFnNumericData::kFloat, 0.15, &stat);
+	stat = addAttribute (skyExposure);
+		if (!stat) { stat.perror("addAttribute skyExposure"); return stat;}
 
 	materialOverride = enumAttr.create( "materialOverride", "mo", 0, &stat );
 	stat = enumAttr.addField( "none", 0 );

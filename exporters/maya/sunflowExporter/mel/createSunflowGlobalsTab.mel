@@ -320,6 +320,94 @@ global proc updateSunflowGIFrameUI()
 	setParent $oldParent;
 }
 
+// createSunflowEnvironmentFrame
+//
+// Creates the sunflow sky and sun frame layout for the Sunflow tab of the Sunflow 
+// Render Globals
+//
+global proc createSunflowEnvironmentFrame( string $sunflowGlobals, string $parent )
+{
+	setUITemplate -pushTemplate attributeEditorTemplate;
+	setParentToSunflowTab();
+	setParent $parent;
+
+	string $prefix = sunflowGetPrefix();
+
+	columnLayout -adj true;
+		columnLayout -adj true -cal "center";
+			button -l "Create Sun & Sky" -rs true -c ("createAndConnectSunSky "+$sunflowGlobals) ($prefix+"SunSkyButton");
+		setParent..;
+		frameLayout -collapsable true -collapse 0 -bv false -lv false -vis false ($prefix+"EnvironmentGroupFrame");
+			columnLayout;
+				frameLayout -l "Sky Attributes" -collapsable true -collapse 0 ($prefix+"EnvironmentSkyAttributesFrame");
+					columnLayout;
+						attrFieldSliderGrp -min 2 -max 15 -label "Turbidity" -attribute ($sunflowGlobals + ".skyTurbidity");
+						attrFieldSliderGrp -min 1 -max 2048 -label "Samples" -attribute ($sunflowGlobals + ".skySamples");
+					setParent..;
+				setParent..;		
+				frameLayout -l "Sky UI Attributes" -collapsable true -collapse 0 ($prefix+"EnvironmentSkyUIAttributesFrame");
+					columnLayout;
+						attrFieldSliderGrp -min 0 -max 200 -label "Sky Size" -attribute ($sunflowGlobals + ".skySize");
+						attrFieldSliderGrp -min 1 -max 6 -label "Resolution" -attribute ($sunflowGlobals + ".skyResolution");
+						attrFieldSliderGrp -min 0 -max 1 -label "Exposure" -attribute ($sunflowGlobals + ".skyExposure");
+					setParent..;
+				setParent..;
+			setParent..;
+		setParent..;
+	setParent ..;
+
+	setUITemplate -popTemplate;
+}
+
+global proc updateSunflowEnvironmentFrameUI()
+{
+	string $prefix = sunflowGetPrefix();
+	string $sunflowGlobals = sunflowCheckGlobals();
+	if (`connectionInfo -id ($sunflowGlobals + ".skyNode")`){
+		string $sky = `connectionInfo -sfd ($sunflowGlobals + ".skyNode")`;
+		string $skyNode = basenameEx($sky);		
+		connectAttr -f ($sunflowGlobals + ".skyTurbidity") ($skyNode+".turbidity");
+		connectAttr -f ($sunflowGlobals + ".skySize") ($skyNode+".size");
+		connectAttr -f ($sunflowGlobals + ".skyResolution") ($skyNode+".resolution");
+		connectAttr -f ($sunflowGlobals + ".skyExposure") ($skyNode+".exposure");
+		frameLayout -e -vis true ($prefix+"EnvironmentGroupFrame");
+		button -e -l "Delete Sun & Sky" -c ("deleteSunSky "+$sunflowGlobals) ($prefix+"SunSkyButton");
+	}else{		
+		frameLayout -e -vis false ($prefix+"EnvironmentGroupFrame");
+		button -e -l "Create Sun & Sky" -c ("createAndConnectSunSky "+$sunflowGlobals) ($prefix+"SunSkyButton");
+	}
+}
+
+global proc createAndConnectSunSky(string $sunflowGlobals){
+	string $prefix = sunflowGetPrefix();	
+	string $nodes[] = sunflowCreateSunSky();
+	connectAttr -f ($nodes[1]+".message") ($sunflowGlobals + ".skyNode");
+	updateSunflowEnvironmentFrameUI;
+}
+
+global proc deleteSunSky(string $sunflowGlobals){
+	string $prefix = sunflowGetPrefix();
+	string $sunflowGlobals = sunflowCheckGlobals();
+	if (`connectionInfo -id ($sunflowGlobals + ".skyNode")`){
+		string $sky = `connectionInfo -sfd ($sunflowGlobals + ".skyNode")`;
+		disconnectAttr $sky ($sunflowGlobals + ".skyNode");
+		string $skyNode = basenameEx($sky);		
+		if (`connectionInfo -id ($skyNode + ".sunLight")`){
+			string $sun = `connectionInfo -sfd ($skyNode + ".sunLight")`;
+			string $sunNode = basenameEx($sun);
+			disconnectAttr $sun ($skyNode + ".sunLight");
+			delete `pickWalk -d up $sunNode`;
+		}
+		disconnectAttr ($sunflowGlobals + ".skyTurbidity") ($skyNode+".turbidity");
+		disconnectAttr ($sunflowGlobals + ".skySize") ($skyNode+".size");
+		disconnectAttr ($sunflowGlobals + ".skyResolution") ($skyNode+".resolution");
+		disconnectAttr ($sunflowGlobals + ".skyExposure") ($skyNode+".exposure");
+		delete `pickWalk -d up $skyNode`;		
+	}	
+	updateSunflowEnvironmentFrameUI;
+}
+
+
 // createSunflowOverrideFrame
 //
 // Creates the sunflow override frame layout for the Sunflow tab of the Sunflow 
@@ -513,6 +601,16 @@ global proc createSunflowGlobalsTab()
 
 				createSunflowGIFrame( $sunflowGlobals, "sunflowGIFrame");
 				updateSunflowGIFrameUI();
+
+			setParent ..;
+			
+			// Environment options
+			frameLayout -label "Environment"
+				-collapsable  true 
+				-collapse 0
+				sunflowEnvironmentFrame;
+
+				createSunflowEnvironmentFrame( $sunflowGlobals, "sunflowEnvironmentFrame");				
 
 			setParent ..;
 			
