@@ -164,6 +164,14 @@ public final class RGBSpace {
         return (rp << 16) | (gp << 8) | bp;
     }
 
+    public final byte rgbToNonLinear(byte r) {
+        return (byte) GAMMA_CURVE[r & 0xFF];
+    }
+
+    public final byte rgbToLinear(byte r) {
+        return (byte) INV_GAMMA_CURVE[r & 0xFF];
+    }
+
     public final String toString() {
         String info = "Gamma function parameters:\n";
         info += String.format("  * Gamma:          %7.4f\n", gamma);

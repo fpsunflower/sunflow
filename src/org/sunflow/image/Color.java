@@ -4,6 +4,7 @@ import org.sunflow.math.MathUtils;
 
 public final class Color {
     private float r, g, b;
+    public static final RGBSpace NATIVE_SPACE = RGBSpace.SRGB;
     public static final Color BLACK = new Color(0, 0, 0);
     public static final Color WHITE = new Color(1, 1, 1);
     public static final Color RED = new Color(1, 0, 0);
@@ -53,16 +54,16 @@ public final class Color {
     }
 
     public Color toNonLinear() {
-        r = RGBSpace.SRGB.gammaCorrect(r);
-        g = RGBSpace.SRGB.gammaCorrect(g);
-        b = RGBSpace.SRGB.gammaCorrect(b);
+        r = NATIVE_SPACE.gammaCorrect(r);
+        g = NATIVE_SPACE.gammaCorrect(g);
+        b = NATIVE_SPACE.gammaCorrect(b);
         return this;
     }
 
     public Color toLinear() {
-        r = RGBSpace.SRGB.ungammaCorrect(r);
-        g = RGBSpace.SRGB.ungammaCorrect(g);
-        b = RGBSpace.SRGB.ungammaCorrect(b);
+        r = NATIVE_SPACE.ungammaCorrect(r);
+        g = NATIVE_SPACE.ungammaCorrect(g);
+        b = NATIVE_SPACE.ungammaCorrect(b);
         return this;
     }
 

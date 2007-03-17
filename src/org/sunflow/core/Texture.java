@@ -2,8 +2,12 @@ package org.sunflow.core;
 
 import java.io.IOException;
 
-import org.sunflow.image.Bitmap;
+import org.sunflow.PluginRegistry;
+import org.sunflow.image.Bitmap2;
+import org.sunflow.image.BitmapReader;
 import org.sunflow.image.Color;
+import org.sunflow.image.BitmapReader.BitmapFormatException;
+import org.sunflow.math.MathUtils;
 import org.sunflow.math.OrthoNormalBasis;
 import org.sunflow.math.Vector3;
 import org.sunflow.system.UI;
@@ -15,7 +19,7 @@ import org.sunflow.system.UI.Module;
 public class Texture {
     private String filename;
     private boolean isLinear;
-    private Bitmap bitmap;
+    private Bitmap2 bitmap;
     private int loaded;
 
     /**
@@ -33,18 +37,28 @@ public class Texture {
     private synchronized void load() {
         if (loaded != 0)
             return;
+        String extension = filename.substring(filename.lastIndexOf('.') + 1);
         try {
             UI.printInfo(Module.TEX, "Reading texture bitmap from: \"%s\" ...", filename);
-            bitmap = new Bitmap(filename, isLinear);
-            if (bitmap.getWidth() == 0 || bitmap.getHeight() == 0)
-                bitmap = null;
+            BitmapReader reader = PluginRegistry.bitmapReaderPlugins.createObject(extension);
+            if (reader != null) {
+                bitmap = reader.load(filename, isLinear);
+                if (bitmap.getWidth() == 0 || bitmap.getHeight() == 0)
+                    bitmap = null;
+            }
+            if (bitmap == null)
+                UI.printError(Module.TEX, "Bitmap reading failed");
+            else
+                UI.printDetailed(Module.TEX, "Texture bitmap reading complete: %dx%d pixels found", bitmap.getWidth(), bitmap.getHeight());
         } catch (IOException e) {
             UI.printError(Module.TEX, "%s", e.getMessage());
+        } catch (BitmapFormatException e) {
+            UI.printError(Module.TEX, "%s format error: %s", extension, e.getMessage());
         }
         loaded = 1;
     }
 
-    public Bitmap getBitmap() {
+    public Bitmap2 getBitmap() {
         if (loaded == 0)
             load();
         return bitmap;
@@ -61,17 +75,13 @@ public class Texture {
      * @return filtered color at location (x,y)
      */
     public Color getPixel(float x, float y) {
-        Bitmap bitmap = getBitmap();
+        Bitmap2 bitmap = getBitmap();
         if (bitmap == null)
             return Color.BLACK;
-        x = x - (int) x;
-        y = y - (int) y;
-        if (x < 0)
-            x++;
-        if (y < 0)
-            y++;
-        float dx = (float) x * (bitmap.getWidth() - 1);
-        float dy = (float) y * (bitmap.getHeight() - 1);
+        x = MathUtils.frac(x);
+        y = MathUtils.frac(y);
+        float dx = x * bitmap.getWidth();
+        float dy = y * bitmap.getHeight();
         int ix0 = (int) dx;
         int iy0 = (int) dy;
         int ix1 = (ix0 + 1) % bitmap.getWidth();
@@ -81,13 +91,13 @@ public class Texture {
         u = u * u * (3.0f - (2.0f * u));
         v = v * v * (3.0f - (2.0f * v));
         float k00 = (1.0f - u) * (1.0f - v);
-        Color c00 = bitmap.getPixel(ix0, iy0);
+        Color c00 = bitmap.readColor(ix0, iy0);
         float k01 = (1.0f - u) * v;
-        Color c01 = bitmap.getPixel(ix0, iy1);
+        Color c01 = bitmap.readColor(ix0, iy1);
         float k10 = u * (1.0f - v);
-        Color c10 = bitmap.getPixel(ix1, iy0);
+        Color c10 = bitmap.readColor(ix1, iy0);
         float k11 = u * v;
-        Color c11 = bitmap.getPixel(ix1, iy1);
+        Color c11 = bitmap.readColor(ix1, iy1);
         Color c = Color.mul(k00, c00);
         c.madd(k01, c01);
         c.madd(k10, c10);
@@ -101,7 +111,7 @@ public class Texture {
     }
 
     public Vector3 getBump(float x, float y, OrthoNormalBasis basis, float scale) {
-        Bitmap bitmap = getBitmap();
+        Bitmap2 bitmap = getBitmap();
         if (bitmap == null)
             return basis.transform(new Vector3(0, 0, 1));
         float dx = 1.0f / (bitmap.getWidth() - 1);

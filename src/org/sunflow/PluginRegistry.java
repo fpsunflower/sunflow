@@ -101,6 +101,10 @@ import org.sunflow.core.tesselatable.BezierMesh;
 import org.sunflow.core.tesselatable.FileMesh;
 import org.sunflow.core.tesselatable.Gumbo;
 import org.sunflow.core.tesselatable.Teapot;
+import org.sunflow.image.BitmapReader;
+import org.sunflow.image.readers.HDRBitmapReader;
+import org.sunflow.image.readers.JavaBitmapReader;
+import org.sunflow.image.readers.TGABitmapReader;
 import org.sunflow.system.Plugins;
 
 /**
@@ -127,6 +131,7 @@ public final class PluginRegistry {
     public static final Plugins<GlobalPhotonMapInterface> globalPhotonMapPlugins = new Plugins<GlobalPhotonMapInterface>(GlobalPhotonMapInterface.class);
     public static final Plugins<ImageSampler> imageSamplerPlugins = new Plugins<ImageSampler>(ImageSampler.class);
     public static final Plugins<SceneParser> parserPlugins = new Plugins<SceneParser>(SceneParser.class);
+    public static final Plugins<BitmapReader> bitmapReaderPlugins = new Plugins<BitmapReader>(BitmapReader.class);
 
     // Register all plugins on startup:
     static {
@@ -274,5 +279,14 @@ public final class PluginRegistry {
         parserPlugins.registerPlugin("rib", ShaveRibParser.class);
         parserPlugins.registerPlugin("ra2", RA2Parser.class);
         parserPlugins.registerPlugin("ra3", RA3Parser.class);
+    }
+
+    static {
+        // bitmap readers
+        bitmapReaderPlugins.registerPlugin("hdr", HDRBitmapReader.class);
+        bitmapReaderPlugins.registerPlugin("tga", TGABitmapReader.class);
+        bitmapReaderPlugins.registerPlugin("png", JavaBitmapReader.class);
+        bitmapReaderPlugins.registerPlugin("jpg", JavaBitmapReader.class);
+        bitmapReaderPlugins.registerPlugin("bmp", JavaBitmapReader.class);
     }
 }

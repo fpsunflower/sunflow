@@ -105,6 +105,10 @@ public final class MathUtils {
         return t * t * (3 - 2 * t);
     }
 
+    public static final float frac(float x) {
+        return x < 0 ? x - (int) x + 1 : x - (int) x;
+    }
+
     /**
      * Computes a fast approximation to <code>Math.pow(a, b)</code>. Adapted
      * from <url>http://www.dctsystems.co.uk/Software/power.html</url>.
