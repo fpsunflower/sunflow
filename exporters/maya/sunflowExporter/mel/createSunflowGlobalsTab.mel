@@ -566,6 +566,7 @@ global proc createSunflowGlobalsTab()
 			frameLayout -label "Sampling"
 				-collapsable  true 
 				-collapse 0
+				-mh 5
 				sunflowSamplingFrame;
 
 				createSunflowSamplingFrame( $sunflowGlobals, "sunflowSamplingFrame"); 
@@ -576,6 +577,7 @@ global proc createSunflowGlobalsTab()
 			frameLayout -label "Photons"
 				-collapsable  true 
 				-collapse 0
+				-mh 5
 				sunflowPhotonFrame;
 
 				createSunflowPhotonFrame( $sunflowGlobals, "sunflowPhotonFrame");
@@ -587,6 +589,7 @@ global proc createSunflowGlobalsTab()
 			frameLayout -label "Trace Depths"
 				-collapsable  true 
 				-collapse 0
+				-mh 5
 				sunflowTraceFrame;
 
 				createSunflowTraceFrame( $sunflowGlobals, "sunflowTraceFrame");				
@@ -597,6 +600,7 @@ global proc createSunflowGlobalsTab()
 			frameLayout -label "Global Illumination"
 				-collapsable  true 
 				-collapse 0
+				-mh 5
 				sunflowGIFrame;
 
 				createSunflowGIFrame( $sunflowGlobals, "sunflowGIFrame");
@@ -608,6 +612,8 @@ global proc createSunflowGlobalsTab()
 			frameLayout -label "Environment"
 				-collapsable  true 
 				-collapse 0
+				-mh 5
+				-mw 10
 				sunflowEnvironmentFrame;
 
 				createSunflowEnvironmentFrame( $sunflowGlobals, "sunflowEnvironmentFrame");				
@@ -618,6 +624,7 @@ global proc createSunflowGlobalsTab()
 			frameLayout -label "Material Override"
 				-collapsable  true 
 				-collapse 0
+				-mh 5
 				sunflowOverrideFrame;
 
 				createSunflowOverrideFrame( $sunflowGlobals, "sunflowOverrideFrame");
@@ -629,6 +636,7 @@ global proc createSunflowGlobalsTab()
 			frameLayout -label "System"
 				-collapsable  true 
 				-collapse 0
+				-mh 5
 				sunflowSystemFrame;
 
 				createSunflowSystemFrame( $sunflowGlobals, "sunflowSystemFrame");
