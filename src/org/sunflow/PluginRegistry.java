@@ -102,8 +102,10 @@ import org.sunflow.core.tesselatable.FileMesh;
 import org.sunflow.core.tesselatable.Gumbo;
 import org.sunflow.core.tesselatable.Teapot;
 import org.sunflow.image.BitmapReader;
+import org.sunflow.image.readers.BMPBitmapReader;
 import org.sunflow.image.readers.HDRBitmapReader;
-import org.sunflow.image.readers.JavaBitmapReader;
+import org.sunflow.image.readers.JPGBitmapReader;
+import org.sunflow.image.readers.PNGBitmapReader;
 import org.sunflow.image.readers.TGABitmapReader;
 import org.sunflow.system.Plugins;
 
@@ -285,8 +287,8 @@ public final class PluginRegistry {
         // bitmap readers
         bitmapReaderPlugins.registerPlugin("hdr", HDRBitmapReader.class);
         bitmapReaderPlugins.registerPlugin("tga", TGABitmapReader.class);
-        bitmapReaderPlugins.registerPlugin("png", JavaBitmapReader.class);
-        bitmapReaderPlugins.registerPlugin("jpg", JavaBitmapReader.class);
-        bitmapReaderPlugins.registerPlugin("bmp", JavaBitmapReader.class);
+        bitmapReaderPlugins.registerPlugin("png", PNGBitmapReader.class);
+        bitmapReaderPlugins.registerPlugin("jpg", JPGBitmapReader.class);
+        bitmapReaderPlugins.registerPlugin("bmp", BMPBitmapReader.class);
     }
 }
