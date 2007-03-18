@@ -1,4 +1,8 @@
+#include "sunflowExportCmd.h"
+#include "sunflowShaderNode.h"
+#include "sunflowConstants.h"
 #include <maya/MPlug.h>
+#include <maya/MGlobal.h>
 #include <maya/MArgList.h>
 #include <maya/MItDag.h>
 #include <maya/MItDependencyNodes.h>
@@ -29,22 +33,16 @@
 #include <set>
 #include <vector>
 #include <string>
-#include "sunflowExportCmd.h"
-#include "sunflowShaderNode.h"
-#include "sunflowConstants.h"
-#if defined(_WIN32)
+#ifdef  _WIN32
 #include <cstdio>
 #include <windows.h>
 #else
 #include <cstdlib>
 #endif
 
-
 // global variables:
 
 using namespace std;
-
-float resolutionAspectRatio = 4.0f / 3.0f;
 
 void sunflowExportCmd::getCustomAttribute(MFloatVector &colorAttribute, MString attribute, MFnDependencyNode &node){
 	MPlug paramPlug;
@@ -573,7 +571,7 @@ void sunflowExportCmd::exportCamera(const MDagPath& path, std::ofstream& file) {
     MVector up = camera.upDirection(space);
     double fov = camera.horizontalFieldOfView() * (180.0 / 3.1415926535897932384626433832795);
 
-	float pixelAspect = getAttributeFloat("defaultResolution", "deviceAspectRatio", 1.333333f);
+	float frameAspect = getAttributeFloat("defaultResolution", "deviceAspectRatio", 1.333333f);
 
     file << "% " << path.fullPathName().asChar() << std::endl;
     file << "camera {" << std::endl;
@@ -582,7 +580,7 @@ void sunflowExportCmd::exportCamera(const MDagPath& path, std::ofstream& file) {
     file << "\ttarget " << (eye.x + dir.x) << " " << (eye.y + dir.y) << " " << (eye.z + dir.z) << std::endl;
     file << "\tup     " << up.x << " " << up.y << " " << up.z << std::endl;
     file << "\tfov    " << fov << std::endl;
-    file << "\taspect " << pixelAspect << std::endl;
+    file << "\taspect " << frameAspect << std::endl;
     file << "}" << std::endl;
     file << std::endl;
 }
@@ -600,12 +598,18 @@ bool sunflowExportCmd::findShaderInList(MString shader){
 
 MStatus sunflowExportCmd::doIt(const MArgList& args) {
     if (args.length() < 1) return MS::kFailure;
-    MString mode = args.asString(0);
+    MString mode;
+    MString exportPath;
+    const char* javaPath    = 0;
+    const char* sunflowPath = 0;
+    const char* javaArgs    = 0;
+    if (args.length() == 1) {
+        exportPath = args.asString(0);
+        mode = "file";
+    } else
+        mode = "render";
     std::cout << "Exporting in mode: " << mode.asChar() << " ..." << std::endl;
     std::ofstream file;
-	MString sunflowPath;
-	MString javaPath;
-	MString exportPath;
 
 	int materialOverride = 0;
 	float ambOverrideDist = 1;
@@ -622,41 +626,33 @@ MStatus sunflowExportCmd::doIt(const MArgList& args) {
 			continue;
 
 		std::cout << "Found globals node: "<< globals.name().asChar() <<  endl;
-		
+
 		//Get globals values
 		MPlug paramPlug;
-		
-		getCustomAttribute(sunflowPath, "sunflowPath", globals);
-		getCustomAttribute(javaPath, "javaPath", globals);
-		getCustomAttribute(exportPath, "exportPath", globals);		
-		exportPath += "/sunflowTmp.sc";
+
+        if (exportPath.length() == 0) {		
+            getCustomAttribute(exportPath, "exportPath", globals);		
+            exportPath += "/sunflowTmp.sc";
+        }
 
 		// use environment variables if they exist:
-		const char* sunflowPathEnv = getenv("SUNFLOW_PATH");
-		if (sunflowPathEnv != 0)
-			sunflowPath = sunflowPathEnv;
-		const char* javaPathEnv = getenv("SUNFLOW_JAVA_PATH");
-		if (javaPathEnv != 0)
-			javaPath = javaPathEnv;
-		
-		std::cout << "Using sunflow path: " << sunflowPath.asChar() << std::endl;
-		std::cout << "Using java path:    " << javaPath.asChar() << std::endl;
+		sunflowPath = getenv("SUNFLOW_PATH");
+		if (sunflowPath == 0)
+            MGlobal::displayWarning("SUNFLOW_PATH environment variable was not set!");
+        else
+            std::cout << "Using sunflow path: " << sunflowPath << std::endl;
+		javaPath = getenv("SUNFLOW_JAVA_PATH");
+		if (javaPath == 0)
+            MGlobal::displayWarning("SUNFLOW_PATH environment variable was not set!");
+        else
+			std::cout << "Using java path:    " << javaPath << std::endl;
+        javaArgs = getenv("SUNFLOW_JAVA_ARGS");
+        
+        
 
 		file.open(exportPath.asChar());
 
 		//IMAGE BLOCK OUTPUT
-/*
-		// FIXME: must match Enum declaration in sunflowGlobalsNode
-		MStringArray filters;
-		filters.append("box");
-		filters.append("triangle");
-		filters.append("catmull-rom");
-		filters.append("mitchell");
-		filters.append("lanczos");
-		filters.append("blackman-harris");
-		filters.append("sinc");
-		filters.append("gaussian");
-*/
 		int pixelFilter;		
 		getCustomAttribute(pixelFilter, "pixelFilter", globals);
 		if (pixelFilter < 0)
@@ -1269,10 +1265,25 @@ MStatus sunflowExportCmd::doIt(const MArgList& args) {
     std::cout << "Exporting scene done." << std::endl;
     file.close();
 	
+    if (mode == "file") {
+        std::cout << "Skipping sunflow launch - run as export only" << std::endl;
+        return MS::kSuccess;
+    }
+    if (javaPath == 0 || sunflowPath == 0)
+        return MS::kFailure;
+    
+    if (javaArgs == 0)
+        javaArgs = "-Xmx1024M -server";
+
+    std::cout << "Launching sunflow with JVM options: " << javaArgs << std::endl;
+    
 	//MString cmd("c:/PROGRA~1/java/jdk1.6.0/bin/java -cp c:/temp/sunflow/classes;c:/temp/sunflow/janino.jar -server -Xmx1024M SunflowGUI "); //For testing dev versions
-	MString cmd("\""+javaPath);
+	MString cmd("\"");
+    cmd += javaPath;
 	cmd +="/java\"";
-	MString args(" -Xmx1024M -server -jar \"");
+	MString args(" ");
+    args += javaArgs; // user JVM arguments
+    args += " -jar \"";
 	args += sunflowPath;
 	args += "/sunflow.jar\" ";
 	switch (materialOverride){
@@ -1310,7 +1321,7 @@ MStatus sunflowExportCmd::doIt(const MArgList& args) {
 	std::cout << cmd.asChar() << args.asChar() << std::endl;
 
 #ifdef _WIN32
-	ShellExecute( NULL, NULL, ( LPCTSTR ) cmd.asChar(), ( LPCTSTR ) args.asChar(), ( LPCTSTR ) sunflowPath.asChar(), SW_SHOWNORMAL );
+	ShellExecute( NULL, NULL, ( LPCTSTR ) cmd.asChar(), ( LPCTSTR ) args.asChar(), ( LPCTSTR ) sunflowPath, SW_SHOWNORMAL );
 #else
 	cmd = cmd + args + "&";
 	system(cmd.asChar());

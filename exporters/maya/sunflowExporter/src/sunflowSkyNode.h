@@ -1,3 +1,7 @@
+#ifndef SUNFLOW_SKY_NODE_H
+#define SUNFLOW_SKY_NODE_H
+
+#include "skylight.h"
 #include <maya/MPxLocatorNode.h> 
 #include <maya/MString.h> 
 #include <maya/MTypeId.h> 
@@ -17,8 +21,6 @@
 #include <maya/MVectorArray.h>
 
 #include <math.h>
-
-#include "skylight.h"
 
 
 #define PI              3.14159265358979323846
@@ -88,3 +90,5 @@ protected:
 	//static MObject			groundColor;
 
 };
+
+#endif /* SUNFLOW_SKY_NODE_H */

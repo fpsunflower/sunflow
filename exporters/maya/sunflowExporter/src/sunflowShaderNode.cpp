@@ -1,3 +1,4 @@
+#include "sunflowShaderNode.h"
 #include <maya/MString.h>
 #include <maya/MTypeId.h>
 #include <maya/MPlug.h>
@@ -9,7 +10,6 @@
 #include <maya/MFloatVector.h>
 #include <maya/MFnEnumAttribute.h>
 #include <maya/MRenderUtil.h> // add for raytracing api enhancement
-#include "sunflowShaderNode.h"
 #include <iostream>
 #include <cmath>
 

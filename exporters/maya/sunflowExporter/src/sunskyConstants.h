@@ -1,3 +1,6 @@
+#ifndef SUNSKY_CONSTANTS_H
+#define SUNSKY_CONSTANTS_H
+
 ////////////////////////////////////////////////////////////////////////////
 //	copyright	: (C) 2006 by Mad Crew 
 //	Email		: fredrik (at) madcrew (dot) se
@@ -135,3 +138,5 @@ static double CIE_Z[] = {
   0.0000, 0.0000, 0.0000, 0.0000, 0.0000,
   0.0000
 };
+
+#endif /* SUNSKY_CONSTANTS_H */

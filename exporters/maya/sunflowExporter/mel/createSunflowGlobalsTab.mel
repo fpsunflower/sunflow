@@ -475,8 +475,6 @@ global proc createSunflowSystemFrame( string $sunflowGlobals, string $parent )
 
 	columnLayout -adj true;
 		textFieldButtonGrp -label "Export Path" -text "" -buttonLabel "..." -bc "fileBrowserDialog -m 4 -fc \"sunflowSetExportPath\" -ft \"directory\" -an \"Select\";" ($prefix+"ExportPath");
-		textFieldButtonGrp -label "Java Path" -text "Text" -buttonLabel "..." -bc "fileBrowserDialog -m 4 -fc \"sunflowSetJavaPath\" -ft \"directory\" -an \"Select\";" ($prefix+"JavaPath");
-		textFieldButtonGrp -label "Sunflow Path" -text "Text" -buttonLabel "..." -bc "fileBrowserDialog -m 4 -fc \"sunflowSetSunflowPath\" -ft \"directory\" -an \"Select\";" ($prefix+"SunflowPath");		
 			
 	// end columnLayout
 	setParent ..;
@@ -492,24 +490,6 @@ global proc int sunflowSetExportPath( string $dirName, string $fileType )
 	return 1;
 }
 
-global proc int sunflowSetJavaPath( string $dirName, string $fileType )
-{
-	string $sunflowGlobals = sunflowCheckGlobals();
-	setAttr -type "string" ($sunflowGlobals+".javaPath") $dirName;
-	writeSunflowINI($sunflowGlobals);
-	updateSunflowSystemFrameUI();
-	return 1;
-}
-
-global proc int sunflowSetSunflowPath( string $dirName, string $fileType )
-{
-	string $sunflowGlobals = sunflowCheckGlobals();	
-	setAttr -type "string" ($sunflowGlobals+".sunflowPath") $dirName;
-	writeSunflowINI($sunflowGlobals);
-	updateSunflowSystemFrameUI();
-	return 1;
-}
-
 global proc updateSunflowSystemFrameUI()
 {
 	string $oldParent = `setParent -query`;
@@ -519,12 +499,8 @@ global proc updateSunflowSystemFrameUI()
 	string $sunflowGlobals = sunflowCheckGlobals();	
 
 	string $exportPath = `getAttr ($sunflowGlobals + ".exportPath")`;
-	string $javaPath = `getAttr ($sunflowGlobals + ".javaPath")`;
-	string $sunflowPath = `getAttr ($sunflowGlobals + ".sunflowPath")`;
 
 	textFieldButtonGrp -e -text $exportPath ($prefix+"ExportPath");
-	textFieldButtonGrp -e -text $javaPath ($prefix+"JavaPath");
-	textFieldButtonGrp -e -text $sunflowPath ($prefix+"SunflowPath");
 	
 	setParent $oldParent;
 }

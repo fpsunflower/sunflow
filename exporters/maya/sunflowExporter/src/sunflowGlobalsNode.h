@@ -1,5 +1,5 @@
-#ifndef _SUNFLOW_GLOBALS_NODE_H_
-#define _SUNFLOW_GLOBALS_NODE_H_ 
+#ifndef SUNFLOW_GLOBALS_NODE_H
+#define SUNFLOW_GLOBALS_NODE_H 
 
 /////////////////////////////////////////////////////////////////////////////////////////
 //Sunflow Render Globals Node
@@ -58,12 +58,8 @@ public:
 	static	MObject		ambOverrideDist;
 
 	static	MObject		exportPath;
-	static	MObject		javaPath;
-	static	MObject		sunflowPath;
-
-
 
 	static	MTypeId		id;
 };
 
-#endif /* _SUNFLOW_GLOBALS_NODE_H_ */
+#endif /* SUNFLOW_GLOBALS_NODE_H */

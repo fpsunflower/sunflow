@@ -13,9 +13,6 @@ global proc string sunflowCheckGlobals(){
 			delete $unusedNodes;
 	}else{
 		$globalsNode = `createNode sunflowGlobalsNode`;
-		string $settings[] = `readSunflowINI`;
-		setAttr -type "string" ($globalsNode+".javaPath") $settings[0];
-		setAttr -type "string" ($globalsNode+".sunflowPath") $settings[1];
 	}
 	string $projPath = `workspace -q -rd`;
 	string $tmpPath = $projPath+"sunflowScenes/";
@@ -24,57 +21,8 @@ global proc string sunflowCheckGlobals(){
 		sysFile -makeDir $tmpPath;
 	if($exportPath=="")
 		setAttr -type "string" ($globalsNode+".exportPath") $tmpPath;
-	string $javaPath = `getAttr ($globalsNode+".javaPath")`;
-	string $sunflowPath = `getAttr ($globalsNode+".sunflowPath")`;
-	if(!size($javaPath) || !size($sunflowPath)){
-		warning("Set your pathes under the system tab in Sunflow render globals!");
-	}
 	select $sel;
 	return $globalsNode;
-}
-
-global proc string[] readSunflowINI(){	
-	string $settings[] = {"","","","","","","","","","",""};
-	string $pluginPath = `pluginInfo -q -p sunflowExport`;
-	string $iniPath = `substitute ".mll" $pluginPath ".ini"`;
-	$iniPath = `substitute ".so" $iniPath ".ini"`;
-	if(!`filetest -r $iniPath`)
-		return $settings;
-	$fileId=`fopen $iniPath "r"`;
-	string $nextLine = `fgetline $fileId`;
-	while ( size( $nextLine ) > 0 ) {
-		string $tokens[];
-		$numTokens = `tokenize $nextLine "=" $tokens`;
-		switch ($tokens[0]) {			
-			case "javaPath":
-				$settings[0] = `substitute "\n" $tokens[1] ""`;
-				break;
-			case "sunflowPath":
-				$settings[1] = `substitute "\n" $tokens[1] ""`;
-				break;
-			default:
-				break;
-		}
-		$nextLine = `fgetline $fileId`;
-	}
-	fclose $fileId;
-	return $settings;
-}
-
-global proc writeSunflowINI(string $globalsNode){	
-	string $pluginPath = `pluginInfo -q -p sunflowExport`;
-	string $iniPath = `substitute ".mll" $pluginPath ".ini"`;
-	$iniPath = `substitute ".so" $iniPath ".ini"`;
-		
-	print("Writing sunflow INI to file: "+$iniPath+"\n");
-	
-	string $javaPath = `getAttr ($globalsNode+".javaPath")`;
-	string $sunflowPath = `getAttr ($globalsNode+".sunflowPath")`;
-	
-	$fileId=`fopen $iniPath "w"`;	
-	fprint $fileId ("javaPath="+$javaPath+"\n");
-	fprint $fileId ("sunflowPath="+$sunflowPath+"\n");
-	fclose $fileId;
 }
 
 global proc string[] sunflowCreateSunSky(){

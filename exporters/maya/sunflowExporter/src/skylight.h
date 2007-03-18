@@ -20,7 +20,7 @@
 
 #include <maya/MColor.h>
 #include <maya/MVector.h>
-#include <math.h>
+#include <cmath>
 //=============================================================================
 // SunSky
 class SunSky
@@ -65,6 +65,4 @@ private:
   MColor toRGB(double x, double y, double Ys );
 };
 
-
-
-#endif
+#endif /* SUNSKY_H */

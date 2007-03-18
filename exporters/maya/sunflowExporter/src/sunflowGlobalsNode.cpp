@@ -1,12 +1,11 @@
+#include "sunflowGlobalsNode.h"
+#include "sunflowConstants.h"
 #include <maya/MFnUnitAttribute.h>
 #include <maya/MFnEnumAttribute.h>
 #include <maya/MFnNumericAttribute.h>
 #include <maya/MFnTypedAttribute.h>
 #include <maya/MFnMessageAttribute.h>
 #include <maya/MGlobal.h>
-
-#include "sunflowGlobalsNode.h"
-#include "sunflowConstants.h"
 
 MTypeId sunflowGlobalsNode::id( 0x00114153 );
 
@@ -41,8 +40,6 @@ MObject sunflowGlobalsNode::skySamples;
 MObject sunflowGlobalsNode::skyExposure;
 MObject sunflowGlobalsNode::materialOverride;
 MObject sunflowGlobalsNode::ambOverrideDist;
-MObject sunflowGlobalsNode::javaPath;
-MObject sunflowGlobalsNode::sunflowPath;
 
 MStatus sunflowGlobalsNode::compute( const MPlug& plug, MDataBlock& data )
 {
@@ -68,16 +65,6 @@ MStatus sunflowGlobalsNode::initialize(){
 	pixelFilter = enumAttr.create( "pixelFilter", "pf", 0, &stat );
 	for (unsigned int i = 0; i < NUM_FILTER_NAMES; i++)
 		stat = enumAttr.addField(FILTER_NAMES[i], i);
-	/*
-	stat = enumAttr.addField( "box", 0 );
-	stat = enumAttr.addField( "triangle", 1 );
-	stat = enumAttr.addField( "catmull-rom", 2 );
-	stat = enumAttr.addField( "mitchell", 3 );
-	stat = enumAttr.addField( "lanczos", 4 );
-	stat = enumAttr.addField( "blackman-harris", 5 );
-	stat = enumAttr.addField( "sinc", 6 );
-	stat = enumAttr.addField( "gaussian", 7 );
-	*/
 
 	stat = addAttribute (pixelFilter);
 	if (!stat) { stat.perror("addAttribute pixelFilter"); return stat;}
@@ -209,14 +196,6 @@ MStatus sunflowGlobalsNode::initialize(){
 	exportPath = tAttr.create(MString("exportPath"), MString("ep"), MFnData::kString, exportPath, &stat );
 	stat = addAttribute (exportPath);
 		if (!stat) { stat.perror("addAttribute exportPath"); return stat;}
-
-	javaPath = tAttr.create(MString("javaPath"), MString("jp"), MFnData::kString, javaPath, &stat );
-	stat = addAttribute (javaPath);
-		if (!stat) { stat.perror("addAttribute javaPath"); return stat;}
-
-	sunflowPath = tAttr.create(MString("sunflowPath"), MString("sp"), MFnData::kString, sunflowPath, &stat );
-	stat = addAttribute (sunflowPath);
-		if (!stat) { stat.perror("addAttribute sunflowPath"); return stat;}
 
 	return MS::kSuccess;
 }
