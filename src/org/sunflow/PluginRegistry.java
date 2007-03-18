@@ -105,11 +105,13 @@ import org.sunflow.image.BitmapReader;
 import org.sunflow.image.BitmapWriter;
 import org.sunflow.image.readers.BMPBitmapReader;
 import org.sunflow.image.readers.HDRBitmapReader;
+import org.sunflow.image.readers.IGIBitmapReader;
 import org.sunflow.image.readers.JPGBitmapReader;
 import org.sunflow.image.readers.PNGBitmapReader;
 import org.sunflow.image.readers.TGABitmapReader;
 import org.sunflow.image.writers.EXRBitmapWriter;
 import org.sunflow.image.writers.HDRBitmapWriter;
+import org.sunflow.image.writers.IGIBitmapWriter;
 import org.sunflow.image.writers.PNGBitmapWriter;
 import org.sunflow.image.writers.TGABitmapWriter;
 import org.sunflow.system.Plugins;
@@ -296,6 +298,7 @@ public final class PluginRegistry {
         bitmapReaderPlugins.registerPlugin("png", PNGBitmapReader.class);
         bitmapReaderPlugins.registerPlugin("jpg", JPGBitmapReader.class);
         bitmapReaderPlugins.registerPlugin("bmp", BMPBitmapReader.class);
+        bitmapReaderPlugins.registerPlugin("igi", IGIBitmapReader.class);
     }
     
     static {
@@ -304,5 +307,6 @@ public final class PluginRegistry {
         bitmapWriterPlugins.registerPlugin("hdr", HDRBitmapWriter.class);
         bitmapWriterPlugins.registerPlugin("tga", TGABitmapWriter.class);
         bitmapWriterPlugins.registerPlugin("exr", EXRBitmapWriter.class);
+        bitmapWriterPlugins.registerPlugin("igi", IGIBitmapWriter.class);
     }
 }

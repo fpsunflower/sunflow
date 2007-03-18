@@ -731,7 +731,7 @@ public class SunflowAPI implements SunflowAPIInterface {
         String extension = FileUtils.getExtension(filename);
         SceneParser parser = PluginRegistry.parserPlugins.createObject(extension);
         if (parser == null) {
-            UI.printError(Module.API, "Unable to find a suitable parser for: \"%s\"", filename);
+            UI.printError(Module.API, "Unable to find a suitable parser for: \"%s\" (extension: %s)", filename, extension);
             return false;
         }
         String currentFolder = new File(filename).getAbsoluteFile().getParentFile().getAbsolutePath();

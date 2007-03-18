@@ -1,6 +1,7 @@
 package org.sunflow.system;
 
 import java.io.File;
+import java.util.Locale;
 
 public final class FileUtils {
     /**
@@ -16,7 +17,8 @@ public final class FileUtils {
         File f = new File(filename);
         if (f.isDirectory())
             return null;
-        int idx = new File(filename).getName().lastIndexOf('.');
-        return idx == -1 ? null : filename.substring(idx + 1);
+        String name = new File(filename).getName();
+        int idx = name.lastIndexOf('.');
+        return idx == -1 ? null : name.substring(idx + 1).toLowerCase(Locale.ENGLISH);
     }
 }

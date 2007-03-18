@@ -26,7 +26,7 @@ public class HDRBitmapWriter implements BitmapWriter {
     }
 
     public void writeTile(int x, int y, int w, int h, Color[] color, float[] alpha) throws IOException {
-        int[] tileData = ColorEncoder.quantizeRGBE(color);
+        int[] tileData = ColorEncoder.encodeRGBE(color);
         for (int j = 0, index = 0, pixel = x + y * width; j < h; j++, pixel += width - w)
             for (int i = 0; i < w; i++, index++, pixel++)
                 data[pixel] = tileData[index];

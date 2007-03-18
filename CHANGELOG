@@ -1,4 +1,5 @@
 v0.07.3
+* Added reading/writing of Indigo's IGI file format
 * Added GenericBitmap format for simple debugging tasks
 * Added more robust file extension detection
 * Refactored Bitmap loading/saving with plugin system
