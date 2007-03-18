@@ -35,6 +35,7 @@ import org.sunflow.math.Matrix4;
 import org.sunflow.math.Point2;
 import org.sunflow.math.Point3;
 import org.sunflow.math.Vector3;
+import org.sunflow.system.FileUtils;
 import org.sunflow.system.SearchPath;
 import org.sunflow.system.Timer;
 import org.sunflow.system.UI;
@@ -141,6 +142,10 @@ public class SunflowAPI implements SunflowAPIInterface {
             PluginRegistry.imageSamplerPlugins.registerPlugin(name, code);
         else if (type.equals("parser"))
             PluginRegistry.parserPlugins.registerPlugin(name, code);
+        else if (type.equals("bitmap_reader"))
+            PluginRegistry.bitmapReaderPlugins.registerPlugin(name, code);
+        else if (type.equals("bitmap_writer"))
+            PluginRegistry.bitmapWriterPlugins.registerPlugin(name, code);
         else
             UI.printWarning(Module.API, "Unrecognized plugin type: \"%s\" - ignoring declaration of \"%s\"", type, name);
     }
@@ -723,7 +728,7 @@ public class SunflowAPI implements SunflowAPIInterface {
         if (filename == null)
             return false;
         filename = includeSearchPath.resolvePath(filename);
-        String extension = filename.substring(filename.lastIndexOf('.') + 1);
+        String extension = FileUtils.getExtension(filename);
         SceneParser parser = PluginRegistry.parserPlugins.createObject(extension);
         if (parser == null) {
             UI.printError(Module.API, "Unable to find a suitable parser for: \"%s\"", filename);

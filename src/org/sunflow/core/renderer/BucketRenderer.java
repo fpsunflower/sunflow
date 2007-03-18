@@ -13,8 +13,8 @@ import org.sunflow.core.Shader;
 import org.sunflow.core.ShadingState;
 import org.sunflow.core.bucket.BucketOrderFactory;
 import org.sunflow.core.filter.BoxFilter;
-import org.sunflow.image.Bitmap;
 import org.sunflow.image.Color;
+import org.sunflow.image.formats.GenericBitmap;
 import org.sunflow.math.MathUtils;
 import org.sunflow.math.QMC;
 import org.sunflow.system.Timer;
@@ -245,10 +245,10 @@ public class BucketRenderer implements ImageSampler {
                 refineSamples(samples, sbw, x, y, maxStepSize, thresh, istate);
         if (dumpBuckets) {
             UI.printInfo(Module.BCKT, "Dumping bucket [%d, %d] to file ...", bx, by);
-            Bitmap bitmap = new Bitmap(sbw, sbh, true);
+            GenericBitmap bitmap = new GenericBitmap(sbw, sbh);
             for (int y = sbh - 1, index = 0; y >= 0; y--)
                 for (int x = 0; x < sbw; x++, index++)
-                    bitmap.setPixel(x, y, samples[index].c.copy().toNonLinear());
+                    bitmap.writePixel(x, y, samples[index].c, samples[index].alpha);
             bitmap.save(String.format("bucket_%04d_%04d.png", bx, by));
         }
         if (displayAA) {

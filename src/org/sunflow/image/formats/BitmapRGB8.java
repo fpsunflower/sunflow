@@ -3,7 +3,7 @@ package org.sunflow.image.formats;
 import org.sunflow.image.Bitmap2;
 import org.sunflow.image.Color;
 
-public class BitmapRGB8 implements Bitmap2 {
+public class BitmapRGB8 extends Bitmap2 {
     private int w, h;
     private byte[] data;
 

@@ -3,7 +3,7 @@ package org.sunflow.image.formats;
 import org.sunflow.image.Bitmap2;
 import org.sunflow.image.Color;
 
-public class BitmapRGBE implements Bitmap2 {
+public class BitmapRGBE extends Bitmap2 {
     private int w, h;
     private int[] data;
     private static final float[] EXPONENT = new float[256];

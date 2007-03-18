@@ -1,4 +1,7 @@
 v0.07.3
+* Added GenericBitmap format for simple debugging tasks
+* Added more robust file extension detection
+* Refactored Bitmap loading/saving with plugin system
 * Bug fix when reading interpolation types on non-english operating systems
 * Added -translate command line parameter
 * Added translate() method to convert any file format into the new ones

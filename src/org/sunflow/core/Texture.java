@@ -10,6 +10,7 @@ import org.sunflow.image.BitmapReader.BitmapFormatException;
 import org.sunflow.math.MathUtils;
 import org.sunflow.math.OrthoNormalBasis;
 import org.sunflow.math.Vector3;
+import org.sunflow.system.FileUtils;
 import org.sunflow.system.UI;
 import org.sunflow.system.UI.Module;
 
@@ -37,7 +38,7 @@ public class Texture {
     private synchronized void load() {
         if (loaded != 0)
             return;
-        String extension = filename.substring(filename.lastIndexOf('.') + 1);
+        String extension = FileUtils.getExtension(filename);
         try {
             UI.printInfo(Module.TEX, "Reading texture bitmap from: \"%s\" ...", filename);
             BitmapReader reader = PluginRegistry.bitmapReaderPlugins.createObject(extension);

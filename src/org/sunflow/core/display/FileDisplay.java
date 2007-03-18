@@ -6,6 +6,7 @@ import org.sunflow.PluginRegistry;
 import org.sunflow.core.Display;
 import org.sunflow.image.BitmapWriter;
 import org.sunflow.image.Color;
+import org.sunflow.system.FileUtils;
 import org.sunflow.system.UI;
 import org.sunflow.system.UI.Module;
 
@@ -19,7 +20,7 @@ public class FileDisplay implements Display {
 
     public FileDisplay(String filename) {
         this.filename = filename == null ? "output.png" : filename;
-        String extension = filename.substring(filename.lastIndexOf('.') + 1);
+        String extension = FileUtils.getExtension(filename);
         writer = PluginRegistry.bitmapWriterPlugins.createObject(extension);
     }
 

@@ -3,7 +3,7 @@ package org.sunflow.image.formats;
 import org.sunflow.image.Bitmap2;
 import org.sunflow.image.Color;
 
-public class BitmapBlack implements Bitmap2 {
+public class BitmapBlack extends Bitmap2 {
     public int getWidth() {
         return 1;
     }
