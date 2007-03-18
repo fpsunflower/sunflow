@@ -43,7 +43,7 @@ public final class Plugins<T> {
             return null;
         Class<? extends T> c = pluginClasses.get(name);
         if (c == null) {
-            UI.printError(Module.API, "Cannot create object of type \"%s\" - type was not found", name);
+            // don't print an error, this will be handled by the caller
             return null;
         }
         try {
