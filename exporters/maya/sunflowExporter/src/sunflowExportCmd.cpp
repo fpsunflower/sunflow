@@ -31,6 +31,14 @@
 #include <string>
 #include "sunflowExportCmd.h"
 #include "sunflowShaderNode.h"
+#include "sunflowConstants.h"
+#if defined(_WIN32)
+#include <cstdio>
+#include <windows.h>
+#else
+#include <cstdlib>
+#endif
+
 
 // global variables:
 
@@ -623,9 +631,22 @@ MStatus sunflowExportCmd::doIt(const MArgList& args) {
 		getCustomAttribute(exportPath, "exportPath", globals);		
 		exportPath += "/sunflowTmp.sc";
 
+		// use environment variables if they exist:
+		const char* sunflowPathEnv = getenv("SUNFLOW_PATH");
+		if (sunflowPathEnv != 0)
+			sunflowPath = sunflowPathEnv;
+		const char* javaPathEnv = getenv("SUNFLOW_JAVA_PATH");
+		if (javaPathEnv != 0)
+			javaPath = javaPathEnv;
+		
+		std::cout << "Using sunflow path: " << sunflowPath.asChar() << std::endl;
+		std::cout << "Using java path:    " << javaPath.asChar() << std::endl;
+
 		file.open(exportPath.asChar());
 
 		//IMAGE BLOCK OUTPUT
+/*
+		// FIXME: must match Enum declaration in sunflowGlobalsNode
 		MStringArray filters;
 		filters.append("box");
 		filters.append("triangle");
@@ -634,9 +655,14 @@ MStatus sunflowExportCmd::doIt(const MArgList& args) {
 		filters.append("lanczos");
 		filters.append("blackman-harris");
 		filters.append("sinc");
-
+		filters.append("gaussian");
+*/
 		int pixelFilter;		
 		getCustomAttribute(pixelFilter, "pixelFilter", globals);
+		if (pixelFilter < 0)
+			pixelFilter = 0;
+		else if (pixelFilter >= NUM_FILTER_NAMES)
+			pixelFilter = NUM_FILTER_NAMES - 1;
 
 		int minSamples;		
 		getCustomAttribute(minSamples, "minSamples", globals);
@@ -650,7 +676,7 @@ MStatus sunflowExportCmd::doIt(const MArgList& args) {
 		file << "image {" << std::endl;
 		file << "\tresolution " << resX << " " << resY << std::endl;
 		file << "\taa " << minSamples << " " << maxSamples << std::endl;
-		file << "\tfilter " << filters[pixelFilter].asChar() << std::endl;
+		file << "\tfilter " << FILTER_NAMES[pixelFilter] << std::endl;
 		file << "}" << std::endl;
 		file << std::endl;
 
@@ -1283,28 +1309,12 @@ MStatus sunflowExportCmd::doIt(const MArgList& args) {
 	args += "\"";	
 	std::cout << cmd.asChar() << args.asChar() << std::endl;
 
-	#if defined(_WIN32)
-	#include <stdio.h>
-	#include <windows.h>
+#ifdef _WIN32
 	ShellExecute( NULL, NULL, ( LPCTSTR ) cmd.asChar(), ( LPCTSTR ) args.asChar(), ( LPCTSTR ) sunflowPath.asChar(), SW_SHOWNORMAL );
-	#endif // _WIN32
-
-	#if defined(LINUX)
-	#include <sys/types.h>
-	#include <unistd.h>
-	#include <stdlib.h>
+#else
 	cmd = cmd + args + "&";
-	system( cmd.asChar() );
-	#endif // LINUX
-
-	#if defined(OSX)
-	#include <sys/types.h>
-	#include <unistd.h>
-	#include <stdlib.h>
-	chdir( sunflowPath.asChar() );
-	MString command = cmd + arg + "&";
-	system( cmd.asChar() );
-	#endif // OSX
+	system(cmd.asChar());
+#endif
 
     return MS::kSuccess;
 }

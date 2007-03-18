@@ -6,6 +6,7 @@
 #include <maya/MGlobal.h>
 
 #include "sunflowGlobalsNode.h"
+#include "sunflowConstants.h"
 
 MTypeId sunflowGlobalsNode::id( 0x00114153 );
 
@@ -65,6 +66,9 @@ MStatus sunflowGlobalsNode::initialize(){
 	if (!stat) { stat.perror("addAttribute preset"); return stat;}
 
 	pixelFilter = enumAttr.create( "pixelFilter", "pf", 0, &stat );
+	for (unsigned int i = 0; i < NUM_FILTER_NAMES; i++)
+		stat = enumAttr.addField(FILTER_NAMES[i], i);
+	/*
 	stat = enumAttr.addField( "box", 0 );
 	stat = enumAttr.addField( "triangle", 1 );
 	stat = enumAttr.addField( "catmull-rom", 2 );
@@ -72,6 +76,8 @@ MStatus sunflowGlobalsNode::initialize(){
 	stat = enumAttr.addField( "lanczos", 4 );
 	stat = enumAttr.addField( "blackman-harris", 5 );
 	stat = enumAttr.addField( "sinc", 6 );
+	stat = enumAttr.addField( "gaussian", 7 );
+	*/
 
 	stat = addAttribute (pixelFilter);
 	if (!stat) { stat.perror("addAttribute pixelFilter"); return stat;}

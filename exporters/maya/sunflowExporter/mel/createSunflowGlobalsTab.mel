@@ -95,17 +95,8 @@ global proc createSunflowSamplingFrame( string $sunflowGlobals, string $parent )
 		attrFieldSliderGrp -min -3 -max 6 -label "Min Sampling" -attribute ($sunflowGlobals + ".minSamples");
 		// Max Sampling Tolerance
 		attrFieldSliderGrp -min -3 -max 6 -label "Max Sampling" -attribute ($sunflowGlobals + ".maxSamples");
-
-		// Pixel Filter
-		string $fullControlName = `optionMenuGrp -label "Pixel Filter"
-			-changeCommand "updateSunflowPixelFilter" ($prefix + "PixelFilter")`;
-			menuItem -label "box";
-			menuItem -label "triangle";
-			menuItem -label "catmull-rom";
-			menuItem -label "mitchell";
-			menuItem -label "lanczos";
-			menuItem -label "blackman-harris";
-			menuItem -label "sinc";
+		// Pixel Filter -- this syncs with the enum attribute automatically
+		attrEnumOptionMenuGrp -label "Pixel Filter" -attribute ($sunflowGlobals + ".pixelFilter");
 
 	// end columnLayout
 	setParent ..;
@@ -113,15 +104,8 @@ global proc createSunflowSamplingFrame( string $sunflowGlobals, string $parent )
 	setUITemplate -popTemplate;
 }
 
-global proc updateSunflowPixelFilter(){
-	string $prefix = sunflowGetPrefix();
-	string $sunflowGlobals = sunflowCheckGlobals();
-	// Get the current selection for the pixel filter.
-	string $menuName = ($prefix + "PixelFilter"); 
-	int    $selection = `optionMenuGrp -q -select $menuName`;
-	setAttr ($sunflowGlobals + ".pixelFilter") ($selection-1);
-}
-
+/*
+// this is no longer needed - unless we add something to this frame later
 global proc updateSunflowSamplingFrameUI()
 {
 	string $oldParent = `setParent -query`;
@@ -137,6 +121,7 @@ global proc updateSunflowSamplingFrameUI()
 
 	setParent $oldParent;
 }
+*/
 
 // createSunflowPhotonFrame
 //
