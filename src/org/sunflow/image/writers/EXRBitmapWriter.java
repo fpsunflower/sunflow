@@ -1,36 +1,27 @@
-package org.sunflow.core.display;
+package org.sunflow.image.writers;
 
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.util.Arrays;
 import java.util.zip.Deflater;
 
-import org.sunflow.core.Display;
+import org.sunflow.image.BitmapWriter;
 import org.sunflow.image.Color;
 import org.sunflow.system.ByteUtil;
 import org.sunflow.system.UI;
 import org.sunflow.system.UI.Module;
 
-/**
- * This display outputs a tiled OpenEXR file with RGB information.
- */
-public class OpenExrDisplay implements Display {
+public class EXRBitmapWriter implements BitmapWriter {
     private static final byte HALF = 1;
     private static final byte FLOAT = 2;
     private static final int HALF_SIZE = 2;
     private static final int FLOAT_SIZE = 4;
-
     private final static int OE_MAGIC = 20000630;
     private final static int OE_EXR_VERSION = 2;
     private final static int OE_TILED_FLAG = 0x00000200;
-
     private static final int NO_COMPRESSION = 0;
     private static final int RLE_COMPRESSION = 1;
-    // private static final int ZIPS_COMPRESSION = 2;
     private static final int ZIP_COMPRESSION = 3;
-    // private static final int PIZ_COMPRESSION = 4;
-    // private static final int PXR24_COMPRESSION = 5;
-
     private static final int RLE_MIN_RUN = 3;
     private static final int RLE_MAX_RUN = 127;
 
@@ -47,77 +38,63 @@ public class OpenExrDisplay implements Display {
     private byte[] tmpbuf;
     private byte[] comprbuf;
 
-    public OpenExrDisplay(String filename, String compression, String channelType) {
+    public EXRBitmapWriter() {
+        // default settings
+        configure("compression", "zip");
+        configure("channeltype", "half");
+    }
+
+    public void configure(String option, String value) {
+        if (option.equals("compression")) {
+            if (value.equals("none"))
+                compression = NO_COMPRESSION;
+            else if (value.equals("rle"))
+                compression = RLE_COMPRESSION;
+            else if (value.equals("zip"))
+                compression = ZIP_COMPRESSION;
+            else {
+                UI.printWarning(Module.IMG, "EXR - Compression type was not recognized - defaulting to zip");
+                compression = ZIP_COMPRESSION;
+            }
+        } else if (option.equals("channeltype")) {
+            if (value.equals("float")) {
+                this.channelType = FLOAT;
+                this.channelSize = FLOAT_SIZE;
+            } else if (value.equals("half")) {
+                this.channelType = HALF;
+                this.channelSize = HALF_SIZE;
+            } else {
+                UI.printWarning(Module.DISP, "EXR - Channel type was not recognized - defaulting to float");
+                this.channelType = FLOAT;
+                this.channelSize = FLOAT_SIZE;
+            }
+        }
+    }
+
+    public void openFile(String filename) throws IOException {
         this.filename = filename == null ? "output.exr" : filename;
-        if (compression == null || compression.equals("none"))
-            this.compression = NO_COMPRESSION;
-        else if (compression.equals("rle"))
-            this.compression = RLE_COMPRESSION;
-        else if (compression.equals("zip"))
-            this.compression = ZIP_COMPRESSION;
-        else {
-            UI.printWarning(Module.DISP, "EXR - Compression type was not recognized - defaulting to zip");
-            this.compression = ZIP_COMPRESSION;
-        }
-        if (channelType != null && channelType.equals("float")) {
-            this.channelType = FLOAT;
-            this.channelSize = FLOAT_SIZE;
-        } else if (channelType != null && channelType.equals("half")) {
-            this.channelType = HALF;
-            this.channelSize = HALF_SIZE;
-        } else {
-            UI.printWarning(Module.DISP, "EXR - Channel type was not recognized - defaulting to float");
-            this.channelType = FLOAT;
-            this.channelSize = FLOAT_SIZE;
-        }
     }
 
-    public void setGamma(float gamma) {
-        UI.printWarning(Module.DISP, "EXR - Gamma correction unsupported - ignoring");
+    public void writeHeader(int width, int height, int tileSize) throws IOException, UnsupportedOperationException {
+        file = new RandomAccessFile(filename, "rw");
+        file.setLength(0);
+        if (tileSize <= 0)
+            throw new UnsupportedOperationException("Can't use OpenEXR bitmap writer without buckets.");
+        writeRGBAHeader(width, height, tileSize);
     }
 
-    public void imageBegin(int w, int h, int bucketSize) {
-        try {
-            file = new RandomAccessFile(filename, "rw");
-            file.setLength(0);
-            if (bucketSize <= 0)
-                throw new Exception("Can't use OpenEXR display without buckets.");
-            writeRGBHeader(w, h, bucketSize);
-        } catch (Exception e) {
-            UI.printError(Module.DISP, "EXR - %s", e.getMessage());
-            e.printStackTrace();
-        }
+    public void writeTile(int x, int y, int w, int h, Color[] color, float[] alpha) throws IOException {
+        int tx = x / tileSize;
+        int ty = y / tileSize;
+        writeEXRTile(tx, ty, w, h, color, alpha);
     }
 
-    public void imagePrepare(int x, int y, int w, int h, int id) {
+    public void closeFile() throws IOException {
+        writeTileOffsets();
+        file.close();
     }
 
-    public synchronized void imageUpdate(int x, int y, int w, int h, Color[] data, float[] alpha) {
-        try {
-            // figure out which openexr tile corresponds to this bucket
-            int tx = x / tileSize;
-            int ty = y / tileSize;
-            writeTile(tx, ty, w, h, data, alpha);
-        } catch (IOException e) {
-            UI.printError(Module.DISP, "EXR - %s", e.getMessage());
-            e.printStackTrace();
-        }
-    }
-
-    public void imageFill(int x, int y, int w, int h, Color c, float alpha) {
-    }
-
-    public void imageEnd() {
-        try {
-            writeTileOffsets();
-            file.close();
-        } catch (IOException e) {
-            UI.printError(Module.DISP, "EXR - %s", e.getMessage());
-            e.printStackTrace();
-        }
-    }
-
-    public void writeRGBHeader(int w, int h, int tileSize) throws Exception {
+    private void writeRGBAHeader(int w, int h, int tileSize) throws IOException {
         byte[] chanOut = { 0, channelType, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1,
                 0, 0, 0 };
 
@@ -240,15 +217,15 @@ public class OpenExrDisplay implements Display {
         writeTileOffsets();
     }
 
-    public void writeTileOffsets() throws IOException {
+    private void writeTileOffsets() throws IOException {
         file.seek(tileOffsetsPosition);
         for (int ty = 0; ty < tilesY; ty++)
             for (int tx = 0; tx < tilesX; tx++)
                 file.write(ByteUtil.get8Bytes(tileOffsets[tx][ty]));
     }
 
-    private void writeTile(int tileX, int tileY, int w, int h, Color[] tile, float[] alpha) throws IOException {
-        byte[] rgb = new byte[4];
+    private synchronized void writeEXRTile(int tileX, int tileY, int w, int h, Color[] tile, float[] alpha) throws IOException {
+        byte[] rgb;
 
         // setting comprSize to max integer so without compression things
         // don't go awry

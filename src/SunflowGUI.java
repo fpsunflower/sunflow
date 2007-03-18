@@ -48,7 +48,6 @@ import org.sunflow.core.accel.KDTree;
 import org.sunflow.core.display.FileDisplay;
 import org.sunflow.core.display.FrameDisplay;
 import org.sunflow.core.display.ImgPipeDisplay;
-import org.sunflow.core.display.OpenExrDisplay;
 import org.sunflow.core.primitive.TriangleMesh;
 import org.sunflow.system.ImagePanel;
 import org.sunflow.system.Timer;
@@ -429,14 +428,7 @@ public class SunflowGUI extends javax.swing.JFrame implements UserInterface {
                 if (showFrame) {
                     display = new FrameDisplay(currentFilename);
                 } else {
-                    if (currentFilename != null && currentFilename.endsWith(".exr")) {
-                        try {
-                            display = new OpenExrDisplay(currentFilename, "zip", "float");
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                            return;
-                        }
-                    } else if (currentFilename != null && currentFilename.equals("imgpipe")) {
+                    if (currentFilename != null && currentFilename.equals("imgpipe")) {
                         display = new ImgPipeDisplay();
                     } else
                         display = new FileDisplay(currentFilename);

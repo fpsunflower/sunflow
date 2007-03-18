@@ -1,48 +1,72 @@
 package org.sunflow.core.display;
 
+import java.io.IOException;
+
+import org.sunflow.PluginRegistry;
 import org.sunflow.core.Display;
-import org.sunflow.image.Bitmap;
+import org.sunflow.image.BitmapWriter;
 import org.sunflow.image.Color;
+import org.sunflow.system.UI;
+import org.sunflow.system.UI.Module;
 
 public class FileDisplay implements Display {
-    private Bitmap bitmap;
+    private BitmapWriter writer;
     private String filename;
 
     public FileDisplay(boolean saveImage) {
-        // a constructor that allows the image to not be saved
-        // usefull for benchmarking purposes
-        bitmap = null;
-        filename = saveImage ? "output.png" : null;
+        this(saveImage ? "output.png" : ".none");
     }
 
     public FileDisplay(String filename) {
-        bitmap = null;
         this.filename = filename == null ? "output.png" : filename;
+        String extension = filename.substring(filename.lastIndexOf('.') + 1);
+        writer = PluginRegistry.bitmapWriterPlugins.createObject(extension);
     }
 
     public void imageBegin(int w, int h, int bucketSize) {
-        if (bitmap == null || bitmap.getWidth() != w || bitmap.getHeight() != h)
-            bitmap = new Bitmap(w, h, filename == null || filename.endsWith(".hdr"));
+        if (writer == null)
+            return;
+        try {
+            writer.openFile(filename);
+            writer.writeHeader(w, h, bucketSize);
+        } catch (IOException e) {
+            UI.printError(Module.IMG, "I/O error occured while preparing image for display: %s", e.getMessage());
+        }
     }
 
     public void imagePrepare(int x, int y, int w, int h, int id) {
+        // does nothing for files
     }
 
     public void imageUpdate(int x, int y, int w, int h, Color[] data, float[] alpha) {
-        for (int j = 0, index = 0; j < h; j++)
-            for (int i = 0; i < w; i++, index++)
-                bitmap.setPixel(x + i, bitmap.getHeight() - 1 - (y + j), data[index]);
+        if (writer == null)
+            return;
+        try {
+            writer.writeTile(x, y, w, h, data, alpha);
+        } catch (IOException e) {
+            UI.printError(Module.IMG, "I/O error occured while writing image tile [(%d,%d) %dx%d] image for display: %s", x, y, w, h, e.getMessage());
+        }
     }
 
     public void imageFill(int x, int y, int w, int h, Color c, float alpha) {
-        Color cg = c;
-        for (int j = 0; j < h; j++)
-            for (int i = 0; i < w; i++)
-                bitmap.setPixel(x + i, bitmap.getHeight() - 1 - (y + j), cg);
+        if (writer == null)
+            return;
+        Color[] colorTile = new Color[w * h];
+        float[] alphaTile = new float[w * h];
+        for (int i = 0; i < colorTile.length; i++) {
+            colorTile[i] = c;
+            alphaTile[i] = alpha;
+        }
+        imageUpdate(x, y, w, h, colorTile, alphaTile);
     }
 
     public void imageEnd() {
-        if (filename != null)
-            bitmap.save(filename);
+        if (writer == null)
+            return;
+        try {
+            writer.closeFile();
+        } catch (IOException e) {
+            UI.printError(Module.IMG, "I/O error occured while closing the display: %s", e.getMessage());
+        }
     }
 }
