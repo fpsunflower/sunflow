@@ -1,6 +1,6 @@
 package org.sunflow.image;
 
-public abstract class Bitmap2 {
+public abstract class Bitmap {
     protected static final float INV255 = 1.0f / 255;
     protected static final float INV65535 = 1.0f / 65535;
 

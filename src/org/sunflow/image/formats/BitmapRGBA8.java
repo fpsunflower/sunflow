@@ -1,9 +1,9 @@
 package org.sunflow.image.formats;
 
-import org.sunflow.image.Bitmap2;
+import org.sunflow.image.Bitmap;
 import org.sunflow.image.Color;
 
-public class BitmapRGBA8 extends Bitmap2 {
+public class BitmapRGBA8 extends Bitmap {
     private int w, h;
     private byte[] data;
 

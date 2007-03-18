@@ -6,13 +6,13 @@ import java.io.IOException;
 
 import javax.imageio.ImageIO;
 
-import org.sunflow.image.Bitmap2;
+import org.sunflow.image.Bitmap;
 import org.sunflow.image.BitmapReader;
 import org.sunflow.image.Color;
 import org.sunflow.image.formats.BitmapRGBA8;
 
 public class PNGBitmapReader implements BitmapReader {
-    public Bitmap2 load(String filename, boolean isLinear) throws IOException, BitmapFormatException {
+    public Bitmap load(String filename, boolean isLinear) throws IOException, BitmapFormatException {
         // regular image, load using Java api
         BufferedImage bi = ImageIO.read(new File(filename));
         int width = bi.getWidth();

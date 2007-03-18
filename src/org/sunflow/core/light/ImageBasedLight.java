@@ -12,7 +12,7 @@ import org.sunflow.core.Shader;
 import org.sunflow.core.ShadingState;
 import org.sunflow.core.Texture;
 import org.sunflow.core.TextureCache;
-import org.sunflow.image.Bitmap2;
+import org.sunflow.image.Bitmap;
 import org.sunflow.image.Color;
 import org.sunflow.math.BoundingBox;
 import org.sunflow.math.Matrix4;
@@ -56,7 +56,7 @@ public class ImageBasedLight implements PrimitiveList, LightSource, Shader {
         // no texture provided
         if (texture == null)
             return false;
-        Bitmap2 b = texture.getBitmap();
+        Bitmap b = texture.getBitmap();
         if (b == null)
             return false;
 

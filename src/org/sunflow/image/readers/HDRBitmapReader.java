@@ -3,12 +3,12 @@ package org.sunflow.image.readers;
 import java.io.FileInputStream;
 import java.io.IOException;
 
-import org.sunflow.image.Bitmap2;
+import org.sunflow.image.Bitmap;
 import org.sunflow.image.BitmapReader;
 import org.sunflow.image.formats.BitmapRGBE;
 
 public class HDRBitmapReader implements BitmapReader {
-    public Bitmap2 load(String filename, boolean isLinear) throws IOException, BitmapFormatException {
+    public Bitmap load(String filename, boolean isLinear) throws IOException, BitmapFormatException {
         // load radiance rgbe file
         FileInputStream f = new FileInputStream(filename);
         // parse header

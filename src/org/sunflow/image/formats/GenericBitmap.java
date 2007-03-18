@@ -3,7 +3,7 @@ package org.sunflow.image.formats;
 import java.io.IOException;
 
 import org.sunflow.PluginRegistry;
-import org.sunflow.image.Bitmap2;
+import org.sunflow.image.Bitmap;
 import org.sunflow.image.BitmapWriter;
 import org.sunflow.image.Color;
 import org.sunflow.system.FileUtils;
@@ -15,7 +15,7 @@ import org.sunflow.system.UI.Module;
  * debugging purposes (dumping small images), when memory usage is not a
  * concern.
  */
-public class GenericBitmap extends Bitmap2 {
+public class GenericBitmap extends Bitmap {
     private int w, h;
     private Color[] color;
     private float[] alpha;

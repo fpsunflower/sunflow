@@ -3,7 +3,7 @@ package org.sunflow.core;
 import java.io.IOException;
 
 import org.sunflow.PluginRegistry;
-import org.sunflow.image.Bitmap2;
+import org.sunflow.image.Bitmap;
 import org.sunflow.image.BitmapReader;
 import org.sunflow.image.Color;
 import org.sunflow.image.BitmapReader.BitmapFormatException;
@@ -20,7 +20,7 @@ import org.sunflow.system.UI.Module;
 public class Texture {
     private String filename;
     private boolean isLinear;
-    private Bitmap2 bitmap;
+    private Bitmap bitmap;
     private int loaded;
 
     /**
@@ -59,7 +59,7 @@ public class Texture {
         loaded = 1;
     }
 
-    public Bitmap2 getBitmap() {
+    public Bitmap getBitmap() {
         if (loaded == 0)
             load();
         return bitmap;
@@ -76,7 +76,7 @@ public class Texture {
      * @return filtered color at location (x,y)
      */
     public Color getPixel(float x, float y) {
-        Bitmap2 bitmap = getBitmap();
+        Bitmap bitmap = getBitmap();
         if (bitmap == null)
             return Color.BLACK;
         x = MathUtils.frac(x);
@@ -112,7 +112,7 @@ public class Texture {
     }
 
     public Vector3 getBump(float x, float y, OrthoNormalBasis basis, float scale) {
-        Bitmap2 bitmap = getBitmap();
+        Bitmap bitmap = getBitmap();
         if (bitmap == null)
             return basis.transform(new Vector3(0, 0, 1));
         float dx = 1.0f / (bitmap.getWidth() - 1);

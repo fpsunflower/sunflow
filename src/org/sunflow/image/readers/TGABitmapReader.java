@@ -3,7 +3,7 @@ package org.sunflow.image.readers;
 import java.io.FileInputStream;
 import java.io.IOException;
 
-import org.sunflow.image.Bitmap2;
+import org.sunflow.image.Bitmap;
 import org.sunflow.image.BitmapReader;
 import org.sunflow.image.Color;
 import org.sunflow.image.formats.BitmapG8;
@@ -13,7 +13,7 @@ import org.sunflow.image.formats.BitmapRGBA8;
 public class TGABitmapReader implements BitmapReader {
     private static final int[] CHANNEL_INDEX = { 2, 1, 0, 3 };
 
-    public Bitmap2 load(String filename, boolean isLinear) throws IOException, BitmapFormatException {
+    public Bitmap load(String filename, boolean isLinear) throws IOException, BitmapFormatException {
         FileInputStream f = new FileInputStream(filename);
         byte[] read = new byte[4];
 

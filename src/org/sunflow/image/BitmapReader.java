@@ -13,9 +13,9 @@ public interface BitmapReader {
      * thrown. It is an error for this method to return <code>null</code>.
      * 
      * @param filename image filename to load
-     * @return a new {@link Bitmap2} object
+     * @return a new {@link Bitmap} object
      */
-    public Bitmap2 load(String filename, boolean isLinear) throws IOException, BitmapFormatException;
+    public Bitmap load(String filename, boolean isLinear) throws IOException, BitmapFormatException;
 
     /**
      * This exception can be used internally by bitmap readers to signal they
