@@ -35,7 +35,7 @@ public:
   //       scattering due to haze as opposed to molecules. 2-6 are good for clear
   //       days
 
-  MColor getSkyColor( MVector& direction );
+  MColor getSkyColor(const MVector& direction ) const;
     // returns the color of the sky in a particular direction
 
   void setTurbidity( double t ) { turbidity = t; }
@@ -61,8 +61,8 @@ private:
   SunSky& operator=( const SunSky& );
     // assigment - unimplemented
 
-  double perezFunction( double *coeff, double thetaV, double gamma, double Yz );
-  MColor toRGB(double x, double y, double Ys );
+  double perezFunction(const double *coeff, double thetaV, double gamma, double Yz ) const;
+  MColor toRGB(double x, double y, double Ys ) const;
 };
 
 #endif /* SUNSKY_H */

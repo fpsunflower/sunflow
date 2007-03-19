@@ -6,11 +6,14 @@ def compile_maya(env, maya_base, version):
 	for s in source_files:
 		obj_file = s.replace('.cpp', '_%s' % (version)).replace('src', 'build')
 		obj_list += [ env.SharedObject(obj_file, s, CPPPATH = [ os.path.join(maya_base, 'include') ]) ]
-	dll = env.SharedLibrary(os.path.join('build', 'sunflow_%s' % (version)), obj_list, LIBS=Split("Foundation OpenMaya OpenMayaUI opengl32 shell32 bufferoverflowU"), LIBPATH=[  os.path.join(maya_base, 'lib') ] )
+	env.Append(LIBPATH=[  os.path.join(maya_base, 'lib') ])
+	dll = env.SharedLibrary(os.path.join('build', 'sunflow_%s' % (version)), obj_list)
 	if len(dll) > 1:
+		## on windows, more than one file is created when shared libraries are built
 		env.InstallAs(os.path.join('plugin', version, 'sunflowExport.mll'), dll[0])
 	else:
-		env.InstallAs(os.path.join('plugin', version, 'sunflowExport.mll'), dll)
+		## on *nix just one file is created
+		env.InstallAs(os.path.join('plugin', version, 'sunflowExport.so'), dll)
 
 
 ## find source code automatically
@@ -25,7 +28,8 @@ if sys.platform == 'win32':
 	env64 = Environment(
 		CCFLAGS    = Split('/nologo /W3 /GR /EHsc /MT /O2 /Ox'),
 		CPPDEFINES = Split('_CRT_SECURE_NO_DEPRECATE _CRT_NONSTDC_NO_DEPRECATE NDEBUG WIN32 _WINDOWS NT_PLUGIN REQUIRE_IOSTREAM Bits64_'),
-		LINKFLAGS  = Split('/nologo /incremental:no /MACHINE:AMD64 /export:initializePlugin /export:uninitializePlugin'))
+		LINKFLAGS  = Split('/nologo /incremental:no /MACHINE:AMD64 /export:initializePlugin /export:uninitializePlugin'),
+		LIBS=Split("Foundation OpenMaya OpenMayaUI opengl32 shell32 bufferoverflowU"))
 
 	env64['ENV']['PATH']    = "%s\\Bin\\win64\\x86\\AMD64;"  % (sdk_base)
 	env64['ENV']['INCLUDE'] = "%s\\Include;%s\\INCLUDE\\crt" % (sdk_base, sdk_base)
@@ -33,5 +37,13 @@ if sys.platform == 'win32':
 
 	compile_maya(env64, "C:\\Program Files\\Autodesk\\Maya8.5\\"   , "85_x64")
 	compile_maya(env64, "C:\\Program Files\\Alias\\Maya8.0\\"      , "80_x64")
+elif sys.platform == 'linux2':
+	env = Environment(
+		CCFLAGS = Split('-g -O2 -Wno-deprecated -Wall'),
+		CPPDEFINES = Split('LINUX _BOOL'),
+		CPPINCLUDE= Split('/usr/X11R6/include/'),
+		LIBS = Split('OpenMaya OpenMayaUI GL'),
+		LIBPATH = Split('/usr/X11R6/lib/'))
+	compile_maya(env, "/usr/aw/maya7.0/", "70")
 else:
 	print 'Unsupported platform: %s' % (sys.platform)

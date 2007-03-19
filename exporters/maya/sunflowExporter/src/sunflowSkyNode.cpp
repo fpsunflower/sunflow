@@ -1,4 +1,8 @@
 #include "sunflowSkyNode.h"
+#include <iostream>
+#include <cmath>
+
+using namespace std;
 
 float X = 0.525731112119133606;
 float Z = 0.850650808352039932;
@@ -71,7 +75,7 @@ MStatus sunflowSkyNode::compute( const MPlug& /*plug*/, MDataBlock& /*data*/ )
 
 void sunflowSkyNode::quadDome(M3dView & view, int drawMode=0){	
 
-	int sides = m_quadRes;
+	int sides = (int) m_quadRes;
 	float size = m_radius;
 	MColor drawColor(0,1,0,0);
 	MColor groundColor(0,0,0,0);
@@ -103,9 +107,9 @@ void sunflowSkyNode::quadDome(M3dView & view, int drawMode=0){
 			{					
 				theta3 = i * TWOPI / sides;
 	
-				ex = fcos(theta1) * fcos(theta3);
-				ey = fsin(theta1);
-				ez = fcos(theta1) * fsin(theta3);
+				ex = cosf(theta1) * cosf(theta3);
+				ey = sinf(theta1);
+				ez = cosf(theta1) * sinf(theta3);
 				px = cx + r * ex;
 				py = cy + r * ey;
 				pz = cz + r * ez;
@@ -135,9 +139,9 @@ void sunflowSkyNode::quadDome(M3dView & view, int drawMode=0){
 				glTexCoord2f(i/(float)sides,2*(j+1)/sides);
 				glVertex3f(px, py, pz);
 
-				ex = fcos(theta2) * fcos(theta3);
-				ey = fsin(theta2);
-				ez = fcos(theta2) * fsin(theta3);
+				ex = cosf(theta2) * cosf(theta3);
+				ey = sinf(theta2);
+				ez = cosf(theta2) * sinf(theta3);
 				px = cx + r * ex;
 				py = cy + r * ey;
 				pz = cz + r * ez;	

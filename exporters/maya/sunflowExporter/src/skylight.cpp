@@ -81,7 +81,7 @@ MColor SunSky::gammaCorrect(MColor& color, float gamma )
 
 
 //-----------------------------------------------------------------------------
-double SunSky::perezFunction( double *coeff, double thetaV, double gamma, double Yz )
+double SunSky::perezFunction(const double *coeff, double thetaV, double gamma, double Yz ) const
 {
   double den, num;
   double cosTheta = cos( theta );
@@ -98,7 +98,7 @@ double SunSky::perezFunction( double *coeff, double thetaV, double gamma, double
 
 
 //-----------------------------------------------------------------------------
-MColor SunSky::getSkyColor( MVector& direction )
+MColor SunSky::getSkyColor(const MVector& direction ) const
 {
   double thetaV;        // the angle about surface normal
   double gamma;         // the angle between direction and sun
@@ -120,7 +120,7 @@ MColor SunSky::getSkyColor( MVector& direction )
 
 
 //-----------------------------------------------------------------------------
-MColor SunSky::toRGB(double x, double y, double Ys )
+MColor SunSky::toRGB(double x, double y, double Ys ) const
 {
   MColor result;
   double X, Y, Z;

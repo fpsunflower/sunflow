@@ -657,7 +657,7 @@ MStatus sunflowExportCmd::doIt(const MArgList& args) {
 		getCustomAttribute(pixelFilter, "pixelFilter", globals);
 		if (pixelFilter < 0)
 			pixelFilter = 0;
-		else if (pixelFilter >= NUM_FILTER_NAMES)
+		else if (pixelFilter >= (int) NUM_FILTER_NAMES)
 			pixelFilter = NUM_FILTER_NAMES - 1;
 
 		int minSamples;		

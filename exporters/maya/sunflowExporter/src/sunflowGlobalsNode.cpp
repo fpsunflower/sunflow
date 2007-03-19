@@ -157,7 +157,7 @@ MStatus sunflowGlobalsNode::initialize(){
 	stat = addAttribute (skyNode);
 		if (!stat) { stat.perror("addAttribute skyNode"); return stat;}
 
-	skySize = numericAttr.create("skySize", "sks", MFnNumericData::kFloat, 0.5, &stat);
+	skySize = numericAttr.create("skySize", "sks", MFnNumericData::kFloat, 30.0, &stat);
 	stat = addAttribute (skySize);
 		if (!stat) { stat.perror("addAttribute SkySize"); return stat;}
 

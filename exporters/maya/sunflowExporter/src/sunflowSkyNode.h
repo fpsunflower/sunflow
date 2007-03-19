@@ -20,9 +20,6 @@
 #include <maya/MPlugArray.h>
 #include <maya/MVectorArray.h>
 
-#include <math.h>
-
-
 #define PI              3.14159265358979323846
 #define TWOPI           6.2831853071795864769
 
