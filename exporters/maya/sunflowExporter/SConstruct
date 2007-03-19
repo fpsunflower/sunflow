@@ -40,10 +40,12 @@ if sys.platform == 'win32':
 elif sys.platform == 'linux2':
 	env = Environment(
 		CCFLAGS = Split('-g -O2 -Wno-deprecated -Wall'),
-		CPPDEFINES = Split('LINUX _BOOL'),
+		CPPDEFINES = Split('LINUX _BOOL REQUIRE_IOSTREAM'),
 		CPPINCLUDE= Split('/usr/X11R6/include/'),
 		LIBS = Split('OpenMaya OpenMayaUI GL'),
 		LIBPATH = Split('/usr/X11R6/lib/'))
 	compile_maya(env, "/usr/aw/maya7.0/", "70")
+	compile_maya(env, "/usr/aw/maya8.0/", "80")
+	compile_maya(env, "/usr/autodesk/maya8.5/", "85")
 else:
 	print 'Unsupported platform: %s' % (sys.platform)
