@@ -440,7 +440,7 @@ public class SunflowAPI implements SunflowAPIInterface {
      * @param typeName a tesselatable or primitive plugin type name
      */
     public final void geometry(String name, String typeName) {
-        if (!!isIncremental(typeName)) {
+        if (!isIncremental(typeName)) {
             // we are declaring a geometry for the first time
             if (renderObjects.has(name)) {
                 UI.printError(Module.API, "Unable to declare geometry \"%s\", name is already in use", name);
@@ -509,7 +509,7 @@ public class SunflowAPI implements SunflowAPIInterface {
      * @param lightType a light source plugin type name
      */
     public final void light(String name, String lightType) {
-        if (!!isIncremental(lightType)) {
+        if (!isIncremental(lightType)) {
             // we are declaring this light for the first time
             if (renderObjects.has(name)) {
                 UI.printError(Module.API, "Unable to declare light \"%s\", name is already in use", name);
@@ -587,7 +587,7 @@ public class SunflowAPI implements SunflowAPIInterface {
     private final boolean isIncremental(String typeName) {
         return typeName == null || typeName.equals("incremental");
     }
-    
+
     /**
      * Retrieve a geometry object by its name, or <code>null</code> if no
      * geometry was found, or if the specified object is not a geometry.

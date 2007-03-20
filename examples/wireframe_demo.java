@@ -11,7 +11,7 @@ public void build() {
     // you can put the path to your own scene here to use this rendering
     // technique just copy this file to the same directory as your main .sc
     // file, and swap the fileanme in the line below
-    parse("gumbo_and_teapot.sc");
+    include("gumbo_and_teapot.sc");
     
     // shader override
     parameter("override.shader", "ao_wire");

@@ -52,7 +52,7 @@ public class SCParser implements SceneParser {
         } else {
             objectNames.put(prefix, index + 1);
         }
-        return String.format("@sc_%d::%s_%d", Integer.toHexString(hashCode()), instanceCounter, prefix, index);
+        return String.format("@sc_%d::%s_%d", instanceCounter, prefix, index);
     }
 
     public boolean parse(String filename, SunflowAPIInterface api) {
