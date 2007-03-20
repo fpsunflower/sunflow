@@ -1,4 +1,5 @@
 v0.07.3
+* Removed getUniqueName method from SunflowAPI
 * Fixed more potential locale issues with case conversion by forcing the ENGLISH locale to be used
 * Renamed get/setCurrentFrame to currentFrame in SunflowAPI
 * Renamed parse to include in SunflowAPI

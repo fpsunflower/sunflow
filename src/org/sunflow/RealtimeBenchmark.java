@@ -37,9 +37,8 @@ public class RealtimeBenchmark extends SunflowAPI {
         parameter("target", target);
         parameter("up", up);
         parameter("fov", 45.0f);
-        String name = getUniqueName("camera");
-        camera(name, "pinhole");
-        parameter("camera", name);
+        camera("camera", "pinhole");
+        parameter("camera", "camera");
         options(SunflowAPI.DEFAULT_OPTIONS);
         // geometry
         createGeometry();
@@ -63,7 +62,7 @@ public class RealtimeBenchmark extends SunflowAPI {
             parameter("eye", eye);
             parameter("target", target);
             parameter("up", up);
-            camera(name, null);
+            camera("camera", null);
             render(SunflowAPI.DEFAULT_OPTIONS, display);
         }
         t.end();

@@ -97,22 +97,6 @@ public class SunflowAPI implements SunflowAPIInterface {
         currentFrame = 1;
     }
 
-    /**
-     * Returns a name currently not being used by any other object. The returned
-     * name is of the form "prefix_n" where n is an integer starting at 1. Only
-     * a simple linear search is performed, so this method should be used only
-     * when there is no other way to guarentee uniqueness.
-     * 
-     * @param prefix name prefix
-     * @return a unique name not used by any rendering object
-     */
-    public final String getUniqueName(String prefix) {
-        String name;
-        for (int i = 1; renderObjects.has(name = String.format("%s_%d", prefix, i)); i++) {
-        }
-        return name;
-    }
-
     public final void plugin(String type, String name, String code) {
         if (type.equals("primitive"))
             PluginRegistry.primitivePlugins.registerPlugin(name, code);
@@ -388,7 +372,7 @@ public class SunflowAPI implements SunflowAPIInterface {
      * @param shaderType a shader plugin type
      */
     public final void shader(String name, String shaderType) {
-        if (shaderType != null && !shaderType.equals("incremental")) {
+        if (!isIncremental(shaderType)) {
             // we are declaring a shader for the first time
             if (renderObjects.has(name)) {
                 UI.printError(Module.API, "Unable to declare shader \"%s\", name is already in use", name);
@@ -420,7 +404,7 @@ public class SunflowAPI implements SunflowAPIInterface {
      * @param modifierType a modifier plugin type name
      */
     public final void modifier(String name, String modifierType) {
-        if (modifierType != null && !modifierType.equals("incremental")) {
+        if (!isIncremental(modifierType)) {
             // we are declaring a shader for the first time
             if (renderObjects.has(name)) {
                 UI.printError(Module.API, "Unable to declare modifier \"%s\", name is already in use", name);
@@ -456,7 +440,7 @@ public class SunflowAPI implements SunflowAPIInterface {
      * @param typeName a tesselatable or primitive plugin type name
      */
     public final void geometry(String name, String typeName) {
-        if (typeName != null && !typeName.equals("incremental")) {
+        if (!!isIncremental(typeName)) {
             // we are declaring a geometry for the first time
             if (renderObjects.has(name)) {
                 UI.printError(Module.API, "Unable to declare geometry \"%s\", name is already in use", name);
@@ -498,7 +482,7 @@ public class SunflowAPI implements SunflowAPIInterface {
      * @param geoname name of the geometry to instance
      */
     public final void instance(String name, String geoname) {
-        if (geoname != null && !geoname.equals("incremental")) {
+        if (!isIncremental(geoname)) {
             // we are declaring this instance for the first time
             if (renderObjects.has(name)) {
                 UI.printError(Module.API, "Unable to declare instance \"%s\", name is already in use", name);
@@ -525,7 +509,7 @@ public class SunflowAPI implements SunflowAPIInterface {
      * @param lightType a light source plugin type name
      */
     public final void light(String name, String lightType) {
-        if (lightType != null && !lightType.equals("incremental")) {
+        if (!!isIncremental(lightType)) {
             // we are declaring this light for the first time
             if (renderObjects.has(name)) {
                 UI.printError(Module.API, "Unable to declare light \"%s\", name is already in use", name);
@@ -558,7 +542,7 @@ public class SunflowAPI implements SunflowAPIInterface {
      * @param lensType a camera lens plugin type name
      */
     public final void camera(String name, String lensType) {
-        if (lensType != null && !lensType.equals("incremental")) {
+        if (!isIncremental(lensType)) {
             // we are declaring this camera for the first time
             if (renderObjects.has(name)) {
                 UI.printError(Module.API, "Unable to declare camera \"%s\", name is already in use", name);
@@ -600,6 +584,10 @@ public class SunflowAPI implements SunflowAPIInterface {
         update(name);
     }
 
+    private final boolean isIncremental(String typeName) {
+        return typeName == null || typeName.equals("incremental");
+    }
+    
     /**
      * Retrieve a geometry object by its name, or <code>null</code> if no
      * geometry was found, or if the specified object is not a geometry.
