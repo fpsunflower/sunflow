@@ -724,7 +724,7 @@ public class SunflowAPI implements SunflowAPIInterface {
      * @return <code>true</code> upon sucess, <code>false</code> if an error
      *         occured.
      */
-    public final boolean parse(String filename) {
+    public final boolean include(String filename) {
         if (filename == null)
             return false;
         filename = includeSearchPath.resolvePath(filename);
@@ -801,13 +801,13 @@ public class SunflowAPI implements SunflowAPIInterface {
             api.textureSearchPath.addSearchPath(currentFolder);
             UI.printInfo(Module.API, "Build script running ...");
             t.start();
-            api.setCurrentFrame(frameNumber);
+            api.currentFrame(frameNumber);
             api.build();
             t.end();
             UI.printInfo(Module.API, "Build script time: %s", t.toString());
         } else {
             api = new SunflowAPI();
-            api = api.parse(filename) ? api : null;
+            api = api.include(filename) ? api : null;
         }
         return api;
     }
@@ -888,7 +888,7 @@ public class SunflowAPI implements SunflowAPIInterface {
      * 
      * @return current frame number
      */
-    public int getCurrentFrame() {
+    public int currentFrame() {
         return currentFrame;
     }
 
@@ -899,7 +899,7 @@ public class SunflowAPI implements SunflowAPIInterface {
      * 
      * @param currentFrame current frame number
      */
-    public void setCurrentFrame(int currentFrame) {
+    public void currentFrame(int currentFrame) {
         this.currentFrame = currentFrame;
     }
 }

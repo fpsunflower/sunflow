@@ -2,6 +2,7 @@ package org.sunflow;
 
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.Locale;
 
 import org.sunflow.core.ParameterList.InterpolationType;
 import org.sunflow.core.parser.SCAbstractParser.Keyword;
@@ -30,11 +31,11 @@ class AsciiFileSunflowAPI extends FileSunflowAPI {
     }
 
     protected void writeInterpolationType(InterpolationType interp) {
-        writeString(String.format("%s", interp.toString().toLowerCase()));
+        writeString(String.format("%s", interp.toString().toLowerCase(Locale.ENGLISH)));
     }
 
     protected void writeKeyword(Keyword keyword) {
-        writeString(String.format("%s", keyword.toString().toLowerCase().replace("_array", "[]")));
+        writeString(String.format("%s", keyword.toString().toLowerCase(Locale.ENGLISH).replace("_array", "[]")));
     }
 
     protected void writeMatrix(Matrix4 value) {

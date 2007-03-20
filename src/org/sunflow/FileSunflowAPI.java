@@ -1,6 +1,5 @@
 package org.sunflow;
 
-import java.util.HashMap;
 import java.util.Locale;
 
 import org.sunflow.core.Display;
@@ -16,11 +15,9 @@ import org.sunflow.system.UI.Module;
 
 abstract class FileSunflowAPI implements SunflowAPIInterface {
     private int frame;
-    private HashMap<String, Integer> objectNames;
 
     protected FileSunflowAPI() {
         frame = 1;
-        objectNames = new HashMap<String, Integer>();
         reset();
     }
 
@@ -42,18 +39,6 @@ abstract class FileSunflowAPI implements SunflowAPIInterface {
 
     public int getCurrentFrame() {
         return frame;
-    }
-
-    public String getUniqueName(String prefix) {
-        int index = 1;
-        Integer value = objectNames.get(prefix);
-        if (value != null) {
-            index = value;
-            objectNames.put(prefix, index + 1);
-        } else {
-            objectNames.put(prefix, index + 1);
-        }
-        return String.format("%s_%d", prefix, index);
     }
 
     public void instance(String name, String geoname) {
@@ -252,7 +237,7 @@ abstract class FileSunflowAPI implements SunflowAPIInterface {
         writeNewline(0);
     }
 
-    public boolean parse(String filename) {
+    public boolean include(String filename) {
         writeKeyword(Keyword.INCLUDE);
         writeString(filename);
         writeNewline(0);
@@ -282,7 +267,6 @@ abstract class FileSunflowAPI implements SunflowAPIInterface {
 
     public void reset() {
         frame = 1;
-        objectNames.clear();
     }
 
     public void searchpath(String type, String path) {
@@ -294,7 +278,7 @@ abstract class FileSunflowAPI implements SunflowAPIInterface {
 
     }
 
-    public void setCurrentFrame(int currentFrame) {
+    public void currentFrame(int currentFrame) {
         writeKeyword(Keyword.FRAME);
         writeInt(frame = currentFrame);
         writeNewline(0);

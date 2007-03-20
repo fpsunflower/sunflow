@@ -8,6 +8,7 @@ import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
 import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
+import java.util.HashMap;
 
 import org.sunflow.PluginRegistry;
 import org.sunflow.SunflowAPI;
@@ -30,10 +31,28 @@ import org.sunflow.system.UI.Module;
  * file format.
  */
 public class SCParser implements SceneParser {
+    private static int instanceCounter = 0;
     private Parser p;
     private int numLightSamples;
+    // used to generate unique names inside this parser
+    private HashMap<String, Integer> objectNames;
 
     public SCParser() {
+        objectNames = new HashMap<String, Integer>();
+        instanceCounter++;
+    }
+
+    private String generateUniqueName(String prefix) {
+        // generate a unique name for this class:
+        int index = 1;
+        Integer value = objectNames.get(prefix);
+        if (value != null) {
+            index = value;
+            objectNames.put(prefix, index + 1);
+        } else {
+            objectNames.put(prefix, index + 1);
+        }
+        return String.format("@sc_%d::%s_%d", Integer.toHexString(hashCode()), instanceCounter, prefix, index);
     }
 
     public boolean parse(String filename, SunflowAPIInterface api) {
@@ -109,7 +128,7 @@ public class SCParser implements SceneParser {
                 } else if (token.equals("include")) {
                     String file = p.getNextToken();
                     UI.printInfo(Module.API, "Including: \"%s\" ...", file);
-                    api.parse(file);
+                    api.include(file);
                 } else
                     UI.printWarning(Module.API, "Unrecognized token %s", token);
             }
@@ -346,7 +365,7 @@ public class SCParser implements SceneParser {
         String type = p.getNextToken();
         UI.printInfo(Module.API, "Reading %s camera ...", type);
         parseCameraTransform(api);
-        String name = api.getUniqueName("camera");
+        String name = generateUniqueName("camera");
         if (type.equals("pinhole")) {
             p.checkNextToken("fov");
             api.parameter("fov", p.getNextFloat());
@@ -630,7 +649,7 @@ public class SCParser implements SceneParser {
         if (p.peekNextToken("name"))
             name = p.getNextToken();
         else
-            name = api.getUniqueName(type);
+            name = generateUniqueName(type);
         if (type.equals("mesh")) {
             UI.printWarning(Module.API, "Deprecated object type: mesh");
             UI.printInfo(Module.API, "Reading mesh: %s ...", name);
@@ -975,7 +994,7 @@ public class SCParser implements SceneParser {
             p.checkNextToken("p");
             api.parameter("center", parsePoint());
             api.parameter("power", null, pow.getRGB());
-            api.light(api.getUniqueName("pointlight"), "point");
+            api.light(generateUniqueName("pointlight"), "point");
         } else if (p.peekNextToken("spherical")) {
             UI.printInfo(Module.API, "Reading spherical light ...");
             p.checkNextToken("color");
@@ -989,7 +1008,7 @@ public class SCParser implements SceneParser {
             api.parameter("radius", p.getNextFloat());
             p.checkNextToken("samples");
             api.parameter("samples", p.getNextInt());
-            api.light(api.getUniqueName("spherelight"), "sphere");
+            api.light(generateUniqueName("spherelight"), "sphere");
         } else if (p.peekNextToken("directional")) {
             UI.printInfo(Module.API, "Reading directional light ...");
             p.checkNextToken("source");
@@ -1008,7 +1027,7 @@ public class SCParser implements SceneParser {
             } else
                 UI.printWarning(Module.API, "Deprecated color specification - please use emit and intensity instead");
             api.parameter("radiance", null, e.getRGB());
-            api.light(api.getUniqueName("dirlight"), "directional");
+            api.light(generateUniqueName("dirlight"), "directional");
         } else if (p.peekNextToken("ibl")) {
             UI.printInfo(Module.API, "Reading image based light ...");
             p.checkNextToken("image");
@@ -1025,7 +1044,7 @@ public class SCParser implements SceneParser {
             else
                 UI.printWarning(Module.API, "Samples keyword not found - defaulting to %d", samples);
             api.parameter("samples", samples);
-            api.light(api.getUniqueName("ibl"), "ibl");
+            api.light(generateUniqueName("ibl"), "ibl");
         } else if (p.peekNextToken("meshlight")) {
             p.checkNextToken("name");
             String name = p.getNextToken();
@@ -1064,7 +1083,7 @@ public class SCParser implements SceneParser {
             api.parameter("turbidity", p.getNextFloat());
             if (p.peekNextToken("samples"))
                 api.parameter("samples", p.getNextInt());
-            api.light(api.getUniqueName("sunsky"), "sunsky");
+            api.light(generateUniqueName("sunsky"), "sunsky");
         } else if (p.peekNextToken("cornellbox")) {
             UI.printInfo(Module.API, "Reading cornell box ...");
             p.checkNextToken("corner0");
@@ -1085,7 +1104,7 @@ public class SCParser implements SceneParser {
             api.parameter("radiance", null, parseColor().getRGB());
             if (p.peekNextToken("samples"))
                 api.parameter("samples", p.getNextInt());
-            api.light(api.getUniqueName("cornellbox"), "cornell_box");
+            api.light(generateUniqueName("cornellbox"), "cornell_box");
         } else
             UI.printWarning(Module.API, "Unrecognized object type: %s", p.getNextToken());
         p.checkNextToken("}");

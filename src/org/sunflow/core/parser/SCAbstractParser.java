@@ -17,7 +17,7 @@ import org.sunflow.system.UI.Module;
 
 public abstract class SCAbstractParser implements SceneParser {
     public enum Keyword {
-        PARAMETER, GEOMETRY, INSTANCE, SHADER, MODIFIER, LIGHT, CAMERA, OPTIONS, INCLUDE, REMOVE, FRAME, PLUGIN, SEARCHPATH, STRING, BOOL, INT, FLOAT, COLOR, POINT, VECTOR, TEXCOORD, MATRIX, STRING_ARRAY, INT_ARRAY, FLOAT_ARRAY, POINT_ARRAY, VECTOR_ARRAY, TEXCOORD_ARRAY, MATRIX_ARRAY, END_OF_FILE,
+        RESET, PARAMETER, GEOMETRY, INSTANCE, SHADER, MODIFIER, LIGHT, CAMERA, OPTIONS, INCLUDE, REMOVE, FRAME, PLUGIN, SEARCHPATH, STRING, BOOL, INT, FLOAT, COLOR, POINT, VECTOR, TEXCOORD, MATRIX, STRING_ARRAY, INT_ARRAY, FLOAT_ARRAY, POINT_ARRAY, VECTOR_ARRAY, TEXCOORD_ARRAY, MATRIX_ARRAY, END_OF_FILE,
     }
 
     public boolean parse(String filename, SunflowAPIInterface api) {
@@ -29,6 +29,9 @@ public abstract class SCAbstractParser implements SceneParser {
             parseloop: while (true) {
                 Keyword k = parseKeyword();
                 switch (k) {
+                    case RESET:
+                        api.reset();
+                        break;
                     case PARAMETER:
                         parseParameter(api);
                         break;
@@ -75,7 +78,7 @@ public abstract class SCAbstractParser implements SceneParser {
                     case INCLUDE: {
                         String file = parseString();
                         UI.printInfo(Module.API, "Including: \"%s\" ...", file);
-                        api.parse(file);
+                        api.include(file);
                         break;
                     }
                     case REMOVE: {
@@ -83,7 +86,7 @@ public abstract class SCAbstractParser implements SceneParser {
                         break;
                     }
                     case FRAME: {
-                        api.setCurrentFrame(parseInt());
+                        api.currentFrame(parseInt());
                         break;
                     }
                     case PLUGIN: {

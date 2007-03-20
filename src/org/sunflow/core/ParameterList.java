@@ -1,5 +1,7 @@
 package org.sunflow.core;
 
+import java.util.Locale;
+
 import org.sunflow.image.Color;
 import org.sunflow.math.Matrix4;
 import org.sunflow.math.Point2;
@@ -474,11 +476,11 @@ public class ParameterList {
         if (p == null)
             return false;
         if (p.type != type) {
-            UI.printWarning(Module.API, "Parameter %s requested as a %s - declared as %s", name, type.name().toLowerCase(), p.type.name().toLowerCase());
+            UI.printWarning(Module.API, "Parameter %s requested as a %s - declared as %s", name, type.name().toLowerCase(Locale.ENGLISH), p.type.name().toLowerCase(Locale.ENGLISH));
             return false;
         }
         if (p.interp != interp) {
-            UI.printWarning(Module.API, "Parameter %s requested as a %s - declared as %s", name, interp.name().toLowerCase(), p.interp.name().toLowerCase());
+            UI.printWarning(Module.API, "Parameter %s requested as a %s - declared as %s", name, interp.name().toLowerCase(Locale.ENGLISH), p.interp.name().toLowerCase(Locale.ENGLISH));
             return false;
         }
         if (requestedSize > 0 && p.size() != requestedSize) {

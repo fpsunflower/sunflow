@@ -2,6 +2,7 @@ package org.sunflow.core.primitive;
 
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.Locale;
 
 import org.sunflow.SunflowAPI;
 import org.sunflow.core.Instance;
@@ -68,7 +69,7 @@ public class QuadMesh implements PrimitiveList {
             FloatParameter pointsP = pl.getPointArray("points");
             if (pointsP != null)
                 if (pointsP.interp != InterpolationType.VERTEX)
-                    UI.printError(Module.GEOM, "Point interpolation type must be set to \"vertex\" - was \"%s\"", pointsP.interp.name().toLowerCase());
+                    UI.printError(Module.GEOM, "Point interpolation type must be set to \"vertex\" - was \"%s\"", pointsP.interp.name().toLowerCase(Locale.ENGLISH));
                 else {
                     points = pointsP.data;
                 }

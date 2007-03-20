@@ -1,5 +1,7 @@
 package org.sunflow.system;
 
+import java.util.Locale;
+
 import org.sunflow.system.ui.ConsoleInterface;
 import org.sunflow.system.ui.SilentInterface;
 
@@ -40,7 +42,7 @@ public final class UI {
     }
 
     public final static String formatOutput(Module m, PrintLevel level, String s) {
-        return String.format("%-5s  %-6s: %s", m.name(), level.name().toLowerCase(), s);
+        return String.format("%-5s  %-6s: %s", m.name(), level.name().toLowerCase(Locale.ENGLISH), s);
     }
 
     public final static synchronized void printDetailed(Module m, String s, Object... args) {

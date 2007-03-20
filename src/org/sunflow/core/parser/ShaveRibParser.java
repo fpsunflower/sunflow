@@ -28,7 +28,7 @@ public class ShaveRibParser implements SceneParser {
                     p.checkNextToken("[");
                     String f = p.getNextToken();
                     UI.printInfo(Module.USER, "RIB - Reading voxel: \"%s\" ...", f);
-                    api.parse(f);
+                    api.include(f);
                     p.checkNextToken("]");
                     while (true) {
                         String t = p.getNextToken();

@@ -1,5 +1,7 @@
 package org.sunflow.core.primitive;
 
+import java.util.Locale;
+
 import org.sunflow.SunflowAPI;
 import org.sunflow.core.Instance;
 import org.sunflow.core.IntersectionState;
@@ -200,7 +202,7 @@ public class Hair implements PrimitiveList, Shader {
         FloatParameter pointsP = pl.getPointArray("points");
         if (pointsP != null) {
             if (pointsP.interp != InterpolationType.VERTEX)
-                UI.printError(Module.HAIR, "Point interpolation type must be set to \"vertex\" - was \"%s\"", pointsP.interp.name().toLowerCase());
+                UI.printError(Module.HAIR, "Point interpolation type must be set to \"vertex\" - was \"%s\"", pointsP.interp.name().toLowerCase(Locale.ENGLISH));
             else {
                 points = pointsP.data;
             }
@@ -216,7 +218,7 @@ public class Hair implements PrimitiveList, Shader {
             if (widthsP.interp == InterpolationType.NONE || widthsP.interp == InterpolationType.VERTEX)
                 widths = widthsP;
             else
-                UI.printWarning(Module.HAIR, "Width interpolation type %s is not supported -- ignoring", widthsP.interp.name().toLowerCase());
+                UI.printWarning(Module.HAIR, "Width interpolation type %s is not supported -- ignoring", widthsP.interp.name().toLowerCase(Locale.ENGLISH));
         }
         return true;
     }

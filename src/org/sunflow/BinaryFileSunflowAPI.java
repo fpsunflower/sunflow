@@ -71,6 +71,9 @@ class BinaryFileSunflowAPI extends FileSunflowAPI {
     protected void writeKeyword(Keyword keyword) {
         try {
             switch (keyword) {
+                case RESET:
+                    writeExtendedKeyword('R');
+                    break;
                 case PARAMETER:
                     stream.write('p');
                     break;

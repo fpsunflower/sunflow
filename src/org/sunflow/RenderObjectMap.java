@@ -1,6 +1,7 @@
 package org.sunflow;
 
 import java.util.ArrayList;
+import java.util.Locale;
 
 import org.sunflow.core.Camera;
 import org.sunflow.core.Geometry;
@@ -297,7 +298,7 @@ final class RenderObjectMap {
         }
 
         private String typeName() {
-            return type.name().toLowerCase();
+            return type.name().toLowerCase(Locale.ENGLISH);
         }
 
         private Shader getShader() {

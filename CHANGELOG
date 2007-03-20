@@ -1,4 +1,8 @@
 v0.07.3
+* Fixed more potential locale issues with case conversion by forcing the ENGLISH locale to be used
+* Renamed get/setCurrentFrame to currentFrame in SunflowAPI
+* Renamed parse to include in SunflowAPI
+* Added reset keyword to new scene file format
 * Fixed access levels on certain classes in org.sunflow package
 * Fixed spelling of absorption in glass shader - left backwards compatibility in SCParser
 * Added reading/writing of Indigo's IGI file format

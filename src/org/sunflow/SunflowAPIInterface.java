@@ -34,17 +34,6 @@ public interface SunflowAPIInterface {
     public void plugin(String type, String name, String code);
 
     /**
-     * Returns a name currently not being used by any other object. The returned
-     * name is of the form "prefix_n" where n is an integer starting at 1. Only
-     * a simple linear search is performed, so this method should be used only
-     * when there is no other way to guarentee uniqueness.
-     * 
-     * @param prefix name prefix
-     * @return a unique name not used by any rendering object
-     */
-    public String getUniqueName(String prefix);
-
-    /**
      * Declare a parameter with the specified name and value. This parameter
      * will be added to the currently active parameter list.
      * 
@@ -271,16 +260,7 @@ public interface SunflowAPIInterface {
      * @return <code>true</code> upon sucess, <code>false</code> if an error
      *         occured.
      */
-    public boolean parse(String filename);
-
-    /**
-     * Read the value of the current frame. This value is intended only for
-     * procedural animation creation. It is not used by the Sunflow core in
-     * anyway. The default value is 1.
-     * 
-     * @return current frame number
-     */
-    public int getCurrentFrame();
+    public boolean include(String filename);
 
     /**
      * Set the value of the current frame. This value is intended only for
@@ -289,5 +269,5 @@ public interface SunflowAPIInterface {
      * 
      * @param currentFrame current frame number
      */
-    public void setCurrentFrame(int currentFrame);
+    public void currentFrame(int currentFrame);
 }

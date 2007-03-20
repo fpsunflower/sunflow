@@ -85,6 +85,8 @@ public class SCBinaryParser extends SCAbstractParser {
                 // note we don't use stream.read() here because we should throw
                 // an exception if the end of the file is reached
                 switch (code = stream.readUnsignedByte()) {
+                    case 'R':
+                        return Keyword.RESET;
                     case 'i':
                         return Keyword.INCLUDE;
                     case 'r':

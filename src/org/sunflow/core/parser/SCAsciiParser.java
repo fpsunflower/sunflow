@@ -131,6 +131,8 @@ public class SCAsciiParser extends SCAbstractParser {
         String keyword = p.getNextToken();
         if (keyword == null)
             return Keyword.END_OF_FILE;
+        if (anyEqual(keyword, "reset"))
+            return Keyword.RESET;
         if (anyEqual(keyword, "parameter", "param", "p"))
             return Keyword.PARAMETER;
         if (anyEqual(keyword, "geometry", "geom", "g"))

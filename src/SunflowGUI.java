@@ -1168,7 +1168,7 @@ public class SunflowGUI extends javax.swing.JFrame implements UserInterface {
             currentFile = filename;
             UI.printInfo(Module.GUI, "Loaded script: \"%s\"", filename);
         } else if (filename.endsWith(".sc")) {
-            String template = "import org.sunflow.core.*;\nimport org.sunflow.core.accel.*;\nimport org.sunflow.core.camera.*;\nimport org.sunflow.core.primitive.*;\nimport org.sunflow.core.shader.*;\nimport org.sunflow.image.Color;\nimport org.sunflow.math.*;\n\npublic void build() {\n  parse(\"" + filename.replace("\\", "\\\\") + "\");\n}\n";
+            String template = "import org.sunflow.core.*;\nimport org.sunflow.core.accel.*;\nimport org.sunflow.core.camera.*;\nimport org.sunflow.core.primitive.*;\nimport org.sunflow.core.shader.*;\nimport org.sunflow.image.Color;\nimport org.sunflow.math.*;\n\npublic void build() {\n  include(\"" + filename.replace("\\", "\\\\") + "\");\n}\n";
             editorTextArea.setText(template);
             // no java file associated
             currentFile = null;
