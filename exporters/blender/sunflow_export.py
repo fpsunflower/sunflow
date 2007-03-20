@@ -1,15 +1,15 @@
 #!BPY
 
 """
-Name: 'Sunflow exporter 07 (.sc)...'
-Blender: 2.4
+Name: 'Sunflow Exporter 1.0.0 (.sc)...'
+Blender: 2.43
 Group: 'Export'
 Tip: ''
 """
 
 """
-Version         :       0.16.0 (March 2007)
-Author          :       R Lindsay (hayfever) / Christopher Kulla
+Version         :       1.0.0 (March 2007)
+Author          :       R Lindsay (hayfever) / Christopher Kulla / MADCello / olivS / Eugene Reilly / Heavily Tessellated
 Description     :       Export to Sunflow renderer http://sunflow.sourceforge.net/
 """
 
@@ -43,7 +43,7 @@ IMGFILTERH = Draw.Create(1)
 
 # Camera panel
 DOF = Draw.Create(0)
-DOFRADIUS = Draw.Create(1.0)
+DOFRADIUS = Draw.Create(1.00)
 LENSSIDES = Draw.Create(2)
 LENSROTATION = Draw.Create(0.0)
 SPHERICALCAMERA = Draw.Create(0)
@@ -186,7 +186,7 @@ JAVAPATH = ""
 #######################
 
 print "\n\n"
-print "blend2sunflow update v0.7.0"
+print "blend2sunflow v1.0.0"
 
 ## Export logic for simple options ##
 #####################################
@@ -1401,7 +1401,7 @@ def drawCamera():
 	global DOF, DOFRADIUS, SPHERICALCAMERA, FISHEYECAMERA, LENSSIDES, LENSROTATION
 	col=10; line=150; BGL.glRasterPos2i(col, line); Draw.Text("Camera:")
 	col=100; line=145; DOF=Draw.Toggle("DOF", DOF_CAMERA, col, line, 120, 18, DOF.val, "Turn on depth of field")
-	col=225; DOFRADIUS=Draw.Number("Radius", 2, col, line, 120, 18, DOFRADIUS.val, 0.0, 200.00)
+	col=225; DOFRADIUS=Draw.Number("Radius", 2, col, line, 120, 18, DOFRADIUS.val, 0.00, 99.99)
 	col=100; line=125; BGL.glRasterPos2i(col, line); Draw.Text("Bokeh shape -->")
 	col=225; line=120; LENSSIDES=Draw.Number("Sides", 2, col, line, 120, 18, LENSSIDES.val, 2, 8)
 	col=350; LENSROTATION=Draw.Number("Rotation", 2, col, line, 120, 18, LENSROTATION.val, 0.0, 360.0)
@@ -1548,8 +1548,8 @@ def drawGI():
 	col=10; line=275; IRRCACHE=Draw.Toggle("Irr. Cache", FORCE_IRRCACHE, col, line, 85, 18, IRRCACHE.val, "Enable Irradiance Caching for GI in the scene")
 	col=100; IRRSAMPLES=Draw.Number("Samples", 2, col, line, 125, 18, IRRSAMPLES.val, 0, 1024)
 	col=230; IRRTOLERANCE=Draw.Number("Tolerance", 2, col, line, 125, 18, IRRTOLERANCE.val, 0.0, 0.10)
-	col=100; line=250; IRRSPACEMIN=Draw.Number("Min. Space", 2, col, line, 125, 18, IRRSPACEMIN.val, 0.0, 10.0)
-	col=230; IRRSPACEMAX=Draw.Number("Max. Space", 2, col, line, 125, 18, IRRSPACEMAX.val, 0.0, 10.0)
+	col=100; line=250; IRRSPACEMIN=Draw.Number("Min. Space", 2, col, line, 125, 18, IRRSPACEMIN.val, 0.00, 10.00)
+	col=230; IRRSPACEMAX=Draw.Number("Max. Space", 2, col, line, 125, 18, IRRSPACEMAX.val, 0.00, 10.00)
 	col=10; line=225; USEGLOBALS=Draw.Toggle("Use Globals", FORCE_GLOBALS, col, line, 85, 18, USEGLOBALS.val, "Use global photons instead of path tracing for Irr. Cache secondary bounces") 
 	col=100; gPHOTONNUMBER=Draw.Number("Glob. Phot.", 2, col, line, 125, 18, gPHOTONNUMBER.val, 0, 5000000)
 	col=230; gPHOTONMAP=Draw.Menu("%tGlobal Photon Map|kd|grid", gPHOTON_EVENT, col, line, 60, 18, gPHOTONMAP.val)
