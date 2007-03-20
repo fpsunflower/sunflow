@@ -7,10 +7,10 @@ import org.sunflow.core.ParameterList.InterpolationType;
 import org.sunflow.core.parser.SCAbstractParser.Keyword;
 import org.sunflow.math.Matrix4;
 
-public class AsciiFileSunflowAPI extends FileSunflowAPI {
+class AsciiFileSunflowAPI extends FileSunflowAPI {
     private FileOutputStream stream;
 
-    public AsciiFileSunflowAPI(String filename) throws IOException {
+    AsciiFileSunflowAPI(String filename) throws IOException {
         stream = new FileOutputStream(filename);
     }
 

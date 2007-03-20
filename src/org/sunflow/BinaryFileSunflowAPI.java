@@ -9,10 +9,10 @@ import org.sunflow.core.ParameterList.InterpolationType;
 import org.sunflow.core.parser.SCAbstractParser.Keyword;
 import org.sunflow.math.Matrix4;
 
-public class BinaryFileSunflowAPI extends FileSunflowAPI {
+class BinaryFileSunflowAPI extends FileSunflowAPI {
     private DataOutputStream stream;
 
-    public BinaryFileSunflowAPI(String filename) throws FileNotFoundException {
+    BinaryFileSunflowAPI(String filename) throws FileNotFoundException {
         stream = new DataOutputStream(new FileOutputStream(filename));
     }
 

@@ -12,14 +12,14 @@ public class GlassShader implements Shader {
     private float eta; // refraction index ratio
     private float f0; // fresnel normal incidence
     private Color color;
-    private float absorbtionDistance;
-    private Color absorbtionColor;
+    private float absorptionDistance;
+    private Color absorptionColor;
 
     public GlassShader() {
         eta = 1.3f;
         color = Color.WHITE;
-        absorbtionDistance = 0; // disabled by default
-        absorbtionColor = Color.GRAY; // 50% absorbtion
+        absorptionDistance = 0; // disabled by default
+        absorptionColor = Color.GRAY; // 50% absorbtion
     }
 
     public boolean update(ParameterList pl, SunflowAPI api) {
@@ -27,8 +27,8 @@ public class GlassShader implements Shader {
         eta = pl.getFloat("eta", eta);
         f0 = (1 - eta) / (1 + eta);
         f0 = f0 * f0;
-        absorbtionDistance = pl.getFloat("absorbtion.distance", absorbtionDistance);
-        absorbtionColor = pl.getColor("absorbtion.color", absorbtionColor);
+        absorptionDistance = pl.getFloat("absorption.distance", absorptionDistance);
+        absorptionColor = pl.getColor("absorption.color", absorptionColor);
         return true;
     }
 
@@ -69,10 +69,10 @@ public class GlassShader implements Shader {
         float kt = 1 - kr;
 
         Color absorbtion = null;
-        if (inside && absorbtionDistance > 0) {
+        if (inside && absorptionDistance > 0) {
             // this ray is inside the object and leaving it
             // compute attenuation that occured along the ray
-            absorbtion = Color.mul(-state.getRay().getMax() / absorbtionDistance, absorbtionColor.copy().opposite()).exp();
+            absorbtion = Color.mul(-state.getRay().getMax() / absorptionDistance, absorptionColor.copy().opposite()).exp();
             if (absorbtion.isBlack())
                 return Color.BLACK; // nothing goes through
         }
@@ -115,10 +115,10 @@ public class GlassShader implements Shader {
             float wK = -neta;
             float arg = 1 - (neta * neta * (1 - (cos * cos)));
             Vector3 dir = new Vector3();
-            if (state.isBehind() && absorbtionDistance > 0) {
+            if (state.isBehind() && absorptionDistance > 0) {
                 // this ray is inside the object and leaving it
                 // compute attenuation that occured along the ray
-                power.mul(Color.mul(-state.getRay().getMax() / absorbtionDistance, absorbtionColor.copy().opposite()).exp());
+                power.mul(Color.mul(-state.getRay().getMax() / absorptionDistance, absorptionColor.copy().opposite()).exp());
             }
             if (arg < 0) {
                 // TIR

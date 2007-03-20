@@ -482,10 +482,10 @@ public class SCParser implements SceneParser {
             api.parameter("eta", p.getNextFloat());
             p.checkNextToken("color");
             api.parameter("color", null, parseColor().getRGB());
-            if (p.peekNextToken("absorbtion.distance"))
-                api.parameter("absorbtion.distance", p.getNextFloat());
-            if (p.peekNextToken("absorbtion.color"))
-                api.parameter("absorbtion.color", null, parseColor().getRGB());
+            if (p.peekNextToken("absorption.distance") || p.peekNextToken("absorbtion.distance"))
+                api.parameter("absorption.distance", p.getNextFloat());
+            if (p.peekNextToken("absorption.color") || p.peekNextToken("absorbtion.color"))
+                api.parameter("absorption.color", null, parseColor().getRGB());
             api.shader(name, "glass");
         } else if (p.peekNextToken("shiny")) {
             String tex = null;

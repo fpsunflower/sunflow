@@ -1,4 +1,6 @@
 v0.07.3
+* Fixed access levels on certain classes in org.sunflow package
+* Fixed spelling of absorption in glass shader - left backwards compatibility in SCParser
 * Added reading/writing of Indigo's IGI file format
 * Added GenericBitmap format for simple debugging tasks
 * Added more robust file extension detection

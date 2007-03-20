@@ -14,7 +14,7 @@ import org.sunflow.math.Vector3;
 import org.sunflow.system.UI;
 import org.sunflow.system.UI.Module;
 
-public abstract class FileSunflowAPI implements SunflowAPIInterface {
+abstract class FileSunflowAPI implements SunflowAPIInterface {
     private int frame;
     private HashMap<String, Integer> objectNames;
 
