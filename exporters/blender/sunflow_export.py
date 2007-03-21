@@ -1,14 +1,14 @@
 #!BPY
 
 """
-Name: 'Sunflow Exporter 1.0.0 (.sc)...'
+Name: 'Sunflow Exporter 1.0.1 (.sc)...'
 Blender: 2.43
 Group: 'Export'
 Tip: ''
 """
 
 """
-Version         :       1.0.0 (March 2007)
+Version         :       1.0.1 (March 2007)
 Author          :       R Lindsay (hayfever) / Christopher Kulla / MADCello / olivS / Eugene Reilly / Heavily Tessellated
 Description     :       Export to Sunflow renderer http://sunflow.sourceforge.net/
 """
@@ -186,7 +186,7 @@ JAVAPATH = ""
 #######################
 
 print "\n\n"
-print "blend2sunflow v1.0.0"
+print "blend2sunflow v1.0.1"
 
 ## Export logic for simple options ##
 #####################################
@@ -510,7 +510,6 @@ def export_modifiers():
 ##############################################
 
 def export_lights(lmp):
-	global IBLLIGHT
 
 	# only lamps type 0,  1 and 4 supported at the moment
 	# lamp types are: 0 - Lamp, 1 - Sun, 2 - Spot, 3 - Hemi, 4 - Area
@@ -658,9 +657,29 @@ def export_lights(lmp):
 			FILE.write("\tp %s %s %s\n" % (lampV[0], lampV[1], lampV[2]))
 			FILE.write("}")
 
+## Export method for Image Based Lights ##
+##########################################
+
+def export_ibl():
+	global IBLLIGHT
+
+	try:
+		ibllighttext = Blender.Texture.Get("ibllight")
+                if ibllighttext <> "":
+                        if ibllighttext.users > 0:
+                                if ibllighttext <> None and ibllighttext.getType() == "Image":
+                                        IBLLIGHT = ibllighttext.getImage().getFilename()
+                                else:
+                                        IBLLIGHT = ""
+                        else:
+                               IBLLIGHT = ""
+        except:
+                IBLLIGHT = ""
+
 	if IBL == 1:
 		if IBLLIGHT <> "":
-			print "  o exporting ibllight..."
+			print "o exporting ibllight..."
+			print "  o using texture %s" % (IBLLIGHT)
 			FILE.write("\n\nlight {\n")
 			FILE.write("\ttype ibl\n")
 			FILE.write("\timage \"%s\"\n" % (IBLLIGHT))
@@ -914,9 +933,10 @@ def exportfile(filename):
 
 	if not filename.endswith(".sc"):
 		filename = filename + ".sc"
-		fname = filename
-                destname = fname.replace(".sc", "")
-	ANIM = EXP_ANIM.val
+	fname = filename
+        destname = fname.replace(".sc", "")
+
+        ANIM = EXP_ANIM.val
 
 	if ANIM == 1:
 		base = os.path.splitext(os.path.basename(filename))[0]
@@ -940,19 +960,6 @@ public void build() {
 
 		CTX.currentFrame(cntr)
 		SCENE.makeCurrent()
-		try:
-			ibllighttext = Blender.Texture.Get("ibllight")
-			if ibllighttext <> "":
-                                if ibllighttext.users > 0:
-                                        if ibllighttext <> None and ibllighttext.getType() == "Image":
-                                                IBLLIGHT = ibllighttext.getImage().getFilename()
-                                        else:
-                                                IBLLIGHT = ""
-                                else:
-                                        IBLLIGHT = ""
-                except:
-                        IBLLIGHT = ""
-
 		OBJECTS = Blender.Scene.GetCurrent().getChildren()
 
 		if ANIM == 1:
@@ -961,12 +968,13 @@ public void build() {
 		print "Exporting to: %s" % (filename)
 
 		FILE = open(filename, 'wb')
+
 		if ANIM == 0:
 			export_output()
 			export_gi()
 		export_shaders()
 		export_modifiers()
-		
+		export_ibl()
 		export_camera(SCENE.getCurrentCamera())
 		for object in OBJECTS:
 			if object.users > 1 and object.layers[0] in LAYERS:
@@ -995,6 +1003,9 @@ public void build() {
 		SCENE.makeCurrent()
 
 	print "Export finished."
+
+if __name__ == '__main__':
+        Blender.Window.FileSelector(exportfile, "Export .sc", Blender.sys.makename(ext=".sc"))
 
 ## Global event handler ##
 ##########################
@@ -1413,7 +1424,7 @@ def drawCamera():
 #############################
 
 def drawBackground():
-	global IMP_BCKGRD, IMP_SUN, BACKGROUND, BCKGRDR, BCKGRDG, BCKGRDB,  IBL, IBLLOCK, IBLSAMPLES, SUN_TURB, SUN_SAMPLES
+	global IMP_BCKGRD, IMP_SUN, BACKGROUND, BCKGRDR, BCKGRDG, BCKGRDB, IBL, IBLLOCK, IBLSAMPLES, SUN_TURB, SUN_SAMPLES
 	col=10; line=225; BGL.glRasterPos2i(col, line); Draw.Text("Simple background:")
 	col=10; line=200; IMP_BCKGRD=Draw.Toggle("Import World", BCKGRD_EVENT, col, line, 120, 18, IMP_BCKGRD.val, "Set World's Horizon color as background")
 	col=10; line=175; BACKGROUND=Draw.Toggle("Create Background", CBCKGRD_EVENT, col, line, 120, 18, BACKGROUND.val, "Define a background color")
