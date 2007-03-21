@@ -1479,10 +1479,11 @@ def drawLights():
 #########################
 
 def drawShad():
-	col=10; line=325; BGL.glRasterPos2i(col, line); Draw.Text("Specific instructions for exporting shaders:")
-	col=10; line=300; BGL.glRasterPos2i(col, line); Draw.Text("Uber: shader name should start with 'sfube' - imports Blender's Col and Spe RGB values")
-	col=10; line=285; BGL.glRasterPos2i(col, line); Draw.Text("\t\tIF Texture Slot 0: diffuse texture(Mapto Col value), else Col RGB values")
-	col=10; line=270; BGL.glRasterPos2i(col, line); Draw.Text("\t\tIF Texture Slot 2: specular texture(Mapto Var value), else Spe RGB values")
+	col=10; line=375; BGL.glRasterPos2i(col, line); Draw.Text("Specific instructions for exporting shaders:")
+	col=10; line=350; BGL.glRasterPos2i(col, line); Draw.Text("Uber: shader name should start with 'sfube' - imports Blender's Col and Spe RGB values")
+        col=10; line=325; BGL.glRasterPos2i(col, line); Draw.Text("\t\tIF Texture Slot 0: diffuse texture(Mapto Col value), else Col RGB values")
+	col=10; line=300; BGL.glRasterPos2i(col, line); Draw.Text("\t\tIF Texture Slot 2: specular texture(Mapto Var value), else Spe RGB values")
+	col=10; line=275; BGL.glRasterPos2i(col, line); Draw.Text("Regarding Textures:  Diffuse, shiny, ambocc, phong, and ward materials will use textures as the diffuse channel if the texture is in the first texture slot.")
 	col=10; line=250; BGL.glRasterPos2i(col, line); Draw.Text("Diffuse: shader name should start with 'sfdif' - imports Blender's Col RGB values")
 	col=10; line=225; BGL.glRasterPos2i(col, line); Draw.Text("Shiny: shader name sould start with 'sfshi' - imports Blender's Col RGB and RayMirr values")
 	col=10; line=200; BGL.glRasterPos2i(col, line); Draw.Text("Ambient Occlusion: shader name sould start with 'sfamb' - imports Blender's Col RGB (Bright) and Spe RGB (Dark) values")
