@@ -399,6 +399,15 @@ def export_shaders():
 				FILE.write("\tspec { \"sRGB nonlinear\" %s %s %s }\n" %(speccol[0], speccol[1], speccol[2]))
 				FILE.write("\trough .2 .01\n")
 				FILE.write("\tsamples 4\n}")
+
+			# shiny texture shader
+			elif mat.name.startswith("sfshi"):
+				print "  o exporting shiny texture shader "+mat.name+"..."
+                                FILE.write("\n\nshader {\n")
+				FILE.write("\tname \""+mat.name+".shader\"\n")
+				FILE.write("\ttype shiny\n")
+				FILE.write("\ttexture \"" + textu.tex.getImage().getFilename() + "\"\n")
+				FILE.write("\trefl %s\n}" % mat.getRayMirr())
 			
 			# newcommers default diffuse texture shader
 			else:
