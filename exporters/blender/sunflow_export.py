@@ -1483,7 +1483,7 @@ def drawLights():
 
 def drawShad():
 	col=10; line=400; BGL.glRasterPos2i(col, line); Draw.Text("Specific instructions for exporting shaders:")
-	col=10; line=375; BGL.glRasterPos2i(col, line); Draw.Text("For exporting bump and normal maps, have the second slot texture name begin with bump or normal")	
+	col=10; line=375; BGL.glRasterPos2i(col, line); Draw.Text("For exporting bump and normal maps, have the second texture slot (slot 1) name begin with bump or normal")	
 	col=10; line=350; BGL.glRasterPos2i(col, line); Draw.Text("Uber: shader name should start with 'sfube' - imports Blender's Col and Spe RGB values")
         col=10; line=325; BGL.glRasterPos2i(col, line); Draw.Text("\t\tIF Texture Slot 0: diffuse texture(Mapto Col value), else Col RGB values")
 	col=10; line=300; BGL.glRasterPos2i(col, line); Draw.Text("\t\tIF Texture Slot 2: specular texture(Mapto Var value), else Spe RGB values")
