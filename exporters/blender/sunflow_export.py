@@ -1,14 +1,14 @@
 #!BPY
 
 """
-Name: 'Sunflow Exporter 1.0.1 (.sc)...'
+Name: 'Sunflow Exporter 1.0.2 (.sc)...'
 Blender: 2.43
 Group: 'Export'
 Tip: ''
 """
 
 """
-Version         :       1.0.1 (March 2007)
+Version         :       1.0.2 (March 2007)
 Author          :       R Lindsay (hayfever) / Christopher Kulla / MADCello / olivS / Eugene Reilly / Heavily Tessellated
 Description     :       Export to Sunflow renderer http://sunflow.sourceforge.net/
 """
@@ -37,9 +37,12 @@ MAXAA = Draw.Create(2)
 AASAMPLES = Draw.Create(1)
 AAJITTER = Draw.Create(0)
 DSAMPLES = Draw.Create(16)
-IMGFILTER = Draw.Create(2)
+IMGFILTER = Draw.Create(1)
 IMGFILTERW = Draw.Create(1)
 IMGFILTERH = Draw.Create(1)
+BUCKET = Draw.Create(0)
+BUCKETTYPE = Draw.Create(1)
+BUCKETVAL = Draw.Create(32)
 
 # Camera panel
 DOF = Draw.Create(0)
@@ -161,6 +164,7 @@ LOCK_EVENT = 34
 SET_PATH = 35
 CHANGE_CFG = 36
 SET_JAVAPATH = 37
+BUCKET_EVENT = 38
 
 ## Lists ##
 ###########
@@ -169,6 +173,7 @@ IMGFILTERLIST = ["box", "gaussian", "mitchell", "triangle", "catmull-rom", "blac
 FILETYPE
 PHOTONMAPLIST = ["kd"]
 gPHOTONMAPLIST = ["kd", "grid"]
+BUCKETLIST = ["column", "diagonal", "hilbert", "inverted", "random", "row", "spiral"]
 
 ###################
 ##  global vars  ##
@@ -186,7 +191,7 @@ JAVAPATH = ""
 #######################
 
 print "\n\n"
-print "blend2sunflow v1.0.1"
+print "blend2sunflow v1.0.2"
 
 ## Export logic for simple options ##
 #####################################
@@ -201,6 +206,9 @@ def export_output():
 		FILE.write("\tjitter true\n")
 	FILE.write("}")
 	FILE.write("\n")
+	if BUCKET == 1:
+        	FILE.write("bucket %s %s\n\n" % (BUCKETVAL.val, BUCKETLIST[BUCKETTYPE.val-1]))
+	
 	print "o exporting trace-depths options..."
 	FILE.write("trace-depths {\n")
 	FILE.write("\tdiff %s \n" % DEPTH_DIFF)
@@ -1058,8 +1066,9 @@ def render():
 	# TODO:
 	# 1- Make compatible with animations
 	global COMMAND, memory, threads, sfpath, trial, javapath, fname, destname
-	fname = FILENAME
-        destname = FILENAME.replace(".sc", "")
+        exportfile = Blender.sys.makename(ext=".sc")
+	fname = exportfile
+        destname = exportfile.replace(".sc", "")
 	# Get blenders 'bpydata' directory:
 	datadir=Blender.Get("datadir")
 	# Check existence of SF config file:
@@ -1187,6 +1196,8 @@ def buttonEvent(evt):
 				SPHERICALCAMERA.val = 0
 				Draw.Redraw()
 	if evt == FILTER_EVENT:
+		Draw.Redraw()
+	if evt == BUCKET_EVENT:
 		Draw.Redraw()
 	if evt == FORCE_INSTANTGI:
 		if INSTANTGI.val == 1:
@@ -1413,14 +1424,18 @@ def drawGUI():
 ######################
 
 def drawAA():
-	global MINAA, MAXAA, AASAMPLES, AAJITTER, IMGFILTERW, IMGFILTERH, IMGFILTER
-	col=10; line=125; BGL.glRasterPos2i(col, line); Draw.Text("AA:")
-	col=100; MINAA=Draw.Number("Min AA ", 2, col, line, 120, 18, MINAA.val, -4, 5); 
-	col=230; MAXAA=Draw.Number("Max AA  ", 2, col, line, 120, 18, MAXAA.val, -4, 5)
-	col=100; line=100; AASAMPLES=Draw.Number("Samples", 2, col, line, 120, 18, AASAMPLES.val, 0, 32)
+	global MINAA, MAXAA, AASAMPLES, AAJITTER, IMGFILTERW, IMGFILTERH, IMGFILTER, BUCKET, BUCKETVAL, BUCKETTYPE
+	col=10; line=175; BGL.glRasterPos2i(col, line); Draw.Text("AA:")
+	col=100; MINAA=Draw.Number("Min AA", 2, col, line, 120, 18, MINAA.val, -4, 5); 
+	col=230; MAXAA=Draw.Number("Max AA", 2, col, line, 120, 18, MAXAA.val, -4, 5)
+	col=100; line=150; AASAMPLES=Draw.Number("Samples", 2, col, line, 120, 18, AASAMPLES.val, 0, 32)
 	col=230; AAJITTER=Draw.Toggle("AA Jitter", 2, col, line, 120, 18, AAJITTER.val, "Use jitter for anti-aliasing")
-	col=10; line=80; BGL.glRasterPos2i(col, line); Draw.Text("Image Filter:")
-	col=100; line=75; IMGFILTER=Draw.Menu("%tImage Filter|box|gaussian|mitchell|triangle|catmull-rom|blackman-harris|sinc|lanczos", FILTER_EVENT, col, line, 120, 18, IMGFILTER.val)
+	col=10; line=130; BGL.glRasterPos2i(col, line); Draw.Text("Image Filter:")
+	col=100; line=125; IMGFILTER=Draw.Menu("%tImage Filter|box|gaussian|mitchell|triangle|catmull-rom|blackman-harris|sinc|lanczos", FILTER_EVENT, col, line, 120, 18, IMGFILTER.val)
+        col=10; line=105; BGL.glRasterPos2i(col, line); Draw.Text("Bucket:")
+	col=100; line=100; BUCKET=Draw.Toggle("Bucket", 2, col, line, 120, 18, BUCKET.val, "Bucket size and type")
+        col=230; BUCKETVAL=Draw.Number("Bucket Value", 2, col, line, 120, 18, BUCKETVAL.val, 0, 256)
+        col=360; BUCKETTYPE=Draw.Menu("%tBucket Filter|column|diagonal|hilbert|inverted|random|row|spiral", BUCKET_EVENT, col, line, 120, 18, BUCKETTYPE.val)
 	drawButtons()
 
 ## Draw camera options ##
