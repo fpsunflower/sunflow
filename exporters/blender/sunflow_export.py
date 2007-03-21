@@ -365,7 +365,10 @@ def export_shaders():
 				FILE.write("\n\nshader {\n")
 				FILE.write("\tname \""+mat.name+".shader\"\n")
 				FILE.write("\ttype amb-occ\n")
-				FILE.write("\ttexture \"" + textu.tex.getImage().getFilename() + "\"\n}")
+				FILE.write("\ttexture \"" + textu.tex.getImage().getFilename() + "\"\n")
+				FILE.write("\tdark %s %s %s\n" % (speccol[0], speccol[1], speccol[2]))
+				FILE.write("\tsamples 32\n")
+				FILE.write("\tdist 0.0\n}")
 				
 			# diffuse texture shader
 			elif mat.name.startswith("sfdif"):
@@ -381,7 +384,9 @@ def export_shaders():
 				FILE.write("\n\nshader {\n")
 				FILE.write("\tname \""+mat.name+".shader\"\n")
 				FILE.write("\ttype phong\n")
-				FILE.write("\ttexture \"" + textu.tex.getImage().getFilename() + "\"\n}")
+				FILE.write("\ttexture \"" + textu.tex.getImage().getFilename() + "\"\n")
+				FILE.write("\tspec { \"sRGB nonlinear\" %s %s %s } %s\n" %(speccol[0], speccol[1], speccol[2], mat.hard))
+				FILE.write("\tsamples 4\n}")
 				
 			# ward texture shader
 			elif mat.name.startswith("sfwar"):
@@ -389,7 +394,11 @@ def export_shaders():
 				FILE.write("\n\nshader {\n")
 				FILE.write("\tname \""+mat.name+".shader\"\n")
 				FILE.write("\ttype ward\n")
-				FILE.write("\ttexture \"" + textu.tex.getImage().getFilename() + "\"\n}")
+				FILE.write("\ttexture \"" + textu.tex.getImage().getFilename() + "\"\n")
+        			speccol = mat.specCol               
+				FILE.write("\tspec { \"sRGB nonlinear\" %s %s %s }\n" %(speccol[0], speccol[1], speccol[2]))
+				FILE.write("\trough .2 .01\n")
+				FILE.write("\tsamples 4\n}")
 			
 			# newcommers default diffuse texture shader
 			else:
