@@ -1,14 +1,14 @@
 #!BPY
 
 """
-Name: 'Sunflow Exporter 1.0.2 (.sc)...'
+Name: 'Sunflow Exporter 1.0.3 (.sc)...'
 Blender: 2.43
 Group: 'Export'
 Tip: ''
 """
 
 """
-Version         :       1.0.2 (March 2007)
+Version         :       1.0.3 (March 2007)
 Author          :       R Lindsay (hayfever) / Christopher Kulla / MADCello / olivS / Eugene Reilly / Heavily Tessellated
 Description     :       Export to Sunflow renderer http://sunflow.sourceforge.net/
 """
@@ -40,9 +40,6 @@ DSAMPLES = Draw.Create(16)
 IMGFILTER = Draw.Create(1)
 IMGFILTERW = Draw.Create(1)
 IMGFILTERH = Draw.Create(1)
-BUCKET = Draw.Create(0)
-BUCKETTYPE = Draw.Create(1)
-BUCKETVAL = Draw.Create(32)
 
 # Camera panel
 DOF = Draw.Create(0)
@@ -164,7 +161,6 @@ LOCK_EVENT = 34
 SET_PATH = 35
 CHANGE_CFG = 36
 SET_JAVAPATH = 37
-BUCKET_EVENT = 38
 
 ## Lists ##
 ###########
@@ -173,7 +169,6 @@ IMGFILTERLIST = ["box", "gaussian", "mitchell", "triangle", "catmull-rom", "blac
 FILETYPE
 PHOTONMAPLIST = ["kd"]
 gPHOTONMAPLIST = ["kd", "grid"]
-BUCKETLIST = ["column", "diagonal", "hilbert", "inverted", "random", "row", "spiral"]
 
 ###################
 ##  global vars  ##
@@ -191,7 +186,7 @@ JAVAPATH = ""
 #######################
 
 print "\n\n"
-print "blend2sunflow v1.0.2"
+print "blend2sunflow v1.0.3"
 
 ## Export logic for simple options ##
 #####################################
@@ -206,8 +201,6 @@ def export_output():
 		FILE.write("\tjitter true\n")
 	FILE.write("}")
 	FILE.write("\n")
-	if BUCKET == 1:
-        	FILE.write("bucket %s %s\n\n" % (BUCKETVAL.val, BUCKETLIST[BUCKETTYPE.val-1]))
 	
 	print "o exporting trace-depths options..."
 	FILE.write("trace-depths {\n")
@@ -1197,8 +1190,6 @@ def buttonEvent(evt):
 				Draw.Redraw()
 	if evt == FILTER_EVENT:
 		Draw.Redraw()
-	if evt == BUCKET_EVENT:
-		Draw.Redraw()
 	if evt == FORCE_INSTANTGI:
 		if INSTANTGI.val == 1:
 			if IRRCACHE.val == 1:
@@ -1424,7 +1415,7 @@ def drawGUI():
 ######################
 
 def drawAA():
-	global MINAA, MAXAA, AASAMPLES, AAJITTER, IMGFILTERW, IMGFILTERH, IMGFILTER, BUCKET, BUCKETVAL, BUCKETTYPE
+	global MINAA, MAXAA, AASAMPLES, AAJITTER, IMGFILTERW, IMGFILTERH, IMGFILTER
 	col=10; line=175; BGL.glRasterPos2i(col, line); Draw.Text("AA:")
 	col=100; MINAA=Draw.Number("Min AA", 2, col, line, 120, 18, MINAA.val, -4, 5); 
 	col=230; MAXAA=Draw.Number("Max AA", 2, col, line, 120, 18, MAXAA.val, -4, 5)
@@ -1433,9 +1424,6 @@ def drawAA():
 	col=10; line=130; BGL.glRasterPos2i(col, line); Draw.Text("Image Filter:")
 	col=100; line=125; IMGFILTER=Draw.Menu("%tImage Filter|box|gaussian|mitchell|triangle|catmull-rom|blackman-harris|sinc|lanczos", FILTER_EVENT, col, line, 120, 18, IMGFILTER.val)
         col=10; line=105; BGL.glRasterPos2i(col, line); Draw.Text("Bucket:")
-	col=100; line=100; BUCKET=Draw.Toggle("Bucket", 2, col, line, 120, 18, BUCKET.val, "Bucket size and type")
-        col=230; BUCKETVAL=Draw.Number("Bucket Value", 2, col, line, 120, 18, BUCKETVAL.val, 0, 256)
-        col=360; BUCKETTYPE=Draw.Menu("%tBucket Filter|column|diagonal|hilbert|inverted|random|row|spiral", BUCKET_EVENT, col, line, 120, 18, BUCKETTYPE.val)
 	drawButtons()
 
 ## Draw camera options ##
@@ -1494,7 +1482,8 @@ def drawLights():
 #########################
 
 def drawShad():
-	col=10; line=375; BGL.glRasterPos2i(col, line); Draw.Text("Specific instructions for exporting shaders:")
+	col=10; line=400; BGL.glRasterPos2i(col, line); Draw.Text("Specific instructions for exporting shaders:")
+	col=10; line=375; BGL.glRasterPos2i(col, line); Draw.Text("For exporting bump and normal maps, have the second slot texture name begin with bump or normal")	
 	col=10; line=350; BGL.glRasterPos2i(col, line); Draw.Text("Uber: shader name should start with 'sfube' - imports Blender's Col and Spe RGB values")
         col=10; line=325; BGL.glRasterPos2i(col, line); Draw.Text("\t\tIF Texture Slot 0: diffuse texture(Mapto Col value), else Col RGB values")
 	col=10; line=300; BGL.glRasterPos2i(col, line); Draw.Text("\t\tIF Texture Slot 2: specular texture(Mapto Var value), else Spe RGB values")
