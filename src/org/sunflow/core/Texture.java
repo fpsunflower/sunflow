@@ -81,10 +81,10 @@ public class Texture {
             return Color.BLACK;
         x = MathUtils.frac(x);
         y = MathUtils.frac(y);
-        float dx = x * bitmap.getWidth();
-        float dy = y * bitmap.getHeight();
-        int ix0 = MathUtils.clamp((int) dx, 0, bitmap.getWidth() - 1);
-        int iy0 = MathUtils.clamp((int) dy, 0, bitmap.getHeight() - 1);
+        float dx = x * (bitmap.getWidth() - 1);
+        float dy = y * (bitmap.getHeight() - 1);
+        int ix0 = (int) dx;
+        int iy0 = (int) dy;
         int ix1 = (ix0 + 1) % bitmap.getWidth();
         int iy1 = (iy0 + 1) % bitmap.getHeight();
         float u = dx - ix0;
