@@ -1,15 +1,16 @@
 #!BPY
 
 """
-Name: 'Sunflow Exporter 1.0.4 (.sc)...'
+Name: 'Sunflow Exporter 1.0.5 (.sc)...'
 Blender: 2.43
 Group: 'Export'
 Tip: ''
 """
 
 """
-Version         :       1.0.4 (March 2007)
-Author          :       R Lindsay (hayfever) / Christopher Kulla / MADCello / olivS / Eugene Reilly / Heavily Tessellated
+Version         :       1.0.5 (March 2007)
+Author          :       R Lindsay (hayfever) / Christopher Kulla / MADCello / 
+			olivS / Eugene Reilly / Heavily Tessellated / Humfred
 Description     :       Export to Sunflow renderer http://sunflow.sourceforge.net/
 """
 
@@ -182,7 +183,6 @@ gPHOTONMAPLIST = ["kd", "grid"]
 global FILE, SCENE, IM_HEIGHT, IM_WIDTH, TEXTURES, OBJECTS, IBLLIGHT, LAYERS, SCREEN
 global DOFDIST
 FILENAME = Blender.Get('filename').replace(".blend", ".sc")
-fname = FILENAME
 SFPATH = ""
 JAVAPATH = ""
 
@@ -191,7 +191,7 @@ JAVAPATH = ""
 #######################
 
 print "\n\n"
-print "blend2sunflow v1.0.4"
+print "blend2sunflow v1.0.5"
 
 ## Export logic for simple options ##
 #####################################
@@ -945,8 +945,8 @@ def exportfile(filename):
 	global PATH
 
 	SCENE     = Blender.Scene.GetCurrent()
-	IM_HEIGHT = SCENE.getRenderingContext().imageSizeY()
-	IM_WIDTH  = SCENE.getRenderingContext().imageSizeX()
+	IM_HEIGHT = SCENE.getRenderingContext().imageSizeY() * (SCENE.getRenderingContext().getRenderWinSize() / 100.0) 
+	IM_WIDTH = SCENE.getRenderingContext().imageSizeX() * (SCENE.getRenderingContext().getRenderWinSize() / 100.0) 
 	TEXTURES  = Blender.Texture.Get()
 
 	LAYERS    = SCENE.getLayers()
