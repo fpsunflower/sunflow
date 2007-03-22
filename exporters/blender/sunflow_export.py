@@ -1,14 +1,14 @@
 #!BPY
 
 """
-Name: 'Sunflow Exporter 1.0.3 (.sc)...'
+Name: 'Sunflow Exporter 1.0.4 (.sc)...'
 Blender: 2.43
 Group: 'Export'
 Tip: ''
 """
 
 """
-Version         :       1.0.3 (March 2007)
+Version         :       1.0.4 (March 2007)
 Author          :       R Lindsay (hayfever) / Christopher Kulla / MADCello / olivS / Eugene Reilly / Heavily Tessellated
 Description     :       Export to Sunflow renderer http://sunflow.sourceforge.net/
 """
@@ -107,6 +107,9 @@ OCCDARKB    = Draw.Create(0.0)
 OCCSAMPLES  = Draw.Create(32)
 OCCDIST     = Draw.Create(0.0)
 
+# Shader panel
+SHADTYPE = Draw.Create(1)
+
 # Render panel
 QUICKOPT = Draw.Create(1)
 IPR = Draw.Create(0)
@@ -161,6 +164,8 @@ LOCK_EVENT = 34
 SET_PATH = 35
 CHANGE_CFG = 36
 SET_JAVAPATH = 37
+SHADER_TYPE = 38
+SHAD_OK = 39
 
 ## Lists ##
 ###########
@@ -186,7 +191,7 @@ JAVAPATH = ""
 #######################
 
 print "\n\n"
-print "blend2sunflow v1.0.3"
+print "blend2sunflow v1.0.4"
 
 ## Export logic for simple options ##
 #####################################
@@ -1059,9 +1064,9 @@ def render():
 	# TODO:
 	# 1- Make compatible with animations
 	global COMMAND, memory, threads, sfpath, trial, javapath, fname, destname
-        exportfile = Blender.sys.makename(ext=".sc")
-	fname = exportfile
-        destname = exportfile.replace(".sc", "")
+        
+	exportfile(fname)
+        destname = fname.replace(".sc", "")
 	# Get blenders 'bpydata' directory:
 	datadir=Blender.Get("datadir")
 	# Check existence of SF config file:
@@ -1388,6 +1393,9 @@ def buttonEvent(evt):
 		SCREEN=8
 		Draw.Redraw()
 		return
+	if evt == SHAD_OK:
+		Draw.Redraw()
+		return
 
 ## Draws the individual panels ##
 #################################
@@ -1423,7 +1431,6 @@ def drawAA():
 	col=230; AAJITTER=Draw.Toggle("AA Jitter", 2, col, line, 120, 18, AAJITTER.val, "Use jitter for anti-aliasing")
 	col=10; line=130; BGL.glRasterPos2i(col, line); Draw.Text("Image Filter:")
 	col=100; line=125; IMGFILTER=Draw.Menu("%tImage Filter|box|gaussian|mitchell|triangle|catmull-rom|blackman-harris|sinc|lanczos", FILTER_EVENT, col, line, 120, 18, IMGFILTER.val)
-        col=10; line=105; BGL.glRasterPos2i(col, line); Draw.Text("Bucket:")
 	drawButtons()
 
 ## Draw camera options ##
@@ -1482,20 +1489,41 @@ def drawLights():
 #########################
 
 def drawShad():
+	global SHADTYPE, SHADOK
 	col=10; line=400; BGL.glRasterPos2i(col, line); Draw.Text("Specific instructions for exporting shaders:")
-	col=10; line=375; BGL.glRasterPos2i(col, line); Draw.Text("For exporting bump and normal maps, have the second texture slot (slot 1) name begin with bump or normal")	
-	col=10; line=350; BGL.glRasterPos2i(col, line); Draw.Text("Uber: shader name should start with 'sfube' - imports Blender's Col and Spe RGB values")
-        col=10; line=325; BGL.glRasterPos2i(col, line); Draw.Text("\t\tIF Texture Slot 0: diffuse texture(Mapto Col value), else Col RGB values")
-	col=10; line=300; BGL.glRasterPos2i(col, line); Draw.Text("\t\tIF Texture Slot 2: specular texture(Mapto Var value), else Spe RGB values")
-	col=10; line=275; BGL.glRasterPos2i(col, line); Draw.Text("Regarding Textures:  Diffuse, shiny, ambocc, phong, and ward materials will use textures as the diffuse channel if the texture is in the first texture slot.")
-	col=10; line=250; BGL.glRasterPos2i(col, line); Draw.Text("Diffuse: shader name should start with 'sfdif' - imports Blender's Col RGB values")
-	col=10; line=225; BGL.glRasterPos2i(col, line); Draw.Text("Shiny: shader name sould start with 'sfshi' - imports Blender's Col RGB and RayMirr values")
-	col=10; line=200; BGL.glRasterPos2i(col, line); Draw.Text("Ambient Occlusion: shader name sould start with 'sfamb' - imports Blender's Col RGB (Bright) and Spe RGB (Dark) values")
-	col=10; line=175; BGL.glRasterPos2i(col, line); Draw.Text("Phong: shader name sould start with 'sfpho' - imports Blender's Col RGB and Spe RGB values")
-	col=10; line=150; BGL.glRasterPos2i(col, line); Draw.Text("Ward: shader name sould start with 'sfwar' - imports Blender's Col RGB and Spe RGB values")
-	col=10; line=125; BGL.glRasterPos2i(col, line); Draw.Text("Mirror: shader name sould start with 'sfmir' - imports Blender's Col RGB values, Ray Mir button must be on")
-	col=10; line=100; BGL.glRasterPos2i(col, line); Draw.Text("Glass: shader name sould start with 'sfgla' - imports Blender's Col RGB and IOR values, Ray Transp button must be on")
-	col=10; line=75; BGL.glRasterPos2i(col, line); Draw.Text("Constant: shader name should start with 'sfcon' - imports Blender's Col RGB values")
+	col=10; line=375; BGL.glRasterPos2i(col, line); Draw.Text("For exporting bump and normal maps, have the second texture slot (slot 1)")
+	col=10; line=350; BGL.glRasterPos2i(col, line); Draw.Text("name begin with bump or normal")	
+	col=10; line=325; BGL.glRasterPos2i(col, line); Draw.Text("Regarding Textures:  Diffuse, shiny, ambocc, phong, and ward materials will")
+	col=10; line=300; BGL.glRasterPos2i(col, line); Draw.Text("use textures as the diffuse channel if the texture is in the first texture slot.")
+	col=10; line=275; SHADTYPE=Draw.Menu("%tSelect shader|Uber|Diffuse|Shiny|AO|Phong|Ward|Mirror|Glass|Constant", SHADER_TYPE, col, line, 85, 18, SHADTYPE.val)
+	col=100; SHADOK=Draw.Button("OK", SHAD_OK, col, line, 30, 18, "Print on screen instructions")
+	if SHADTYPE == 1:
+		col=10; line=250; BGL.glRasterPos2i(col, line); Draw.Text("Uber: shader name should start with 'sfube' - imports Blender's Col and Spe RGB")
+		col=10; line=225; BGL.glRasterPos2i(col, line); Draw.Text("values")
+		col=10; line=200; BGL.glRasterPos2i(col, line); Draw.Text("\t\tIF Texture Slot 0: diffuse texture(Mapto Col value), else Col RGB values")
+		col=10; line=175; BGL.glRasterPos2i(col, line); Draw.Text("\t\tIF Texture Slot 2: specular texture(Mapto Var value), else Spe RGB values")
+	if SHADTYPE == 2:
+		col=10; line=250; BGL.glRasterPos2i(col, line); Draw.Text("Diffuse: shader name should start with 'sfdif' - imports Blender's Col RGB values")
+	if SHADTYPE == 3:
+		col=10; line=250; BGL.glRasterPos2i(col, line); Draw.Text("Shiny: shader name sould start with 'sfshi' - imports Blender's Col RGB and")
+		col=10; line=225; BGL.glRasterPos2i(col, line); Draw.Text("RayMirr values")
+	if SHADTYPE == 4:
+		col=10; line=250; BGL.glRasterPos2i(col, line); Draw.Text("Ambient Occlusion: shader name sould start with 'sfamb' - imports Blender's")
+		col=10; line=225; BGL.glRasterPos2i(col, line); Draw.Text("Col RGB (Bright) and Spe RGB (Dark) values")
+	if SHADTYPE == 5:
+		col=10; line=250; BGL.glRasterPos2i(col, line); Draw.Text("Phong: shader name sould start with 'sfpho' - imports Blender's Col RGB and")
+		col=10; line=225; BGL.glRasterPos2i(col, line); Draw.Text("Spe RGB values")
+	if SHADTYPE == 6:
+		col=10; line=250; BGL.glRasterPos2i(col, line); Draw.Text("Ward: shader name sould start with 'sfwar' - imports Blender's Col RGB and")
+		col=10; line=225; BGL.glRasterPos2i(col, line); Draw.Text("Spe RGB values")
+	if SHADTYPE == 7:
+		col=10; line=250; BGL.glRasterPos2i(col, line); Draw.Text("Mirror: shader name sould start with 'sfmir' - imports Blender's Col RGB values,")
+		col=10; line=225; BGL.glRasterPos2i(col, line); Draw.Text("Ray Mir button must be on")
+	if SHADTYPE == 8:
+		col=10; line=250; BGL.glRasterPos2i(col, line); Draw.Text("Glass: shader name sould start with 'sfgla' - imports Blender's Col RGB and")
+		col=10; line=225; BGL.glRasterPos2i(col, line); Draw.Text("IOR values, Ray Transp button must be on")
+	if SHADTYPE == 9:
+		col=10; line=250; BGL.glRasterPos2i(col, line); Draw.Text("Constant: shader name should start with 'sfcon' - imports Blender's Col RGB values")
 	drawButtons()
 
 ## Draw export and render options settings ##
