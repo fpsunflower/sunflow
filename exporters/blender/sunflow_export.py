@@ -238,7 +238,7 @@ def export_gi():
 	if CAUSTICS.val == 1:
 		print "o exporting caustic settings..."
 		FILE.write("\nphotons {\n")
-		FILE.write("\tcaustics %s" % PHOTONNUMBER.val)           
+		FILE.write("\tcaustics %s" % PHOTONNUMBER.val)
 		FILE.write(" %s " % PHOTONMAPLIST[PHOTONMAP.val-1])
 		FILE.write("%s %s\n" % (PHOTONESTIMATE.val, PHOTONRADIUS.val))
 		FILE.write("}\n")
@@ -277,22 +277,22 @@ def export_gi():
 		FILE.write("}\n")
 	#View Overrides
 	if VIEWCAUSTICS.val == 1:
-                print "o exporting caustic override..."
-                FILE.write("\nshader {\n")
+		print "o exporting caustic override..."
+		FILE.write("\nshader {\n")
 		FILE.write("\tname debug_caustics\n")
 		FILE.write("\ttype view-caustics\n")
 		FILE.write("}\n")
 		FILE.write("override debug_caustics false\n")
 	if VIEWGLOBALS.val == 1:
-                print "o exporting globals override..."
-                FILE.write("\nshader {\n")
+		print "o exporting globals override..."
+		FILE.write("\nshader {\n")
 		FILE.write("\tname debug_globals\n")
 		FILE.write("\ttype view-global\n")
 		FILE.write("}\n")
 		FILE.write("override debug_globals false\n")
 	if VIEWGI.val == 1:
-                print "o exporting irradiance override..."
-                FILE.write("\nshader {\n")
+		print "o exporting irradiance override..."
+		FILE.write("\nshader {\n")
 		FILE.write("\tname debug_gi\n")
 		FILE.write("\ttype view-irradiance\n")
 		FILE.write("}\n")
@@ -322,7 +322,7 @@ def export_shaders():
 		flags = mat.getMode()
 
 		if mat.users == 0: 
-                        continue 
+			continue 
 
 		# UBER shader
 		if mat.name.startswith("sfube"):
@@ -401,7 +401,7 @@ def export_shaders():
 				FILE.write("\tname \""+mat.name+".shader\"\n")
 				FILE.write("\ttype ward\n")
 				FILE.write("\ttexture \"" + textu.tex.getImage().getFilename() + "\"\n")
-        			speccol = mat.specCol               
+				speccol = mat.specCol
 				FILE.write("\tspec { \"sRGB nonlinear\" %s %s %s }\n" %(speccol[0], speccol[1], speccol[2]))
 				FILE.write("\trough .2 .01\n")
 				FILE.write("\tsamples 4\n}")
@@ -409,7 +409,7 @@ def export_shaders():
 			# shiny texture shader
 			elif mat.name.startswith("sfshi"):
 				print "  o exporting shiny texture shader "+mat.name+"..."
-                                FILE.write("\n\nshader {\n")
+				FILE.write("\n\nshader {\n")
 				FILE.write("\tname \""+mat.name+".shader\"\n")
 				FILE.write("\ttype shiny\n")
 				FILE.write("\ttexture \"" + textu.tex.getImage().getFilename() + "\"\n")
@@ -440,7 +440,7 @@ def export_shaders():
 				FILE.write("\ttype shiny\n")
 				FILE.write("\tdiff { \"sRGB nonlinear\" %s %s %s }\n" % (RGB[0], RGB[1], RGB[2]))
 				FILE.write("\trefl %s\n}" % mat.getRayMirr())
-				  
+				
 			## amb-occ shader
 			elif mat.name.startswith("sfamb"):
 				print "  o exporting ambient occlusion shader "+mat.name+"..."
@@ -449,7 +449,7 @@ def export_shaders():
 				FILE.write("\tdark %s %s %s\n" % (speccol[0], speccol[1], speccol[2]))
 				FILE.write("\tsamples 32\n")
 				FILE.write("\tdist 0.0\n}")
-				  
+				
 			## phong shader
 			elif mat.name.startswith("sfpho"):
 				print "  o exporting phong shader "+ mat.name+"..."
@@ -457,13 +457,13 @@ def export_shaders():
 				FILE.write("\tdiff { \"sRGB nonlinear\" %s %s %s }\n" % (RGB[0],RGB[1],RGB[2]))
 				FILE.write("\tspec { \"sRGB nonlinear\" %s %s %s } %s\n" %(speccol[0], speccol[1], speccol[2], mat.hard))
 				FILE.write("\tsamples 4\n}")
-				  
+				
 			## ward shader
 			elif mat.name.startswith("sfwar"):
 				print "  o exporting ward shader "+ mat.name+"..."
 				FILE.write("\ttype ward\n")
 				FILE.write("\tdiff { \"sRGB nonlinear\" %s %s %s }\n" %(RGB[0],RGB[1],RGB[2]))
-				speccol = mat.specCol               
+				speccol = mat.specCol
 				FILE.write("\tspec { \"sRGB nonlinear\" %s %s %s }\n" %(speccol[0], speccol[1], speccol[2]))
 				FILE.write("\trough .2 .01\n")
 				FILE.write("\tsamples 4\n}")
@@ -473,16 +473,16 @@ def export_shaders():
 				print "  o exporting mirror shader "+mat.name+"..."
 				FILE.write("\ttype mirror\n")
 				FILE.write("\trefl { \"sRGB nonlinear\" %s %s %s }\n}" %(RGB[0],RGB[1],RGB[2]))
-				  
+				
 			## glass shader
-			elif mat.name.startswith("sfgla") and  flags & Material.Modes['RAYTRANSP']:
+			elif mat.name.startswith("sfgla") and flags & Material.Modes['RAYTRANSP']:
 				print "  o exporting glass shader "+mat.name+"..."
 				FILE.write("\ttype glass\n")
 				FILE.write("\teta " + str(mat.getIOR()) + "\n")
 				FILE.write("\tcolor { \"sRGB nonlinear\" %s %s %s }\n" %(RGB[0],RGB[1],RGB[2]))
 				FILE.write("\tabsorbtion.distance 5.0\n")
 				FILE.write("\tabsorbtion.color { \"sRGB nonlinear\" %s %s %s }\n}" %(speccol[0], speccol[1], speccol[2]))
-				  
+				
 			## constant shader
 			elif mat.name.startswith("sfcon"):
 				print "  o exporting constant shader "+mat.name+"..."
@@ -535,7 +535,7 @@ def export_modifiers():
 
 def export_lights(lmp):
 
-	# only lamps type 0,  1 and 4 supported at the moment
+	# only lamps type 0, 1 and 4 supported at the moment
 	# lamp types are: 0 - Lamp, 1 - Sun, 2 - Spot, 3 - Hemi, 4 - Area
 	# Spots are replaced by directional (cylinrical) lights: adjust dist as close as possible to the ground receiving the
 	# cone of light if you want Radius as close as possible
@@ -605,10 +605,10 @@ def export_lights(lmp):
 			# Else, square area:
 			print "o exporting square area-light "+lmp.name+"..."
 			ysize = xsize
-		lampV0 = Mathutils.Vector([-xsize,  ysize,  0, 1])
-		lampV1 = Mathutils.Vector([ xsize,  ysize,  0, 1])
-		lampV2 = Mathutils.Vector([ xsize, -ysize,  0, 1])
-		lampV3 = Mathutils.Vector([-xsize, -ysize,  0, 1])
+		lampV0 = Mathutils.Vector([-xsize, ysize, 0, 1])
+		lampV1 = Mathutils.Vector([ xsize, ysize, 0, 1])
+		lampV2 = Mathutils.Vector([ xsize, -ysize, 0, 1])
+		lampV3 = Mathutils.Vector([-xsize, -ysize, 0, 1])
 
 		lampV0 = lampV0 * objmatrix
 		lampV1 = lampV1 * objmatrix
@@ -689,16 +689,16 @@ def export_ibl():
 
 	try:
 		ibllighttext = Blender.Texture.Get("ibllight")
-                if ibllighttext <> "":
-                        if ibllighttext.users > 0:
-                                if ibllighttext <> None and ibllighttext.getType() == "Image":
-                                        IBLLIGHT = ibllighttext.getImage().getFilename()
-                                else:
-                                        IBLLIGHT = ""
-                        else:
-                               IBLLIGHT = ""
-        except:
-                IBLLIGHT = ""
+		if ibllighttext <> "":
+			if ibllighttext.users > 0:
+				if ibllighttext <> None and ibllighttext.getType() == "Image":
+					IBLLIGHT = ibllighttext.getImage().getFilename()
+				else:
+					IBLLIGHT = ""
+			else:
+				IBLLIGHT = ""
+	except:
+		IBLLIGHT = ""
 
 	if IBL == 1:
 		if IBLLIGHT <> "":
@@ -958,9 +958,9 @@ def exportfile(filename):
 	if not filename.endswith(".sc"):
 		filename = filename + ".sc"
 	fname = filename
-        destname = fname.replace(".sc", "")
+	destname = fname.replace(".sc", "")
 
-        ANIM = EXP_ANIM.val
+	ANIM = EXP_ANIM.val
 
 	if ANIM == 1:
 		base = os.path.splitext(os.path.basename(filename))[0]
@@ -987,7 +987,7 @@ public void build() {
 		OBJECTS = Blender.Scene.GetCurrent().getChildren()
 
 		if ANIM == 1:
-			filename = filename.replace(".sc",  ".%d.sc" % (CTX.currentFrame()))
+			filename = filename.replace(".sc", ".%d.sc" % (CTX.currentFrame()))
 
 		print "Exporting to: %s" % (filename)
 
@@ -1029,7 +1029,7 @@ public void build() {
 	print "Export finished."
 
 if __name__ == '__main__':
-        Blender.Window.FileSelector(exportfile, "Export .sc", Blender.sys.makename(ext=".sc"))
+	Blender.Window.FileSelector(exportfile, "Export .sc", Blender.sys.makename(ext=".sc"))
 
 ## Global event handler ##
 ##########################
@@ -1046,7 +1046,7 @@ def setpath(SFPATH):
 	datadir=Blender.Get("datadir")
 	# create 'path2sf.cfg
 	f = open(datadir + '/path2sf.cfg', 'w')
-        f.write(str(SFPATH)+"\n")
+	f.write(str(SFPATH)+"\n")
 	f.write(str(MEM)+"\n")
 	f.write(str(THREADS)+"\n")
 	f.close()
@@ -1064,9 +1064,9 @@ def render():
 	# TODO:
 	# 1- Make compatible with animations
 	global COMMAND, memory, threads, sfpath, trial, javapath, fname, destname
-        
+
 	exportfile(fname)
-        destname = fname.replace(".sc", "")
+	destname = fname.replace(".sc", "")
 	# Get blenders 'bpydata' directory:
 	datadir=Blender.Get("datadir")
 	# Check existence of SF config file:
@@ -1262,7 +1262,7 @@ def buttonEvent(evt):
 				USEGLOBALS.val = 0
 				Draw.Redraw()
 		if USEGLOBALS.val == 0:
-                        if VIEWGLOBALS.val == 1:
+			if VIEWGLOBALS.val == 1:
 				VIEWGLOBALS.val = 0
 				Draw.Redraw()
 		if INSTANTGI.val == 0 and IRRCACHE.val == 0 and PATHTRACE.val == 0:
@@ -1480,7 +1480,7 @@ def drawLights():
 	col=10; line=155; BGL.glRasterPos2i(col, line); Draw.Text("Light:")
 	col=110; line=150; LAMPPOWER=Draw.Number("Power", 2, col, line, 200, 18, LAMPPOWER.val, 1, 10000)
 	col=10; line=130; BGL.glRasterPos2i(col, line); Draw.Text("Lightserver:")
-	col=110; line=125; DSAMPLES=Draw.Number("Direct Samples  ", 2, col, line, 200, 18, DSAMPLES.val, 0, 1024) 
+	col=110; line=125; DSAMPLES=Draw.Number("Direct Samples", 2, col, line, 200, 18, DSAMPLES.val, 0, 1024) 
 	col=10; line=105; BGL.glRasterPos2i(col, line); Draw.Text("Unknown lamps:")
 	col=10; line = 75; CONVLAMP=Draw.Toggle("Convert lamps", 2, col, line, 140, 18, CONVLAMP.val, "Convert unsupported lamps into point light")
 	drawButtons()
@@ -1493,7 +1493,7 @@ def drawShad():
 	col=10; line=400; BGL.glRasterPos2i(col, line); Draw.Text("Specific instructions for exporting shaders:")
 	col=10; line=375; BGL.glRasterPos2i(col, line); Draw.Text("For exporting bump and normal maps, have the second texture slot (slot 1)")
 	col=10; line=350; BGL.glRasterPos2i(col, line); Draw.Text("name begin with bump or normal")	
-	col=10; line=325; BGL.glRasterPos2i(col, line); Draw.Text("Regarding Textures:  Diffuse, shiny, ambocc, phong, and ward materials will")
+	col=10; line=325; BGL.glRasterPos2i(col, line); Draw.Text("Regarding Textures: Diffuse, shiny, ambocc, phong, and ward materials will")
 	col=10; line=300; BGL.glRasterPos2i(col, line); Draw.Text("use textures as the diffuse channel if the texture is in the first texture slot.")
 	col=10; line=275; SHADTYPE=Draw.Menu("%tSelect shader|Uber|Diffuse|Shiny|AO|Phong|Ward|Mirror|Glass|Constant", SHADER_TYPE, col, line, 85, 18, SHADTYPE.val)
 	col=100; SHADOK=Draw.Button("OK", SHAD_OK, col, line, 30, 18, "Print on screen instructions")
@@ -1640,14 +1640,14 @@ def drawGI():
 #####################################################
 
 def drawButtons():
-	Draw.Button("Configure SF", CHANGE_CFG  , 20, 10, 90, 50)
-	Draw.Button("AA", CHANGE_AA   , 115 , 40, 90, 20)
-	Draw.Button("Camera", CHANGE_CAM  , 210, 40, 90, 20)
+	Draw.Button("Configure SF", CHANGE_CFG, 20, 10, 90, 50)
+	Draw.Button("AA", CHANGE_AA, 115 , 40, 90, 20)
+	Draw.Button("Camera", CHANGE_CAM, 210, 40, 90, 20)
 	Draw.Button("Light", CHANGE_LIGHT, 305, 40, 90, 20)
-	Draw.Button("Caustics/GI", CHANGE_GI   , 115, 10, 90, 20)
+	Draw.Button("Caustics/GI", CHANGE_GI, 115, 10, 90, 20)
 	Draw.Button("Shader Info", CHANGE_SHAD, 210, 10, 90, 20)
 	Draw.Button("Background", CHANGE_BCKGRD,305, 10, 90, 20)
-	Draw.Button("Render settings", CHANGE_EXP  , 400, 10, 90, 50)
+	Draw.Button("Render settings", CHANGE_EXP, 400, 10, 90, 50)
 
 SCREEN=0
 Draw.Register(drawGUI, event, buttonEvent)
