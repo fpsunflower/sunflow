@@ -728,9 +728,12 @@ public class SCParser implements SceneParser {
                 if (modifiers != null)
                     api.parameter("modifiers", modifiers);
                 api.instance(name + ".instance", name);
-                noInstance = true; // disable future auto-instancing because
-                // instance has already been created
+                // disable future instancing - instance has already been created
+                noInstance = true;
             }
+        } else if (type.equals("cylinder")) {
+            UI.printInfo(Module.API, "Reading cylinder ...");
+            api.geometry(name, "cylinder");
         } else if (type.equals("banchoff")) {
             UI.printInfo(Module.API, "Reading banchoff ...");
             api.geometry(name, "banchoff");

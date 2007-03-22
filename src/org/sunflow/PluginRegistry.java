@@ -62,6 +62,7 @@ import org.sunflow.core.primitive.Background;
 import org.sunflow.core.primitive.BanchoffSurface;
 import org.sunflow.core.primitive.Box;
 import org.sunflow.core.primitive.CornellBox;
+import org.sunflow.core.primitive.Cylinder;
 import org.sunflow.core.primitive.Hair;
 import org.sunflow.core.primitive.JuliaFractal;
 import org.sunflow.core.primitive.ParticleSurface;
@@ -148,6 +149,7 @@ public final class PluginRegistry {
         // primitives
         primitivePlugins.registerPlugin("triangle_mesh", TriangleMesh.class);
         primitivePlugins.registerPlugin("sphere", Sphere.class);
+        primitivePlugins.registerPlugin("cylinder", Cylinder.class);
         primitivePlugins.registerPlugin("box", Box.class);
         primitivePlugins.registerPlugin("banchoff", BanchoffSurface.class);
         primitivePlugins.registerPlugin("hair", Hair.class);
