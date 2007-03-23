@@ -1,8 +1,77 @@
+global proc sunflowChangeShaderType( string $nodeName ){	
+	string $type = `getAttr ($nodeName+".shader")`;	
+	if($type==1){
+		editorTemplate -dc $nodeName "p_specular" false;
+		editorTemplate -dc $nodeName "p_power" false;
+		editorTemplate -dc $nodeName "p_samples" false;
+	}else{
+		editorTemplate -dc $nodeName "p_specular" true;
+		editorTemplate -dc $nodeName "p_power" true;
+		editorTemplate -dc $nodeName "p_samples" true;
+	}
+	
+	if($type==2){
+		editorTemplate -dc $nodeName "amb_dark" false;
+		editorTemplate -dc $nodeName "amb_samples" false;
+		editorTemplate -dc $nodeName "amb_maxdist" false;
+	}else{
+		editorTemplate -dc $nodeName "amb_dark" true;
+		editorTemplate -dc $nodeName "amb_samples" true;
+		editorTemplate -dc $nodeName "amb_maxdist" true;
+	}
+	
+	if($type==4){
+		editorTemplate -dc $nodeName "glass_eta" false;
+		editorTemplate -dc $nodeName "glass_adist" false;
+		editorTemplate -dc $nodeName "glass_acol" false;
+	}else{
+		editorTemplate -dc $nodeName "glass_eta" true;
+		editorTemplate -dc $nodeName "glass_adist" true;
+		editorTemplate -dc $nodeName "glass_acol" true;
+	}
+	
+	if($type==5){
+		editorTemplate -dc $nodeName "shiny_shiny" false;		
+	}else{
+		editorTemplate -dc $nodeName "shiny_shiny" true;		
+	}
+	
+	if($type==6){
+		editorTemplate -dc $nodeName "w_specular" false;
+		editorTemplate -dc $nodeName "w_upower" false;
+		editorTemplate -dc $nodeName "w_vpower" false;
+		editorTemplate -dc $nodeName "w_samples" false;
+	}else{
+		editorTemplate -dc $nodeName "w_specular" true;
+		editorTemplate -dc $nodeName "w_upower" true;
+		editorTemplate -dc $nodeName "w_vpower" true;
+		editorTemplate -dc $nodeName "w_samples" true;
+	}
+	
+	if($type==13){
+		editorTemplate -dc $nodeName "u_diff_texture" false;
+		editorTemplate -dc $nodeName "u_diff_blend" false;
+		editorTemplate -dc $nodeName "u_specular" false;
+		editorTemplate -dc $nodeName "u_spec_texture" false;
+		editorTemplate -dc $nodeName "u_spec_blend" false;
+		editorTemplate -dc $nodeName "u_gloss" false;
+		editorTemplate -dc $nodeName "u_samples" false;
+	}else{
+		editorTemplate -dc $nodeName "u_diff_texture" true;
+		editorTemplate -dc $nodeName "u_diff_blend" true;
+		editorTemplate -dc $nodeName "u_specular" true;
+		editorTemplate -dc $nodeName "u_spec_texture" true;
+		editorTemplate -dc $nodeName "u_spec_blend" true;
+		editorTemplate -dc $nodeName "u_gloss" true;
+		editorTemplate -dc $nodeName "u_samples" true;
+	}			
+}
+
 global proc AEsunflowShaderTemplate( string $nodeName )
 {
 	AEswatchDisplay $nodeName;
 	editorTemplate -beginScrollLayout;
-	editorTemplate -addControl "shader";
+	editorTemplate -addControl "shader" "sunflowChangeShaderType";
 	editorTemplate -beginLayout "Diffuse Attributes" -collapse 1;
 		editorTemplate -l "Diffuse" -addControl "color";
 	editorTemplate -endLayout;
