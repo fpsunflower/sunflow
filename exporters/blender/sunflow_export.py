@@ -1,14 +1,14 @@
 #!BPY
 
 """
-Name: 'Sunflow Exporter 1.0.5 (.sc)...'
+Name: 'Sunflow Exporter 1.0.6 (.sc)...'
 Blender: 2.43
 Group: 'Export'
 Tip: ''
 """
 
 """
-Version         :       1.0.5 (March 2007)
+Version         :       1.0.6 (March 2007)
 Author          :       R Lindsay (hayfever) / Christopher Kulla / MADCello / 
 			olivS / Eugene Reilly / Heavily Tessellated / Humfred
 Description     :       Export to Sunflow renderer http://sunflow.sourceforge.net/
@@ -191,7 +191,7 @@ JAVAPATH = ""
 #######################
 
 print "\n\n"
-print "blend2sunflow v1.0.5"
+print "blend2sunflow v1.0.6"
 
 ## Export logic for simple options ##
 #####################################
@@ -201,6 +201,7 @@ def export_output():
 	FILE.write("image {\n")
 	FILE.write("\tresolution %d %d\n" % (IM_WIDTH, IM_HEIGHT))
 	FILE.write("\taa %s %s\n" % (MINAA.val, MAXAA.val))
+	FILE.write("\tsamples %s\n" % AASAMPLES.val)
 	FILE.write("\tfilter %s\n" % IMGFILTERLIST[IMGFILTER.val-1])
 	if AAJITTER == 1:
 		FILE.write("\tjitter true\n")
