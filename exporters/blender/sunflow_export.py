@@ -1,14 +1,14 @@
 #!BPY
 
 """
-Name: 'Sunflow Exporter 1.0.6 (.sc)...'
+Name: 'Sunflow Exporter 1.0.7 (.sc)...'
 Blender: 2.43
 Group: 'Export'
 Tip: ''
 """
 
 """
-Version         :       1.0.6 (March 2007)
+Version         :       1.0.7 (March 2007)
 Author          :       R Lindsay (hayfever) / Christopher Kulla / MADCello / 
 			olivS / Eugene Reilly / Heavily Tessellated / Humfred
 Description     :       Export to Sunflow renderer http://sunflow.sourceforge.net/
@@ -191,7 +191,7 @@ JAVAPATH = ""
 #######################
 
 print "\n\n"
-print "blend2sunflow v1.0.6"
+print "blend2sunflow v1.0.7"
 
 ## Export logic for simple options ##
 #####################################
@@ -1064,10 +1064,11 @@ def setjavapath(JAVAPATH):
 def render():
 	# TODO:
 	# 1- Make compatible with animations
-	global COMMAND, memory, threads, sfpath, trial, javapath, fname, destname
-
+	global COMMAND, memory, threads, sfpath, trial, javapath, fname, destname, STARTFRAME, ENDFRAME
 	exportfile(fname)
 	destname = fname.replace(".sc", "")
+	STARTFRAME = SCENE.getRenderingContext().startFrame()
+	ENDFRAME  = SCENE.getRenderingContext().endFrame()
 	# Get blenders 'bpydata' directory:
 	datadir=Blender.Get("datadir")
 	# Check existence of SF config file:
@@ -1146,8 +1147,12 @@ def render():
 			ext="exr"
 
 		# Definition of the command to render the scene:
-		COMMAND="%s \"%s\" %s%s%s%s%s%s%s%s -o \"%s.%s\"" % (EXEC, fname, option1, option2, option3, option4, option5, option6, option7, option8, destname, ext)
-		print COMMAND
+                if EXP_ANIM.val == 0:
+                        COMMAND="%s \"%s\" %s%s%s%s%s%s%s%s -o \"%s.%s\"" % (EXEC, fname, option1, option2, option3, option4, option5, option6, option7, option8, destname, ext)
+                        print COMMAND
+                if EXP_ANIM.val == 1:
+                        COMMAND="%s -anim %s %s -o \"%s.#.%s\" \"%s.java\"" % (EXEC, STARTFRAME, ENDFRAME, destname, ext, destname)
+                        print COMMAND
 		# Execute the command:
 		pid=os.system(COMMAND)
 	
@@ -1561,8 +1566,9 @@ def drawConfig():
 	col=155; line = 230; BGL.glRasterPos2i(col, line); Draw.Text("(threads=0 means auto-detect)")
 	col=10; line = 225; THREADS=Draw.Number("Threads", 2, col, line, 140, 18, THREADS.val, 0, 8)
 	col=10; line = 200; MEM=Draw.Number("Memory (MB)", 2, col, line, 140, 18, MEM.val, 256, 2048)
-	col= 10; line = 175; Draw.Button("Store SF Path & Settings", SET_PATH, col, line, 140,18)
-	col= 10; line = 150; Draw.Button("Store Java Path", SET_JAVAPATH, col, line, 140,18)
+	col= 10; line = 175; Draw.Button("Save SF Path & Settings", SET_PATH, col, line, 140,18)
+	col= 10; line = 150; Draw.Button("Save Java Path", SET_JAVAPATH, col, line, 140,18)
+	col=155; line = 155; BGL.glRasterPos2i(col, line); Draw.Text("Set Java path after Sunflow path")
 	# Get blenders 'bpydata' directory:
 	datadir=Blender.Get("datadir")
 	# Check if the config file exists:
