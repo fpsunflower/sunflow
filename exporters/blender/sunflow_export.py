@@ -1,14 +1,14 @@
 #!BPY
 
 """
-Name: 'Sunflow Exporter 1.0.7 (.sc)...'
+Name: 'Sunflow Exporter 1.0.8 (.sc)...'
 Blender: 2.43
 Group: 'Export'
 Tip: ''
 """
 
 """
-Version         :       1.0.7 (March 2007)
+Version         :       1.0.8 (March 2007)
 Author          :       R Lindsay (hayfever) / Christopher Kulla / MADCello / 
 			olivS / Eugene Reilly / Heavily Tessellated / Humfred
 Description     :       Export to Sunflow renderer http://sunflow.sourceforge.net/
@@ -191,7 +191,7 @@ JAVAPATH = ""
 #######################
 
 print "\n\n"
-print "blend2sunflow v1.0.7"
+print "blend2sunflow v1.0.8"
 
 ## Export logic for simple options ##
 #####################################
@@ -1446,7 +1446,7 @@ def drawCamera():
 	global DOF, DOFRADIUS, SPHERICALCAMERA, FISHEYECAMERA, LENSSIDES, LENSROTATION
 	col=10; line=150; BGL.glRasterPos2i(col, line); Draw.Text("Camera:")
 	col=100; line=145; DOF=Draw.Toggle("DOF", DOF_CAMERA, col, line, 120, 18, DOF.val, "Turn on depth of field")
-	col=225; DOFRADIUS=Draw.Number("Radius", 2, col, line, 120, 18, DOFRADIUS.val, 0.00, 99.99)
+	col=225; DOFRADIUS=Draw.Number("Radius", 2, col, line, 120, 18, DOFRADIUS.val, 0.001, 9.999)
 	col=100; line=125; BGL.glRasterPos2i(col, line); Draw.Text("Bokeh shape -->")
 	col=225; line=120; LENSSIDES=Draw.Number("Sides", 2, col, line, 120, 18, LENSSIDES.val, 2, 8)
 	col=350; LENSROTATION=Draw.Number("Rotation", 2, col, line, 120, 18, LENSROTATION.val, 0.0, 360.0)
