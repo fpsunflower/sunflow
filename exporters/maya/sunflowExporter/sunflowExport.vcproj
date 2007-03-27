@@ -252,6 +252,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\src\sunflowConstants.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\src\sunflowExportCmd.cpp"
 				>
 			</File>
@@ -274,6 +278,10 @@
 			>
 			<File
 				RelativePath=".\src\skylight.h"
+				>
+			</File>
+			<File
+				RelativePath=".\src\sunflowConstants.h"
 				>
 			</File>
 			<File

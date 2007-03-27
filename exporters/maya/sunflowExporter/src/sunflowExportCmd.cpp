@@ -785,11 +785,8 @@ MStatus sunflowExportCmd::doIt(const MArgList& args) {
 			if(paramPlug.connectedTo(connectedPlugs,true,false,&status) && connectedPlugs.length()){
 				if(connectedPlugs[0].node().apiType() == MFn::kDirectionalLight){
 					std::cout << "SunLight: " << connectedPlugs[0].name().asChar() << endl;
-					MFnDirectionalLight light(connectedPlugs[0].node());
-					//MDagPath lightPath(light.lightDirection);
-					//MMatrix o2w = lightPath.inclusiveMatrix();
-					MFloatVector dir(light.lightDirection(0,MSpace::kWorld, &status));
-					//dir = dir * o2w;
+					MFnDirectionalLight light(connectedPlugs[0].node());					
+					MFloatVector dir(light.lightDirection(0,MSpace::kWorld, &status));					
 					float turbidity;
 					getCustomAttribute(turbidity, "skyTurbidity", globals);
 					float samples;
@@ -1190,7 +1187,6 @@ MStatus sunflowExportCmd::doIt(const MArgList& args) {
 
         }
     }
-    bool exportedSun = false;
     for (MItDag mItDag = MItDag(MItDag::kBreadthFirst); !mItDag.isDone(&status); mItDag.next()) {
         MDagPath path;
         status = mItDag.getPath(path);
@@ -1209,13 +1205,28 @@ MStatus sunflowExportCmd::doIt(const MArgList& args) {
             } break;
             case MFn::kDirectionalLight: {
                 if (!areObjectAndParentsVisible(path)) continue;
-                if (exportedSun) continue;
-                std::cout << "Exporting sunlight: " << path.fullPathName().asChar() << " ..." << std::endl;
-                exportedSun = true;               
+                std::cout << "Exporting Directional Light: " << path.fullPathName().asChar() << " ..." << std::endl;
+				MFnDirectionalLight light(path);
+				MFloatVector dir(light.lightDirection(0,MSpace::kWorld, &status)*light.centerOfIllumination());				
+				MMatrix o2w = path.inclusiveMatrix();
+				MPoint source; source.x=o2w[3][0];source.y=o2w[3][1];source.z=o2w[3][2];
+				MPoint target = source+dir;				
+				MColor color = light.color();
+				float radius = light.shadowRadius();
+				float intensity = light.intensity();
+
+				file << "light {" << std::endl;
+				file << "\ttype directional" << std::endl;
+				file << "\tsource " << source.x << " " << source.y << " " << source.z << std::endl;
+				file << "\ttarget " << target.x << " " << target.y << " " << target.z << std::endl;		
+				file << "\tradius " << DIR_LIGHT_RADIUS << std::endl;	
+				file << "\temit " << color.r*intensity << " " << color.b*intensity << " " << color.b*intensity << std::endl;	
+				file << "}" << std::endl;
+				file << std::endl;
             } break;
             case MFn::kAreaLight: {
                 if (!areObjectAndParentsVisible(path)) continue;
-                std::cout << "Exporting light: " << path.fullPathName().asChar() << " ..." << std::endl;
+                std::cout << "Exporting Area Light: " << path.fullPathName().asChar() << " ..." << std::endl;
                 MMatrix o2w = path.inclusiveMatrix();
                 MPoint lampV0(-1,  1,  0);
                 MPoint lampV1( 1,  1,  0);
@@ -1248,6 +1259,7 @@ MStatus sunflowExportCmd::doIt(const MArgList& args) {
             } break;
             case MFn::kPointLight: {
                  if (!areObjectAndParentsVisible(path)) continue;
+				 std::cout << "Exporting Point Light: " << path.fullPathName().asChar() << " ..." << std::endl;
                  MFnPointLight point(path);
                  MColor c = point.color();
                  float i = point.intensity();

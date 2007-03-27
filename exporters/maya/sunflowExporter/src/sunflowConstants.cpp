@@ -12,3 +12,5 @@ const char* FILTER_NAMES[] = {
 };
 
 const unsigned int NUM_FILTER_NAMES = sizeof(FILTER_NAMES) / sizeof(const char*);
+
+const unsigned int DIR_LIGHT_RADIUS = 1000;

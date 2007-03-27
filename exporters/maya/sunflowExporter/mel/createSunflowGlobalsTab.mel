@@ -5,6 +5,7 @@
 // Description: Utility procedure used by other procedures in this file.
 //		Must be used to account for multiple instances of the same tab.
 //
+
 global proc setParentToSunflowTab()
 {
 	// First set the parent to the correct tab layout.

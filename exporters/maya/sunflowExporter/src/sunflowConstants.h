@@ -4,4 +4,5 @@
 extern const char* FILTER_NAMES[];
 extern const unsigned int NUM_FILTER_NAMES;
 
+extern const unsigned int DIR_LIGHT_RADIUS;
 #endif /* SUNFLOW_CONSTANTS_H */
