@@ -310,11 +310,51 @@
 			Filter="txt"
 			>
 			<File
+				RelativePath=".\mel\AEsunflowShaderTemplate.mel"
+				>
+			</File>
+			<File
+				RelativePath=".\mel\AEsunflowSkyNodeTemplate.mel"
+				>
+			</File>
+			<File
+				RelativePath=".\mel\createSunflowGlobalsTab.mel"
+				>
+			</File>
+			<File
 				RelativePath=".\src\Options.txt"
 				>
 			</File>
 			<File
 				RelativePath=".\src\ReadMe.txt"
+				>
+			</File>
+			<File
+				RelativePath=".\mel\registerSunflowRenderer.mel"
+				>
+			</File>
+			<File
+				RelativePath=".\mel\sunflowRender.mel"
+				>
+			</File>
+			<File
+				RelativePath=".\mel\sunflowShutdown.mel"
+				>
+			</File>
+			<File
+				RelativePath=".\mel\sunflowStartup.mel"
+				>
+			</File>
+			<File
+				RelativePath=".\mel\sunflowUtils.mel"
+				>
+			</File>
+			<File
+				RelativePath=".\mel\unregisterSunflowRenderer.mel"
+				>
+			</File>
+			<File
+				RelativePath=".\mel\updateSunflowGlobalsTab.mel"
 				>
 			</File>
 		</Filter>

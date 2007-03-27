@@ -461,6 +461,65 @@ global proc updateSunflowOverrideFrameUI()
 	setParent $oldParent;
 }
 
+// createSunflowBucketFrame
+//
+// Creates the sunflow bucket frame layout for the Sunflow tab of the Sunflow 
+// Render Globals
+//
+global proc createSunflowBucketFrame( string $sunflowGlobals, string $parent )
+{
+	setUITemplate -pushTemplate attributeEditorTemplate;
+	setParentToSunflowTab();
+	setParent $parent;
+
+	string $prefix = sunflowGetPrefix();
+
+	columnLayout -adj true;
+		// Material Override
+		string $fullControlName = `optionMenuGrp -label "Bucket Order"
+			-changeCommand "updateSunflowBucket" ($prefix + "BucketOrder")`;
+			menuItem -label "hilbert";
+			menuItem -label "spiral";
+			menuItem -label "column";
+			menuItem -label "row";
+			menuItem -label "diagonal";
+			menuItem -label "random";
+						
+		attrFieldSliderGrp -min -4 -max 512 -label "Size" -attribute ($sunflowGlobals + ".bucketSize");
+		attrControlGrp -label "Reverse" -attribute ($sunflowGlobals + ".bucketReverse");	
+
+	// end columnLayout
+	setParent ..;
+
+	setUITemplate -popTemplate;
+}
+
+global proc updateSunflowBucket(){
+	string $prefix = sunflowGetPrefix();
+	string $sunflowGlobals = sunflowCheckGlobals();
+	// Get the current selection for the bucket order.
+	string $menuName = ($prefix + "BucketOrder");
+	int    $selection = `optionMenuGrp -q -select $menuName`;
+	setAttr ($sunflowGlobals + ".bucketOrder") ($selection-1);
+	updateSunflowBucketFrameUI();
+}
+
+global proc updateSunflowBucketFrameUI()
+{
+	string $oldParent = `setParent -query`;
+	setParentToSunflowTab();
+
+	string $prefix = sunflowGetPrefix();
+	string $sunflowGlobals = sunflowCheckGlobals();
+	string $menuName = ($prefix + "BucketOrder"); 
+
+	int $override = `getAttr ($sunflowGlobals + ".bucketOrder")`;	
+
+	optionMenuGrp -edit -select ($override+1) $menuName;
+
+	setParent $oldParent;
+}
+
 // createSunflowSystemFrame
 //
 // Creates the sunflow override frame layout for the Sunflow tab of the Sunflow 
@@ -591,6 +650,18 @@ global proc createSunflowGlobalsTab()
 
 				createSunflowOverrideFrame( $sunflowGlobals, "sunflowOverrideFrame");
 				updateSunflowOverrideFrameUI();
+
+			setParent ..;
+			
+			// Bucket options
+			frameLayout -label "Bucket"
+				-collapsable  true 
+				-collapse 0
+				-mh 5
+				sunflowBucketFrame;
+
+				createSunflowBucketFrame( $sunflowGlobals, "sunflowBucketFrame");
+				updateSunflowBucketFrameUI();
 
 			setParent ..;
 			

@@ -777,6 +777,25 @@ MStatus sunflowExportCmd::doIt(const MArgList& args) {
 			file << std::endl;
 		}
 
+		//BUCKET BLOCK OUTPUT
+		int bucketOrder;		
+		getCustomAttribute(bucketOrder, "bucketOrder", globals);
+		if (bucketOrder < 0)
+			bucketOrder = 0;
+		else if (bucketOrder >= (int) NUM_BUCKET_ORDERS)
+			bucketOrder = NUM_BUCKET_ORDERS - 1;
+
+		int bucketSize;		
+		getCustomAttribute(bucketSize, "bucketSize", globals);
+
+		bool bucketReverse;		
+		getCustomAttribute(bucketReverse, "bucketReverse", globals);
+
+		if(bucketReverse)
+			file << "bucket " << bucketSize << " \"reverse " << BUCKET_ORDERS[bucketOrder] << "\"" << std::endl;			
+		else
+			file << "bucket " << bucketSize << " " << BUCKET_ORDERS[bucketOrder] << std::endl;
+
 		paramPlug = globals.findPlug( "skyNode", &status );
 		MPlugArray connectedPlugs;
 		if(paramPlug.connectedTo(connectedPlugs,true,false,&status) && connectedPlugs.length()){

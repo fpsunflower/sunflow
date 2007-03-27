@@ -40,6 +40,9 @@ MObject sunflowGlobalsNode::skySamples;
 MObject sunflowGlobalsNode::skyExposure;
 MObject sunflowGlobalsNode::materialOverride;
 MObject sunflowGlobalsNode::ambOverrideDist;
+MObject sunflowGlobalsNode::bucketOrder;
+MObject sunflowGlobalsNode::bucketSize;
+MObject sunflowGlobalsNode::bucketReverse;
 
 MStatus sunflowGlobalsNode::compute( const MPlug& plug, MDataBlock& data )
 {
@@ -192,6 +195,21 @@ MStatus sunflowGlobalsNode::initialize(){
 	ambOverrideDist = numericAttr.create( "ambOverrideDist", "aod",	MFnNumericData::kFloat, 16, &stat );
 	stat = addAttribute (ambOverrideDist);
 		if (!stat) { stat.perror("addAttribute ambOverrideDist"); return stat;}
+
+	bucketOrder = enumAttr.create( "bucketOrder", "bo", 0, &stat );
+	for (unsigned int i = 0; i < NUM_BUCKET_ORDERS; i++)
+		stat = enumAttr.addField(BUCKET_ORDERS[i], i);
+
+	stat = addAttribute (bucketOrder);
+	if (!stat) { stat.perror("addAttribute bucketOrder"); return stat;}
+
+	bucketSize = numericAttr.create( "bucketSize", "bs",	MFnNumericData::kInt, 32, &stat );
+	stat = addAttribute (bucketSize);
+		if (!stat) { stat.perror("addAttribute bucketSize"); return stat;}
+
+	bucketReverse = numericAttr.create("bucketReverse", "br", MFnNumericData::kBoolean, false, &stat);
+	stat = addAttribute (bucketReverse);
+		if (!stat) { stat.perror("addAttribute bucketReverse"); return stat;}
 
 	exportPath = tAttr.create(MString("exportPath"), MString("ep"), MFnData::kString, exportPath, &stat );
 	stat = addAttribute (exportPath);

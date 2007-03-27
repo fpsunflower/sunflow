@@ -57,6 +57,10 @@ public:
 	static	MObject		materialOverride;
 	static	MObject		ambOverrideDist;
 
+	static	MObject		bucketOrder;
+	static	MObject		bucketSize;
+	static	MObject		bucketReverse;
+
 	static	MObject		exportPath;
 
 	static	MTypeId		id;
