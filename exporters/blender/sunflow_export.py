@@ -1092,7 +1092,7 @@ def render():
 		f.close()
 
 		# base command for executing SF:
-		EXEC="%s\java -server -Xmx%sM -jar \"%ssunflow.jar\"" % (javadir, memory, sfdir)
+		EXEC="%s\java -Xmx%sM -jar \"%ssunflow.jar\"" % (javadir, memory, sfdir)
 		#print EXEC
 
 		# Building the options to be passed to SF:
@@ -1152,6 +1152,9 @@ def render():
                         print COMMAND
                 if EXP_ANIM.val == 1:
                         COMMAND="%s -anim %s %s -o \"%s.#.%s\" \"%s.java\"" % (EXEC, STARTFRAME, ENDFRAME, destname, ext, destname)
+                        print COMMAND
+		if FILETYPE == 2 or FILETYPE == 3 or FILETYPE == 4:
+			COMMAND="%s -nogui %s%s%s%s%s%s%s -o \"%s.%s\" \"%s\"" % (EXEC, option2, option3, option4, option5, option6, option7, option8, destname, ext, fname)
                         print COMMAND
 		# Execute the command:
 		pid=os.system(COMMAND)
