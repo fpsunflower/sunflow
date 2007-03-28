@@ -1092,7 +1092,7 @@ def render():
 		f.close()
 
 		# base command for executing SF:
-		EXEC="%s\java -Xmx%sM -jar \"%ssunflow.jar\"" % (javadir, memory, sfdir)
+		EXEC="%s\java -server -Xmx%sM -jar \"%ssunflow.jar\"" % (javadir, memory, sfdir)
 		#print EXEC
 
 		# Building the options to be passed to SF:
