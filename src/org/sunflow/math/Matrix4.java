@@ -1,8 +1,9 @@
 package org.sunflow.math;
 
 /**
- * This class is used to represent general geometric transformations in 3D. Note
- * that the rotation matrices assume a right-handed convention.
+ * This class is used to represent general affine transformations in 3D. The
+ * bottom row of the matrix is assumed to be [0,0,0,1]. Note that the rotation
+ * matrices assume a right-handed convention.
  */
 public final class Matrix4 {
     // matrix elements, m(row,col)
@@ -18,10 +19,6 @@ public final class Matrix4 {
     private float m21;
     private float m22;
     private float m23;
-    private float m30;
-    private float m31;
-    private float m32;
-    private float m33;
 
     // usefull constant matrices
     public static final Matrix4 ZERO = new Matrix4();
@@ -30,7 +27,7 @@ public final class Matrix4 {
     /**
      * Creates an empty matrix. All elements are 0.
      */
-    public Matrix4() {
+    private Matrix4() {
     }
 
     /**
@@ -48,12 +45,8 @@ public final class Matrix4 {
      * @param m21 value at row 2, col 1
      * @param m22 value at row 2, col 2
      * @param m23 value at row 2, col 3
-     * @param m30 value at row 3, col 0
-     * @param m31 value at row 3, col 1
-     * @param m32 value at row 3, col 2
-     * @param m33 value at row 3, col 3
      */
-    public Matrix4(float m00, float m01, float m02, float m03, float m10, float m11, float m12, float m13, float m20, float m21, float m22, float m23, float m30, float m31, float m32, float m33) {
+    public Matrix4(float m00, float m01, float m02, float m03, float m10, float m11, float m12, float m13, float m20, float m21, float m22, float m23) {
         this.m00 = m00;
         this.m01 = m01;
         this.m02 = m02;
@@ -66,10 +59,6 @@ public final class Matrix4 {
         this.m21 = m21;
         this.m22 = m22;
         this.m23 = m23;
-        this.m30 = m30;
-        this.m31 = m31;
-        this.m32 = m32;
-        this.m33 = m33;
     }
 
     /**
@@ -94,10 +83,8 @@ public final class Matrix4 {
             m21 = m[9];
             m22 = m[10];
             m23 = m[11];
-            m30 = m[12];
-            m31 = m[13];
-            m32 = m[14];
-            m33 = m[15];
+            if (m[12] != 0 || m[13] != 0 || m[14] != 0 || m[15] != 1)
+                throw new RuntimeException(String.format("Matrix is not affine! Bottom row is: [%.3f, %.3f, %.3f, %.3f]", m[12], m[13], m[14], m[15]));
         } else {
             m00 = m[0];
             m01 = m[4];
@@ -111,21 +98,19 @@ public final class Matrix4 {
             m21 = m[6];
             m22 = m[10];
             m23 = m[14];
-            m30 = m[3];
-            m31 = m[7];
-            m32 = m[11];
-            m33 = m[15];
+            if (m[3] != 0 || m[7] != 0 || m[11] != 0 || m[15] != 1)
+                throw new RuntimeException(String.format("Matrix is not affine! Bottom row is: [%.3f, %.3f, %.3f, %.3f]", m[12], m[13], m[14], m[15]));
         }
     }
 
     public final float[] asRowMajor() {
         return new float[] { m00, m01, m02, m03, m10, m11, m12, m13, m20, m21,
-                m22, m23, m30, m31, m32, m33 };
+                m22, m23, 0, 0, 0, 1 };
     }
 
     public final float[] asColMajor() {
-        return new float[] { m00, m10, m20, m30, m01, m11, m21, m31, m02, m12,
-                m22, m32, m03, m13, m23, m33 };
+        return new float[] { m00, m10, m20, 0, m01, m11, m21, 0, m02, m12, m22,
+                0, m03, m13, m23, 1 };
     }
 
     /**
@@ -136,19 +121,9 @@ public final class Matrix4 {
     public final float determinant() {
         float A0 = m00 * m11 - m01 * m10;
         float A1 = m00 * m12 - m02 * m10;
-        float A2 = m00 * m13 - m03 * m10;
         float A3 = m01 * m12 - m02 * m11;
-        float A4 = m01 * m13 - m03 * m11;
-        float A5 = m02 * m13 - m03 * m12;
 
-        float B0 = m20 * m31 - m21 * m30;
-        float B1 = m20 * m32 - m22 * m30;
-        float B2 = m20 * m33 - m23 * m30;
-        float B3 = m21 * m32 - m22 * m31;
-        float B4 = m21 * m33 - m23 * m31;
-        float B5 = m22 * m33 - m23 * m32;
-
-        return A0 * B5 - A1 * B4 + A2 * B3 + A3 * B2 - A4 * B1 + A5 * B0;
+        return A0 * m22 - A1 * m21 + A3 * m20;
     }
 
     /**
@@ -161,39 +136,27 @@ public final class Matrix4 {
     public final Matrix4 inverse() {
         float A0 = m00 * m11 - m01 * m10;
         float A1 = m00 * m12 - m02 * m10;
-        float A2 = m00 * m13 - m03 * m10;
         float A3 = m01 * m12 - m02 * m11;
-        float A4 = m01 * m13 - m03 * m11;
-        float A5 = m02 * m13 - m03 * m12;
-
-        float B0 = m20 * m31 - m21 * m30;
-        float B1 = m20 * m32 - m22 * m30;
-        float B2 = m20 * m33 - m23 * m30;
-        float B3 = m21 * m32 - m22 * m31;
-        float B4 = m21 * m33 - m23 * m31;
-        float B5 = m22 * m33 - m23 * m32;
-
-        float det = A0 * B5 - A1 * B4 + A2 * B3 + A3 * B2 - A4 * B1 + A5 * B0;
+        float det = A0 * m22 - A1 * m21 + A3 * m20;
         if (Math.abs(det) < 1e-12f)
             return null; // matrix is not invertible
         float invDet = 1 / det;
+        float A2 = m00 * m13 - m03 * m10;
+        float A4 = m01 * m13 - m03 * m11;
+        float A5 = m02 * m13 - m03 * m12;
         Matrix4 inv = new Matrix4();
-        inv.m00 = (+m11 * B5 - m12 * B4 + m13 * B3) * invDet;
-        inv.m10 = (-m10 * B5 + m12 * B2 - m13 * B1) * invDet;
-        inv.m20 = (+m10 * B4 - m11 * B2 + m13 * B0) * invDet;
-        inv.m30 = (-m10 * B3 + m11 * B1 - m12 * B0) * invDet;
-        inv.m01 = (-m01 * B5 + m02 * B4 - m03 * B3) * invDet;
-        inv.m11 = (+m00 * B5 - m02 * B2 + m03 * B1) * invDet;
-        inv.m21 = (-m00 * B4 + m01 * B2 - m03 * B0) * invDet;
-        inv.m31 = (+m00 * B3 - m01 * B1 + m02 * B0) * invDet;
-        inv.m02 = (+m31 * A5 - m32 * A4 + m33 * A3) * invDet;
-        inv.m12 = (-m30 * A5 + m32 * A2 - m33 * A1) * invDet;
-        inv.m22 = (+m30 * A4 - m31 * A2 + m33 * A0) * invDet;
-        inv.m32 = (-m30 * A3 + m31 * A1 - m32 * A0) * invDet;
+        inv.m00 = (+m11 * m22 - m12 * m21) * invDet;
+        inv.m10 = (-m10 * m22 + m12 * m20) * invDet;
+        inv.m20 = (+m10 * m21 - m11 * m20) * invDet;
+        inv.m01 = (-m01 * m22 + m02 * m21) * invDet;
+        inv.m11 = (+m00 * m22 - m02 * m20) * invDet;
+        inv.m21 = (-m00 * m21 + m01 * m20) * invDet;
+        inv.m02 = +A3 * invDet;
+        inv.m12 = -A1 * invDet;
+        inv.m22 = +A0 * invDet;
         inv.m03 = (-m21 * A5 + m22 * A4 - m23 * A3) * invDet;
         inv.m13 = (+m20 * A5 - m22 * A2 + m23 * A1) * invDet;
         inv.m23 = (-m20 * A4 + m21 * A2 - m23 * A0) * invDet;
-        inv.m33 = (+m20 * A3 - m21 * A1 + m22 * A0) * invDet;
         return inv;
     }
 
@@ -205,27 +168,22 @@ public final class Matrix4 {
      */
     public final Matrix4 multiply(Matrix4 m) {
         // matrix multiplication is m[r][c] = (row[r]).(col[c])
-        float rm00 = m00 * m.m00 + m01 * m.m10 + m02 * m.m20 + m03 * m.m30;
-        float rm01 = m00 * m.m01 + m01 * m.m11 + m02 * m.m21 + m03 * m.m31;
-        float rm02 = m00 * m.m02 + m01 * m.m12 + m02 * m.m22 + m03 * m.m32;
-        float rm03 = m00 * m.m03 + m01 * m.m13 + m02 * m.m23 + m03 * m.m33;
+        float rm00 = m00 * m.m00 + m01 * m.m10 + m02 * m.m20;
+        float rm01 = m00 * m.m01 + m01 * m.m11 + m02 * m.m21;
+        float rm02 = m00 * m.m02 + m01 * m.m12 + m02 * m.m22;
+        float rm03 = m00 * m.m03 + m01 * m.m13 + m02 * m.m23 + m03;
 
-        float rm10 = m10 * m.m00 + m11 * m.m10 + m12 * m.m20 + m13 * m.m30;
-        float rm11 = m10 * m.m01 + m11 * m.m11 + m12 * m.m21 + m13 * m.m31;
-        float rm12 = m10 * m.m02 + m11 * m.m12 + m12 * m.m22 + m13 * m.m32;
-        float rm13 = m10 * m.m03 + m11 * m.m13 + m12 * m.m23 + m13 * m.m33;
+        float rm10 = m10 * m.m00 + m11 * m.m10 + m12 * m.m20;
+        float rm11 = m10 * m.m01 + m11 * m.m11 + m12 * m.m21;
+        float rm12 = m10 * m.m02 + m11 * m.m12 + m12 * m.m22;
+        float rm13 = m10 * m.m03 + m11 * m.m13 + m12 * m.m23 + m13;
 
-        float rm20 = m20 * m.m00 + m21 * m.m10 + m22 * m.m20 + m23 * m.m30;
-        float rm21 = m20 * m.m01 + m21 * m.m11 + m22 * m.m21 + m23 * m.m31;
-        float rm22 = m20 * m.m02 + m21 * m.m12 + m22 * m.m22 + m23 * m.m32;
-        float rm23 = m20 * m.m03 + m21 * m.m13 + m22 * m.m23 + m23 * m.m33;
+        float rm20 = m20 * m.m00 + m21 * m.m10 + m22 * m.m20;
+        float rm21 = m20 * m.m01 + m21 * m.m11 + m22 * m.m21;
+        float rm22 = m20 * m.m02 + m21 * m.m12 + m22 * m.m22;
+        float rm23 = m20 * m.m03 + m21 * m.m13 + m22 * m.m23 + m23;
 
-        float rm30 = m30 * m.m00 + m31 * m.m10 + m32 * m.m20 + m33 * m.m30;
-        float rm31 = m30 * m.m01 + m31 * m.m11 + m32 * m.m21 + m33 * m.m31;
-        float rm32 = m30 * m.m02 + m31 * m.m12 + m32 * m.m22 + m33 * m.m32;
-        float rm33 = m30 * m.m03 + m31 * m.m13 + m32 * m.m23 + m33 * m.m33;
-
-        return new Matrix4(rm00, rm01, rm02, rm03, rm10, rm11, rm12, rm13, rm20, rm21, rm22, rm23, rm30, rm31, rm32, rm33);
+        return new Matrix4(rm00, rm01, rm02, rm03, rm10, rm11, rm12, rm13, rm20, rm21, rm22, rm23);
     }
 
     /**
@@ -411,7 +369,7 @@ public final class Matrix4 {
      */
     public final static Matrix4 translation(float x, float y, float z) {
         Matrix4 m = new Matrix4();
-        m.m00 = m.m11 = m.m22 = m.m33 = 1;
+        m.m00 = m.m11 = m.m22 = 1;
         m.m03 = x;
         m.m13 = y;
         m.m23 = z;
@@ -428,7 +386,7 @@ public final class Matrix4 {
         Matrix4 m = new Matrix4();
         float s = (float) Math.sin(theta);
         float c = (float) Math.cos(theta);
-        m.m00 = m.m33 = 1;
+        m.m00 = 1;
         m.m11 = m.m22 = c;
         m.m12 = -s;
         m.m21 = +s;
@@ -445,7 +403,7 @@ public final class Matrix4 {
         Matrix4 m = new Matrix4();
         float s = (float) Math.sin(theta);
         float c = (float) Math.cos(theta);
-        m.m11 = m.m33 = 1;
+        m.m11 = 1;
         m.m00 = m.m22 = c;
         m.m02 = +s;
         m.m20 = -s;
@@ -462,7 +420,7 @@ public final class Matrix4 {
         Matrix4 m = new Matrix4();
         float s = (float) Math.sin(theta);
         float c = (float) Math.cos(theta);
-        m.m22 = m.m33 = 1;
+        m.m22 = 1;
         m.m00 = m.m11 = c;
         m.m01 = -s;
         m.m10 = +s;
@@ -503,7 +461,6 @@ public final class Matrix4 {
         float sx = s * x;
         m.m12 = tyz - sx;
         m.m21 = tyz + sx;
-        m.m33 = 1;
         return m;
     }
 
@@ -516,7 +473,6 @@ public final class Matrix4 {
     public final static Matrix4 scale(float s) {
         Matrix4 m = new Matrix4();
         m.m00 = m.m11 = m.m22 = s;
-        m.m33 = 1;
         return m;
     }
 
@@ -533,7 +489,6 @@ public final class Matrix4 {
         m.m00 = sx;
         m.m11 = sy;
         m.m22 = sz;
-        m.m33 = 1;
         return m;
     }
 
@@ -556,7 +511,6 @@ public final class Matrix4 {
         m.m20 = u.z;
         m.m21 = v.z;
         m.m22 = w.z;
-        m.m33 = 1;
         return m;
     }
 
@@ -576,11 +530,6 @@ public final class Matrix4 {
         m.m21 = (1 - t) * m0.m21 + t * m1.m21;
         m.m22 = (1 - t) * m0.m22 + t * m1.m22;
         m.m23 = (1 - t) * m0.m23 + t * m1.m23;
-
-        m.m30 = (1 - t) * m0.m30 + t * m1.m30;
-        m.m31 = (1 - t) * m0.m31 + t * m1.m31;
-        m.m32 = (1 - t) * m0.m32 + t * m1.m32;
-        m.m33 = (1 - t) * m0.m33 + t * m1.m33;
         return m;
     }
 }

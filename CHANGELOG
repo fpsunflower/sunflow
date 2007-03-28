@@ -1,4 +1,5 @@
 v0.07.3
+* Modified Matrix4 class to only accept affine transformations
 * Added cylinder primitive
 * Removed getUniqueName method from SunflowAPI
 * Fixed more potential locale issues with case conversion by forcing the ENGLISH locale to be used
