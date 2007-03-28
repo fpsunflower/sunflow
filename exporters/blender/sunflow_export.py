@@ -1,14 +1,14 @@
 #!BPY
 
 """
-Name: 'Sunflow Exporter 1.0.8 (.sc)...'
+Name: 'Sunflow Exporter 1.0.9 (.sc)...'
 Blender: 2.43
 Group: 'Export'
 Tip: ''
 """
 
 """
-Version         :       1.0.8 (March 2007)
+Version         :       1.0.9 (March 2007)
 Author          :       R Lindsay (hayfever) / Christopher Kulla / MADCello / 
 			olivS / Eugene Reilly / Heavily Tessellated / Humfred
 Description     :       Export to Sunflow renderer http://sunflow.sourceforge.net/
@@ -191,7 +191,7 @@ JAVAPATH = ""
 #######################
 
 print "\n\n"
-print "blend2sunflow v1.0.8"
+print "blend2sunflow v1.0.9"
 
 ## Export logic for simple options ##
 #####################################
@@ -1128,7 +1128,7 @@ def render():
 		elif QUICKOPT.val == 7:
 			option6="-quick_wire -aa 2 3 -filter mitchell "
 		if QUICKOCC == 1:
-			option7="-quick_ambocc %s" % (QOCCDIST)
+			option7="-quick_ambocc %s " % (QOCCDIST)
 		else:
 			option7=""
 		if IPR == 1:
@@ -1148,7 +1148,7 @@ def render():
 
 		# Definition of the command to render the scene:
                 if EXP_ANIM.val == 0:
-                        COMMAND="%s \"%s\" %s%s%s%s%s%s%s%s -o \"%s.%s\"" % (EXEC, fname, option1, option2, option3, option4, option5, option6, option7, option8, destname, ext)
+                        COMMAND="%s %s%s%s%s%s%s%s%s -o \"%s.%s\" \"%s\"" % (EXEC, option1, option2, option3, option4, option5, option6, option7, option8, destname, ext, fname)
                         print COMMAND
                 if EXP_ANIM.val == 1:
                         COMMAND="%s -anim %s %s -o \"%s.#.%s\" \"%s.java\"" % (EXEC, STARTFRAME, ENDFRAME, destname, ext, destname)
