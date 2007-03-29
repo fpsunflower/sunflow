@@ -1839,20 +1839,19 @@ def buttonEvent(evt):
 		print "  o Finished sending settings."
 		return
 	if evt == IMPORT_ID:
-                try:
-                        if SCENE.properties['SceneProp'] == "true":            
-                                print "  o Script settings found in .blend, importing to script..."
-                        	import_output()
-        			import_gi()
-                        	import_globalao()
-        			import_lights()
-                        	import_camera()
-                                import_render()
-                                print "  o Finished importing script settings." 
-        	except: 
-                	print "  o No script settings in .blend, using defaults."             
-
-		return
+                if SCENE.properties.has_key('SceneProp'):            
+                        print "  o Script settings found in .blend, importing to script..."
+                	import_output()
+        		import_gi()
+                	import_globalao()
+        		import_lights()
+                	import_camera()
+                	import_render()
+			print "  o Finished importing script settings to script."
+			return
+                else:
+                	print "  o No script settings in .blend, using defaults."
+			return
 
 ## Draws the individual panels ##
 #################################
@@ -2016,7 +2015,7 @@ def drawConfig():
 	global SET_PATH, THREADS, MEM, SET_JAVAPATH
         col=10; line = 315; BGL.glRasterPos2i(col, line); Draw.Text("ID properties for script settings:")
         col= 10; line = 285; Draw.Button("Send Script Settings", EXPORT_ID, col, line, 140,18, "Send script settings to the .blend")
-        col= 155; line = 285; Draw.Button("Import Script Settings", IMPORT_ID, col, line, 140,18, "Import script setting from .blend")
+        col= 155; line = 285; Draw.Button("Import Script Settings", IMPORT_ID, col, line, 140,18, "Import script setting from the .blend")
         col=10; line = 255; BGL.glRasterPos2i(col, line); Draw.Text("Settings needed to render directly from the script:")
 	col=155; line = 230; BGL.glRasterPos2i(col, line); Draw.Text("(threads=0 means auto-detect)")
 	col=10; line = 225; THREADS=Draw.Number("Threads", 2, col, line, 140, 18, THREADS.val, 0, 8)
