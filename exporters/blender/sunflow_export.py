@@ -1,14 +1,14 @@
 #!BPY
 
 """
-Name: 'Sunflow Exporter 1.0.9 (.sc)...'
+Name: 'Sunflow Exporter 1.1.0 (.sc)...'
 Blender: 2.43
 Group: 'Export'
 Tip: ''
 """
 
 """
-Version         :       1.0.9 (March 2007)
+Version         :       1.1.0 (March 2007)
 Author          :       R Lindsay (hayfever) / Christopher Kulla / MADCello / 
 			olivS / Eugene Reilly / Heavily Tessellated / Humfred
 Description     :       Export to Sunflow renderer http://sunflow.sourceforge.net/
@@ -167,6 +167,8 @@ CHANGE_CFG = 36
 SET_JAVAPATH = 37
 SHADER_TYPE = 38
 SHAD_OK = 39
+EXPORT_ID = 40
+IMPORT_ID = 41
 
 ## Lists ##
 ###########
@@ -180,9 +182,10 @@ gPHOTONMAPLIST = ["kd", "grid"]
 ##  global vars  ##
 ###################
 
-global FILE, SCENE, IM_HEIGHT, IM_WIDTH, TEXTURES, OBJECTS, IBLLIGHT, LAYERS, SCREEN
+global FILE, SCENE, IM_HEIGHT, IM_WIDTH, TEXTURES, OBJECTS, IBLLIGHT, LAYERS, SCREEN, SCENE
 global DOFDIST
 FILENAME = Blender.Get('filename').replace(".blend", ".sc")
+SCENE     = Blender.Scene.GetCurrent()
 SFPATH = ""
 JAVAPATH = ""
 
@@ -191,116 +194,349 @@ JAVAPATH = ""
 #######################
 
 print "\n\n"
-print "blend2sunflow v1.0.9"
+print "blend2sunflow v1.1.0"
 
 ## Export logic for simple options ##
 #####################################
 
-def export_output():
-	print "o exporting output details..."
-	FILE.write("image {\n")
-	FILE.write("\tresolution %d %d\n" % (IM_WIDTH, IM_HEIGHT))
-	FILE.write("\taa %s %s\n" % (MINAA.val, MAXAA.val))
-	FILE.write("\tsamples %s\n" % AASAMPLES.val)
-	FILE.write("\tfilter %s\n" % IMGFILTERLIST[IMGFILTER.val-1])
-	if AAJITTER == 1:
-		FILE.write("\tjitter true\n")
-	FILE.write("}")
-	FILE.write("\n")
+def def_output():
+	global IM_HEIGHT, IM_WIDTH
+	# Define Blender's values
+	world = Blender.World.GetCurrent() 
+	horcol = world.getHor()
+	horcol0, horcol1, horcol2 = horcol[0], horcol[1], horcol[2]
+	IM_HEIGHT = SCENE.getRenderingContext().imageSizeY()
+	IM_WIDTH  = SCENE.getRenderingContext().imageSizeX()
 	
-	print "o exporting trace-depths options..."
-	FILE.write("trace-depths {\n")
-	FILE.write("\tdiff %s \n" % DEPTH_DIFF)
-	FILE.write("\trefl %s \n" % DEPTH_REFL)
-	FILE.write("\trefr %s\n" % DEPTH_REFR)
-	FILE.write("}")
-	FILE.write("\n")
+	# Writes Scene properties
+	SCENE.properties['SceneProp'] = "true"
+	SCENE.properties['ImageWidth'] = IM_WIDTH
+	SCENE.properties['ImageHeight'] = IM_HEIGHT
+	SCENE.properties['MinAA'] = MINAA.val
+	SCENE.properties['MaxAA'] = MAXAA.val
+	SCENE.properties['Samples'] = AASAMPLES.val
+	SCENE.properties['Filter'] = IMGFILTER.val
+	if AAJITTER == 1:
+		SCENE.properties['Jitter'] = "true"
+	else:
+		SCENE.properties['Jitter'] = "false"
+	SCENE.properties['DepthDiff'] = DEPTH_DIFF.val
+	SCENE.properties['DepthRefl'] = DEPTH_REFL.val
+	SCENE.properties['DepthRefr'] = DEPTH_REFR.val
 	if IMP_BCKGRD.val == 1:
-		print "o exporting background..."
-		world = Blender.World.GetCurrent() 
-		horcol = world.getHor()
-		horcol0, horcol1, horcol2 = horcol[0], horcol[1], horcol[2]
-		FILE.write("background {\n")
-		FILE.write("\tcolor  { \"sRGB nonlinear\" %s %s %s }\n" % (horcol0, horcol1, horcol2))
-		FILE.write("}")
-		FILE.write("\n")
-	elif BACKGROUND.val == 1:
-		print "o creating background..."
-		FILE.write("background {\n")
-		FILE.write("\tcolor  { \"sRGB nonlinear\" %s %s %s }\n" % (BCKGRDR.val, BCKGRDG.val, BCKGRDB.val))
-		FILE.write("}")
-		FILE.write("\n")
+		SCENE.properties['Blender Background'] = "true"
+		SCENE.properties['HorizonColR'] = horcol0
+		SCENE.properties['HorizonColG'] = horcol1
+		SCENE.properties['HorizonColB'] = horcol2
+	else:
+               	SCENE.properties['Blender Background'] = "false"
+	if BACKGROUND.val == 1:
+		SCENE.properties['Script Background'] = "true"
+		SCENE.properties['HorizonColR'] = BCKGRDR.val
+		SCENE.properties['HorizonColG'] = BCKGRDG.val
+		SCENE.properties['HorizonColB'] = BCKGRDB.val
+	else:
+                SCENE.properties['Script Background'] = "false"
+
+def import_output():
+	global IM_HEIGHT, IM_WIDTH
+	# Retrieve Blender's Scene ID values
+	world = Blender.World.GetCurrent() 
+	horcol = world.getHor()
+	horcol0, horcol1, horcol2 = horcol[0], horcol[1], horcol[2]
+	IM_HEIGHT = SCENE.getRenderingContext().imageSizeY()
+	IM_WIDTH  = SCENE.getRenderingContext().imageSizeX()
+
+	if SCENE.properties['SceneProp'] == "true":
+		IM_WIDTH = SCENE.properties['ImageWidth']
+		IM_HEIGHT = SCENE.properties['ImageHeight']
+		MINAA.val = SCENE.properties['MinAA']
+		MAXAA.val = SCENE.properties['MaxAA']
+		AASAMPLES.val = SCENE.properties['Samples']
+		IMGFILTER.val = SCENE.properties['Filter']
+		DEPTH_DIFF.val = SCENE.properties['DepthDiff']
+		DEPTH_REFL.val = SCENE.properties['DepthRefl']
+		DEPTH_REFR.val = SCENE.properties['DepthRefr']
+		Draw.Redraw()
+                if SCENE.properties['Jitter'] == "true":
+                        AAJITTER = 1
+                        Draw.Redraw()
+                else:
+                        AAJITTER = 0
+                        Draw.Redraw()
+                if  SCENE.properties['Blender Background'] == "true":
+                        IMP_BCKGRD.val = 1
+                        horcol0 = SCENE.properties['HorizonColR']
+                        horcol1 = SCENE.properties['HorizonColG']
+                        horcol2 = SCENE.properties['HorizonColB']
+                        BACKGROUND.val = 0
+                        Draw.Redraw()
+                elif SCENE.properties['Script Background'] == "true":
+                        BACKGROUND.val = 1
+                        BCKGRDR.val = SCENE.properties['HorizonColR']
+                        BCKGRDG.val = SCENE.properties['HorizonColG']
+                        BCKGRDB.val = SCENE.properties['HorizonColB']
+                        IMP_BCKGRD.val = 0
+                        Draw.Redraw()
+
+def export_output():
+                print "o exporting output details..."
+                FILE.write("image {\n")
+       	        FILE.write("\tresolution %d %d\n" % (IM_WIDTH, IM_HEIGHT))
+                FILE.write("\taa %s %s\n" % (MINAA.val, MAXAA.val))
+                FILE.write("\tsamples %s\n" % AASAMPLES.val)
+                FILE.write("\tfilter %s\n" % IMGFILTERLIST[IMGFILTER.val-1])
+                if AAJITTER == 1:
+                	FILE.write("\tjitter true\n")
+                FILE.write("}")
+                FILE.write("\n")
+	
+                print "o exporting trace-depths options..."
+                FILE.write("trace-depths {\n")
+                FILE.write("\tdiff %s \n" % DEPTH_DIFF)
+                FILE.write("\trefl %s \n" % DEPTH_REFL)
+                FILE.write("\trefr %s\n" % DEPTH_REFR)
+                FILE.write("}")
+                FILE.write("\n")
+                if IMP_BCKGRD.val == 1:
+                	print "o exporting background..."
+                        world = Blender.World.GetCurrent() 
+                        horcol = world.getHor()
+                        horcol0, horcol1, horcol2 = horcol[0], horcol[1], horcol[2]
+                        FILE.write("background {\n")
+                        FILE.write("\tcolor  { \"sRGB nonlinear\" %s %s %s }\n" % (horcol0, horcol1, horcol2))
+                        FILE.write("}")
+                        FILE.write("\n")
+                elif BACKGROUND.val == 1:
+                	print "o creating background..."
+                        FILE.write("background {\n")
+                        FILE.write("\tcolor  { \"sRGB nonlinear\" %s %s %s }\n" % (BCKGRDR.val, BCKGRDG.val, BCKGRDB.val))
+                        FILE.write("}")
+                        FILE.write("\n")
 
 ## Export caustic and global illumination settings ##
 #####################################################
 
-def export_gi():
-	#Caustic Settings 
-	if CAUSTICS.val == 1:
-		print "o exporting caustic settings..."
-		FILE.write("\nphotons {\n")
-		FILE.write("\tcaustics %s" % PHOTONNUMBER.val)
-		FILE.write(" %s " % PHOTONMAPLIST[PHOTONMAP.val-1])
-		FILE.write("%s %s\n" % (PHOTONESTIMATE.val, PHOTONRADIUS.val))
-		FILE.write("}\n")
-	#Instant GI Settings
+def def_gi():
+        # Writes GI properties
+        if CAUSTICS.val == 1:
+                SCENE.properties['Caustics'] = "true"
+		SCENE.properties['Caustics Photon Number'] = PHOTONNUMBER.val
+                SCENE.properties['Caustics Photon Map'] = PHOTONMAP.val
+                SCENE.properties['Caustics Photon Estimate'] = PHOTONESTIMATE.val
+        	SCENE.properties['Caustics Photon Radius'] = PHOTONRADIUS.val
+	else:
+		SCENE.properties['Caustics'] = "false"
 	if INSTANTGI.val == 1:
-		print "o exporting Instant GI settings..."
-		FILE.write("\ngi {\n")
-		FILE.write("\ttype igi\n")
-		FILE.write("\tsamples %s\n" % IGISAMPLES.val)
-		FILE.write("\tsets %s\n" % IGISETS.val)
-		FILE.write("\tb %s\n" % IGIBIAS.val)
-		FILE.write("\tbias-samples %s\n" % IGIBIASSAMPLES.val)
-		FILE.write("}\n")
-	#Irradiance Cache GI Settings
+                SCENE.properties['IGI'] = "true"
+		SCENE.properties['IGI Samples'] = IGISAMPLES.val
+		SCENE.properties['IGI Sets'] = IGISETS.val
+		SCENE.properties['IGI Bias'] = IGIBIAS.val
+		SCENE.properties['IGI Bias Samples'] = IGIBIASSAMPLES.val
+	else:
+		SCENE.properties['IGI'] = "false"
 	if IRRCACHE.val == 1:
-		print "o exporting Irradiance Cache GI settings..."
-		FILE.write("\ngi {\n")
-		FILE.write("\ttype irr-cache\n")
-		FILE.write("\tsamples %s\n" % IRRSAMPLES.val)
-		FILE.write("\ttolerance %s\n" % IRRTOLERANCE.val)
-		FILE.write("\tspacing %s %s\n" % (IRRSPACEMIN.val, IRRSPACEMAX.val))
+                SCENE.properties['IRR'] = "true"
+		SCENE.properties['IRR Samples'] = IRRSAMPLES.val
+		SCENE.properties['IRR Tolerance'] = IRRTOLERANCE.val
+		SCENE.properties['IRR Space Min'] = IRRSPACEMIN.val
+		SCENE.properties['IRR Space Max'] = IRRSPACEMAX.val
+	else:
+		SCENE.properties['IRR'] = "false"
+	if USEGLOBALS.val == 1:
+                SCENE.properties['Global Photon'] = "true"
+		SCENE.properties['Global Photon Num'] = gPHOTONNUMBER.val
+		SCENE.properties['Global Photon Map'] = gPHOTONMAP.val
+		SCENE.properties['Global Photon Estimate'] = gPHOTONESTIMATE.val
+		SCENE.properties['Global Photon Radius'] = gPHOTONRADIUS.val
+	else:
+		SCENE.properties['Global Photon'] = "false"
+	if PATHTRACE.val == 1:
+                SCENE.properties['Path Tracing'] = "true"
+		SCENE.properties['Path Tracing Samples'] = PATHSAMPLES.val
+	else:
+		SCENE.properties['Path Tracing'] = "false"
+	if VIEWCAUSTICS.val == 1:
+		SCENE.properties['View Caustics'] = "true"
+	else:
+		SCENE.properties['View Caustics'] = "false"
+	if VIEWGLOBALS.val == 1:
+		SCENE.properties['View Globals'] = "true"
+	else:
+		SCENE.properties['View Globals'] = "false"
+	if VIEWGI.val == 1:
+		SCENE.properties['View GI'] = "true"
+	else:
+		SCENE.properties['View GI'] = "false"
+
+def import_gi():
+        # Retrieve Blender's GI/Caustic ID values
+        if SCENE.properties['SceneProp'] == "true":
+                if SCENE.properties['Caustics'] == "true":
+                        CAUSTICS.val = 1
+                        PHOTONNUMBER.val = SCENE.properties['Caustics Photon Number']
+                        PHOTONMAP.val = SCENE.properties['Caustics Photon Map']
+                        PHOTONESTIMATE.val = SCENE.properties['Caustics Photon Estimate']
+                        PHOTONRADIUS.val = SCENE.properties['Caustics Photon Radius']
+                        Draw.Redraw()
+                else:
+                        CAUSTICS.val = 0
+                        Draw.Redraw()
+                if SCENE.properties['IGI'] == "true":
+                        INSTANTGI.val = 1                
+                        IGISAMPLES.val = SCENE.properties['IGI Samples']
+                        IGISETS.val = SCENE.properties['IGI Sets']
+                        IGIBIAS.val = SCENE.properties['IGI Bias']
+                        IGIBIASSAMPLES.val = SCENE.properties['IGI Bias Samples']
+                        Draw.Redraw()
+                else:
+                        INSTANTGI.val = 0
+                        Draw.Redraw()
+                if SCENE.properties['IRR'] == "true":
+                        IRRCACHE.val = 1
+                        IRRSAMPLES.val = SCENE.properties['IRR Samples']
+                        IRRTOLERANCE.val = SCENE.properties['IRR Tolerance']
+                        IRRSPACEMIN.val = SCENE.properties['IRR Space Min']
+                        IRRSPACEMAX.val = SCENE.properties['IRR Space Max']
+                        Draw.Redraw()
+                else:
+                        IRRCACHE.val = 0
+                        Draw.Redraw()
+                if SCENE.properties['Global Photon'] == "true":
+                        USEGLOBALS.val = 1
+                	gPHOTONNUMBER.val = SCENE.properties['Global Photon Num']
+                        gPHOTONMAP.val = SCENE.properties['Global Photon Map']
+                        gPHOTONESTIMATE.val = SCENE.properties['Global Photon Estimate']
+                        gPHOTONRADIUS.val = SCENE.properties['Global Photon Radius']
+                        Draw.Redraw()
+                else:
+                        USEGLOBALS.val = 0
+                        Draw.Redraw()
+                if SCENE.properties['Path Tracing'] == "true":
+                        PATHTRACE.val = 1
+                	PATHSAMPLES.val = SCENE.properties['Path Tracing Samples']
+                	Draw.Redraw()
+                else:
+                        PATHTRACE.val = 0
+                        Draw.Redraw()
+                if SCENE.properties['View Caustics'] == "true":
+                        VIEWCAUSTICS.val = 1
+                        Draw.Redraw()
+                else:
+                        VIEWCAUSTICS.val = 0
+                        Draw.Redraw()
+        	if SCENE.properties['View Globals'] == "true":
+                        VIEWGLOBALS.val = 1
+                        Draw.Redraw()
+                else:
+                        VIEWGLOBALS.val = 0
+                        Draw.Redraw()        
+                if SCENE.properties['View GI'] == "true":
+                        VIEWGI.val = 1
+                        Draw.Redraw()
+                else:
+                        VIEWGI.val = 0
+                        Draw.Redraw() 
+		
+def export_gi():
+             	#Caustic Settings 
+                if CAUSTICS.val == 1:
+                        print "o exporting caustic settings..."
+                        FILE.write("\nphotons {\n")
+        		FILE.write("\tcaustics %s" % PHOTONNUMBER.val)
+        		FILE.write(" %s " % PHOTONMAPLIST[PHOTONMAP.val-1])
+        		FILE.write("%s %s\n" % (PHOTONESTIMATE.val, PHOTONRADIUS.val))
+        		FILE.write("}\n")
+            	#Instant GI Settings
+                if INSTANTGI.val == 1:
+                        print "o exporting Instant GI settings..."
+        		FILE.write("\ngi {\n")
+        		FILE.write("\ttype igi\n")
+        		FILE.write("\tsamples %s\n" % IGISAMPLES.val)
+        		FILE.write("\tsets %s\n" % IGISETS.val)
+        		FILE.write("\tb %s\n" % IGIBIAS.val)
+        		FILE.write("\tbias-samples %s\n" % IGIBIASSAMPLES.val)
+        		FILE.write("}\n")
+        	#Irradiance Cache GI Settings
+                if IRRCACHE.val == 1:
+                        print "o exporting Irradiance Cache GI settings..."
+        		FILE.write("\ngi {\n")
+        		FILE.write("\ttype irr-cache\n")
+        		FILE.write("\tsamples %s\n" % IRRSAMPLES.val)
+        		FILE.write("\ttolerance %s\n" % IRRTOLERANCE.val)
+        		FILE.write("\tspacing %s %s\n" % (IRRSPACEMIN.val, IRRSPACEMAX.val))
 		if USEGLOBALS.val == 0:
 			FILE.write("}\n")
-	#No Path Tracing on Secondary Bounces in Irradiance Cache Settings
-	if USEGLOBALS.val == 1:
-		FILE.write("\tglobal %s" % gPHOTONNUMBER.val)
-		FILE.write(" %s " % gPHOTONMAPLIST[gPHOTONMAP.val-1])
-		FILE.write("%s %s\n" % (gPHOTONESTIMATE.val, gPHOTONRADIUS.val))
-		FILE.write("}\n")
-	#Path Tracing GI Settings
-	if PATHTRACE.val == 1:
-		print "o exporting Path Tracing GI settings..."
-		FILE.write("\ngi {\n")
-		FILE.write("\ttype path\n")
-		FILE.write("\tsamples %s\n" % PATHSAMPLES.val)
-		FILE.write("}\n")
-	#View Overrides
-	if VIEWCAUSTICS.val == 1:
-		print "o exporting caustic override..."
-		FILE.write("\nshader {\n")
-		FILE.write("\tname debug_caustics\n")
-		FILE.write("\ttype view-caustics\n")
-		FILE.write("}\n")
-		FILE.write("override debug_caustics false\n")
-	if VIEWGLOBALS.val == 1:
-		print "o exporting globals override..."
-		FILE.write("\nshader {\n")
-		FILE.write("\tname debug_globals\n")
-		FILE.write("\ttype view-global\n")
-		FILE.write("}\n")
-		FILE.write("override debug_globals false\n")
-	if VIEWGI.val == 1:
-		print "o exporting irradiance override..."
-		FILE.write("\nshader {\n")
-		FILE.write("\tname debug_gi\n")
-		FILE.write("\ttype view-irradiance\n")
-		FILE.write("}\n")
-		FILE.write("override debug_gi false\n")
-	
+        	#No Path Tracing on Secondary Bounces in Irradiance Cache Settings
+                if USEGLOBALS.val == 1:
+                        FILE.write("\tglobal %s" % gPHOTONNUMBER.val)
+        		FILE.write(" %s " % gPHOTONMAPLIST[gPHOTONMAP.val-1])
+        		FILE.write("%s %s\n" % (gPHOTONESTIMATE.val, gPHOTONRADIUS.val))
+        		FILE.write("}\n")
+        	#Path Tracing GI Settings
+        	if PATHTRACE.val == 1:
+        		print "o exporting Path Tracing GI settings..."
+        		FILE.write("\ngi {\n")
+        		FILE.write("\ttype path\n")
+        		FILE.write("\tsamples %s\n" % SCENE.properties['Path Tracing Samples'])
+        		FILE.write("}\n")
+        	#View Overrides
+                if VIEWCAUSTICS.val == 1:
+        		print "o exporting caustic override..."
+        		FILE.write("\nshader {\n")
+        		FILE.write("\tname debug_caustics\n")
+        		FILE.write("\ttype view-caustics\n")
+        		FILE.write("}\n")
+        		FILE.write("override debug_caustics false\n")
+                if VIEWGLOBALS.val == 1:
+        		print "o exporting globals override..."
+        		FILE.write("\nshader {\n")
+        		FILE.write("\tname debug_globals\n")
+        		FILE.write("\ttype view-global\n")
+        		FILE.write("}\n")
+        		FILE.write("override debug_globals false\n")
+        	if VIEWGI.val == 1:
+        		print "o exporting irradiance override..."
+        		FILE.write("\nshader {\n")
+        		FILE.write("\tname debug_gi\n")
+        		FILE.write("\ttype view-irradiance\n")
+        		FILE.write("}\n")
+        		FILE.write("override debug_gi false\n")
+
 ## Export logic for materials ##
 ################################
+def def_globalao():
+        #Writes ID values for the global ao values
+        if OCCLUSION.val ==1:
+                SCENE.properties['Global AO'] = "true"
+                SCENE.properties['Global AO Bright R'] = OCCBRIGHTR.val
+                SCENE.properties['Global AO Bright G'] = OCCBRIGHTG.val
+                SCENE.properties['Global AO Bright B'] = OCCBRIGHTB.val
+                SCENE.properties['Global AO Dark R'] = OCCDARKR.val
+                SCENE.properties['Global AO Dark G'] = OCCDARKG.val
+                SCENE.properties['Global AO Dark B'] = OCCDARKB.val
+                SCENE.properties['Global AO Samples'] = OCCSAMPLES.val
+                SCENE.properties['Global AO Distance'] = OCCDIST.val
+	else:
+               SCENE.properties['Global AO'] = "false"
+
+def import_globalao():
+        # Retrieve Blender's global ID values
+        if SCENE.properties['SceneProp'] == "true":
+                if SCENE.properties['Global AO'] == "true":
+                        OCCLUSION.val = 1
+                        OCCBRIGHTR.val = SCENE.properties['Global AO Bright R']
+                        OCCBRIGHTG.val = SCENE.properties['Global AO Bright G']
+                        OCCBRIGHTB.val = SCENE.properties['Global AO Bright B']
+                        OCCDARKR.val = SCENE.properties['Global AO Dark R']
+                        OCCDARKG.val = SCENE.properties['Global AO Dark G']
+                        OCCDARKB.val = SCENE.properties['Global AO Dark B']
+                        OCCSAMPLES.val = SCENE.properties['Global AO Samples']
+                        OCCDIST.val = SCENE.properties['Global AO Distance']
+                        Draw.Redraw()
+                else:
+                        OCCLUSION.val = 0
+                        Draw.Redraw()    
 
 def export_shaders():
 	print "o exporting shaders..."
@@ -534,6 +770,66 @@ def export_modifiers():
 ## Export logic for Blender's light sources ##
 ##############################################
 
+def def_lights():
+        #Write light ID properties
+	SCENE.properties['LightProp'] = "true"
+	SCENE.properties['Lamp Multiplier'] = LAMPPOWER.val
+        SCENE.properties['Meshlight Multiplier'] = MESHLIGHTPOWER.val
+        SCENE.properties['Light Samples'] = DSAMPLES.val
+        SCENE.properties['IBL Samples'] = IBLSAMPLES.val
+        if IBL.val == 1:
+                SCENE.properties['Image Based Light'] = "true"
+        else:
+                SCENE.properties['Image Based Light'] = "false"
+        if IBLLOCK.val == 1:
+                SCENE.properties['IBL Importance Sampling'] = "true"
+        else:
+                SCENE.properties['IBL Importance Sampling'] = "false"
+	if CONVLAMP.val == 1:
+        	SCENE.properties['Convert Unsupported Lamps'] = "true"
+	else:
+		SCENE.properties['Convert Unsupported Lamps'] = "false"
+        if IMP_SUN.val == 1:
+        	SCENE.properties['Sun Lamp'] = "true"
+	else:
+		SCENE.properties['Sun Lamp'] = "false"
+	SCENE.properties['Sun Turbidity'] = SUN_TURB.val
+	SCENE.properties['Sun Samples'] = SUN_SAMPLES.val
+	
+
+def import_lights():
+        # Retrieve Blender's light ID values including IBL/LOCK
+        if SCENE.properties['LightProp'] == "true":
+                LAMPPOWER.val = SCENE.properties['Lamp Multiplier']
+                MESHLIGHTPOWER.val = SCENE.properties['Meshlight Multiplier']
+                DSAMPLES.val = SCENE.properties['Light Samples']
+                if SCENE.properties['Convert Unsupported Lamps'] == "true":
+                        CONVLAMP.val = 1
+                        Draw.Redraw()
+                else:
+                        CONVLAMP.val = 0
+                        Draw.Redraw()
+                if SCENE.properties['Image Based Light'] == "true":
+                        IBL.val = 1
+                        Draw.Redraw()
+                else:
+                        IBL.val = 0
+                        Draw.Redraw()
+                if SCENE.properties['IBL Importance Sampling'] == "true":
+                        IBLLOCK.val = 1
+                        Draw.Redraw()
+                else:
+                        IBLLOCK.val = 0
+                        Draw.Redraw()
+                if SCENE.properties['Sun Lamp'] == "true":
+                        IMP_SUN.val = 1
+                        Draw.Redraw()
+                else:
+                        IMP_SUN.val = 0
+                        Draw.Redraw()                
+                SUN_TURB.val = SCENE.properties['Sun Turbidity']
+                SUN_SAMPLES.val = SCENE.properties['Sun Samples']
+
 def export_lights(lmp):
 
 	# only lamps type 0, 1 and 4 supported at the moment
@@ -719,7 +1015,51 @@ def export_ibl():
 
 ## Export method for Blender camera ##
 ######################################
+def def_camera():
+	CAMERA=SCENE.getCurrentCamera()
+	# Writes Scene properties
+	CAMERA.properties['CamProp'] = "true"
+	CAMERA.properties['DOF Radius'] = DOFRADIUS.val
+        CAMERA.properties['Lens Sides'] = LENSSIDES.val
+        CAMERA.properties['Lens Rotation'] = LENSROTATION.val
+        if DOF.val == 1:
+		CAMERA.properties['DOF'] = "true"
+	else:
+		CAMERA.properties['DOF'] = "false"
+        if SPHERICALCAMERA.val == 1:
+		CAMERA.properties['Spherical Camera'] = "true"
+	else:
+		CAMERA.properties['Spherical Camera'] = "false"
+	if FISHEYECAMERA.val == 1:
+		CAMERA.properties['Fisheye Camera'] = "true"
+	else:
+		CAMERA.properties['Fisheye Camera'] = "false"
 
+def import_camera():
+	CAMERA=SCENE.getCurrentCamera()
+        if CAMERA.properties['CamProp'] == "true":	
+		DOFRADIUS.val = CAMERA.properties['DOF Radius']
+                LENSSIDES.val = CAMERA.properties['Lens Sides']
+                LENSROTATION.val = CAMERA.properties['Lens Rotation']
+                if CAMERA.properties['DOF Radius'] == "true":
+                        DOF.val = 1
+                        Draw.Redraw()
+                else:
+                        DOF.val = 0
+                        Draw.Redraw()
+                if CAMERA.properties['Spherical Camera'] == "true":
+                        SPHERICALCAMERA.val = 1
+                        Draw.Redraw()
+                else:
+                        SPHERICALCAMERA.val = 0
+                        Draw.Redraw() 
+                if CAMERA.properties['Fisheye Camera'] == "true":
+                        FISHEYECAMERA.val = 1
+                        Draw.Redraw()
+                else:
+                        FISHEYECAMERA.val = 0
+                        Draw.Redraw() 
+        
 def export_camera(cam):
 
 	# get the camera
@@ -1060,7 +1400,90 @@ def setjavapath(JAVAPATH):
 
 ## Macro for render execution ##
 ################################
+def def_render():
+	# Writes render setting properties
+	SCENE.properties['RenderProp'] = "true"
+	SCENE.properties['File Type'] = FILETYPE.val
+        SCENE.properties['Quick Option'] = QUICKOPT.val
+        SCENE.properties['Quick AO Distance'] = QOCCDIST.val
+	if NOGUI.val == 1:
+		SCENE.properties['-nogui'] = "true"
+	else:
+		SCENE.properties['-nogui'] = "false"
+	if SMALLMESH.val == 1:
+		SCENE.properties['-smallmesh'] = "true"
+	else:
+		SCENE.properties['-smallmesh'] = "false"
+	if NOGI.val == 1:
+		SCENE.properties['-nogi'] = "true"
+	else:
+		SCENE.properties['-nogi'] = "false"
+	if NOCAUSTICS.val == 1:
+		SCENE.properties['-nocaustics'] = "true"
+	else:
+		SCENE.properties['-nocaustics'] = "false"
+	if QUICKOCC.val == 1:
+		SCENE.properties['-quick_ambocc'] = "true"
+	else:
+		SCENE.properties['-quick_ambocc'] = "false"
+	if IPR.val == 1:
+		SCENE.properties['-ipr'] = "true"
+	else:
+		SCENE.properties['-ipr'] = "false"
+	if EXP_ANIM.val == 1:
+                SCENE.properties['animation'] = "true"
+        else:
+                SCENE.properties['animation'] = "false"
 
+def import_render():
+        global EXP_ANIM
+        if SCENE.properties['RenderProp'] == "true":	
+                FILETYPE.val = SCENE.properties['File Type']
+                QUICKOPT.val = SCENE.properties['Quick Option']
+                QOCCDIST.val = SCENE.properties['Quick AO Distance']
+                if SCENE.properties['-nogui'] == "true":
+                        NOGUI.val = 1
+                        Draw.Redraw()
+                else:
+                        NOGUI.val = 0
+                        Draw.Redraw()
+                if SCENE.properties['-smallmesh'] == "true":
+                        SMALLMESH.val = 1
+                        Draw.Redraw()
+                else:
+                        SMALLMESH.val = 0
+                        Draw.Redraw() 
+                if SCENE.properties['-nogi'] == "true":
+                        NOGI.val = 1
+                        Draw.Redraw()
+                else:
+                        NOGI.val = 0
+                        Draw.Redraw()
+                if SCENE.properties['-nocaustics'] == "true":
+                        NOCAUSTICS.val = 1
+                        Draw.Redraw()
+                else:
+                        NOCAUSTICS.val = 0
+                        Draw.Redraw()
+                if SCENE.properties['-quick_ambocc'] == "true":
+                        QUICKOCC.val = 1
+                        Draw.Redraw()
+                else:
+                        QUICKOCC.val = 0
+                        Draw.Redraw()
+                if SCENE.properties['-ipr'] == "true":
+                        IPR.val = 1
+                        Draw.Redraw()
+                else:
+                        IPR.val = 0
+                        Draw.Redraw()
+                if SCENE.properties['animation'] == "true":
+                        EXP_ANIM.val = 1
+                        Draw.Redraw()
+                else:
+                        EXP_ANIM.val = 0
+                        Draw.Redraw()
+                        
 def render():
 	# TODO:
 	# 1- Make compatible with animations
@@ -1163,7 +1586,7 @@ def render():
 ##############################
 
 def buttonEvent(evt):
-	global FILE, SCREEN, SETPATH, SETJAVAPATH, FILENAME
+	global FILE, SCREEN, SETPATH, SETJAVAPATH, FILENAME, SCENE
 
 	## Common events:
 	if evt == EXP_EVT:
@@ -1397,13 +1820,38 @@ def buttonEvent(evt):
 		SCREEN=8
 		Draw.Redraw()
 		return
-	# Go back to config panel if user tries to render withour configuring SF:
+	# Go back to config panel if user tries to render without configuring SF:
 	if evt == REND_EVT and trial == False:
 		SCREEN=8
 		Draw.Redraw()
 		return
 	if evt == SHAD_OK:
 		Draw.Redraw()
+		return
+	if evt == EXPORT_ID:
+                print "  o Sending script settings to .blend..."
+		def_output()
+		def_gi()
+		def_globalao()
+		def_lights()
+		def_camera()
+		def_render()
+		print "  o Finished sending settings."
+		return
+	if evt == IMPORT_ID:
+                try:
+                        if SCENE.properties['SceneProp'] == "true":            
+                                print "  o Script settings found in .blend, importing to script..."
+                        	import_output()
+        			import_gi()
+                        	import_globalao()
+        			import_lights()
+                        	import_camera()
+                                import_render()
+                                print "  o Finished importing script settings." 
+        	except: 
+                	print "  o No script settings in .blend, using defaults."             
+
 		return
 
 ## Draws the individual panels ##
@@ -1412,7 +1860,7 @@ def buttonEvent(evt):
 def drawGUI():
 	global SCREEN
 	if SCREEN==0:
-		drawAA()
+		drawAA() 
 	if SCREEN==2:
 		drawCamera()
 	if SCREEN==3:
@@ -1566,6 +2014,10 @@ def drawRender():
 
 def drawConfig():
 	global SET_PATH, THREADS, MEM, SET_JAVAPATH
+        col=10; line = 315; BGL.glRasterPos2i(col, line); Draw.Text("ID properties for script settings:")
+        col= 10; line = 285; Draw.Button("Send Script Settings", EXPORT_ID, col, line, 140,18, "Send script settings to the .blend")
+        col= 155; line = 285; Draw.Button("Import Script Settings", IMPORT_ID, col, line, 140,18, "Import script setting from .blend")
+        col=10; line = 255; BGL.glRasterPos2i(col, line); Draw.Text("Settings needed to render directly from the script:")
 	col=155; line = 230; BGL.glRasterPos2i(col, line); Draw.Text("(threads=0 means auto-detect)")
 	col=10; line = 225; THREADS=Draw.Number("Threads", 2, col, line, 140, 18, THREADS.val, 0, 8)
 	col=10; line = 200; MEM=Draw.Number("Memory (MB)", 2, col, line, 140, 18, MEM.val, 256, 2048)
