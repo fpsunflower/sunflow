@@ -1,3 +1,4 @@
+#include "sunflowBucketToRenderView.h"
 #include "sunflowExportCmd.h"
 #include "sunflowShaderNode.h"
 #include "sunflowConstants.h"
@@ -34,8 +35,6 @@
 #include <vector>
 #include <string>
 
-#include "sunflowBucketToRenderView.h"
-class bucketToRenderView;
 // global variables:
 
 using namespace std;
@@ -1385,13 +1384,13 @@ MStatus sunflowExportCmd::doIt(const MArgList& args) {
 	args += "\"";	
 	std::cout << cmd.asChar() << args.asChar() << std::endl;
 
-#ifdef _WIN32
+//#ifdef _WIN32
 	//ShellExecute( NULL, NULL, ( LPCTSTR ) cmd.asChar(), ( LPCTSTR ) args.asChar(), ( LPCTSTR ) sunflowPath, SW_SHOWNORMAL );
 	
-	MString cmdLine = "\""+cmd+" "+args+"\"";
+	MString cmdLine = "" + cmd+" "+args;
 	std::cout << cmdLine << std::endl;
 	FILE *renderPipe;	
-	if( (renderPipe = _popen( cmdLine.asChar(), "rb" )) == NULL )
+	if( (renderPipe = popen( cmdLine.asChar(), "r" )) == NULL )
 		return MS::kFailure;
 	bucketToRenderView bucketObject;
 	bucketObject.renderPipe = renderPipe;
@@ -1400,20 +1399,20 @@ MStatus sunflowExportCmd::doIt(const MArgList& args) {
 	{
 		bucketObject.checkStream();
 	}
-
+    int returnCode = pclose(renderPipe);
 	if (feof( renderPipe)){
-	printf( "\nProcess returned %d\n", _pclose( renderPipe ) );
+	printf( "\nProcess returned %d\n", returnCode );
 	}else{
 	printf( "Error: Failed to read the pipe to the end.\n");
 	}
 	// Close pipe and print return value of telnet 
-	std::cout << "\nProcess returned " << _pclose( renderPipe ) << std::endl;
-	
+	std::cout << "\nProcess returned " << returnCode << std::endl;
+	/*
 #else
 	cmd = cmd + args + "&";
 	system(cmd.asChar());
 #endif
-
+*/
     return MS::kSuccess;
 }
 

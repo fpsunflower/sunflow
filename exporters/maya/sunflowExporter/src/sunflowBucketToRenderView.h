@@ -1,5 +1,7 @@
+#ifndef _SUNFLOW_BUCKET_TO_RENDER_VIEW_H_
+#define _SUNFLOW_BUCKET_TO_RENDER_VIEW_H_
+
 #include <maya/MDagPath.h>
-#include <maya/MRenderView.h>
 #include <iostream>
 #include <vector>
 
@@ -37,5 +39,6 @@ public:
 	int renderWidth;
 	int renderHeight;
 	MDagPath renderCamera;
-	MRenderView renderView;
 };
+
+#endif /* _SUNFLOW_BUCKET_TO_RENDER_VIEW_H_ */

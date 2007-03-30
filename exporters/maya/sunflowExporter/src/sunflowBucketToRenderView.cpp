@@ -1,4 +1,5 @@
 #include "sunflowBucketToRenderView.h"
+#include <maya/MRenderView.h>
 
 DisplayPacket bucketToRenderView::getPacket(){
    DisplayPacket p;
@@ -28,12 +29,8 @@ void bucketToRenderView::checkStream() {
            renderHeight = p.data[1].sbits32;
            float g = p.data[2].f;
            std::cout << "  * starting image("<<renderWidth<<" x "<<renderHeight<<"), gamma="<<g<< std::endl;
-		   if(renderView.doesRenderEditorExist()){
-			   renderView.setCurrentCamera(renderCamera);
-			   renderView.startRender(renderWidth, renderHeight, false, true);
-		   }
-           //window->resizeImage(w, h);
-           //window->redraw();
+		   MRenderView::setCurrentCamera(renderCamera);
+		   MRenderView::startRender(renderWidth, renderHeight);
            break;
        }
        case 2: {
@@ -42,10 +39,7 @@ void bucketToRenderView::checkStream() {
            int yl = p.data[2].sbits32;
            int yh = p.data[3].sbits32;
            int size = (xh - xl + 1) * (yh - yl + 1);
-		   RV_PIXEL *data;
-		   data = (RV_PIXEL*) malloc(sizeof(RV_PIXEL)*((xh-xl+1)*(yh-yl+1)));
-		   
-           //std::vector<char> rgba(size, 0);
+           std::vector<RV_PIXEL> data(size);
 		   for (int i = 0; i < size; i++){
 				data[i].r = fgetc( renderPipe );
 				data[i].g =	fgetc( renderPipe );
@@ -53,23 +47,17 @@ void bucketToRenderView::checkStream() {
 				data[i].a = fgetc( renderPipe );
 		   }
            //std::cout << "  * getting image tile ("<<xl<<", "<<yl<<") to ("<<xh<<", "<<yh<<")" << std::endl;
-		   renderView.updatePixels ( xl, xh, yl,yh,data );
-		   renderView.refresh( xl, xh, yl, yh );
-
-		   //}
-           //window->updateTile(xl, xh, yl, yh, &rgba[0]);
-           //window->redraw();
+		   MRenderView::updatePixels ( xl, xh, yl,yh, &data[0] );
+		   MRenderView::refresh( xl, xh, yl, yh );
            break;
        }
        case 4: {
            std::cout << "  * done receiving frame" << std::endl;
-           //Fl::remove_idle(checkStream, window);
-		   renderView.endRender();
+		   MRenderView::endRender();
            break;
        }
        case 3: {
            std::cout << "  * connection denied!" << std::endl;
-           //Fl::remove_idle(checkStream, window);
            break;
        }
        default: {
