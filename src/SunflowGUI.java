@@ -115,6 +115,7 @@ public class SunflowGUI extends javax.swing.JFrame implements UserInterface {
     private String currentTask;
     private int currentTaskLastP;
     private SunflowAPI api;
+    private File lastSaveDirectory;
 
     public static void usage(boolean verbose) {
         System.out.println("Usage: SunflowGUI [options] scenefile");
@@ -450,6 +451,7 @@ public class SunflowGUI extends javax.swing.JFrame implements UserInterface {
     public SunflowGUI() {
         super();
         currentFile = null;
+        lastSaveDirectory = null;
         api = null;
         initGUI();
         pack();
@@ -888,6 +890,8 @@ public class SunflowGUI extends javax.swing.JFrame implements UserInterface {
 
     private void openFileMenuItemActionPerformed(ActionEvent evt) {
         JFileChooser fc = new JFileChooser(".");
+        if (lastSaveDirectory != null)
+            fc.setCurrentDirectory(lastSaveDirectory);
         fc.setFileFilter(new FileFilter() {
             @Override
             public String getDescription() {
@@ -903,6 +907,7 @@ public class SunflowGUI extends javax.swing.JFrame implements UserInterface {
         if (fc.showOpenDialog(SunflowGUI.this) == JFileChooser.APPROVE_OPTION) {
             final String f = fc.getSelectedFile().getAbsolutePath();
             openFile(f);
+            lastSaveDirectory = fc.getSelectedFile().getParentFile();
         }
     }
 
@@ -1060,6 +1065,8 @@ public class SunflowGUI extends javax.swing.JFrame implements UserInterface {
 
     private void saveAsMenuItemActionPerformed(ActionEvent evt) {
         JFileChooser fc = new JFileChooser(".");
+        if (lastSaveDirectory != null)
+            fc.setCurrentDirectory(lastSaveDirectory);
         fc.setFileFilter(new FileFilter() {
             @Override
             public String getDescription() {
@@ -1080,6 +1087,7 @@ public class SunflowGUI extends javax.swing.JFrame implements UserInterface {
             if (!file.exists() || JOptionPane.showConfirmDialog(SunflowGUI.this, "This file already exists.\nOverwrite?", "Warning", JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
                 // save file
                 saveCurrentFile(f);
+                lastSaveDirectory = file.getParentFile();
             }
         }
     }
