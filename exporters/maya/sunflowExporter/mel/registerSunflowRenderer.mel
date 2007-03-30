@@ -6,16 +6,16 @@
 global proc registerSunflowRenderer()
 {
     renderer
-		-rendererUIName				"Sunflow"
-		-renderProcedure			"sunflowRender"
+		-rendererUIName					"Sunflow"
+		-renderProcedure				"sunflowRender"
 		-commandRenderProcedure			"sunflowRender"
 		-batchRenderProcedure			"sunflowRender"
 		-showRenderLogProcedure			""
-		-batchRenderOptionsProcedure		""
+		-batchRenderOptionsProcedure	""
 		-cancelBatchRenderProcedure		"sunflowCancelBatch"
 		-showBatchRenderProcedure		""
-		-showBatchRenderLogProcedure		""
-		-iprRenderProcedure			""
+		-showBatchRenderLogProcedure	""
+		-iprRenderProcedure				""
 		-startIprRenderProcedure		""
 		-stopIprRenderProcedure			""
 		-changeIprRegionProcedure		""

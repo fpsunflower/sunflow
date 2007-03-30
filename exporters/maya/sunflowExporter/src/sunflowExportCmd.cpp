@@ -33,13 +33,9 @@
 #include <set>
 #include <vector>
 #include <string>
-#ifdef  _WIN32
-#include <cstdio>
-#include <windows.h>
-#else
-#include <cstdlib>
-#endif
 
+#include "sunflowBucketToRenderView.h"
+class bucketToRenderView;
 // global variables:
 
 using namespace std;
@@ -571,18 +567,32 @@ void sunflowExportCmd::exportCamera(const MDagPath& path, std::ofstream& file) {
     MVector up = camera.upDirection(space);
     double fov = camera.horizontalFieldOfView() * (180.0 / 3.1415926535897932384626433832795);
 
+	bool DOF = camera.isDepthOfField();
 	float frameAspect = getAttributeFloat("defaultResolution", "deviceAspectRatio", 1.333333f);
 
-    file << "% " << path.fullPathName().asChar() << std::endl;
-    file << "camera {" << std::endl;
-    file << "\ttype   pinhole" << std::endl;
-    file << "\teye    " << eye.x << " " << eye.y << " " << eye.z << std::endl;
-    file << "\ttarget " << (eye.x + dir.x) << " " << (eye.y + dir.y) << " " << (eye.z + dir.z) << std::endl;
-    file << "\tup     " << up.x << " " << up.y << " " << up.z << std::endl;
-    file << "\tfov    " << fov << std::endl;
-    file << "\taspect " << frameAspect << std::endl;
-    file << "}" << std::endl;
-    file << std::endl;
+	file << "% " << path.fullPathName().asChar() << std::endl;
+	file << "camera {" << std::endl;
+	if(DOF){
+		float FocusDist = camera.focusDistance();
+		float fStop = camera.fStop();
+		file << "\ttype   thinlens" << std::endl;
+		file << "\teye    " << eye.x << " " << eye.y << " " << eye.z << std::endl;
+		file << "\ttarget " << (eye.x + dir.x) << " " << (eye.y + dir.y) << " " << (eye.z + dir.z) << std::endl;
+		file << "\tup     " << up.x << " " << up.y << " " << up.z << std::endl;
+		file << "\tfov    " << fov << std::endl;
+		file << "\taspect " << frameAspect << std::endl;
+		file << "\tfdist " << FocusDist << std::endl;
+		file << "\tlensr " << fStop << std::endl;
+	}else{
+		file << "\ttype   pinhole" << std::endl;
+		file << "\teye    " << eye.x << " " << eye.y << " " << eye.z << std::endl;
+		file << "\ttarget " << (eye.x + dir.x) << " " << (eye.y + dir.y) << " " << (eye.z + dir.z) << std::endl;
+		file << "\tup     " << up.x << " " << up.y << " " << up.z << std::endl;
+		file << "\tfov    " << fov << std::endl;
+		file << "\taspect " << frameAspect << std::endl;
+	}
+	file << "}" << std::endl;
+	file << std::endl;
 }
 
 bool sunflowExportCmd::findShaderInList(MString shader){
@@ -629,6 +639,24 @@ MStatus sunflowExportCmd::doIt(const MArgList& args) {
 
 		//Get globals values
 		MPlug paramPlug;
+
+		// set renderMode
+		int renderMode;		
+		getCustomAttribute(renderMode, "renderMode", globals);
+		switch (renderMode){
+			case 0:
+				mode="render";
+				break;
+			case 1:
+				mode="IPR";
+				break;
+			case 2:
+				mode="file";
+				break;
+			default:
+				break;
+		}
+
 
         if (exportPath.length() == 0) {		
             getCustomAttribute(exportPath, "exportPath", globals);		
@@ -1206,6 +1234,7 @@ MStatus sunflowExportCmd::doIt(const MArgList& args) {
 
         }
     }
+	bool renderCameraExported = false;
     for (MItDag mItDag = MItDag(MItDag::kBreadthFirst); !mItDag.isDone(&status); mItDag.next()) {
         MDagPath path;
         status = mItDag.getPath(path);
@@ -1221,6 +1250,11 @@ MStatus sunflowExportCmd::doIt(const MArgList& args) {
             case MFn::kCamera: {
                 std::cout << "Exporting camera: " << path.fullPathName().asChar() << " ..." << std::endl;
                 exportCamera(path, file);
+				if(!renderCameraExported){
+					renderCamera = path;
+					renderCameraExported = true;
+				}
+
             } break;
             case MFn::kDirectionalLight: {
                 if (!areObjectAndParentsVisible(path)) continue;
@@ -1346,13 +1380,35 @@ MStatus sunflowExportCmd::doIt(const MArgList& args) {
 	}
 	if(mode == "IPR")
 		args += "-ipr ";
-	args += "\"";
+	args += "-nogui -o imgpipe \"";
 	args += exportPath.asChar();
 	args += "\"";	
 	std::cout << cmd.asChar() << args.asChar() << std::endl;
 
 #ifdef _WIN32
-	ShellExecute( NULL, NULL, ( LPCTSTR ) cmd.asChar(), ( LPCTSTR ) args.asChar(), ( LPCTSTR ) sunflowPath, SW_SHOWNORMAL );
+	//ShellExecute( NULL, NULL, ( LPCTSTR ) cmd.asChar(), ( LPCTSTR ) args.asChar(), ( LPCTSTR ) sunflowPath, SW_SHOWNORMAL );
+	
+	MString cmdLine = "\""+cmd+" "+args+"\"";
+	std::cout << cmdLine << std::endl;
+	FILE *renderPipe;	
+	if( (renderPipe = _popen( cmdLine.asChar(), "rb" )) == NULL )
+		return MS::kFailure;
+	bucketToRenderView bucketObject;
+	bucketObject.renderPipe = renderPipe;
+	bucketObject.renderCamera = renderCamera;
+	while( !feof( renderPipe ) )
+	{
+		bucketObject.checkStream();
+	}
+
+	if (feof( renderPipe)){
+	printf( "\nProcess returned %d\n", _pclose( renderPipe ) );
+	}else{
+	printf( "Error: Failed to read the pipe to the end.\n");
+	}
+	// Close pipe and print return value of telnet 
+	std::cout << "\nProcess returned " << _pclose( renderPipe ) << std::endl;
+	
 #else
 	cmd = cmd + args + "&";
 	system(cmd.asChar());

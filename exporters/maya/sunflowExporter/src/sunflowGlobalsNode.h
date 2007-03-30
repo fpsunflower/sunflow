@@ -18,6 +18,7 @@ public:
 	static  void*		creator();
 	static  MStatus		initialize();
 
+	static	MObject		renderMode;
 	static	MObject		preset;
 	static	MObject		pixelFilter;
 	static	MObject		minSamples;

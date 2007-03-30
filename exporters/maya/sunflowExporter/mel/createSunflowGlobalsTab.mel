@@ -33,7 +33,7 @@ global proc updateMayaSunflowGlobalsUI()
 
 
 
-// enableMayaVectorLayout
+// enableSunflowLayout
 //
 // This callback function can be called when a checkBoxGrp checkbox 
 // controls the enabled state of a layout.  
@@ -582,7 +582,10 @@ global proc createSunflowGlobalsTab()
 
 	scrollLayout -horizontalScrollBarThickness 0 sunflowGlobalsTab;
 		columnLayout -adjustableColumn true sunflowTabColumn;
-
+			
+			// renderMode
+			attrControlGrp -label "Render Mode" -attribute ($sunflowGlobals + ".renderMode");
+			
 			// Sampling options
 			frameLayout -label "Sampling"
 				-collapsable  true 

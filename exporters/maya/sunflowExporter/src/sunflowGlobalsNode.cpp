@@ -9,6 +9,7 @@
 
 MTypeId sunflowGlobalsNode::id( 0x00114153 );
 
+MObject sunflowGlobalsNode::renderMode;
 MObject sunflowGlobalsNode::preset;
 MObject sunflowGlobalsNode::pixelFilter;
 MObject sunflowGlobalsNode::minSamples;
@@ -55,6 +56,14 @@ MStatus sunflowGlobalsNode::initialize(){
 	MFnEnumAttribute	enumAttr;
 	MFnNumericAttribute	numericAttr;
 	MFnMessageAttribute skyAttr;
+
+	renderMode = enumAttr.create( "renderMode", "rm", 0, &stat );
+	stat = enumAttr.addField( "render", 0 );
+	stat = enumAttr.addField( "ipr", 1 );
+	stat = enumAttr.addField( "file", 2 );
+
+	stat = addAttribute (renderMode);
+	if (!stat) { stat.perror("addAttribute renderMode"); return stat;}
 
 	preset = enumAttr.create( "preset", "p", 0, &stat );
 	stat = enumAttr.addField( "draft", 0 );

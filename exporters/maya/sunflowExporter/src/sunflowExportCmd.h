@@ -43,6 +43,8 @@ public:
 	bool	getBumpFromShader(MFnDependencyNode& node, MString &texturePath, float &depth, MObject &bumpObject);
 	MObjectArray shaderList;
 	bool findShaderInList(MString shader);
+
+	MDagPath renderCamera;
 };
 
 #endif /* SUNFLOW_EXPORT_CMD_H */

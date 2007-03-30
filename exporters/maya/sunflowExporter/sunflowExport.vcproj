@@ -14,9 +14,9 @@
 	</ToolFiles>
 	<Configurations>
 		<Configuration
-			Name="Debug|Win32"
-			OutputDirectory="Debug"
-			IntermediateDirectory="Debug"
+			Name="Maya_8.5_Debug|Win32"
+			OutputDirectory="build\$(ConfigurationName)"
+			IntermediateDirectory="build\$(ConfigurationName)"
 			ConfigurationType="2"
 			>
 			<Tool
@@ -41,7 +41,7 @@
 				AdditionalIncludeDirectories="$(MAYA_LOCATION)\include"
 				PreprocessorDefinitions="WIN32,_WIN32,_DEBUG,_WINDOWS,_AFXDLL,_MBCS,NT_PLUGIN,REQUIRE_IOSTREAM"
 				RuntimeLibrary="3"
-				PrecompiledHeaderFile="Debug/sunflowExport.pch"
+				PrecompiledHeaderFile="$(IntDir)/sunflowExport_85D_x32.pch"
 				WarningLevel="3"
 			/>
 			<Tool
@@ -57,10 +57,10 @@
 				Name="VCLinkerTool"
 				AdditionalOptions="/subsystem:windows /dll /incremental:yes /debug /machine:I386 /export:initializePlugin /export:uninitializePlugin"
 				AdditionalDependencies="OpenMaya.lib OpenMayaUI.lib Foundation.lib opengl32.lib"
-				OutputFile="bin/sunflowExport.mll"
+				OutputFile="bin/sunflowExport_85D_x32.mll"
 				AdditionalLibraryDirectories="$(MAYA_LOCATION)\lib"
-				ProgramDatabaseFile="Debug/sunflowExport.pdb"
-				ImportLibrary="Debug/sunflowExport.lib"
+				ProgramDatabaseFile="$(IntDir)/sunflowExport_85D_x32.pdb"
+				ImportLibrary="$(IntDir)/sunflowExport_85D_x32.lib"
 			/>
 			<Tool
 				Name="VCALinkTool"
@@ -88,10 +88,11 @@
 			/>
 		</Configuration>
 		<Configuration
-			Name="Release|Win32"
-			OutputDirectory="Release"
-			IntermediateDirectory="Release"
+			Name="Maya_8.5_Release|Win32"
+			OutputDirectory="build\$(ConfigurationName)"
+			IntermediateDirectory="build\$(ConfigurationName)"
 			ConfigurationType="2"
+			UseOfMFC="0"
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
@@ -114,8 +115,8 @@
 				Optimization="2"
 				AdditionalIncludeDirectories="$(MAYA_LOCATION)\include"
 				PreprocessorDefinitions="WIN32,NDEBUG,_WINDOWS,_AFXDLL,_MBCS,NT_PLUGIN,REQUIRE_IOSTREAM"
-				RuntimeLibrary="2"
-				PrecompiledHeaderFile="Release/sunflowExport.pch"
+				RuntimeLibrary="0"
+				PrecompiledHeaderFile="$(IntDir)/sunflowExport_85_x32.pch"
 				WarningLevel="3"
 			/>
 			<Tool
@@ -130,11 +131,11 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions="/subsystem:windows /incremental:no /machine:I386 /export:initializePlugin /export:uninitializePlugin"
-				AdditionalDependencies="odbc32.lib odbccp32.lib OpenMaya.lib OpenMayaUI.lib Foundation.lib opengl32.lib"
-				OutputFile="bin\sunflowExport.mll"
+				AdditionalDependencies="odbc32.lib odbccp32.lib OpenMaya.lib OpenMayaUI.lib OpenMayaRender.lib Foundation.lib opengl32.lib"
+				OutputFile="bin/sunflowExport_85_x32.mll"
 				AdditionalLibraryDirectories="$(MAYA_LOCATION)\lib"
-				ProgramDatabaseFile="Release/sunflowExport.pdb"
-				ImportLibrary="Release/sunflowExport.lib"
+				ProgramDatabaseFile="$(IntDir)/sunflowExport_85_x32.pdb"
+				ImportLibrary="$(IntDir)/sunflowExport_85_x32.lib"
 			/>
 			<Tool
 				Name="VCALinkTool"
@@ -162,9 +163,9 @@
 			/>
 		</Configuration>
 		<Configuration
-			Name="sunflow Maya 7.0 debug|Win32"
-			OutputDirectory="$(ConfigurationName)"
-			IntermediateDirectory="$(ConfigurationName)"
+			Name="Maya_7.0_Debug|Win32"
+			OutputDirectory="build\$(ConfigurationName)"
+			IntermediateDirectory="build\$(ConfigurationName)"
 			ConfigurationType="2"
 			>
 			<Tool
@@ -186,10 +187,10 @@
 				Name="VCCLCompilerTool"
 				AdditionalOptions="/Gm /GX /ZI /I &quot;.&quot; /D &quot;WIN32&quot; /D &quot;_DEBUG&quot; /YX /GZ /c"
 				Optimization="0"
-				AdditionalIncludeDirectories="$(MAYA_LOCATION)\include"
+				AdditionalIncludeDirectories="&quot;C:\Program Files\Alias\Maya7\include&quot;"
 				PreprocessorDefinitions="WIN32,_WIN32,_DEBUG,_WINDOWS,_AFXDLL,_MBCS,NT_PLUGIN,REQUIRE_IOSTREAM"
 				RuntimeLibrary="3"
-				PrecompiledHeaderFile="Debug/sunflowExport.pch"
+				PrecompiledHeaderFile="$(IntDir)/sunflowExport_70D_x32.pch"
 				WarningLevel="3"
 			/>
 			<Tool
@@ -205,10 +206,232 @@
 				Name="VCLinkerTool"
 				AdditionalOptions="/subsystem:windows /dll /incremental:yes /debug /machine:I386 /export:initializePlugin /export:uninitializePlugin"
 				AdditionalDependencies="OpenMaya.lib OpenMayaUI.lib Foundation.lib opengl32.lib"
-				OutputFile="bin/sunflowExport.mll"
-				AdditionalLibraryDirectories="$(MAYA_LOCATION)\lib"
-				ProgramDatabaseFile="Debug/sunflowExport.pdb"
-				ImportLibrary="Debug/sunflowExport.lib"
+				OutputFile="bin/sunflowExport_70D_x32.mll"
+				AdditionalLibraryDirectories="&quot;C:\Program Files\Alias\Maya7\lib&quot;"
+				ProgramDatabaseFile="$(IntDir)/sunflowExport_70D_x32.pdb"
+				ImportLibrary="$(IntDir)/sunflowExport_70D_x32.lib"
+			/>
+			<Tool
+				Name="VCALinkTool"
+			/>
+			<Tool
+				Name="VCManifestTool"
+			/>
+			<Tool
+				Name="VCXDCMakeTool"
+			/>
+			<Tool
+				Name="VCBscMakeTool"
+			/>
+			<Tool
+				Name="VCFxCopTool"
+			/>
+			<Tool
+				Name="VCAppVerifierTool"
+			/>
+			<Tool
+				Name="VCWebDeploymentTool"
+			/>
+			<Tool
+				Name="VCPostBuildEventTool"
+			/>
+		</Configuration>
+		<Configuration
+			Name="Maya_8.0_Debug|Win32"
+			OutputDirectory="build\$(ConfigurationName)"
+			IntermediateDirectory="build\$(ConfigurationName)"
+			ConfigurationType="2"
+			>
+			<Tool
+				Name="VCPreBuildEventTool"
+			/>
+			<Tool
+				Name="VCCustomBuildTool"
+			/>
+			<Tool
+				Name="VCXMLDataGeneratorTool"
+			/>
+			<Tool
+				Name="VCWebServiceProxyGeneratorTool"
+			/>
+			<Tool
+				Name="VCMIDLTool"
+			/>
+			<Tool
+				Name="VCCLCompilerTool"
+				AdditionalOptions="/Gm /GX /ZI /I &quot;.&quot; /D &quot;WIN32&quot; /D &quot;_DEBUG&quot; /YX /GZ /c"
+				Optimization="0"
+				AdditionalIncludeDirectories="&quot;C:\Program Files\Alias\Maya8.0\include&quot;"
+				PreprocessorDefinitions="WIN32,_WIN32,_DEBUG,_WINDOWS,_AFXDLL,_MBCS,NT_PLUGIN,REQUIRE_IOSTREAM"
+				RuntimeLibrary="3"
+				PrecompiledHeaderFile="$(IntDir)/sunflowExport_80D_x32.pch"
+				WarningLevel="3"
+			/>
+			<Tool
+				Name="VCManagedResourceCompilerTool"
+			/>
+			<Tool
+				Name="VCResourceCompilerTool"
+			/>
+			<Tool
+				Name="VCPreLinkEventTool"
+			/>
+			<Tool
+				Name="VCLinkerTool"
+				AdditionalOptions="/subsystem:windows /dll /incremental:yes /debug /machine:I386 /export:initializePlugin /export:uninitializePlugin"
+				AdditionalDependencies="OpenMaya.lib OpenMayaUI.lib Foundation.lib opengl32.lib"
+				OutputFile="bin/sunflowExport_80D_x32.mll"
+				AdditionalLibraryDirectories="&quot;C:\Program Files\Alias\Maya8.0\lib&quot;"
+				ProgramDatabaseFile="$(IntDir)/sunflowExport_80D_x32.pdb"
+				ImportLibrary="$(IntDir)/sunflowExport_80D_x32.lib"
+			/>
+			<Tool
+				Name="VCALinkTool"
+			/>
+			<Tool
+				Name="VCManifestTool"
+			/>
+			<Tool
+				Name="VCXDCMakeTool"
+			/>
+			<Tool
+				Name="VCBscMakeTool"
+			/>
+			<Tool
+				Name="VCFxCopTool"
+			/>
+			<Tool
+				Name="VCAppVerifierTool"
+			/>
+			<Tool
+				Name="VCWebDeploymentTool"
+			/>
+			<Tool
+				Name="VCPostBuildEventTool"
+			/>
+		</Configuration>
+		<Configuration
+			Name="Maya_8.0_Release|Win32"
+			OutputDirectory="build\$(ConfigurationName)"
+			IntermediateDirectory="build\$(ConfigurationName)"
+			ConfigurationType="2"
+			>
+			<Tool
+				Name="VCPreBuildEventTool"
+			/>
+			<Tool
+				Name="VCCustomBuildTool"
+			/>
+			<Tool
+				Name="VCXMLDataGeneratorTool"
+			/>
+			<Tool
+				Name="VCWebServiceProxyGeneratorTool"
+			/>
+			<Tool
+				Name="VCMIDLTool"
+			/>
+			<Tool
+				Name="VCCLCompilerTool"
+				AdditionalOptions="/GX /I &quot;.&quot; /YX /c"
+				Optimization="2"
+				AdditionalIncludeDirectories="&quot;C:\Program Files\Alias\Maya8.0\include&quot;"
+				PreprocessorDefinitions="WIN32,NDEBUG,_WINDOWS,_AFXDLL,_MBCS,NT_PLUGIN,REQUIRE_IOSTREAM"
+				RuntimeLibrary="2"
+				PrecompiledHeaderFile="$(IntDir)/sunflowExport_80_x32.pch"
+				WarningLevel="3"
+			/>
+			<Tool
+				Name="VCManagedResourceCompilerTool"
+			/>
+			<Tool
+				Name="VCResourceCompilerTool"
+			/>
+			<Tool
+				Name="VCPreLinkEventTool"
+			/>
+			<Tool
+				Name="VCLinkerTool"
+				AdditionalOptions="/subsystem:windows /incremental:no /machine:I386 /export:initializePlugin /export:uninitializePlugin"
+				AdditionalDependencies="odbc32.lib odbccp32.lib OpenMaya.lib OpenMayaUI.lib Foundation.lib opengl32.lib"
+				OutputFile="bin/sunflowExport_80_x32.mll"
+				AdditionalLibraryDirectories="&quot;C:\Program Files\Alias\Maya8.0\lib&quot;"
+				ProgramDatabaseFile="$(IntDir)/sunflowExport_80_x32.pdb"
+				ImportLibrary="$(IntDir)/sunflowExport_80_x32.lib"
+			/>
+			<Tool
+				Name="VCALinkTool"
+			/>
+			<Tool
+				Name="VCManifestTool"
+			/>
+			<Tool
+				Name="VCXDCMakeTool"
+			/>
+			<Tool
+				Name="VCBscMakeTool"
+			/>
+			<Tool
+				Name="VCFxCopTool"
+			/>
+			<Tool
+				Name="VCAppVerifierTool"
+			/>
+			<Tool
+				Name="VCWebDeploymentTool"
+			/>
+			<Tool
+				Name="VCPostBuildEventTool"
+			/>
+		</Configuration>
+		<Configuration
+			Name="Maya_7.0_Release|Win32"
+			OutputDirectory="build\$(ConfigurationName)"
+			IntermediateDirectory="build\$(ConfigurationName)"
+			ConfigurationType="2"
+			>
+			<Tool
+				Name="VCPreBuildEventTool"
+			/>
+			<Tool
+				Name="VCCustomBuildTool"
+			/>
+			<Tool
+				Name="VCXMLDataGeneratorTool"
+			/>
+			<Tool
+				Name="VCWebServiceProxyGeneratorTool"
+			/>
+			<Tool
+				Name="VCMIDLTool"
+			/>
+			<Tool
+				Name="VCCLCompilerTool"
+				AdditionalOptions="/GX /I &quot;.&quot; /YX /c"
+				Optimization="2"
+				AdditionalIncludeDirectories="&quot;C:\Program Files\Alias\Maya7\include&quot;"
+				PreprocessorDefinitions="WIN32,NDEBUG,_WINDOWS,_AFXDLL,_MBCS,NT_PLUGIN,REQUIRE_IOSTREAM"
+				RuntimeLibrary="2"
+				PrecompiledHeaderFile="$(IntDir)/sunflowExport_70_x32.pch"
+				WarningLevel="3"
+			/>
+			<Tool
+				Name="VCManagedResourceCompilerTool"
+			/>
+			<Tool
+				Name="VCResourceCompilerTool"
+			/>
+			<Tool
+				Name="VCPreLinkEventTool"
+			/>
+			<Tool
+				Name="VCLinkerTool"
+				AdditionalOptions="/subsystem:windows /incremental:no /machine:I386 /export:initializePlugin /export:uninitializePlugin"
+				AdditionalDependencies="odbc32.lib odbccp32.lib OpenMaya.lib OpenMayaUI.lib Foundation.lib opengl32.lib"
+				OutputFile="bin/sunflowExport_70_x32.mll"
+				AdditionalLibraryDirectories="&quot;C:\Program Files\Alias\Maya7\lib&quot;"
+				ProgramDatabaseFile="$(IntDir)/sunflowExport_70_x32.pdb"
+				ImportLibrary="$(IntDir)/sunflowExport_70_x32.lib"
 			/>
 			<Tool
 				Name="VCALinkTool"
@@ -252,6 +475,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\src\sunflowBucketToRenderView.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\src\sunflowConstants.cpp"
 				>
 			</File>
@@ -278,6 +505,10 @@
 			>
 			<File
 				RelativePath=".\src\skylight.h"
+				>
+			</File>
+			<File
+				RelativePath=".\src\sunflowBucketToRenderView.h"
 				>
 			</File>
 			<File
