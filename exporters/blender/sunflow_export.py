@@ -1,14 +1,14 @@
 #!BPY
 
 """
-Name: 'Sunflow Exporter 1.1.0 (.sc)...'
+Name: 'Sunflow Exporter 1.1.1 (.sc)...'
 Blender: 2.43
 Group: 'Export'
 Tip: ''
 """
 
 """
-Version         :       1.1.0 (March 2007)
+Version         :       1.1.1 (March 2007)
 Author          :       R Lindsay (hayfever) / Christopher Kulla / MADCello / 
 			olivS / Eugene Reilly / Heavily Tessellated / Humfred
 Description     :       Export to Sunflow renderer http://sunflow.sourceforge.net/
@@ -18,7 +18,7 @@ Description     :       Export to Sunflow renderer http://sunflow.sourceforge.ne
 ##  imports  ##
 ###############
 
-import Blender, os, sys, time
+import Blender, os, sys, time, subprocess
 
 from Blender import Mathutils, NMesh, Lamp, Object, Scene, Mesh, Material, Draw, BGL
 from math import *
@@ -194,7 +194,7 @@ JAVAPATH = ""
 #######################
 
 print "\n\n"
-print "blend2sunflow v1.1.0"
+print "blend2sunflow v1.1.1"
 
 ## Export logic for simple options ##
 #####################################
@@ -1580,7 +1580,7 @@ def render():
 			COMMAND="%s -nogui %s%s%s%s%s%s%s -o \"%s.%s\" \"%s\"" % (EXEC, option2, option3, option4, option5, option6, option7, option8, destname, ext, fname)
                         print COMMAND
 		# Execute the command:
-		pid=os.system(COMMAND)
+		pid = subprocess.Popen(args=COMMAND, shell=True)
 	
 ## GUI button event handler ##
 ##############################
@@ -1839,19 +1839,20 @@ def buttonEvent(evt):
 		print "  o Finished sending settings."
 		return
 	if evt == IMPORT_ID:
-                if SCENE.properties.has_key('SceneProp'):            
-                        print "  o Script settings found in .blend, importing to script..."
-                	import_output()
-        		import_gi()
-                	import_globalao()
-        		import_lights()
-                	import_camera()
-                	import_render()
-			print "  o Finished importing script settings to script."
-			return
-                else:
-                	print "  o No script settings in .blend, using defaults."
-			return
+                try:
+                        if SCENE.properties['SceneProp'] == "true":            
+                                print "  o Script settings found in .blend, importing to script..."
+                        	import_output()
+        			import_gi()
+                        	import_globalao()
+        			import_lights()
+                        	import_camera()
+                                import_render()
+                                print "  o Finished importing script settings." 
+        	except: 
+                	print "  o No script settings in .blend, using defaults."             
+
+		return
 
 ## Draws the individual panels ##
 #################################
@@ -2015,7 +2016,7 @@ def drawConfig():
 	global SET_PATH, THREADS, MEM, SET_JAVAPATH
         col=10; line = 315; BGL.glRasterPos2i(col, line); Draw.Text("ID properties for script settings:")
         col= 10; line = 285; Draw.Button("Send Script Settings", EXPORT_ID, col, line, 140,18, "Send script settings to the .blend")
-        col= 155; line = 285; Draw.Button("Import Script Settings", IMPORT_ID, col, line, 140,18, "Import script setting from the .blend")
+        col= 155; line = 285; Draw.Button("Import Script Settings", IMPORT_ID, col, line, 140,18, "Import script setting from .blend")
         col=10; line = 255; BGL.glRasterPos2i(col, line); Draw.Text("Settings needed to render directly from the script:")
 	col=155; line = 230; BGL.glRasterPos2i(col, line); Draw.Text("(threads=0 means auto-detect)")
 	col=10; line = 225; THREADS=Draw.Number("Threads", 2, col, line, 140, 18, THREADS.val, 0, 8)
@@ -2110,5 +2111,5 @@ def drawButtons():
 	Draw.Button("Background", CHANGE_BCKGRD,305, 10, 90, 20)
 	Draw.Button("Render settings", CHANGE_EXP, 400, 10, 90, 50)
 
-SCREEN=0
+SCREEN=7
 Draw.Register(drawGUI, event, buttonEvent)
