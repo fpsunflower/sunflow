@@ -1,14 +1,14 @@
 #!BPY
 
 """
-Name: 'Sunflow Exporter 1.1.1 (.sc)...'
+Name: 'Sunflow Exporter 1.1.2 (.sc)...'
 Blender: 2.43
 Group: 'Export'
 Tip: ''
 """
 
 """
-Version         :       1.1.1 (March 2007)
+Version         :       1.1.2 (March 2007)
 Author          :       R Lindsay (hayfever) / Christopher Kulla / MADCello / 
 			olivS / Eugene Reilly / Heavily Tessellated / Humfred
 Description     :       Export to Sunflow renderer http://sunflow.sourceforge.net/
@@ -18,7 +18,7 @@ Description     :       Export to Sunflow renderer http://sunflow.sourceforge.ne
 ##  imports  ##
 ###############
 
-import Blender, os, sys, time, subprocess
+import Blender, os, sys, time
 
 from Blender import Mathutils, NMesh, Lamp, Object, Scene, Mesh, Material, Draw, BGL
 from math import *
@@ -194,7 +194,7 @@ JAVAPATH = ""
 #######################
 
 print "\n\n"
-print "blend2sunflow v1.1.1"
+print "blend2sunflow v1.1.2"
 
 ## Export logic for simple options ##
 #####################################
@@ -478,7 +478,7 @@ def export_gi():
         		print "o exporting Path Tracing GI settings..."
         		FILE.write("\ngi {\n")
         		FILE.write("\ttype path\n")
-        		FILE.write("\tsamples %s\n" % SCENE.properties['Path Tracing Samples'])
+        		FILE.write("\tsamples %s\n" % PATHSAMPLES.val)
         		FILE.write("}\n")
         	#View Overrides
                 if VIEWCAUSTICS.val == 1:
@@ -1580,7 +1580,7 @@ def render():
 			COMMAND="%s -nogui %s%s%s%s%s%s%s -o \"%s.%s\" \"%s\"" % (EXEC, option2, option3, option4, option5, option6, option7, option8, destname, ext, fname)
                         print COMMAND
 		# Execute the command:
-		pid = subprocess.Popen(args=COMMAND, shell=True)
+		pid=os.system(COMMAND)
 	
 ## GUI button event handler ##
 ##############################
