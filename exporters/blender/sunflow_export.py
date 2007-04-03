@@ -1,14 +1,14 @@
 #!BPY
 
 """
-Name: 'Sunflow Exporter 1.1.3 (.sc)...'
+Name: 'Sunflow Exporter 1.1.4 (.sc)...'
 Blender: 2.43
 Group: 'Export'
 Tip: ''
 """
 
 """
-Version         :       1.1.3 (March 2007)
+Version         :       1.1.4 (March 2007)
 Author          :       R Lindsay (hayfever) / Christopher Kulla / MADCello / 
 			olivS / Eugene Reilly / Heavily Tessellated / Humfred
 Description     :       Export to Sunflow renderer http://sunflow.sourceforge.net/
@@ -194,7 +194,7 @@ JAVAPATH = ""
 #######################
 
 print "\n\n"
-print "blend2sunflow v1.1.3"
+print "blend2sunflow v1.1.4"
 
 ## Export logic for simple options ##
 #####################################
@@ -465,14 +465,14 @@ def export_gi():
         		FILE.write("\tsamples %s\n" % IRRSAMPLES.val)
         		FILE.write("\ttolerance %s\n" % IRRTOLERANCE.val)
         		FILE.write("\tspacing %s %s\n" % (IRRSPACEMIN.val, IRRSPACEMAX.val))
-		if IRRCACHE.val == 1 and USEGLOBALS.val == 0:
-			FILE.write("}\n")
-        	#No Path Tracing on Secondary Bounces in Irradiance Cache Settings
-                if IRRCACHE.val == 1 and USEGLOBALS.val == 1:
-                        FILE.write("\tglobal %s" % gPHOTONNUMBER.val)
-        		FILE.write(" %s " % gPHOTONMAPLIST[gPHOTONMAP.val-1])
-        		FILE.write("%s %s\n" % (gPHOTONESTIMATE.val, gPHOTONRADIUS.val))
-        		FILE.write("}\n")
+                        if USEGLOBALS.val == 0:
+        			FILE.write("}\n")
+                	#No Path Tracing on Secondary Bounces in Irradiance Cache Settings
+                        if USEGLOBALS.val == 1:
+                                FILE.write("\tglobal %s" % gPHOTONNUMBER.val)
+                                FILE.write(" %s " % gPHOTONMAPLIST[gPHOTONMAP.val-1])
+                                FILE.write("%s %s\n" % (gPHOTONESTIMATE.val, gPHOTONRADIUS.val))
+                                FILE.write("}\n")
         	#Path Tracing GI Settings
         	if PATHTRACE.val == 1:
         		print "o exporting Path Tracing GI settings..."
