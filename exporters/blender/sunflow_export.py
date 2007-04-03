@@ -1,14 +1,14 @@
 #!BPY
 
 """
-Name: 'Sunflow Exporter 1.1.4 (.sc)...'
+Name: 'Sunflow Exporter 1.1.5 (.sc)...'
 Blender: 2.43
 Group: 'Export'
 Tip: ''
 """
 
 """
-Version         :       1.1.4 (March 2007)
+Version         :       1.1.5 (March 2007)
 Author          :       R Lindsay (hayfever) / Christopher Kulla / MADCello / 
 			olivS / Eugene Reilly / Heavily Tessellated / Humfred
 Description     :       Export to Sunflow renderer http://sunflow.sourceforge.net/
@@ -194,7 +194,7 @@ JAVAPATH = ""
 #######################
 
 print "\n\n"
-print "blend2sunflow v1.1.4"
+print "blend2sunflow v1.1.5"
 
 ## Export logic for simple options ##
 #####################################
@@ -1841,20 +1841,21 @@ def buttonEvent(evt):
 		print "  o Finished sending settings."
 		return
 	if evt == IMPORT_ID:
-                try:
-                        if SCENE.properties['SceneProp'] == "true":            
-                                print "  o Script settings found in .blend, importing to script..."
-                        	import_output()
-        			import_gi()
-                        	import_globalao()
-        			import_lights()
-                        	import_camera()
-                                import_render()
-                                print "  o Finished importing script settings." 
-        	except: 
-                	print "  o No script settings in .blend, using defaults."             
+		if SCENE.properties.has_key('SceneProp'):
+			print "  o Script settings found in .blend, importing to script..."
+			import_output()
+			import_gi()
+			import_globalao()
+			import_lights()
+			import_camera()
+			import_render()
+			print "  o Finished importing script settings to script."
+			return
+ 		else:
+			print "  o No script settings in .blend, using defaults."
+			return
+	
 
-		return
 
 ## Draws the individual panels ##
 #################################
