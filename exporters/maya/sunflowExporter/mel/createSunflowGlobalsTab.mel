@@ -367,7 +367,7 @@ global proc updateSunflowEnvironmentFrameUI()
 global proc createAndConnectSunSky(string $sunflowGlobals){
 	string $prefix = sunflowGetPrefix();	
 	string $nodes[] = sunflowCreateSunSky();
-	connectAttr -f ($nodes[1]+".message") ($sunflowGlobals + ".skyNode");
+	connectAttr -f ($nodes[1]+".message") ($sunflowGlobals + ".skyNode");	
 	updateSunflowEnvironmentFrameUI;
 }
 

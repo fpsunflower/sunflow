@@ -829,9 +829,9 @@ MStatus sunflowExportCmd::doIt(const MArgList& args) {
 			MFnDependencyNode skyNode(connectedPlugs[0].node());
 			paramPlug = skyNode.findPlug( "sunLight", &status );
 			if(paramPlug.connectedTo(connectedPlugs,true,false,&status) && connectedPlugs.length()){
-				if(connectedPlugs[0].node().apiType() == MFn::kDirectionalLight){
+				if(connectedPlugs[0].node().apiType() == MFn::kDirectionalLight){					
 					std::cout << "SunLight: " << connectedPlugs[0].name().asChar() << endl;
-					MFnDirectionalLight light(connectedPlugs[0].node());					
+					MFnDirectionalLight light(connectedPlugs[0].node());
 					MFloatVector dir(light.lightDirection(0,MSpace::kWorld, &status));					
 					float turbidity;
 					getCustomAttribute(turbidity, "skyTurbidity", globals);
@@ -1256,9 +1256,12 @@ MStatus sunflowExportCmd::doIt(const MArgList& args) {
 
             } break;
             case MFn::kDirectionalLight: {
-                if (!areObjectAndParentsVisible(path)) continue;
-                std::cout << "Exporting Directional Light: " << path.fullPathName().asChar() << " ..." << std::endl;
+				if (!areObjectAndParentsVisible(path)) continue;               
 				MFnDirectionalLight light(path);
+				MPlug paramPlug = light.findPlug( "isSunSkyLight", &status );
+				if ( status == MS::kSuccess ) continue;
+
+				std::cout << "Exporting Directional Light: " << path.fullPathName().asChar() << " ..." << std::endl;
 				MFloatVector dir(light.lightDirection(0,MSpace::kWorld, &status)*light.centerOfIllumination());				
 				MMatrix o2w = path.inclusiveMatrix();
 				MPoint source; source.x=o2w[3][0];source.y=o2w[3][1];source.z=o2w[3][2];
@@ -1341,7 +1344,6 @@ MStatus sunflowExportCmd::doIt(const MArgList& args) {
 
     std::cout << "Launching sunflow with JVM options: " << javaArgs << std::endl;
     
-	//MString cmd("c:/PROGRA~1/java/jdk1.6.0/bin/java -cp c:/temp/sunflow/classes;c:/temp/sunflow/janino.jar -server -Xmx1024M SunflowGUI "); //For testing dev versions
 	MString cmd("\"");
     cmd += javaPath;
 	cmd +="/java\"";
@@ -1384,14 +1386,19 @@ MStatus sunflowExportCmd::doIt(const MArgList& args) {
 	args += "\"";	
 	std::cout << cmd.asChar() << args.asChar() << std::endl;
 
-//#ifdef _WIN32
+
 	//ShellExecute( NULL, NULL, ( LPCTSTR ) cmd.asChar(), ( LPCTSTR ) args.asChar(), ( LPCTSTR ) sunflowPath, SW_SHOWNORMAL );
 	
+	FILE *renderPipe;
+#ifdef _WIN32
+	MString cmdLine = "\"" + cmd+" "+args+"\"";
+	if( (renderPipe = _popen( cmdLine.asChar(), "rb" )) == NULL )
+		return MS::kFailure;
+#else
 	MString cmdLine = "" + cmd+" "+args;
-	std::cout << cmdLine << std::endl;
-	FILE *renderPipe;	
 	if( (renderPipe = popen( cmdLine.asChar(), "r" )) == NULL )
 		return MS::kFailure;
+#endif
 	bucketToRenderView bucketObject;
 	bucketObject.renderPipe = renderPipe;
 	bucketObject.renderCamera = renderCamera;
@@ -1399,19 +1406,23 @@ MStatus sunflowExportCmd::doIt(const MArgList& args) {
 	{
 		bucketObject.checkStream();
 	}
-    int returnCode = pclose(renderPipe);
-	if (feof( renderPipe)){
-	printf( "\nProcess returned %d\n", returnCode );
-	}else{
-	printf( "Error: Failed to read the pipe to the end.\n");
-	}
-	// Close pipe and print return value of telnet 
-	std::cout << "\nProcess returned " << returnCode << std::endl;
-	/*
+#ifdef _WIN32
+    int returnCode = _pclose(renderPipe);
 #else
+	int returnCode = pclose(renderPipe);
+#endif
+	if (feof( renderPipe)){
+		printf( "\nProcess returned %d\n", returnCode );
+	}else{
+		printf( "Error: Failed to read the pipe to the end.\n");
+	}
+	// Close pipe and print return value 
+	std::cout << "\nProcess returned " << returnCode << std::endl;	
+
+/*
 	cmd = cmd + args + "&";
 	system(cmd.asChar());
-#endif
+
 */
     return MS::kSuccess;
 }

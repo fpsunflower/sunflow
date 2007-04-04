@@ -4,6 +4,7 @@
 	Version="8,00"
 	Name="sunflowExport"
 	ProjectGUID="{CD4CF0BD-AE53-48D8-9152-B34A2E397FC6}"
+	RootNamespace="sunflowExport"
 	>
 	<Platforms>
 		<Platform
@@ -56,7 +57,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions="/subsystem:windows /dll /incremental:yes /debug /machine:I386 /export:initializePlugin /export:uninitializePlugin"
-				AdditionalDependencies="OpenMaya.lib OpenMayaUI.lib Foundation.lib opengl32.lib"
+				AdditionalDependencies="odbc32.lib odbccp32.lib OpenMaya.lib OpenMayaUI.lib OpenMayaRender.lib Foundation.lib opengl32.lib"
 				OutputFile="bin/sunflowExport_85D_x32.mll"
 				AdditionalLibraryDirectories="$(MAYA_LOCATION)\lib"
 				ProgramDatabaseFile="$(IntDir)/sunflowExport_85D_x32.pdb"
@@ -205,7 +206,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions="/subsystem:windows /dll /incremental:yes /debug /machine:I386 /export:initializePlugin /export:uninitializePlugin"
-				AdditionalDependencies="OpenMaya.lib OpenMayaUI.lib Foundation.lib opengl32.lib"
+				AdditionalDependencies="odbc32.lib odbccp32.lib OpenMaya.lib OpenMayaUI.lib OpenMayaRender.lib Foundation.lib opengl32.lib"
 				OutputFile="bin/sunflowExport_70D_x32.mll"
 				AdditionalLibraryDirectories="&quot;C:\Program Files\Alias\Maya7\lib&quot;"
 				ProgramDatabaseFile="$(IntDir)/sunflowExport_70D_x32.pdb"
@@ -279,7 +280,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions="/subsystem:windows /dll /incremental:yes /debug /machine:I386 /export:initializePlugin /export:uninitializePlugin"
-				AdditionalDependencies="OpenMaya.lib OpenMayaUI.lib Foundation.lib opengl32.lib"
+				AdditionalDependencies="odbc32.lib odbccp32.lib OpenMaya.lib OpenMayaUI.lib OpenMayaRender.lib Foundation.lib opengl32.lib"
 				OutputFile="bin/sunflowExport_80D_x32.mll"
 				AdditionalLibraryDirectories="&quot;C:\Program Files\Alias\Maya8.0\lib&quot;"
 				ProgramDatabaseFile="$(IntDir)/sunflowExport_80D_x32.pdb"
@@ -353,7 +354,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions="/subsystem:windows /incremental:no /machine:I386 /export:initializePlugin /export:uninitializePlugin"
-				AdditionalDependencies="odbc32.lib odbccp32.lib OpenMaya.lib OpenMayaUI.lib Foundation.lib opengl32.lib"
+				AdditionalDependencies="odbc32.lib odbccp32.lib OpenMaya.lib OpenMayaUI.lib OpenMayaRender.lib Foundation.lib opengl32.lib"
 				OutputFile="bin/sunflowExport_80_x32.mll"
 				AdditionalLibraryDirectories="&quot;C:\Program Files\Alias\Maya8.0\lib&quot;"
 				ProgramDatabaseFile="$(IntDir)/sunflowExport_80_x32.pdb"
@@ -427,7 +428,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions="/subsystem:windows /incremental:no /machine:I386 /export:initializePlugin /export:uninitializePlugin"
-				AdditionalDependencies="odbc32.lib odbccp32.lib OpenMaya.lib OpenMayaUI.lib Foundation.lib opengl32.lib"
+				AdditionalDependencies="odbc32.lib odbccp32.lib OpenMaya.lib OpenMayaUI.lib OpenMayaRender.lib Foundation.lib opengl32.lib"
 				OutputFile="bin/sunflowExport_70_x32.mll"
 				AdditionalLibraryDirectories="&quot;C:\Program Files\Alias\Maya7\lib&quot;"
 				ProgramDatabaseFile="$(IntDir)/sunflowExport_70_x32.pdb"
