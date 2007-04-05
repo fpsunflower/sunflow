@@ -1,14 +1,14 @@
 #!BPY
 
 """
-Name: 'Sunflow Exporter 1.1.5 (.sc)...'
+Name: 'Sunflow Exporter 1.1.6 (.sc)...'
 Blender: 2.43
 Group: 'Export'
 Tip: ''
 """
 
 """
-Version         :       1.1.5 (March 2007)
+Version         :       1.1.6 (April 2007)
 Author          :       R Lindsay (hayfever) / Christopher Kulla / MADCello / 
 			olivS / Eugene Reilly / Heavily Tessellated / Humfred
 Description     :       Export to Sunflow renderer http://sunflow.sourceforge.net/
@@ -62,6 +62,7 @@ SUN_SAMPLES = Draw.Create(16)
 IBL = Draw.Create(0)
 IBLLOCK = Draw.Create(0)
 IBLSAMPLES = Draw.Create(16)
+INFINITEPLANE = Draw.Create(0)
 
 # Light panel
 MESHLIGHTPOWER = Draw.Create(100)
@@ -194,7 +195,7 @@ JAVAPATH = ""
 #######################
 
 print "\n\n"
-print "blend2sunflow v1.1.5"
+print "blend2sunflow v1.1.6"
 
 ## Export logic for simple options ##
 #####################################
@@ -468,8 +469,8 @@ def export_gi():
                         if USEGLOBALS.val == 0:
         			FILE.write("}\n")
                 	#No Path Tracing on Secondary Bounces in Irradiance Cache Settings
-                        if USEGLOBALS.val == 1:
-                                FILE.write("\tglobal %s" % gPHOTONNUMBER.val)
+                        else:
+				FILE.write("\tglobal %s" % gPHOTONNUMBER.val)
                                 FILE.write(" %s " % gPHOTONMAPLIST[gPHOTONMAP.val-1])
                                 FILE.write("%s %s\n" % (gPHOTONESTIMATE.val, gPHOTONRADIUS.val))
                                 FILE.write("}\n")
@@ -795,6 +796,10 @@ def def_lights():
 		SCENE.properties['Sun Lamp'] = "false"
 	SCENE.properties['Sun Turbidity'] = SUN_TURB.val
 	SCENE.properties['Sun Samples'] = SUN_SAMPLES.val
+	if INFINITEPLANE.val == 1:
+        	SCENE.properties['Infinite Plane'] = "true"
+	else:
+		SCENE.properties['Infinite Plane'] = "false"
 	
 
 def import_lights():
@@ -829,6 +834,12 @@ def import_lights():
                         Draw.Redraw()                
                 SUN_TURB.val = SCENE.properties['Sun Turbidity']
                 SUN_SAMPLES.val = SCENE.properties['Sun Samples']
+		if SCENE.properties['Infinite Plane'] == "true":
+                        INFINITEPLANE.val = 1
+                        Draw.Redraw()
+                else:
+                        INFINITEPLANE.val = 0
+                        Draw.Redraw()   
 
 def export_lights(lmp):
 
@@ -1276,6 +1287,13 @@ def export_geometry(obj):
 						FILE.write("\t\t%d\n" % (face.materialIndex))
 			
 		FILE.write("}\n")
+
+		if INFINITEPLANE.val == 1:
+			FILE.write("\n\nobject {\n")
+                        FILE.write("\tshader def\n")
+                        FILE.write("\ttype plane\n")
+                        FILE.write("\tp 0 0 0\n")
+                        FILE.write("\tn 0 0 1\n}\n")
 
 ########################
 ## Main export method ##
@@ -1912,7 +1930,7 @@ def drawCamera():
 #############################
 
 def drawBackground():
-	global IMP_BCKGRD, IMP_SUN, BACKGROUND, BCKGRDR, BCKGRDG, BCKGRDB, IBL, IBLLOCK, IBLSAMPLES, SUN_TURB, SUN_SAMPLES
+	global IMP_BCKGRD, IMP_SUN, BACKGROUND, BCKGRDR, BCKGRDG, BCKGRDB, IBL, IBLLOCK, IBLSAMPLES, SUN_TURB, SUN_SAMPLES, INFINITEPLANE
 	col=10; line=225; BGL.glRasterPos2i(col, line); Draw.Text("Simple background:")
 	col=10; line=200; IMP_BCKGRD=Draw.Toggle("Import World", BCKGRD_EVENT, col, line, 120, 18, IMP_BCKGRD.val, "Set World's Horizon color as background")
 	col=10; line=175; BACKGROUND=Draw.Toggle("Create Background", CBCKGRD_EVENT, col, line, 120, 18, BACKGROUND.val, "Define a background color")
@@ -1927,6 +1945,7 @@ def drawBackground():
 	col=10; line=75; IMP_SUN=Draw.Toggle("Import Sun", SUN_EVENT, col, line, 120, 18, IMP_SUN.val, "Import existing Sun")
 	col=140; line=75; SUN_TURB=Draw.Number("Turbidity", 2, col, line, 120, 18, SUN_TURB.val, 0.0, 32.0)
 	col=270; SUN_SAMPLES=Draw.Number("Samples", 2, col, line, 120, 18, SUN_SAMPLES.val, 1, 10000)
+	col=400; INFINITEPLANE=Draw.Toggle("Infinite Plane", 2, col, line, 120, 18, INFINITEPLANE.val, "Use an infinite plane in the scene")	
 	drawButtons()
 
 ## Draw light options ##
@@ -2023,7 +2042,7 @@ def drawConfig():
         col=10; line = 255; BGL.glRasterPos2i(col, line); Draw.Text("Settings needed to render directly from the script:")
 	col=155; line = 230; BGL.glRasterPos2i(col, line); Draw.Text("(threads=0 means auto-detect)")
 	col=10; line = 225; THREADS=Draw.Number("Threads", 2, col, line, 140, 18, THREADS.val, 0, 8)
-	col=10; line = 200; MEM=Draw.Number("Memory (MB)", 2, col, line, 140, 18, MEM.val, 256, 2048)
+	col=10; line = 200; MEM=Draw.Number("Memory (MB)", 2, col, line, 140, 18, MEM.val, 256, 4096)
 	col= 10; line = 175; Draw.Button("Save SF Path & Settings", SET_PATH, col, line, 140,18)
 	col= 10; line = 150; Draw.Button("Save Java Path", SET_JAVAPATH, col, line, 140,18)
 	col=155; line = 155; BGL.glRasterPos2i(col, line); Draw.Text("Set Java path after Sunflow path")
