@@ -1,14 +1,14 @@
 #!BPY
 
 """
-Name: 'Sunflow Exporter 1.1.6 (.sc)...'
+Name: 'Sunflow Exporter 1.1.7 (.sc)...'
 Blender: 2.43
 Group: 'Export'
 Tip: ''
 """
 
 """
-Version         :       1.1.6 (April 2007)
+Version         :       1.1.7 (April 2007)
 Author          :       R Lindsay (hayfever) / Christopher Kulla / MADCello / 
 			olivS / Eugene Reilly / Heavily Tessellated / Humfred
 Description     :       Export to Sunflow renderer http://sunflow.sourceforge.net/
@@ -63,6 +63,7 @@ IBL = Draw.Create(0)
 IBLLOCK = Draw.Create(0)
 IBLSAMPLES = Draw.Create(16)
 INFINITEPLANE = Draw.Create(0)
+IPLANECOLOR = Draw.Create(1.0, 1.0, 1.0)
 
 # Light panel
 MESHLIGHTPOWER = Draw.Create(100)
@@ -170,6 +171,7 @@ SHADER_TYPE = 38
 SHAD_OK = 39
 EXPORT_ID = 40
 IMPORT_ID = 41
+IP_COLOR = 42
 
 ## Lists ##
 ###########
@@ -195,7 +197,7 @@ JAVAPATH = ""
 #######################
 
 print "\n\n"
-print "blend2sunflow v1.1.6"
+print "blend2sunflow v1.1.7"
 
 ## Export logic for simple options ##
 #####################################
@@ -542,7 +544,10 @@ def import_globalao():
 def export_shaders():
 	print "o exporting shaders..."
 	# default shader
-	FILE.write("\n\nshader {\n\tname def\n\ttype diffuse\n\tdiff  1 1 1\n}")
+	FILE.write("\n\nshader {\n\tname def\n\ttype diffuse\n\tdiff 1 1 1\n}")
+	if INFINITEPLANE.val == 1:
+		FILE.write("\n\nshader {\n\tname iplane\n\ttype diffuse\n")
+		FILE.write("\tdiff %s %s %s \n}" % IPLANECOLOR.val)
 	if OCCLUSION.val == 1:
 		FILE.write("\n\nshader {\n   name amboccshader\n   type amb-occ2\n")
 		FILE.write("\tbright { \"sRGB nonlinear\" %s %s %s }\n" % (OCCBRIGHTR.val, OCCBRIGHTG.val, OCCBRIGHTB.val))
@@ -796,15 +801,16 @@ def def_lights():
 		SCENE.properties['Sun Lamp'] = "false"
 	SCENE.properties['Sun Turbidity'] = SUN_TURB.val
 	SCENE.properties['Sun Samples'] = SUN_SAMPLES.val
+	#Infinite plane ID added here since it's mostly used with sun/sky
 	if INFINITEPLANE.val == 1:
         	SCENE.properties['Infinite Plane'] = "true"
 	else:
 		SCENE.properties['Infinite Plane'] = "false"
-	
+	#SCENE.properties['Infinite Plane Color'] = IPLANECOLOR.val
 
 def import_lights():
         # Retrieve Blender's light ID values including IBL/LOCK
-        if SCENE.properties['LightProp'] == "true":
+	if SCENE.properties['LightProp'] == "true":
                 LAMPPOWER.val = SCENE.properties['Lamp Multiplier']
                 MESHLIGHTPOWER.val = SCENE.properties['Meshlight Multiplier']
                 DSAMPLES.val = SCENE.properties['Light Samples']
@@ -834,12 +840,14 @@ def import_lights():
                         Draw.Redraw()                
                 SUN_TURB.val = SCENE.properties['Sun Turbidity']
                 SUN_SAMPLES.val = SCENE.properties['Sun Samples']
+		#Infinite plane ID added here since it's mostly used with sun/sky
 		if SCENE.properties['Infinite Plane'] == "true":
                         INFINITEPLANE.val = 1
                         Draw.Redraw()
                 else:
                         INFINITEPLANE.val = 0
-                        Draw.Redraw()   
+                        Draw.Redraw()
+		#IPLANECOLOR.val = SCENE.properties['Infinite Plane Color']
 
 def export_lights(lmp):
 
@@ -1290,7 +1298,7 @@ def export_geometry(obj):
 
 		if INFINITEPLANE.val == 1:
 			FILE.write("\n\nobject {\n")
-                        FILE.write("\tshader def\n")
+                        FILE.write("\tshader iplane\n")
                         FILE.write("\ttype plane\n")
                         FILE.write("\tp 0 0 0\n")
                         FILE.write("\tn 0 0 1\n}\n")
@@ -1805,7 +1813,7 @@ def buttonEvent(evt):
 			Draw.Redraw()
 	if evt == QUICK_OCC:
 		QUICKOPT.val = 1
-		Draw.Redraw(0)
+		Draw.Redraw(0)              
 
 	## Rules for displaying the different panels:
 	if evt == CHANGE_AA:
@@ -1902,13 +1910,13 @@ def drawGUI():
 
 def drawAA():
 	global MINAA, MAXAA, AASAMPLES, AAJITTER, IMGFILTERW, IMGFILTERH, IMGFILTER
-	col=10; line=175; BGL.glRasterPos2i(col, line); Draw.Text("AA:")
-	col=100; MINAA=Draw.Number("Min AA", 2, col, line, 120, 18, MINAA.val, -4, 5); 
+	col=10; line=150; BGL.glRasterPos2i(col, line); Draw.Text("AA:")
+	col=100; line=145; MINAA=Draw.Number("Min AA", 2, col, line, 120, 18, MINAA.val, -4, 5); 
 	col=230; MAXAA=Draw.Number("Max AA", 2, col, line, 120, 18, MAXAA.val, -4, 5)
-	col=100; line=150; AASAMPLES=Draw.Number("Samples", 2, col, line, 120, 18, AASAMPLES.val, 0, 32)
+	col=100; line=125; AASAMPLES=Draw.Number("Samples", 2, col, line, 120, 18, AASAMPLES.val, 0, 32)
 	col=230; AAJITTER=Draw.Toggle("AA Jitter", 2, col, line, 120, 18, AAJITTER.val, "Use jitter for anti-aliasing")
-	col=10; line=130; BGL.glRasterPos2i(col, line); Draw.Text("Image Filter:")
-	col=100; line=125; IMGFILTER=Draw.Menu("%tImage Filter|box|gaussian|mitchell|triangle|catmull-rom|blackman-harris|sinc|lanczos", FILTER_EVENT, col, line, 120, 18, IMGFILTER.val)
+	col=10; line=105; BGL.glRasterPos2i(col, line); Draw.Text("Image Filter:")
+	col=100; line=100; IMGFILTER=Draw.Menu("%tImage Filter|box|gaussian|mitchell|triangle|catmull-rom|blackman-harris|sinc|lanczos", FILTER_EVENT, col, line, 120, 18, IMGFILTER.val)
 	drawButtons()
 
 ## Draw camera options ##
@@ -1930,7 +1938,7 @@ def drawCamera():
 #############################
 
 def drawBackground():
-	global IMP_BCKGRD, IMP_SUN, BACKGROUND, BCKGRDR, BCKGRDG, BCKGRDB, IBL, IBLLOCK, IBLSAMPLES, SUN_TURB, SUN_SAMPLES, INFINITEPLANE
+	global IMP_BCKGRD, IMP_SUN, BACKGROUND, BCKGRDR, BCKGRDG, BCKGRDB, IBL, IBLLOCK, IBLSAMPLES, SUN_TURB, SUN_SAMPLES, INFINITEPLANE, IPLANECOLOR
 	col=10; line=225; BGL.glRasterPos2i(col, line); Draw.Text("Simple background:")
 	col=10; line=200; IMP_BCKGRD=Draw.Toggle("Import World", BCKGRD_EVENT, col, line, 120, 18, IMP_BCKGRD.val, "Set World's Horizon color as background")
 	col=10; line=175; BACKGROUND=Draw.Toggle("Create Background", CBCKGRD_EVENT, col, line, 120, 18, BACKGROUND.val, "Define a background color")
@@ -1945,7 +1953,8 @@ def drawBackground():
 	col=10; line=75; IMP_SUN=Draw.Toggle("Import Sun", SUN_EVENT, col, line, 120, 18, IMP_SUN.val, "Import existing Sun")
 	col=140; line=75; SUN_TURB=Draw.Number("Turbidity", 2, col, line, 120, 18, SUN_TURB.val, 0.0, 32.0)
 	col=270; SUN_SAMPLES=Draw.Number("Samples", 2, col, line, 120, 18, SUN_SAMPLES.val, 1, 10000)
-	col=400; INFINITEPLANE=Draw.Toggle("Infinite Plane", 2, col, line, 120, 18, INFINITEPLANE.val, "Use an infinite plane in the scene")	
+	col=400; INFINITEPLANE=Draw.Toggle("Infinite Plane", 2, col, line, 90, 18, INFINITEPLANE.val, "Use an infinite plane in the scene")
+	col=500; IPLANECOLOR=Draw.ColorPicker(2, 495, 75, 30, 18, IPLANECOLOR.val, "Infinite plane color")
 	drawButtons()
 
 ## Draw light options ##
