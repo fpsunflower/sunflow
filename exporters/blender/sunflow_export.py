@@ -1295,8 +1295,6 @@ def export_geometry(obj):
                         FILE.write("}\n")
 
         elif obj.getType() == "Empty":
-                #scn = Blender.Scene.GetCurrent()
-                #ob = scn.Object.Get()
                 ob = Object.Get(obj.name)
                 dupe_obs = ob.DupObjects
                 Loc = ob.getLocation('worldspace')
@@ -2013,8 +2011,8 @@ def drawLights():
 def drawShad():
 	global SHADTYPE, SHADOK
 	col=10; line=400; BGL.glRasterPos2i(col, line); Draw.Text("Specific instructions for exporting shaders:")
-	col=10; line=375; BGL.glRasterPos2i(col, line); Draw.Text("For exporting bump and normal maps, have the second texture slot (slot 1)")
-	col=10; line=350; BGL.glRasterPos2i(col, line); Draw.Text("name begin with bump or normal")	
+	col=10; line=375; BGL.glRasterPos2i(col, line); Draw.Text("For exporting bump and normal maps, have the second texture slot (slot 1) name")
+	col=10; line=350; BGL.glRasterPos2i(col, line); Draw.Text("begin with bump or normal.  Controlled with the Map To Nor button and Nor slider.")	
 	col=10; line=325; BGL.glRasterPos2i(col, line); Draw.Text("Regarding Textures: Diffuse, shiny, ambocc, phong, and ward materials will")
 	col=10; line=300; BGL.glRasterPos2i(col, line); Draw.Text("use textures as the diffuse channel if the texture is in the first texture slot.")
 	col=10; line=275; SHADTYPE=Draw.Menu("%tSelect shader|Uber|Diffuse|Shiny|AO|Phong|Ward|Mirror|Glass|Constant", SHADER_TYPE, col, line, 85, 18, SHADTYPE.val)
