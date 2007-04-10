@@ -303,7 +303,7 @@ def export_output():
                 elif BACKGROUND.val == 1:
                 	print "o creating background..."
                         FILE.write("background {\n")
-                        FILE.write("\tcolor  { \"sRGB nonlinear\" %s }\n" % BCKGRD.val)
+                        FILE.write("\tcolor  { \"sRGB nonlinear\" %s %s %s }\n" % BCKGRD.val)
                         FILE.write("}")
                         FILE.write("\n")
 
