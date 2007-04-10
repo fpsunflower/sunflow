@@ -1,14 +1,14 @@
 #!BPY
 
 """
-Name: 'Sunflow Exporter 1.1.9 (.sc)...'
+Name: 'Sunflow Exporter 1.1.10 (.sc)...'
 Blender: 2.43
 Group: 'Export'
 Tip: ''
 """
 
 """
-Version         :       1.1.9 (April 2007)
+Version         :       1.1.10 (April 2007)
 Author          :       R Lindsay (hayfever) / Christopher Kulla / MADCello / 
 			olivS / Eugene Reilly / Heavily Tessellated / Humfred
 Description     :       Export to Sunflow renderer http://sunflow.sourceforge.net/
@@ -53,9 +53,7 @@ FISHEYECAMERA = Draw.Create(0)
 # Background panel
 IMP_BCKGRD  = Draw.Create(1)
 IMP_SUN  = Draw.Create(0)
-BCKGRDR = Draw.Create(0.000)
-BCKGRDG = Draw.Create(0.000)
-BCKGRDB = Draw.Create(0.000)
+BCKGRD = Draw.Create(0.0, 0.0, 0.0)
 BACKGROUND = Draw.Create(0)
 SUN_TURB = Draw.Create(6.0)
 SUN_SAMPLES = Draw.Create(16)
@@ -63,7 +61,7 @@ IBL = Draw.Create(0)
 IBLLOCK = Draw.Create(0)
 IBLSAMPLES = Draw.Create(16)
 INFINITEPLANE = Draw.Create(0)
-IPLANECOLOR = Draw.Create(1.0, 1.0, 1.0)
+IPLANECOLOR= Draw.Create(1.0, 1.0, 1.0)
 
 # Light panel
 MESHLIGHTPOWER = Draw.Create(100)
@@ -101,12 +99,8 @@ VIEWCAUSTICS = Draw.Create(0)
 VIEWGLOBALS = Draw.Create(0)
 VIEWGI = Draw.Create(0)
 OCCLUSION = Draw.Create(0)
-OCCBRIGHTR  = Draw.Create(1.0)
-OCCBRIGHTG  = Draw.Create(1.0)
-OCCBRIGHTB  = Draw.Create(1.0)
-OCCDARKR    = Draw.Create(0.0)
-OCCDARKG    = Draw.Create(0.0)
-OCCDARKB    = Draw.Create(0.0)
+OCCBRIGHT = Draw.Create(1.0, 1.0, 1.0)
+OCCDARK = Draw.Create(0.0, 0.0, 0.0)
 OCCSAMPLES  = Draw.Create(32)
 OCCDIST     = Draw.Create(0.0)
 
@@ -197,7 +191,7 @@ JAVAPATH = ""
 #######################
 
 print "\n\n"
-print "blend2sunflow v1.1.9"
+print "blend2sunflow v1.1.10"
 
 ## Export logic for simple options ##
 #####################################
@@ -235,9 +229,7 @@ def def_output():
                	SCENE.properties['Blender Background'] = "false"
 	if BACKGROUND.val == 1:
 		SCENE.properties['Script Background'] = "true"
-		SCENE.properties['HorizonColR'] = BCKGRDR.val
-		SCENE.properties['HorizonColG'] = BCKGRDG.val
-		SCENE.properties['HorizonColB'] = BCKGRDB.val
+		SCENE.properties['HorizonCol'] = BCKGRD.val
 	else:
                 SCENE.properties['Script Background'] = "false"
 
@@ -276,9 +268,7 @@ def import_output():
                         Draw.Redraw()
                 elif SCENE.properties['Script Background'] == "true":
                         BACKGROUND.val = 1
-                        BCKGRDR.val = SCENE.properties['HorizonColR']
-                        BCKGRDG.val = SCENE.properties['HorizonColG']
-                        BCKGRDB.val = SCENE.properties['HorizonColB']
+                        BCKGRD.val = SCENE.properties['HorizonCol'][0], SCENE.properties['HorizonCol'][1], SCENE.properties['HorizonCol'][2]
                         IMP_BCKGRD.val = 0
                         Draw.Redraw()
 
@@ -313,7 +303,7 @@ def export_output():
                 elif BACKGROUND.val == 1:
                 	print "o creating background..."
                         FILE.write("background {\n")
-                        FILE.write("\tcolor  { \"sRGB nonlinear\" %s %s %s }\n" % (BCKGRDR.val, BCKGRDG.val, BCKGRDB.val))
+                        FILE.write("\tcolor  { \"sRGB nonlinear\" %s }\n" % BCKGRD.val)
                         FILE.write("}")
                         FILE.write("\n")
 
@@ -512,12 +502,8 @@ def def_globalao():
         #Writes ID values for the global ao values
         if OCCLUSION.val ==1:
                 SCENE.properties['Global AO'] = "true"
-                SCENE.properties['Global AO Bright R'] = OCCBRIGHTR.val
-                SCENE.properties['Global AO Bright G'] = OCCBRIGHTG.val
-                SCENE.properties['Global AO Bright B'] = OCCBRIGHTB.val
-                SCENE.properties['Global AO Dark R'] = OCCDARKR.val
-                SCENE.properties['Global AO Dark G'] = OCCDARKG.val
-                SCENE.properties['Global AO Dark B'] = OCCDARKB.val
+                SCENE.properties['Global AO Bright'] = OCCBRIGHT.val
+                SCENE.properties['Global AO Dark'] = OCCDARK.val
                 SCENE.properties['Global AO Samples'] = OCCSAMPLES.val
                 SCENE.properties['Global AO Distance'] = OCCDIST.val
 	else:
@@ -528,12 +514,8 @@ def import_globalao():
         if SCENE.properties['SceneProp'] == "true":
                 if SCENE.properties['Global AO'] == "true":
                         OCCLUSION.val = 1
-                        OCCBRIGHTR.val = SCENE.properties['Global AO Bright R']
-                        OCCBRIGHTG.val = SCENE.properties['Global AO Bright G']
-                        OCCBRIGHTB.val = SCENE.properties['Global AO Bright B']
-                        OCCDARKR.val = SCENE.properties['Global AO Dark R']
-                        OCCDARKG.val = SCENE.properties['Global AO Dark G']
-                        OCCDARKB.val = SCENE.properties['Global AO Dark B']
+                        OCCBRIGHT.val = SCENE.properties['Global AO Bright'][0], SCENE.properties['Global AO Bright'][1], SCENE.properties['Global AO Bright'][2]
+                        OCCDARK.val = SCENE.properties['Global AO Dark'][0], SCENE.properties['Global AO Dark'][1], SCENE.properties['Global AO Dark'][2]
                         OCCSAMPLES.val = SCENE.properties['Global AO Samples']
                         OCCDIST.val = SCENE.properties['Global AO Distance']
                         Draw.Redraw()
@@ -550,8 +532,8 @@ def export_shaders():
 		FILE.write("\tdiff %s %s %s \n}" % IPLANECOLOR.val)
 	if OCCLUSION.val == 1:
 		FILE.write("\n\nshader {\n   name amboccshader\n   type amb-occ2\n")
-		FILE.write("\tbright { \"sRGB nonlinear\" %s %s %s }\n" % (OCCBRIGHTR.val, OCCBRIGHTG.val, OCCBRIGHTB.val))
-		FILE.write("\tdark { \"sRGB nonlinear\" %s %s %s }\n" % (OCCDARKR.val, OCCDARKG.val, OCCDARKB.val))
+		FILE.write("\tbright { \"sRGB nonlinear\" %s %s %s }\n" % OCCBRIGHT.val)
+		FILE.write("\tdark { \"sRGB nonlinear\" %s %s %s }\n" % OCCDARK.val)
 		FILE.write("\tsamples %s\n" % OCCSAMPLES.val)
 		FILE.write("\tdist %s\n}" % OCCDIST.val)
 		FILE.write("\n\noverride amboccshader true")
@@ -806,7 +788,7 @@ def def_lights():
         	SCENE.properties['Infinite Plane'] = "true"
 	else:
 		SCENE.properties['Infinite Plane'] = "false"
-	#SCENE.properties['Infinite Plane Color'] = IPLANECOLOR.val
+	SCENE.properties['Infinite Plane Color'] = IPLANECOLOR.val
 
 def import_lights():
         # Retrieve Blender's light ID values including IBL/LOCK
@@ -847,7 +829,7 @@ def import_lights():
                 else:
                         INFINITEPLANE.val = 0
                         Draw.Redraw()
-		#IPLANECOLOR.val = SCENE.properties['Infinite Plane Color']
+		IPLANECOLOR.val = SCENE.properties['Infinite Plane Color'][0], SCENE.properties['Infinite Plane Color'][1], SCENE.properties['Infinite Plane Color'][2], 
 
 def export_lights(lmp):
 
@@ -1310,7 +1292,9 @@ def export_geometry(obj):
                                 FILE.write("\tname %s \n" % obj.name)
                                 FILE.write("\tgeometry %s \n" % dupe_ob.name)
                                 FILE.write("\ttransform {\n")
-                                FILE.write("\t\tscaleu %s \n" % Scale[0])
+                                FILE.write("\t\tscalex %s \n" % Scale[0])
+				FILE.write("\t\tscaley %s \n" % Scale[1])
+				FILE.write("\t\tscalez %s \n" % Scale[2])
                                 FILE.write("\t\trotatex %s \n" % Rot[0])
                                 FILE.write("\t\trotatey %s \n" % Rot[1])
                                 FILE.write("\t\ttrotatex %s \n" % Rot[2])
@@ -1971,13 +1955,11 @@ def drawCamera():
 #############################
 
 def drawBackground():
-	global IMP_BCKGRD, IMP_SUN, BACKGROUND, BCKGRDR, BCKGRDG, BCKGRDB, IBL, IBLLOCK, IBLSAMPLES, SUN_TURB, SUN_SAMPLES, INFINITEPLANE, IPLANECOLOR
+	global IMP_BCKGRD, IMP_SUN, BACKGROUND, BCKGRD, IBL, IBLLOCK, IBLSAMPLES, SUN_TURB, SUN_SAMPLES, INFINITEPLANE, IPLANECOLOR
 	col=10; line=225; BGL.glRasterPos2i(col, line); Draw.Text("Simple background:")
 	col=10; line=200; IMP_BCKGRD=Draw.Toggle("Import World", BCKGRD_EVENT, col, line, 120, 18, IMP_BCKGRD.val, "Set World's Horizon color as background")
 	col=10; line=175; BACKGROUND=Draw.Toggle("Create Background", CBCKGRD_EVENT, col, line, 120, 18, BACKGROUND.val, "Define a background color")
-	col=135; BCKGRDR=Draw.Number("Bckgrd (R)", 2, col, line, 125, 18, BCKGRDR.val, 0.000, 1.000)
-	col=270; BCKGRDG=Draw.Number("Bckgrd (G)", 2, col, line, 125, 18, BCKGRDG.val, 0.000, 1.000)
-	col=400; BCKGRDB=Draw.Number("Bckgrd (B)", 2, col, line, 125, 18, BCKGRDB.val, 0.000, 1.000)
+	col=135; BCKGRD=Draw.ColorPicker(2, 135, 175, 30, 18, BCKGRD.val, "New background color")
 	col=10; line=155; BGL.glRasterPos2i(col, line); Draw.Text("High Dynamic Range Illumination (Please set a texture named 'ibllight', lower case):")
 	col=10; line=125; IBL=Draw.Toggle("Image Based Light", IBL_EVENT, col, line, 140, 18, IBL.val, "Use IBL/hdr type light")
 	col=160; IBLLOCK=Draw.Toggle("Importance Sampling", LOCK_EVENT, col, line, 130, 18, IBLLOCK.val, "Use importance sampling (lock false), IBL must be on")
@@ -2120,45 +2102,41 @@ def drawGI():
 	global gPHOTONNUMBER, gPHOTONESTIMATE, gPHOTONRADIUS, gPHOTONMAP, USEGLOBALS
 	global PATHTRACE, PATHSAMPLES
 	global VIEWCAUSTICS, VIEWGLOBALS, VIEWGI
-	global OCCLUSION, OCCBRIGHTR, OCCBRIGHTG, OCCBRIGHTB, OCCDARKR, OCCDARKG, OCCDARKB, OCCSAMPLES, OCCDIST
+	global OCCLUSION, OCCBRIGHT, OCCDARK, OCCSAMPLES, OCCDIST
 
-	col=10; line=375; BGL.glRasterPos2i(col, line); Draw.Text("Caustics and Global Illumination")
-	col=10; line=350; CAUSTICS=Draw.Toggle("Caustics", EVENT_CAUSTICS, col, line, 85, 18, CAUSTICS.val, "Turn on caustics in the scene")
+	col=10; line=325; BGL.glRasterPos2i(col, line); Draw.Text("Caustics and Global Illumination")
+	col=10; line=300; CAUSTICS=Draw.Toggle("Caustics", EVENT_CAUSTICS, col, line, 85, 18, CAUSTICS.val, "Turn on caustics in the scene")
 	col=100; PHOTONNUMBER=Draw.Number("Photons", 2, col, line, 125, 18, PHOTONNUMBER.val, 0, 5000000)
 	col=230; PHOTONMAP=Draw.Menu("%tCaustics Photon Map|kd", PHOTON_EVENT, col, line, 60, 18, PHOTONMAP.val)
 	col=295; PHOTONESTIMATE=Draw.Number("Photon Estim.", 2, col, line, 125, 18, PHOTONESTIMATE.val, 0, 1000)
 	col=425; PHOTONRADIUS=Draw.Number("Photon Radius", 2, col, line, 125, 18, PHOTONRADIUS.val, 0.00, 10.00)
-	col=10; line=325; INSTANTGI=Draw.Toggle("Instant GI", FORCE_INSTANTGI, col, line, 85, 18, INSTANTGI.val, "Enable Instant GI for GI in the scene")
+	col=10; line=275; INSTANTGI=Draw.Toggle("Instant GI", FORCE_INSTANTGI, col, line, 85, 18, INSTANTGI.val, "Enable Instant GI for GI in the scene")
 	col=100; IGISAMPLES=Draw.Number("Samples", 2, col, line, 125, 18, IGISAMPLES.val, 0, 1024)
 	col=230; IGISETS=Draw.Number("Number of Sets", 2, col, line, 125, 18, IGISETS.val, 1.0, 100.0)
-	col=100; line=300; IGIBIAS=Draw.Number("Bias", 2, col, line, 125, 18, IGIBIAS.val, 0.00000, 0.00009)
+	col=100; line=250; IGIBIAS=Draw.Number("Bias", 2, col, line, 125, 18, IGIBIAS.val, 0.00000, 0.00009)
 	col=230; IGIBIASSAMPLES=Draw.Number("Bias Samples", 2, col, line, 125, 18, IGIBIASSAMPLES.val, 0, 1)
-	col=10; line=275; IRRCACHE=Draw.Toggle("Irr. Cache", FORCE_IRRCACHE, col, line, 85, 18, IRRCACHE.val, "Enable Irradiance Caching for GI in the scene")
+	col=10; line=225; IRRCACHE=Draw.Toggle("Irr. Cache", FORCE_IRRCACHE, col, line, 85, 18, IRRCACHE.val, "Enable Irradiance Caching for GI in the scene")
 	col=100; IRRSAMPLES=Draw.Number("Samples", 2, col, line, 125, 18, IRRSAMPLES.val, 0, 1024)
 	col=230; IRRTOLERANCE=Draw.Number("Tolerance", 2, col, line, 125, 18, IRRTOLERANCE.val, 0.0, 0.10)
-	col=100; line=250; IRRSPACEMIN=Draw.Number("Min. Space", 2, col, line, 125, 18, IRRSPACEMIN.val, 0.00, 10.00)
+	col=100; line=200; IRRSPACEMIN=Draw.Number("Min. Space", 2, col, line, 125, 18, IRRSPACEMIN.val, 0.00, 10.00)
 	col=230; IRRSPACEMAX=Draw.Number("Max. Space", 2, col, line, 125, 18, IRRSPACEMAX.val, 0.00, 10.00)
-	col=10; line=225; USEGLOBALS=Draw.Toggle("Use Globals", FORCE_GLOBALS, col, line, 85, 18, USEGLOBALS.val, "Use global photons instead of path tracing for Irr. Cache secondary bounces") 
+	col=10; line=175; USEGLOBALS=Draw.Toggle("Use Globals", FORCE_GLOBALS, col, line, 85, 18, USEGLOBALS.val, "Use global photons instead of path tracing for Irr. Cache secondary bounces") 
 	col=100; gPHOTONNUMBER=Draw.Number("Glob. Phot.", 2, col, line, 125, 18, gPHOTONNUMBER.val, 0, 5000000)
 	col=230; gPHOTONMAP=Draw.Menu("%tGlobal Photon Map|kd|grid", gPHOTON_EVENT, col, line, 60, 18, gPHOTONMAP.val)
 	col=295; gPHOTONESTIMATE=Draw.Number("Global Estim.", 2, col, line, 125, 18, gPHOTONESTIMATE.val, 0, 1000)
 	col=425; gPHOTONRADIUS=Draw.Number("Global Radius", 2, col, line, 125, 18, gPHOTONRADIUS.val, 0.00, 10.00)
-	col=10; line=200; PATHTRACE=Draw.Toggle("Path Tracing", FORCE_PATHTRACE, col, line, 85, 18, PATHTRACE.val, "Enable Path Tracing for GI in the scene")
+	col=10; line=150; PATHTRACE=Draw.Toggle("Path Tracing", FORCE_PATHTRACE, col, line, 85, 18, PATHTRACE.val, "Enable Path Tracing for GI in the scene")
 	col=100; PATHSAMPLES=Draw.Number("Samples", 2, col, line, 125, 18, PATHSAMPLES.val, 0, 1024)
-	col=100; line=175; VIEWCAUSTICS=Draw.Toggle("Just Caustics", OVERRIDE_CAUSTICS, col, line, 85, 18, VIEWCAUSTICS.val, "Render only the caustic photons in the scene (Caustics must be on)")
+	col=100; line=125; VIEWCAUSTICS=Draw.Toggle("Just Caustics", OVERRIDE_CAUSTICS, col, line, 85, 18, VIEWCAUSTICS.val, "Render only the caustic photons in the scene (Caustics must be on)")
 	col=190; VIEWGLOBALS=Draw.Toggle("Just Globals", OVERRIDE_GLOBALS, col, line, 85, 18, VIEWGLOBALS.val, "Render only the global photons in the scene (No Irr. Path must be on)")
 	col=280; VIEWGI=Draw.Toggle("Just GI", OVERRIDE_GI, col, line, 85, 18, VIEWGI.val, "Render only the gi components in the scene (A GI engine must be selected)")
 
-	col=10; line=150; BGL.glRasterPos2i(col, line); Draw.Text("Ambient Occlusion")
-	col=10; line=125; OCCLUSION=Draw.Toggle("Amb Occ", 2, col, line, 85, 18, OCCLUSION.val, "Turn on ambient occlusion for the whole scene")
-	col=100; OCCBRIGHTR=Draw.Number("Bright (R)", 2, col, line, 125, 18, OCCBRIGHTR.val, 0.0, 1.0)
-	col=230; OCCBRIGHTG=Draw.Number("Bright (G)", 2, col, line, 125, 18, OCCBRIGHTG.val, 0.0, 1.0)
-	col=360; OCCBRIGHTB=Draw.Number("Bright (B)", 2, col, line, 125, 18, OCCBRIGHTB.val, 0.0, 1.0)
-	col=100; line=100; OCCDARKR=Draw.Number("Dark (R)", 2, col, line, 125, 18, OCCDARKR.val, 0.00, 1.0)
-	col=230; OCCDARKG=Draw.Number("Dark (G)", 2, col, line, 125, 18, OCCDARKG.val, 0.0, 1.0)
-	col=360; OCCDARKB=Draw.Number("Dark (B)", 2, col, line, 125, 18, OCCDARKB.val, 0.0, 1.0)
-	col=100; line=75; OCCSAMPLES=Draw.Number("Samples", 2, col, line, 125, 18, OCCSAMPLES.val, 0, 256)
-	col=230; OCCDIST=Draw.Number("Distance", 2, col, line, 125, 18, OCCDIST.val, -1.0, 150.0)
+	col=10; line=100; BGL.glRasterPos2i(col, line); Draw.Text("Ambient Occlusion")
+	col=10; line=75; OCCLUSION=Draw.Toggle("Amb Occ", 2, col, line, 85, 18, OCCLUSION.val, "Turn on ambient occlusion for the whole scene")
+	col=100; OCCBRIGHT=Draw.ColorPicker(2, 100, 75, 30, 18, OCCBRIGHT.val, "Ambient Occlusion bright color")
+	col=135; OCCDARK=Draw.ColorPicker(2, 135, 75, 30, 18, OCCDARK.val, "Ambient Occlusion dark color")
+	col=170; OCCSAMPLES=Draw.Number("Samples", 2, col, line, 125, 18, OCCSAMPLES.val, 0, 256)
+	col=300; OCCDIST=Draw.Number("Distance", 2, col, line, 125, 18, OCCDIST.val, -1.0, 150.0)
 
 	drawButtons()
 
