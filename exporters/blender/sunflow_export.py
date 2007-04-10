@@ -1,14 +1,14 @@
 #!BPY
 
 """
-Name: 'Sunflow Exporter 1.1.10 (.sc)...'
+Name: 'Sunflow Exporter 1.1.11 (.sc)...'
 Blender: 2.43
 Group: 'Export'
 Tip: ''
 """
 
 """
-Version         :       1.1.10 (April 2007)
+Version         :       1.1.11 (April 2007)
 Author          :       R Lindsay (hayfever) / Christopher Kulla / MADCello / 
 			olivS / Eugene Reilly / Heavily Tessellated / Humfred
 Description     :       Export to Sunflow renderer http://sunflow.sourceforge.net/
@@ -191,7 +191,7 @@ JAVAPATH = ""
 #######################
 
 print "\n\n"
-print "blend2sunflow v1.1.10"
+print "blend2sunflow v1.1.11"
 
 ## Export logic for simple options ##
 #####################################
@@ -1287,19 +1287,12 @@ def export_geometry(obj):
                 if group <> "None":
                         for dupe_ob, dup_matrix in dupe_obs:
                                 dupobmesh = NMesh.GetRawFromObject(dupe_ob.name)
+                                instancematrix = ob.getMatrix()
                                 print "o exporting instances of " + dupe_ob.name+"..."
                                 FILE.write("\n\ninstance {\n")
                                 FILE.write("\tname %s \n" % obj.name)
                                 FILE.write("\tgeometry %s \n" % dupe_ob.name)
-                                FILE.write("\ttransform {\n")
-                                FILE.write("\t\tscalex %s \n" % Scale[0])
-				FILE.write("\t\tscaley %s \n" % Scale[1])
-				FILE.write("\t\tscalez %s \n" % Scale[2])
-                                FILE.write("\t\trotatex %s \n" % Rot[0])
-                                FILE.write("\t\trotatey %s \n" % Rot[1])
-                                FILE.write("\t\ttrotatex %s \n" % Rot[2])
-                                FILE.write("\t\ttranslate %s %s %s\n" % (Loc[0], Loc[1], Loc[2]))
-                                FILE.write("\t}\n")
+                                FILE.write("\ttransform col %s %s %s %s %s %s %s %s %s %s %s %s %s %s %s %s \n" % (instancematrix[0][0], instancematrix[0][1], instancematrix[0][2], instancematrix[0][3], instancematrix[1][0], instancematrix[1][1], instancematrix[1][2], instancematrix[1][3], instancematrix[2][0], instancematrix[2][1], instancematrix[2][2], instancematrix[2][3], instancematrix[3][0], instancematrix[3][1], instancematrix[3][2], instancematrix[3][3]))
                                 if len(dupobmesh.materials) >= 1:
                                         FILE.write("\tshader \"" + dupobmesh.materials[0].name + ".shader\"\n")
                                 else:
