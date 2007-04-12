@@ -15,11 +15,9 @@ import org.sunflow.math.Point3;
 import org.sunflow.math.Vector3;
 
 public class SphereFlake implements PrimitiveList {
-    private static final float[] boundingRadiusOffset = new float[100];
-    private static final float[] lowerX = new float[6];
-    private static final float[] lowerY = new float[6];
-    private static final float[] upperX = new float[3];
-    private static final float[] upperY = new float[3];
+    private static final int MAX_LEVEL = 20;
+    private static final float[] boundingRadiusOffset = new float[MAX_LEVEL + 1];
+    private static final float[] recursivePattern = new float[9 * 3];
     private int level = 2;
 
     static {
@@ -29,14 +27,16 @@ public class SphereFlake implements PrimitiveList {
         // lower ring
         double a = 0, daL = 2 * Math.PI / 6, daU = 2 * Math.PI / 3;
         for (int i = 0; i < 6; i++) {
-            lowerX[i] = (float) Math.sin(a);
-            lowerY[i] = (float) Math.cos(a);
+            recursivePattern[3 * i + 0] = -0.2f;
+            recursivePattern[3 * i + 1] = (float) Math.sin(a);
+            recursivePattern[3 * i + 2] = (float) Math.cos(a);
             a += daL;
         }
         a -= daL / 3; // tweak
-        for (int i = 0; i < 3; i++) {
-            upperX[i] = (float) Math.sin(a);
-            upperY[i] = (float) Math.cos(a);
+        for (int i = 6; i < 9; i++) {
+            recursivePattern[3 * i + 0] = +0.6f;
+            recursivePattern[3 * i + 1] = (float) Math.sin(a);
+            recursivePattern[3 * i + 2] = (float) Math.cos(a);
             a += daU;
         }
 
@@ -205,27 +205,19 @@ public class SphereFlake implements PrimitiveList {
                 b1x = dy * b2z - dz * b2y;
                 b1y = dz * b2x - dx * b2z;
                 b1z = dx * b2y - dy * b2x;
-                // step2: generate lower ring
+                // step2: generate 9 children recursively
                 float nr = radius * (1 / 3.0f), scale = radius + nr;
-                for (int i = 0; i < 6; i++) {
-                    float ndx = -0.2f * dx + lowerX[i] * b1x + lowerY[i] * b2x;
-                    float ndy = -0.2f * dy + lowerX[i] * b1y + lowerY[i] * b2y;
-                    float ndz = -0.2f * dz + lowerX[i] * b1z + lowerY[i] * b2z;
+                for (int i = 0; i < 9 * 3; i += 3) {
+                    // transform by basis
+                    float ndx = recursivePattern[i] * dx + recursivePattern[i + 1] * b1x + recursivePattern[i + 2] * b2x;
+                    float ndy = recursivePattern[i] * dy + recursivePattern[i + 1] * b1y + recursivePattern[i + 2] * b2y;
+                    float ndz = recursivePattern[i] * dz + recursivePattern[i + 1] * b1z + recursivePattern[i + 2] * b2z;
+                    // normalize
                     float n = 1 / (float) Math.sqrt(ndx * ndx + ndy * ndy + ndz * ndz);
                     ndx *= n;
                     ndy *= n;
                     ndz *= n;
-                    intersectFlake(r, state, level - 1, qa, qaInv, cx + scale * ndx, cy + scale * ndy, cz + scale * ndz, ndx, ndy, ndz, nr);
-                }
-                // step3: generate upper ring
-                for (int i = 0; i < 3; i++) {
-                    float ndx = 0.6f * dx + upperX[i] * b1x + upperY[i] * b2x;
-                    float ndy = 0.6f * dy + upperX[i] * b1y + upperY[i] * b2y;
-                    float ndz = 0.6f * dz + upperX[i] * b1z + upperY[i] * b2z;
-                    float n = 1 / (float) Math.sqrt(ndx * ndx + ndy * ndy + ndz * ndz);
-                    ndx *= n;
-                    ndy *= n;
-                    ndz *= n;
+                    // recurse!
                     intersectFlake(r, state, level - 1, qa, qaInv, cx + scale * ndx, cy + scale * ndy, cz + scale * ndz, ndx, ndy, ndz, nr);
                 }
             }
