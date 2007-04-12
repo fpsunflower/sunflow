@@ -453,8 +453,7 @@ public class BoundingIntervalHierarchy implements AccelerationStructure {
         offsetZBack++;
 
         IntersectionState.StackNode[] stack = state.getStack();
-        int stackTop = state.getStackTop();
-        int stackPos = stackTop;
+        int stackPos = 0;
         int node = 0;
 
         while (true) {
@@ -598,7 +597,7 @@ public class BoundingIntervalHierarchy implements AccelerationStructure {
             } // traversal loop
             do {
                 // stack is empty?
-                if (stackPos == stackTop)
+                if (stackPos == 0)
                     return;
                 // move back up the stack
                 stackPos--;

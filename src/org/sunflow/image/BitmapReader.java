@@ -13,6 +13,11 @@ public interface BitmapReader {
      * thrown. It is an error for this method to return <code>null</code>.
      * 
      * @param filename image filename to load
+     * @param isLinear if this is <code>true</code>, the bitmap is assumed to
+     *            be already in linear space. This can be usefull when reading
+     *            greyscale images for bump mapping for example. HDR formats can
+     *            ignore this flag since they usually always store data in
+     *            linear form.
      * @return a new {@link Bitmap} object
      */
     public Bitmap load(String filename, boolean isLinear) throws IOException, BitmapFormatException;

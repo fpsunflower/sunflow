@@ -389,7 +389,6 @@ public class BucketRenderer implements ImageSampler {
                 c = Color.BLACK;
             else {
                 c = state.getResult();
-                checkNanInf();
                 shader = state.getShader();
                 instance = state.getInstance();
                 if (state.getNormal() != null) {
@@ -408,17 +407,8 @@ public class BucketRenderer implements ImageSampler {
             if (state != null) {
                 c.add(state.getResult());
                 alpha += state.getInstance() == null ? 0 : 1;
-                checkNanInf();
             }
             n++;
-        }
-
-        final void checkNanInf() {
-            if (c.isNan())
-                UI.printError(Module.BCKT, "NaN shading sample!");
-            else if (c.isInf())
-                UI.printError(Module.BCKT, "Inf shading sample!");
-
         }
 
         final void scale(float s) {

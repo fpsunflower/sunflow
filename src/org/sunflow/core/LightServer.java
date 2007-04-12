@@ -322,9 +322,17 @@ class LightServer {
             state.setResult(shader.getRadiance(state));
             if (shadingCache != null)
                 addShadingCache(state, shader, state.getResult());
+            checkNanInf(state.getResult());
             return state;
         } else
             return null;
+    }
+
+    private static final void checkNanInf(Color c) {
+        if (c.isNan())
+            UI.printWarning(Module.LIGHT, "NaN shading sample!");
+        else if (c.isInf())
+            UI.printWarning(Module.LIGHT, "Inf shading sample!");
     }
 
     void shadeBakeResult(ShadingState state) {

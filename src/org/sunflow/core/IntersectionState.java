@@ -10,7 +10,7 @@ public final class IntersectionState {
     float u, v;
     Instance instance;
     int id;
-    private final StackNode[] stack;
+    private final StackNode[][] stacks = new StackNode[2][MAX_STACK_SIZE];
     private final float[] rstack;
     Instance current;
 
@@ -28,9 +28,9 @@ public final class IntersectionState {
      * Initializes all traversal stacks.
      */
     public IntersectionState() {
-        stack = new StackNode[MAX_STACK_SIZE * 2];
-        for (int i = 0; i < stack.length; i++)
-            stack[i] = new StackNode();
+        for (int i = 0; i < stacks.length; i++)
+            for (int j = 0; j < stacks[i].length; j++)
+                stacks[i][j] = new StackNode();
         rstack = new float[53 * 256];
     }
 
@@ -40,17 +40,7 @@ public final class IntersectionState {
      * @return array of stack nodes
      */
     public final StackNode[] getStack() {
-        return stack;
-    }
-
-    /**
-     * Index to use as the top of the stack, this is needed because of the
-     * two-level nature of ray-intersection (instances then primitive list).
-     * 
-     * @return index into the stack
-     */
-    public final int getStackTop() {
-        return current == null ? 0 : MAX_STACK_SIZE;
+        return current == null ? stacks[0] : stacks[1];
     }
 
     /**

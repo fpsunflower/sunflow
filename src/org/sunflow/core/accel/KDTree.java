@@ -706,8 +706,7 @@ public class KDTree implements AccelerationStructure {
         int offsetZBack = offsetZFront ^ 2;
 
         IntersectionState.StackNode[] stack = state.getStack();
-        int stackTop = state.getStackTop();
-        int stackPos = stackTop;
+        int stackPos = 0;
         int node = 0;
 
         while (true) {
@@ -783,7 +782,7 @@ public class KDTree implements AccelerationStructure {
                         return;
                     do {
                         // stack is empty?
-                        if (stackPos == stackTop)
+                        if (stackPos == 0)
                             return;
                         // move back up the stack
                         stackPos--;

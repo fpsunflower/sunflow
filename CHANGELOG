@@ -1,4 +1,6 @@
 v0.07.3
+* Moved Nan/Inf check into LightServer, demoted to warning severity
+* Fix to allow LDR images in IBL
 * File browser in SunflowGUI remembers previous directory
 * Modified Matrix4 class to only accept affine transformations
 * Added cylinder primitive
