@@ -69,6 +69,7 @@ import org.sunflow.core.primitive.ParticleSurface;
 import org.sunflow.core.primitive.Plane;
 import org.sunflow.core.primitive.QuadMesh;
 import org.sunflow.core.primitive.Sphere;
+import org.sunflow.core.primitive.SphereFlake;
 import org.sunflow.core.primitive.Torus;
 import org.sunflow.core.primitive.TriangleMesh;
 import org.sunflow.core.renderer.BucketRenderer;
@@ -159,6 +160,7 @@ public final class PluginRegistry {
         primitivePlugins.registerPlugin("quad_mesh", QuadMesh.class);
         primitivePlugins.registerPlugin("torus", Torus.class);
         primitivePlugins.registerPlugin("background", Background.class);
+        primitivePlugins.registerPlugin("sphereflake", SphereFlake.class);
     }
 
     static {
@@ -302,7 +304,7 @@ public final class PluginRegistry {
         bitmapReaderPlugins.registerPlugin("bmp", BMPBitmapReader.class);
         bitmapReaderPlugins.registerPlugin("igi", IGIBitmapReader.class);
     }
-    
+
     static {
         // bitmap writers
         bitmapWriterPlugins.registerPlugin("png", PNGBitmapWriter.class);

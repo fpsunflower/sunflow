@@ -230,7 +230,7 @@ public final class ShadingState implements Iterable<LightSample> {
         return behind;
     }
 
-    final IntersectionState getIntersectionState() {
+    public final IntersectionState getIntersectionState() {
         return istate;
     }
 

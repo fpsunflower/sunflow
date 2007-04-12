@@ -743,6 +743,11 @@ public class SCParser implements SceneParser {
             api.parameter("radiusInner", p.getNextFloat());
             api.parameter("radiusOuter", p.getNextFloat());
             api.geometry(name, "torus");
+        } else if (type.equals("sphereflake")) {
+            UI.printInfo(Module.API, "Reading sphereflake ...");
+            if (p.peekNextToken("level"))
+                api.parameter("level", p.getNextInt());
+            api.geometry(name, "sphereflake");
         } else if (type.equals("plane")) {
             UI.printInfo(Module.API, "Reading plane ...");
             p.checkNextToken("p");
