@@ -1095,6 +1095,10 @@ public class SCParser implements SceneParser {
             api.parameter("turbidity", p.getNextFloat());
             if (p.peekNextToken("samples"))
                 api.parameter("samples", p.getNextInt());
+            if (p.peekNextToken("ground.extendsky"))
+                api.parameter("ground.extendsky", p.getNextBoolean());
+            else if (p.peekNextToken("ground.color"))
+                api.parameter("ground.color", null, parseColor().getRGB());
             api.light(generateUniqueName("sunsky"), "sunsky");
         } else if (p.peekNextToken("cornellbox")) {
             UI.printInfo(Module.API, "Reading cornell box ...");
