@@ -12,6 +12,7 @@ Version         :       1.1.11 (April 2007)
 Author          :       R Lindsay (hayfever) / Christopher Kulla / MADCello / 
 			olivS / Eugene Reilly / Heavily Tessellated / Humfred
 Description     :       Export to Sunflow renderer http://sunflow.sourceforge.net/
+Usage           :       See how to use the script at http://sunflow.sourceforge.net/phpbb2/viewtopic.php?t=125
 """
 
 ###############
@@ -1280,9 +1281,6 @@ def export_geometry(obj):
                 ob = Object.Get(obj.name)
                 dupe_obs = ob.DupObjects
 		dupmatrix = Mathutils.Matrix(ob.getMatrix())
-		Loc = dupmatrix.translationPart()
-		Rot = dupmatrix.toEuler()
-		Scale = dupmatrix.scalePart()
                 group = ob.DupGroup
                 if group <> "None":
                         for dupe_ob, dup_matrix in dupe_obs:
@@ -2121,7 +2119,7 @@ def drawGI():
 	col=10; line=150; PATHTRACE=Draw.Toggle("Path Tracing", FORCE_PATHTRACE, col, line, 85, 18, PATHTRACE.val, "Enable Path Tracing for GI in the scene")
 	col=100; PATHSAMPLES=Draw.Number("Samples", 2, col, line, 125, 18, PATHSAMPLES.val, 0, 1024)
 	col=100; line=125; VIEWCAUSTICS=Draw.Toggle("Just Caustics", OVERRIDE_CAUSTICS, col, line, 85, 18, VIEWCAUSTICS.val, "Render only the caustic photons in the scene (Caustics must be on)")
-	col=190; VIEWGLOBALS=Draw.Toggle("Just Globals", OVERRIDE_GLOBALS, col, line, 85, 18, VIEWGLOBALS.val, "Render only the global photons in the scene (No Irr. Path must be on)")
+	col=190; VIEWGLOBALS=Draw.Toggle("Just Globals", OVERRIDE_GLOBALS, col, line, 85, 18, VIEWGLOBALS.val, "Render only the global photons in the scene (Use Globals must be on)")
 	col=280; VIEWGI=Draw.Toggle("Just GI", OVERRIDE_GI, col, line, 85, 18, VIEWGI.val, "Render only the gi components in the scene (A GI engine must be selected)")
 
 	col=10; line=100; BGL.glRasterPos2i(col, line); Draw.Text("Ambient Occlusion")
