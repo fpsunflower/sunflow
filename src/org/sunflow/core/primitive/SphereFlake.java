@@ -19,6 +19,8 @@ public class SphereFlake implements PrimitiveList {
     private static final float[] boundingRadiusOffset = new float[MAX_LEVEL + 1];
     private static final float[] recursivePattern = new float[9 * 3];
     private int level = 2;
+    private Vector3 axis = new Vector3(0, 0, 1);
+    private float baseRadius = 1;
 
     static {
         // geometric series table, to compute bounding radius quickly
@@ -27,7 +29,7 @@ public class SphereFlake implements PrimitiveList {
         // lower ring
         double a = 0, daL = 2 * Math.PI / 6, daU = 2 * Math.PI / 3;
         for (int i = 0; i < 6; i++) {
-            recursivePattern[3 * i + 0] = -0.2f;
+            recursivePattern[3 * i + 0] = -0.3f;
             recursivePattern[3 * i + 1] = (float) Math.sin(a);
             recursivePattern[3 * i + 2] = (float) Math.cos(a);
             a += daL;
@@ -39,11 +41,22 @@ public class SphereFlake implements PrimitiveList {
             recursivePattern[3 * i + 2] = (float) Math.cos(a);
             a += daU;
         }
-
+        for (int i = 0; i < recursivePattern.length; i += 3) {
+            float x = recursivePattern[i + 0];
+            float y = recursivePattern[i + 1];
+            float z = recursivePattern[i + 2];
+            float n = 1 / (float) Math.sqrt(x * x + y * y + z * z);
+            recursivePattern[i + 0] = x * n;
+            recursivePattern[i + 1] = y * n;
+            recursivePattern[i + 2] = z * n;
+        }
     }
 
     public boolean update(ParameterList pl, SunflowAPI api) {
         level = MathUtils.clamp(pl.getInt("level", level), 0, 20);
+        axis = pl.getVector("axis", axis);
+        axis.normalize();
+        baseRadius = Math.abs(pl.getFloat("radius", baseRadius));
         return true;
     }
 
@@ -102,15 +115,7 @@ public class SphereFlake implements PrimitiveList {
     public void intersectPrimitive(Ray r, int primID, IntersectionState state) {
         // intersect in local space
         float qa = r.dx * r.dx + r.dy * r.dy + r.dz * r.dz;
-        float dx = +0.25f;
-        float dy = +1.00f;
-        float dz = -0.50f;
-        // normalize
-        float n = 1 / (float) Math.sqrt(dx * dx + dy * dy + dz * dz);
-        dx *= n;
-        dy *= n;
-        dz *= n;
-        intersectFlake(r, state, level, qa, 1 / qa, 0, 0, 0, dx, dy, dz, 1);
+        intersectFlake(r, state, level, qa, 1 / qa, 0, 0, 0, axis.x, axis.y, axis.z, baseRadius);
     }
 
     private void intersectFlake(Ray r, IntersectionState state, int level, float qa, float qaInv, float cx, float cy, float cz, float dx, float dy, float dz, float radius) {
@@ -181,24 +186,23 @@ public class SphereFlake implements PrimitiveList {
                 // recursively intersect 9 other spheres
                 // step1: compute basis around displacement vector
                 float b1x, b1y, b1z;
-                if ((dx * dx != 1) && (dy * dy != 1) && (dz * dz != 1)) {
-                    b1x = dx;
-                    b1y = dy;
-                    b1z = dz;
-                    if (dy * dy > dx * dx) {
-                        if (dy * dy > dz * dz)
-                            b1y = -b1y;
-                        else
-                            b1z = -b1z;
-                    } else if (dz * dz > dx * dx)
-                        b1z = -b1z;
-                    else
-                        b1x = -b1x;
-                } else {
+                if (dx * dx < dy * dy && dx * dx < dz * dz) {
+                    b1x = 0;
+                    b1y = dz;
+                    b1z = -dy;
+                } else if (dy * dy < dz * dz) {
                     b1x = dz;
-                    b1y = dx;
-                    b1z = dy;
+                    b1y = 0;
+                    b1z = -dx;
+                } else {
+                    b1x = dy;
+                    b1y = -dx;
+                    b1z = 0;
                 }
+                float n = 1 / (float) Math.sqrt(b1x * b1x + b1y * b1y + b1z * b1z);
+                b1x *= n;
+                b1y *= n;
+                b1z *= n;
                 float b2x = dy * b1z - dz * b1y;
                 float b2y = dz * b1x - dx * b1z;
                 float b2z = dx * b1y - dy * b1x;
@@ -212,11 +216,6 @@ public class SphereFlake implements PrimitiveList {
                     float ndx = recursivePattern[i] * dx + recursivePattern[i + 1] * b1x + recursivePattern[i + 2] * b2x;
                     float ndy = recursivePattern[i] * dy + recursivePattern[i + 1] * b1y + recursivePattern[i + 2] * b2y;
                     float ndz = recursivePattern[i] * dz + recursivePattern[i + 1] * b1z + recursivePattern[i + 2] * b2z;
-                    // normalize
-                    float n = 1 / (float) Math.sqrt(ndx * ndx + ndy * ndy + ndz * ndz);
-                    ndx *= n;
-                    ndy *= n;
-                    ndz *= n;
                     // recurse!
                     intersectFlake(r, state, level - 1, qa, qaInv, cx + scale * ndx, cy + scale * ndy, cz + scale * ndz, ndx, ndy, ndz, nr);
                 }
