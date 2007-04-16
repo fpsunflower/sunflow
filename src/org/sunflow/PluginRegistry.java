@@ -73,6 +73,7 @@ import org.sunflow.core.primitive.SphereFlake;
 import org.sunflow.core.primitive.Torus;
 import org.sunflow.core.primitive.TriangleMesh;
 import org.sunflow.core.renderer.BucketRenderer;
+import org.sunflow.core.renderer.MultipassRenderer;
 import org.sunflow.core.renderer.ProgressiveRenderer;
 import org.sunflow.core.renderer.SimpleRenderer;
 import org.sunflow.core.shader.AmbientOcclusionShader;
@@ -283,6 +284,7 @@ public final class PluginRegistry {
         imageSamplerPlugins.registerPlugin("bucket", BucketRenderer.class);
         imageSamplerPlugins.registerPlugin("ipr", ProgressiveRenderer.class);
         imageSamplerPlugins.registerPlugin("fast", SimpleRenderer.class);
+        imageSamplerPlugins.registerPlugin("multipass", MultipassRenderer.class);
     }
 
     static {

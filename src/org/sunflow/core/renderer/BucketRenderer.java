@@ -149,7 +149,7 @@ public class BucketRenderer implements ImageSampler {
         UI.taskStart("Rendering", 0, bucketCoords.length);
         Timer timer = new Timer();
         timer.start();
-        Thread[] renderThreads = new Thread[scene.getThreads()];
+        BucketThread[] renderThreads = new BucketThread[scene.getThreads()];
         for (int i = 0; i < renderThreads.length; i++) {
             renderThreads[i] = new BucketThread(i);
             renderThreads[i].setPriority(scene.getThreadPriority());
@@ -160,6 +160,8 @@ public class BucketRenderer implements ImageSampler {
                 renderThreads[i].join();
             } catch (InterruptedException e) {
                 UI.printError(Module.BCKT, "Bucket processing thread %d of %d was interrupted", i + 1, renderThreads.length);
+            } finally {
+                renderThreads[i].updateStats();
             }
         }
         UI.taskStop();
@@ -169,14 +171,15 @@ public class BucketRenderer implements ImageSampler {
     }
 
     private class BucketThread extends Thread {
-        private int threadID;
+        private final int threadID;
+        private final IntersectionState istate;
 
         BucketThread(int threadID) {
             this.threadID = threadID;
+            istate = new IntersectionState();
         }
 
         public void run() {
-            IntersectionState istate = new IntersectionState();
             while (true) {
                 int bx, by;
                 synchronized (BucketRenderer.this) {
@@ -191,6 +194,10 @@ public class BucketRenderer implements ImageSampler {
                 if (UI.taskCanceled())
                     return;
             }
+        }
+
+        void updateStats() {
+            scene.accumulateStats(istate);
         }
     }
 
@@ -313,17 +320,17 @@ public class BucketRenderer implements ImageSampler {
         double q2 = QMC.halton(3, sample.i);
         if (superSampling > 1) {
             // multiple sampling
-            sample.add(scene.getRadiance(istate, x, y, q1, q2, q0, sample.i));
+            sample.add(scene.getRadiance(istate, x, y, q1, q2, q0, sample.i, 4, null));
             for (int i = 1; i < superSampling; i++) {
                 double time = QMC.mod1(q0 + i * invSuperSampling);
                 double lensU = QMC.mod1(q1 + QMC.halton(0, i));
                 double lensV = QMC.mod1(q2 + QMC.halton(1, i));
-                sample.add(scene.getRadiance(istate, x, y, lensU, lensV, time, sample.i + i));
+                sample.add(scene.getRadiance(istate, x, y, lensU, lensV, time, sample.i + i, 4, null));
             }
             sample.scale((float) invSuperSampling);
         } else {
             // single sample
-            sample.set(scene.getRadiance(istate, x, y, q1, q2, q0, sample.i));
+            sample.set(scene.getRadiance(istate, x, y, q1, q2, q0, sample.i, 4, null));
         }
     }
 

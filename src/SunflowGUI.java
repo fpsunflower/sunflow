@@ -165,7 +165,7 @@ public class SunflowGUI extends javax.swing.JFrame implements UserInterface {
     public static void main(String[] args) {
         if (args.length > 0) {
             boolean showFrame = true;
-            String sampler = "bucket";
+            String sampler = null;
             boolean noRender = false;
             String filename = null;
             String input = null;
@@ -413,7 +413,8 @@ public class SunflowGUI extends javax.swing.JFrame implements UserInterface {
                 }
                 if (noCaustics)
                     api.parameter("caustics", "none");
-                api.parameter("sampler", sampler);
+                if (sampler != null)
+                    api.parameter("sampler", sampler);
                 api.options(SunflowAPI.DEFAULT_OPTIONS);
                 if (shaderOverride != null) {
                     if (shaderOverride.equals("ambient_occlusion"))

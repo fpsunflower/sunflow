@@ -36,7 +36,7 @@ public class SimpleRenderer implements ImageSampler {
         // start task
         Timer timer = new Timer();
         timer.start();
-        Thread[] renderThreads = new Thread[scene.getThreads()];
+        BucketThread[] renderThreads = new BucketThread[scene.getThreads()];
         for (int i = 0; i < renderThreads.length; i++) {
             renderThreads[i] = new BucketThread();
             renderThreads[i].start();
@@ -46,6 +46,8 @@ public class SimpleRenderer implements ImageSampler {
                 renderThreads[i].join();
             } catch (InterruptedException e) {
                 UI.printError(Module.BCKT, "Bucket processing thread %d of %d was interrupted", i + 1, renderThreads.length);
+            } finally {
+                renderThreads[i].updateStats();
             }
         }
         timer.end();
@@ -54,8 +56,9 @@ public class SimpleRenderer implements ImageSampler {
     }
 
     private class BucketThread extends Thread {
+        private final IntersectionState istate = new IntersectionState();
+
         public void run() {
-            IntersectionState istate = new IntersectionState();
             while (true) {
                 int bx, by;
                 synchronized (SimpleRenderer.this) {
@@ -67,6 +70,10 @@ public class SimpleRenderer implements ImageSampler {
                 }
                 renderBucket(bx, by, istate);
             }
+        }
+
+        void updateStats() {
+            scene.accumulateStats(istate);
         }
     }
 
@@ -82,7 +89,7 @@ public class SimpleRenderer implements ImageSampler {
 
         for (int y = 0, i = 0; y < bh; y++) {
             for (int x = 0; x < bw; x++, i++) {
-                ShadingState state = scene.getRadiance(istate, x0 + x, imageHeight - 1 - (y0 + y), 0.0, 0.0, 0.0, 0);
+                ShadingState state = scene.getRadiance(istate, x0 + x, imageHeight - 1 - (y0 + y), 0.0, 0.0, 0.0, 0, 0, null);
                 bucketRGB[i] = (state != null) ? state.getResult() : Color.BLACK;
                 bucketAlpha[i] = (state != null) ? 1 : 0;
             }

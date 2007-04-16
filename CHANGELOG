@@ -1,4 +1,12 @@
 v0.07.3
+* Bug fix to writeVerbatimString() in binary scene writer
+* Added sampler choice to image block in .sc parser
+* Small bugfix to command line sampler choice
+* Moved shading cache into new image sampler
+* Added a new image sampler (MultipassRenderer - not multipass yet)
+* Added statistics to count number of rays cast
+* Removed "robust" intersection code for triangles and bezier patches
+* Added sphereflake primitive
 * Moved Nan/Inf check into LightServer, demoted to warning severity
 * Fix to allow LDR images in IBL
 * File browser in SunflowGUI remembers previous directory

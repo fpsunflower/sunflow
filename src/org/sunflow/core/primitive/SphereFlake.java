@@ -82,9 +82,9 @@ public class SphereFlake implements PrimitiveList {
         Instance parent = state.getInstance();
         Point3 localPoint = parent.transformWorldToObject(state.getPoint());
 
-        float cx = state.getIntersectionState().getRobustStack()[0];
-        float cy = state.getIntersectionState().getRobustStack()[1];
-        float cz = state.getIntersectionState().getRobustStack()[2];
+        float cx = state.getU();
+        float cy = state.getV();
+        float cz = state.getW();
 
         state.getNormal().set(localPoint.x - cx, localPoint.y - cy, localPoint.z - cz);
         state.getNormal().normalize();
@@ -137,12 +137,7 @@ public class SphereFlake implements PrimitiveList {
                     r.setMax((float) t1);
                 else
                     r.setMax((float) t2);
-                state.setIntersection(0, 0, 0);
-                // FIXME: save information about the intersection in the robust
-                // stack
-                state.getRobustStack()[0] = cx;
-                state.getRobustStack()[1] = cy;
-                state.getRobustStack()[2] = cz;
+                state.setIntersection(0, cx, cy, cz);
             }
         } else {
             float boundRadius = radius * (1 + boundingRadiusOffset[level]);
@@ -174,12 +169,7 @@ public class SphereFlake implements PrimitiveList {
                             r.setMax((float) t1);
                         else
                             r.setMax((float) t2);
-                        state.setIntersection(0, 0, 0);
-                        // FIXME: save information about the intersection in the
-                        // robust stack
-                        state.getRobustStack()[0] = cx;
-                        state.getRobustStack()[1] = cy;
-                        state.getRobustStack()[2] = cz;
+                        state.setIntersection(0, cx, cy, cz);
                     }
                 }
 

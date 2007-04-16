@@ -23,6 +23,7 @@ public class Scene {
     private Camera camera;
     private AccelerationStructure intAccel;
     private String acceltype;
+    private Statistics stats;
 
     // baking
     private boolean bakingViewDependent;
@@ -48,6 +49,7 @@ public class Scene {
         instanceList = new InstanceList();
         infiniteInstanceList = new InstanceList();
         acceltype = "auto";
+        stats = new Statistics();
 
         bakingViewDependent = false;
         bakingInstance = null;
@@ -154,7 +156,8 @@ public class Scene {
      *         <code>null</code> if nothing is seen through the specifieFd
      *         point
      */
-    public ShadingState getRadiance(IntersectionState istate, float rx, float ry, double lensU, double lensV, double time, int instance) {
+    public ShadingState getRadiance(IntersectionState istate, float rx, float ry, double lensU, double lensV, double time, int instance, int dim, ShadingCache cache) {
+        istate.numEyeRays++;
         if (bakingPrimitives == null) {
             // warp the time sample by a tent filter - this helps simulates the
             // behaviour of a standard shutter as explained here:
@@ -166,13 +169,13 @@ public class Scene {
                 time = 1 - Math.sqrt(2 - 2 * time);
             time = 0.5 * (time + 1);
             Ray r = camera.getRay(rx, ry, imageWidth, imageHeight, lensU, lensV, time);
-            return r != null ? lightServer.getRadiance(rx, ry, instance, r, istate) : null;
+            return r != null ? lightServer.getRadiance(rx, ry, instance, dim, r, istate, cache) : null;
         } else {
             Ray r = new Ray(rx / imageWidth, ry / imageHeight, -1, 0, 0, 1);
             traceBake(r, istate);
             if (!istate.hit())
                 return null;
-            ShadingState state = ShadingState.createState(istate, rx, ry, r, instance, lightServer);
+            ShadingState state = ShadingState.createState(istate, rx, ry, r, instance, dim, lightServer);
             bakingPrimitives.prepareShadingState(state);
             if (bakingViewDependent)
                 state.setRay(camera.getRay(state.getPoint()));
@@ -199,7 +202,17 @@ public class Scene {
         return instanceList.getWorldBounds(null);
     }
 
+    public void accumulateStats(IntersectionState state) {
+        stats.accumulate(state);
+    }
+
+    public void accumulateStats(ShadingCache cache) {
+        stats.accumulate(cache);
+    }
+
     void trace(Ray r, IntersectionState state) {
+        // stats
+        state.numRays++;
         // reset object
         state.instance = null;
         state.current = null;
@@ -211,6 +224,7 @@ public class Scene {
     }
 
     Color traceShadow(Ray r, IntersectionState state) {
+        state.numShadowRays++;
         trace(r, state);
         return state.hit() ? Color.WHITE : Color.BLACK;
     }
@@ -250,7 +264,8 @@ public class Scene {
             instanceList.addLightSourceInstances(areaLights.toArray(new Instance[areaLights.size()]));
         else
             instanceList.clearLightSources();
-        // FIXME: this _could_ be done incrementally to avoid top-level rebuilds each frame
+        // FIXME: this _could_ be done incrementally to avoid top-level rebuilds
+        // each frame
         rebuildAccel = true;
     }
 
@@ -268,6 +283,7 @@ public class Scene {
      *            be created if <code>null</code>
      */
     public void render(Options options, ImageSampler sampler, Display display) {
+        stats.reset();
         if (display == null)
             display = new FrameDisplay();
 
@@ -335,8 +351,11 @@ public class Scene {
             return;
         // render
         UI.printInfo(Module.SCENE, "Rendering ...");
+        stats.setResolution(imageWidth, imageHeight);
         sampler.prepare(options, this, imageWidth, imageHeight);
         sampler.render(display);
+        // show statistics
+        stats.displayStats();
         lightServer.showStats();
         // discard area lights
         removeAreaLightInstances();

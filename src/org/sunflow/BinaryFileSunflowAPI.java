@@ -197,7 +197,7 @@ class BinaryFileSunflowAPI extends FileSunflowAPI {
     }
 
     protected void writeVerbatimString(String string) {
-        writeVerbatimString(string);
+        writeString(string);
     }
 
     protected void writeNewline(int indentNext) {

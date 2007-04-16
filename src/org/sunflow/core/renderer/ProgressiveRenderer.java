@@ -56,7 +56,7 @@ public class ProgressiveRenderer implements ImageSampler {
         counter = 0;
         counterMax = imageWidth * imageHeight;
 
-        Thread[] renderThreads = new Thread[scene.getThreads()];
+        SmallBucketThread[] renderThreads = new SmallBucketThread[scene.getThreads()];
         for (int i = 0; i < renderThreads.length; i++) {
             renderThreads[i] = new SmallBucketThread();
             renderThreads[i].start();
@@ -66,6 +66,8 @@ public class ProgressiveRenderer implements ImageSampler {
                 renderThreads[i].join();
             } catch (InterruptedException e) {
                 UI.printError(Module.IPR, "Thread %d of %d was interrupted", i + 1, renderThreads.length);
+            } finally {
+                renderThreads[i].updateStats();
             }
         }
         UI.taskStop();
@@ -75,8 +77,9 @@ public class ProgressiveRenderer implements ImageSampler {
     }
 
     private class SmallBucketThread extends Thread {
+        private final IntersectionState istate = new IntersectionState();
+
         public void run() {
-            IntersectionState istate = new IntersectionState();
             while (true) {
                 int n = progressiveRenderNext(istate);
                 synchronized (ProgressiveRenderer.this) {
@@ -88,6 +91,10 @@ public class ProgressiveRenderer implements ImageSampler {
                 if (UI.taskCanceled())
                     return;
             }
+        }
+
+        void updateStats() {
+            scene.accumulateStats(istate);
         }
     }
 
@@ -109,7 +116,7 @@ public class ProgressiveRenderer implements ImageSampler {
                 double time = QMC.halton(1, instance);
                 double lensU = QMC.halton(2, instance);
                 double lensV = QMC.halton(3, instance);
-                ShadingState state = scene.getRadiance(istate, x, imageHeight - 1 - y, lensU, lensV, time, instance);
+                ShadingState state = scene.getRadiance(istate, x, imageHeight - 1 - y, lensU, lensV, time, instance, 4, null);
                 Color c = state != null ? state.getResult() : Color.BLACK;
                 pixels++;
                 // fill region

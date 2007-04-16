@@ -1,24 +1,27 @@
 image {
 	resolution 1920 1080
-	aa 0 2
+	aa 2 2
+	samples 4
 	filter gaussian
 }
 
 trace-depths {
 	diff 1
 	refl 1
-	refr 10
+	refr 0
 }
 
 
 % |persp|perspShape
 camera {
-	type   pinhole
+	type   thinlens
 	eye    -5 0 -0.9
 	target 0 0 0.2
 	up     0 0 1
 	fov    60
 	aspect 1.77777777777
+	fdist  5
+	lensr  0.01
 }
 
 gi { type path samples 16 }
@@ -47,11 +50,20 @@ light {
   samples 32
 }
 
+shader {
+  name metal
+  type phong
+  diff 0.1 0.1 0.1
+  spec 0.2 0.2 0.2 30
+  samples 4
+}
+
+
 object {
-	shader simple1
+	shader metal
 	type sphereflake
 	name left
-	level 9
+	level 7
 }
 
 object {

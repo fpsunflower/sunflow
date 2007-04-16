@@ -159,6 +159,8 @@ public class SCParser implements SceneParser {
             api.parameter("resolutionX", p.getNextInt());
             api.parameter("resolutionY", p.getNextInt());
         }
+        if (p.peekNextToken("sampler"))
+            api.parameter("sampler", p.getNextToken());
         if (p.peekNextToken("aa")) {
             api.parameter("aa.min", p.getNextInt());
             api.parameter("aa.max", p.getNextInt());
@@ -175,6 +177,8 @@ public class SCParser implements SceneParser {
             UI.printWarning(Module.API, "Deprecated: show-aa ignored");
             p.getNextBoolean();
         }
+        if (p.peekNextToken("cache"))
+            api.parameter("aa.cache", p.getNextBoolean());
         if (p.peekNextToken("output")) {
             UI.printWarning(Module.API, "Deprecated: output statement ignored");
             p.getNextToken();

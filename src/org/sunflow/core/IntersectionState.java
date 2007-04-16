@@ -7,12 +7,17 @@ package org.sunflow.core;
  */
 public final class IntersectionState {
     private static final int MAX_STACK_SIZE = 64;
-    float u, v;
+    float u, v, w;
     Instance instance;
     int id;
     private final StackNode[][] stacks = new StackNode[2][MAX_STACK_SIZE];
-    private final float[] rstack;
     Instance current;
+    long numEyeRays;
+    long numShadowRays;
+    long numReflectionRays;
+    long numGlossyRays;
+    long numRefractionRays;
+    long numRays;
 
     /**
      * Traversal stack node, helps with tree-based {@link AccelerationStructure}
@@ -31,7 +36,6 @@ public final class IntersectionState {
         for (int i = 0; i < stacks.length; i++)
             for (int j = 0; j < stacks[i].length; j++)
                 stacks[i][j] = new StackNode();
-        rstack = new float[53 * 256];
     }
 
     /**
@@ -41,15 +45,6 @@ public final class IntersectionState {
      */
     public final StackNode[] getStack() {
         return current == null ? stacks[0] : stacks[1];
-    }
-
-    /**
-     * Used for algorithms which do bounding box based ray intersection.
-     * 
-     * @return array of floating point values for the stack
-     */
-    public final float[] getRobustStack() {
-        return rstack;
     }
 
     /**
@@ -71,10 +66,41 @@ public final class IntersectionState {
      * @param u u surface paramater of the intersection point
      * @param v v surface parameter of the intersection point
      */
+    public final void setIntersection(int id) {
+        instance = current;
+        this.id = id;
+    }
+
+    /**
+     * Record an intersection with the specified primitive id. The parent object
+     * is assumed to be the current instance. The u and v parameters are used to
+     * pinpoint the location on the surface if needed.
+     * 
+     * @param id primitive id of the intersected object
+     * @param u u surface paramater of the intersection point
+     * @param v v surface parameter of the intersection point
+     */
     public final void setIntersection(int id, float u, float v) {
         instance = current;
         this.id = id;
         this.u = u;
         this.v = v;
+    }
+
+    /**
+     * Record an intersection with the specified primitive id. The parent object
+     * is assumed to be the current instance. The u and v parameters are used to
+     * pinpoint the location on the surface if needed.
+     * 
+     * @param id primitive id of the intersected object
+     * @param u u surface paramater of the intersection point
+     * @param v v surface parameter of the intersection point
+     */
+    public final void setIntersection(int id, float u, float v, float w) {
+        instance = current;
+        this.id = id;
+        this.u = u;
+        this.v = v;
+        this.w = w;
     }
 }

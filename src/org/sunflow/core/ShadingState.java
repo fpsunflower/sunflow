@@ -28,7 +28,7 @@ public final class ShadingState implements Iterable<LightSample> {
     private float cosND;
     private float bias;
     private boolean behind;
-    private float hitU, hitV;
+    private float hitU, hitV, hitW;
     private Instance instance;
     private int primitiveID;
     private Ray r;
@@ -54,8 +54,8 @@ public final class ShadingState implements Iterable<LightSample> {
 
     }
 
-    static ShadingState createState(IntersectionState istate, float rx, float ry, Ray r, int i, LightServer server) {
-        ShadingState s = new ShadingState(null, istate, r, i, 4);
+    static ShadingState createState(IntersectionState istate, float rx, float ry, Ray r, int i, int d, LightServer server) {
+        ShadingState s = new ShadingState(null, istate, r, i, d);
         s.server = server;
         s.rx = rx;
         s.ry = ry;
@@ -105,6 +105,7 @@ public final class ShadingState implements Iterable<LightSample> {
         this.primitiveID = istate.id;
         this.hitU = istate.u;
         this.hitV = istate.v;
+        this.hitW = istate.w;
         if (previous == null) {
             diffuseDepth = 0;
             reflectionDepth = 0;
@@ -230,7 +231,7 @@ public final class ShadingState implements Iterable<LightSample> {
         return behind;
     }
 
-    public final IntersectionState getIntersectionState() {
+    final IntersectionState getIntersectionState() {
         return istate;
     }
 
@@ -252,6 +253,15 @@ public final class ShadingState implements Iterable<LightSample> {
         return hitV;
     }
 
+    /**
+     * Get w barycentric coordinate of the intersection point.
+     * 
+     * @return w barycentric coordinate
+     */
+    public final float getW() {
+        return hitW;
+    }
+    
     /**
      * Get the instance which was intersected
      * 
@@ -560,6 +570,7 @@ public final class ShadingState implements Iterable<LightSample> {
      * @return color observed along specified ray.
      */
     public final Color traceGlossy(Ray r, int i) {
+        istate.numGlossyRays++;
         return server.traceGlossy(this, r, i);
     }
 
@@ -572,6 +583,7 @@ public final class ShadingState implements Iterable<LightSample> {
      * @return color observed along specified ray.
      */
     public final Color traceReflection(Ray r, int i) {
+        istate.numReflectionRays++;
         return server.traceReflection(this, r, i);
     }
 
@@ -583,6 +595,7 @@ public final class ShadingState implements Iterable<LightSample> {
      * @return color observed along specified ray.
      */
     public final Color traceRefraction(Ray r, int i) {
+        istate.numRefractionRays++;
         // this assumes the refraction ray is pointing away from the normal
         r.ox -= 2 * bias * ng.x;
         r.oy -= 2 * bias * ng.y;
