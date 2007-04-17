@@ -32,6 +32,7 @@ import org.sunflow.system.UI.Module;
  */
 public class SCParser implements SceneParser {
     private static int instanceCounter = 0;
+    private int instanceNumber;
     private Parser p;
     private int numLightSamples;
     // used to generate unique names inside this parser
@@ -40,6 +41,7 @@ public class SCParser implements SceneParser {
     public SCParser() {
         objectNames = new HashMap<String, Integer>();
         instanceCounter++;
+        instanceNumber = instanceCounter;
     }
 
     private String generateUniqueName(String prefix) {
@@ -52,7 +54,7 @@ public class SCParser implements SceneParser {
         } else {
             objectNames.put(prefix, index + 1);
         }
-        return String.format("@sc_%d::%s_%d", instanceCounter, prefix, index);
+        return String.format("@sc_%d::%s_%d", instanceNumber, prefix, index);
     }
 
     public boolean parse(String filename, SunflowAPIInterface api) {
