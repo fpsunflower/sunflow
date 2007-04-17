@@ -595,7 +595,7 @@ public class SCParser implements SceneParser {
         p.checkNextToken("{");
         p.checkNextToken("name");
         String name = p.getNextToken();
-        UI.printInfo(Module.API, "Reading shader: %s ...", name);
+        UI.printInfo(Module.API, "Reading modifier: %s ...", name);
         p.checkNextToken("type");
         if (p.peekNextToken("bump")) {
             p.checkNextToken("texture");
@@ -607,6 +607,14 @@ public class SCParser implements SceneParser {
             p.checkNextToken("texture");
             api.parameter("texture", p.getNextToken());
             api.modifier(name, "normal_map");
+        } else if (p.peekNextToken("perlin")) {
+            p.checkNextToken("function");
+            api.parameter("function", p.getNextInt());
+            p.checkNextToken("size");
+            api.parameter("size", p.getNextFloat());
+            p.checkNextToken("scale");
+            api.parameter("scale", p.getNextFloat());
+            api.modifier(name, "perlin");
         } else {
             UI.printWarning(Module.API, "Unrecognized modifier type: %s", p.getNextToken());
         }

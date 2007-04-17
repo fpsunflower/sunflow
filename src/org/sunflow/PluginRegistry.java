@@ -49,6 +49,7 @@ import org.sunflow.core.light.SunSkyLight;
 import org.sunflow.core.light.TriangleMeshLight;
 import org.sunflow.core.modifiers.BumpMappingModifier;
 import org.sunflow.core.modifiers.NormalMapModifier;
+import org.sunflow.core.modifiers.PerlinModifier;
 import org.sunflow.core.parser.RA2Parser;
 import org.sunflow.core.parser.RA3Parser;
 import org.sunflow.core.parser.SCAsciiParser;
@@ -208,6 +209,7 @@ public final class PluginRegistry {
         // modifiers
         modifierPlugins.registerPlugin("bump_map", BumpMappingModifier.class);
         modifierPlugins.registerPlugin("normal_map", NormalMapModifier.class);
+        modifierPlugins.registerPlugin("perlin", PerlinModifier.class);
     }
 
     static {

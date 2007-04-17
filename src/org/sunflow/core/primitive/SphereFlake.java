@@ -34,9 +34,9 @@ public class SphereFlake implements PrimitiveList {
             recursivePattern[3 * i + 2] = (float) Math.cos(a);
             a += daL;
         }
-        a -= daL / 3; // tweak
+        a -= daL / 2; // tweak
         for (int i = 6; i < 9; i++) {
-            recursivePattern[3 * i + 0] = +0.6f;
+            recursivePattern[3 * i + 0] = +0.7f;
             recursivePattern[3 * i + 1] = (float) Math.sin(a);
             recursivePattern[3 * i + 2] = (float) Math.cos(a);
             a += daU;

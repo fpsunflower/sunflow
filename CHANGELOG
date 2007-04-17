@@ -1,4 +1,5 @@
 v0.07.3
+* Added PerlinModifier
 * Bug fix to writeVerbatimString() in binary scene writer
 * Added sampler choice to image block in .sc parser
 * Small bugfix to command line sampler choice
