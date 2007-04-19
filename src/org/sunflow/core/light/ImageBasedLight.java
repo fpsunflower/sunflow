@@ -25,16 +25,20 @@ public class ImageBasedLight implements PrimitiveList, LightSource, Shader {
     private Texture texture;
     private OrthoNormalBasis basis;
     private int numSamples;
+    private int numLowSamples;
     private float jacobian;
     private float[] colHistogram;
     private float[][] imageHistogram;
     private Vector3[] samples;
+    private Vector3[] lowSamples;
     private Color[] colors;
+    private Color[] lowColors;
 
     public ImageBasedLight() {
         texture = null;
         updateBasis(new Vector3(0, 0, -1), new Vector3(0, 1, 0));
         numSamples = 64;
+        numLowSamples = 8;
     }
 
     private void updateBasis(Vector3 center, Vector3 up) {
@@ -48,7 +52,7 @@ public class ImageBasedLight implements PrimitiveList, LightSource, Shader {
     public boolean update(ParameterList pl, SunflowAPI api) {
         updateBasis(pl.getVector("center", null), pl.getVector("up", null));
         numSamples = pl.getInt("samples", numSamples);
-
+        numLowSamples = pl.getInt("lowsamples", numLowSamples);
         String filename = pl.getString("texture", null);
         if (filename != null)
             texture = TextureCache.getTexture(api.resolveTextureFilename(filename), false);
@@ -71,11 +75,6 @@ public class ImageBasedLight implements PrimitiveList, LightSource, Shader {
                     float u = (x + 0.5f) * du;
                     float v = (y + 0.5f) * dv;
                     Color c = texture.getPixel(u, v);
-                    // box filter the image
-                    // c.add(texture.getPixel(u + du, v));
-                    // c.add(texture.getPixel(u + du, v+ dv));
-                    // c.add(texture.getPixel(u, v + dv));
-                    // c.mul(0.25f);
                     imageHistogram[x][y] = c.getLuminance() * (float) Math.sin(Math.PI * v);
                     if (y > 0)
                         imageHistogram[x][y] += imageHistogram[x][y - 1];
@@ -92,42 +91,48 @@ public class ImageBasedLight implements PrimitiveList, LightSource, Shader {
         }
         // take fixed samples
         if (pl.getBoolean("fixed", samples != null)) {
-            // Bitmap loc = new Bitmap(filename);
+            // high density samples
             samples = new Vector3[numSamples];
             colors = new Color[numSamples];
-            for (int i = 0; i < numSamples; i++) {
-                double randX = (double) i / (double) numSamples;
-                double randY = QMC.halton(0, i);
-                int x = 0;
-                while (randX >= colHistogram[x] && x < colHistogram.length - 1)
-                    x++;
-                float[] rowHistogram = imageHistogram[x];
-                int y = 0;
-                while (randY >= rowHistogram[y] && y < rowHistogram.length - 1)
-                    y++;
-                // sample from (x, y)
-                float u = (float) ((x == 0) ? (randX / colHistogram[0]) : ((randX - colHistogram[x - 1]) / (colHistogram[x] - colHistogram[x - 1])));
-                float v = (float) ((y == 0) ? (randY / rowHistogram[0]) : ((randY - rowHistogram[y - 1]) / (rowHistogram[y] - rowHistogram[y - 1])));
-
-                float px = ((x == 0) ? colHistogram[0] : (colHistogram[x] - colHistogram[x - 1]));
-                float py = ((y == 0) ? rowHistogram[0] : (rowHistogram[y] - rowHistogram[y - 1]));
-
-                float su = (x + u) / colHistogram.length;
-                float sv = (y + v) / rowHistogram.length;
-
-                float invP = (float) Math.sin(sv * Math.PI) * jacobian / (numSamples * px * py);
-                samples[i] = getDirection(su, sv);
-                basis.transform(samples[i]);
-                colors[i] = texture.getPixel(su, sv).mul(invP);
-                // loc.setPixel(x, y, Color.YELLOW.copy().mul(1e6f));
-            }
-            // loc.save("samples.hdr");
+            generateFixedSamples(samples, colors);
+            // low density samples
+            lowSamples = new Vector3[numLowSamples];
+            lowColors = new Color[numLowSamples];
+            generateFixedSamples(lowSamples, lowColors);
         } else {
             // turn off
-            samples = null;
-            colors = null;
+            samples = lowSamples = null;
+            colors = lowColors = null;
         }
         return true;
+    }
+
+    private void generateFixedSamples(Vector3[] samples, Color[] colors) {
+        for (int i = 0; i < samples.length; i++) {
+            double randX = (double) i / (double) samples.length;
+            double randY = QMC.halton(0, i);
+            int x = 0;
+            while (randX >= colHistogram[x] && x < colHistogram.length - 1)
+                x++;
+            float[] rowHistogram = imageHistogram[x];
+            int y = 0;
+            while (randY >= rowHistogram[y] && y < rowHistogram.length - 1)
+                y++;
+            // sample from (x, y)
+            float u = (float) ((x == 0) ? (randX / colHistogram[0]) : ((randX - colHistogram[x - 1]) / (colHistogram[x] - colHistogram[x - 1])));
+            float v = (float) ((y == 0) ? (randY / rowHistogram[0]) : ((randY - rowHistogram[y - 1]) / (rowHistogram[y] - rowHistogram[y - 1])));
+
+            float px = ((x == 0) ? colHistogram[0] : (colHistogram[x] - colHistogram[x - 1]));
+            float py = ((y == 0) ? rowHistogram[0] : (rowHistogram[y] - rowHistogram[y - 1]));
+
+            float su = (x + u) / colHistogram.length;
+            float sv = (y + v) / rowHistogram.length;
+
+            float invP = (float) Math.sin(sv * Math.PI) * jacobian / (numSamples * px * py);
+            samples[i] = getDirection(su, sv);
+            basis.transform(samples[i]);
+            colors[i] = texture.getPixel(su, sv).mul(invP);
+        }
     }
 
     public void prepareShadingState(ShadingState state) {
@@ -200,14 +205,27 @@ public class ImageBasedLight implements PrimitiveList, LightSource, Shader {
                 }
             }
         } else {
-            for (int i = 0; i < numSamples; i++) {
-                if (Vector3.dot(samples[i], state.getGeoNormal()) > 0 && Vector3.dot(samples[i], state.getNormal()) > 0) {
-                    LightSample dest = new LightSample();
-                    dest.setShadowRay(new Ray(state.getPoint(), samples[i]));
-                    dest.getShadowRay().setMax(Float.MAX_VALUE);
-                    dest.setRadiance(colors[i], colors[i]);
-                    dest.traceShadow(state);
-                    state.addSample(dest);
+            if (state.getDiffuseDepth() > 0) {
+                for (int i = 0; i < numLowSamples; i++) {
+                    if (Vector3.dot(lowSamples[i], state.getGeoNormal()) > 0 && Vector3.dot(lowSamples[i], state.getNormal()) > 0) {
+                        LightSample dest = new LightSample();
+                        dest.setShadowRay(new Ray(state.getPoint(), lowSamples[i]));
+                        dest.getShadowRay().setMax(Float.MAX_VALUE);
+                        dest.setRadiance(lowColors[i], lowColors[i]);
+                        dest.traceShadow(state);
+                        state.addSample(dest);
+                    }
+                }
+            } else {
+                for (int i = 0; i < numSamples; i++) {
+                    if (Vector3.dot(samples[i], state.getGeoNormal()) > 0 && Vector3.dot(samples[i], state.getNormal()) > 0) {
+                        LightSample dest = new LightSample();
+                        dest.setShadowRay(new Ray(state.getPoint(), samples[i]));
+                        dest.getShadowRay().setMax(Float.MAX_VALUE);
+                        dest.setRadiance(colors[i], colors[i]);
+                        dest.traceShadow(state);
+                        state.addSample(dest);
+                    }
                 }
             }
         }

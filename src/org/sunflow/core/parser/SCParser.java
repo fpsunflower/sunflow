@@ -1070,6 +1070,10 @@ public class SCParser implements SceneParser {
             else
                 UI.printWarning(Module.API, "Samples keyword not found - defaulting to %d", samples);
             api.parameter("samples", samples);
+            if (p.peekNextToken("lowsamples"))
+                api.parameter("lowsamples", p.getNextInt());
+            else
+                api.parameter("lowsamples", samples);
             api.light(generateUniqueName("ibl"), "ibl");
         } else if (p.peekNextToken("meshlight")) {
             p.checkNextToken("name");
