@@ -100,9 +100,9 @@ public class SunSkyLight implements LightSource, PrimitiveList, Shader {
         double m = 1.0 / (Math.cos(theta) + 0.000940 * Math.pow(1.6386 - theta, -1.253));
         for (int i = 0, lambda = 350; lambda <= 800; i++, lambda += 5) {
             // Rayleigh scattering
-            double tauR = Math.exp(-m * 0.008735 * Math.pow((double) lambda / 1000.0, -4.08));
+            double tauR = Math.exp(-m * 0.008735 * Math.pow(lambda / 1000.0, -4.08));
             // Aerosol (water + dust) attenuation
-            double tauA = Math.exp(-m * beta * Math.pow((double) lambda / 1000.0, -alpha));
+            double tauA = Math.exp(-m * beta * Math.pow(lambda / 1000.0, -alpha));
             // Attenuation due to ozone absorption
             double tauO = Math.exp(-m * k_oCurve.sample(lambda) * lozone);
             // Attenuation due to mixed gases absorption

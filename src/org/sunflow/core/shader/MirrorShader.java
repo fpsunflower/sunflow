@@ -12,7 +12,7 @@ public class MirrorShader implements Shader {
     private Color color;
 
     public MirrorShader() {
-        this.color = Color.WHITE;
+        color = Color.WHITE;
     }
 
     public boolean update(ParameterList pl, SunflowAPI api) {

@@ -10,41 +10,50 @@ import org.sunflow.math.Matrix4;
 public class SCBinaryParser extends SCAbstractParser {
     private DataInputStream stream;
 
+    @Override
     protected void closeParser() throws IOException {
         stream.close();
     }
 
+    @Override
     protected void openParser(String filename) throws IOException {
         stream = new DataInputStream(new FileInputStream(filename));
     }
 
+    @Override
     protected boolean parseBoolean() throws IOException {
         return stream.readUnsignedByte() != 0;
     }
 
+    @Override
     protected float parseFloat() throws IOException {
         return Float.intBitsToFloat(parseInt());
     }
 
+    @Override
     protected int parseInt() throws IOException {
         // note that we use readUnsignedByte(), not read() to get EOF exceptions
         return stream.readUnsignedByte() | (stream.readUnsignedByte() << 8) | (stream.readUnsignedByte() << 16) | (stream.readUnsignedByte() << 24);
     }
 
+    @Override
     protected Matrix4 parseMatrix() throws IOException {
         return new Matrix4(parseFloatArray(16), true);
     }
 
+    @Override
     protected String parseString() throws IOException {
         byte[] b = new byte[parseInt()];
         stream.read(b);
         return new String(b, "UTF-8");
     }
 
+    @Override
     protected String parseVerbatimString() throws IOException {
         return parseString();
     }
 
+    @Override
     protected InterpolationType parseInterpolationType() throws IOException {
         int c;
         switch (c = stream.readUnsignedByte()) {
@@ -61,6 +70,7 @@ public class SCBinaryParser extends SCAbstractParser {
         }
     }
 
+    @Override
     protected Keyword parseKeyword() throws IOException {
         int code = stream.read(); // read a single byte - allow for EOF (<0)
         switch (code) {

@@ -37,20 +37,20 @@ public class ByteUtil {
         byte[] b = new byte[8];
 
         b[0] = (byte) (i & 0xFF);
-        b[1] = (byte) ((long) ((long) i >> (long) 8) & (long) 0xFF);
-        b[2] = (byte) ((long) ((long) i >> (long) 16) & (long) 0xFF);
-        b[3] = (byte) ((long) ((long) i >> (long) 24) & (long) 0xFF);
+        b[1] = (byte) ((i >> 8) & 0xFF);
+        b[2] = (byte) ((i >> 16) & 0xFF);
+        b[3] = (byte) ((i >> 24) & 0xFF);
 
-        b[4] = (byte) ((long) ((long) i >> (long) 32) & (long) 0xFF);
-        b[5] = (byte) ((long) ((long) i >> (long) 40) & (long) 0xFF);
-        b[6] = (byte) ((long) ((long) i >> (long) 48) & (long) 0xFF);
-        b[7] = (byte) ((long) ((long) i >> (long) 56) & (long) 0xFF);
+        b[4] = (byte) ((i >> 32) & 0xFF);
+        b[5] = (byte) ((i >> 40) & 0xFF);
+        b[6] = (byte) ((i >> 48) & 0xFF);
+        b[7] = (byte) ((i >> 56) & 0xFF);
 
         return b;
     }
 
     public static final long toLong(byte[] in) {
-        return (long) (((long) (toInt(in[0], in[1], in[2], in[3]))) | ((long) (toInt(in[4], in[5], in[6], in[7])) << (long) 32));
+        return (((toInt(in[0], in[1], in[2], in[3]))) | ((long) (toInt(in[4], in[5], in[6], in[7])) << (long) 32));
     }
 
     public static final int toInt(byte in0, byte in1, byte in2, byte in3) {

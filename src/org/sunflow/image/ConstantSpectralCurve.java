@@ -13,6 +13,7 @@ public class ConstantSpectralCurve extends SpectralCurve {
         this.amp = amp;
     }
 
+    @Override
     public float sample(float lambda) {
         return amp;
     }

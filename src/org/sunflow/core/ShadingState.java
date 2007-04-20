@@ -101,11 +101,11 @@ public final class ShadingState implements Iterable<LightSample> {
         this.istate = istate;
         this.i = i;
         this.d = d;
-        this.instance = istate.instance; // local copy
-        this.primitiveID = istate.id;
-        this.hitU = istate.u;
-        this.hitV = istate.v;
-        this.hitW = istate.w;
+        instance = istate.instance; // local copy
+        primitiveID = istate.id;
+        hitU = istate.u;
+        hitV = istate.v;
+        hitW = istate.w;
         if (previous == null) {
             diffuseDepth = 0;
             reflectionDepth = 0;
@@ -114,10 +114,10 @@ public final class ShadingState implements Iterable<LightSample> {
             diffuseDepth = previous.diffuseDepth;
             reflectionDepth = previous.reflectionDepth;
             refractionDepth = previous.refractionDepth;
-            this.server = previous.server;
-            this.map = previous.map;
-            this.rx = previous.rx;
-            this.ry = previous.ry;
+            server = previous.server;
+            map = previous.map;
+            rx = previous.rx;
+            ry = previous.ry;
             this.i += previous.i;
             this.d += previous.d;
         }

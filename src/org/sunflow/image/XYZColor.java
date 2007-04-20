@@ -41,6 +41,7 @@ public final class XYZColor {
         Z *= s;
     }
 
+    @Override
     public final String toString() {
         return String.format("(%.3f, %.3f, %.3f)", X, Y, Z);
     }

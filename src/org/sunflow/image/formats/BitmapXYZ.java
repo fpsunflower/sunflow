@@ -14,19 +14,23 @@ public class BitmapXYZ extends Bitmap {
         this.data = data;
     }
 
+    @Override
     public int getWidth() {
         return w;
     }
 
+    @Override
     public int getHeight() {
         return h;
     }
 
+    @Override
     public Color readColor(int x, int y) {
         int index = 3 * (x + y * w);
         return Color.NATIVE_SPACE.convertXYZtoRGB(new XYZColor(data[index], data[index + 1], data[index + 2])).mul(0.1f);
     }
 
+    @Override
     public float readAlpha(int x, int y) {
         return 1;
     }

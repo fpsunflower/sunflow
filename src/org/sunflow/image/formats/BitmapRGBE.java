@@ -29,14 +29,17 @@ public class BitmapRGBE extends Bitmap {
         this.data = data;
     }
 
+    @Override
     public int getWidth() {
         return w;
     }
 
+    @Override
     public int getHeight() {
         return h;
     }
 
+    @Override
     public Color readColor(int x, int y) {
         int rgbe = data[x + y * w];
         float f = EXPONENT[rgbe & 0xFF];
@@ -46,6 +49,7 @@ public class BitmapRGBE extends Bitmap {
         return new Color(r, g, b);
     }
 
+    @Override
     public float readAlpha(int x, int y) {
         return 1;
     }

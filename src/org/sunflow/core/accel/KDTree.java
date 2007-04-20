@@ -141,7 +141,7 @@ public class KDTree implements AccelerationStructure {
         UI.printDetailed(Module.ACCEL, "  * Dump leaves:    %s", dump ? "enabled" : "disabled");
         Timer total = new Timer();
         total.start();
-        this.primitiveList = primitives;
+        primitiveList = primitives;
         // get the object space bounds
         bounds = primitives.getWorldBounds(null);
         int nPrim = primitiveList.getNumPrimitives(), nSplits = 0;
@@ -320,7 +320,7 @@ public class KDTree implements AccelerationStructure {
         // pack float in sortable form
         int f = Float.floatToRawIntBits(split);
         int top = f ^ ((f >> 31) | 0x80000000);
-        long p = ((long) top & 0xFFFFFFFFL) << 32;
+        long p = (top & 0xFFFFFFFFL) << 32;
         p |= type; // encode type as 2 bits
         p |= ((long) axis) << 28; // encode axis as 2 bits
         p |= (object & 0xFFFFFFFL); // pack object number

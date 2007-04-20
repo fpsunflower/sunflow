@@ -13,6 +13,7 @@ public class RegularSpectralCurve extends SpectralCurve {
         invDelta = 1 / delta;
     }
     
+    @Override
     public float sample(float lambda) {
         // reject wavelengths outside the valid range
         if (lambda < lambdaMin || lambda > lambdaMax)

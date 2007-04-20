@@ -27,18 +27,22 @@ public class GenericBitmap extends Bitmap {
         alpha = new float[w * h];
     }
 
+    @Override
     public int getWidth() {
         return w;
     }
 
+    @Override
     public int getHeight() {
         return h;
     }
 
+    @Override
     public Color readColor(int x, int y) {
         return color[x + y * w];
     }
 
+    @Override
     public float readAlpha(int x, int y) {
         return alpha[x + y * w];
     }

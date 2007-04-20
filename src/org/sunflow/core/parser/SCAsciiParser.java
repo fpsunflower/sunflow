@@ -32,6 +32,7 @@ public class SCAsciiParser extends SCAbstractParser {
         return c;
     }
 
+    @Override
     protected Matrix4 parseMatrix() throws IOException {
         if (p.peekNextToken("row")) {
             return new Matrix4(parseFloatArray(16), true);
@@ -83,30 +84,37 @@ public class SCAsciiParser extends SCAbstractParser {
         }
     }
 
+    @Override
     protected void closeParser() throws IOException {
         p.close();
     }
 
+    @Override
     protected void openParser(String filename) throws IOException {
         p = new Parser(filename);
     }
 
+    @Override
     protected boolean parseBoolean() throws IOException {
         return Boolean.parseBoolean(parseString());
     }
 
+    @Override
     protected float parseFloat() throws IOException {
         return p.getNextFloat();
     }
 
+    @Override
     protected int parseInt() throws IOException {
         return p.getNextInt();
     }
 
+    @Override
     protected String parseString() throws IOException {
         return p.getNextToken();
     }
 
+    @Override
     protected String parseVerbatimString() throws IOException {
         try {
             return p.getNextCodeBlock();
@@ -115,6 +123,7 @@ public class SCAsciiParser extends SCAbstractParser {
         }
     }
 
+    @Override
     protected InterpolationType parseInterpolationType() throws IOException {
         if (p.peekNextToken("none"))
             return InterpolationType.NONE;
@@ -127,6 +136,7 @@ public class SCAsciiParser extends SCAbstractParser {
         return InterpolationType.NONE;
     }
 
+    @Override
     protected Keyword parseKeyword() throws IOException {
         String keyword = p.getNextToken();
         if (keyword == null)

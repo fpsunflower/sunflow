@@ -13,18 +13,22 @@ public class BitmapG8 extends Bitmap {
         this.data = data;
     }
 
+    @Override
     public int getWidth() {
         return w;
     }
 
+    @Override
     public int getHeight() {
         return h;
     }
 
+    @Override
     public Color readColor(int x, int y) {
         return new Color((data[x + y * w] & 0xFF) * INV255);
     }
 
+    @Override
     public float readAlpha(int x, int y) {
         return 1;
     }

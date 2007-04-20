@@ -98,6 +98,7 @@ public class FastDisplay extends JPanel implements Display {
         }
     }
 
+    @Override
     public synchronized void paint(Graphics g) {
         if (image == null)
             return;

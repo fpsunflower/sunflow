@@ -13,14 +13,17 @@ public class BitmapRGBA8 extends Bitmap {
         this.data = data;
     }
 
+    @Override
     public int getWidth() {
         return w;
     }
 
+    @Override
     public int getHeight() {
         return h;
     }
 
+    @Override
     public Color readColor(int x, int y) {
         int index = 4 * (x + y * w);
         float r = (data[index + 0] & 0xFF) * INV255;
@@ -29,6 +32,7 @@ public class BitmapRGBA8 extends Bitmap {
         return new Color(r, g, b);
     }
 
+    @Override
     public float readAlpha(int x, int y) {
         return (data[4 * (x + y * w) + 3] & 0xFF) * INV255;
     }

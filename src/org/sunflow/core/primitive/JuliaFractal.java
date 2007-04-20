@@ -219,7 +219,7 @@ public class JuliaFractal implements PrimitiveList {
         float gradX = length(gx2w, gx2x, gx2y, gx2z) - length(gx1w, gx1x, gx1y, gx1z);
         float gradY = length(gy2w, gy2x, gy2y, gy2z) - length(gy1w, gy1x, gy1y, gy1z);
         float gradZ = length(gz2w, gz2x, gz2y, gz2z) - length(gz1w, gz1x, gz1y, gz1z);
-        Vector3 n = new Vector3((float) gradX, (float) gradY, (float) gradZ);
+        Vector3 n = new Vector3(gradX, gradY, gradZ);
         state.getNormal().set(parent.transformNormalObjectToWorld(n));
         state.getNormal().normalize();
         state.getGeoNormal().set(state.getNormal());

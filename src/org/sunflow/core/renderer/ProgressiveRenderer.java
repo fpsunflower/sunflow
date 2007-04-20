@@ -79,6 +79,7 @@ public class ProgressiveRenderer implements ImageSampler {
     private class SmallBucketThread extends Thread {
         private final IntersectionState istate = new IntersectionState();
 
+        @Override
         public void run() {
             while (true) {
                 int n = progressiveRenderNext(istate);

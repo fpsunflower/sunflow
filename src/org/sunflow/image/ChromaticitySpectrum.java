@@ -43,6 +43,7 @@ public final class ChromaticitySpectrum extends SpectralCurve {
         M2 = (0.03f - 31.4424f * x + 30.0717f * y) / (0.0241f + 0.2562f * x - 0.7341f * y);
     }
 
+    @Override
     public float sample(float lambda) {
         return kS0Spectrum.sample(lambda) + M1 * kS1Spectrum.sample(lambda) + M2 * kS2Spectrum.sample(lambda);
     }

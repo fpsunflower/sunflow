@@ -114,6 +114,7 @@ public class MultipassRenderer implements ImageSampler {
             cache = shadingCache ? new ShadingCache() : null;
         }
 
+        @Override
         public void run() {
             while (true) {
                 int bx, by;

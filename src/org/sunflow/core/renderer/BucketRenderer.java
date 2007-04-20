@@ -179,6 +179,7 @@ public class BucketRenderer implements ImageSampler {
             istate = new IntersectionState();
         }
 
+        @Override
         public void run() {
             while (true) {
                 int bx, by;

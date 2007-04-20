@@ -10,7 +10,7 @@ public class ConstantShader implements Shader {
     private Color c;
 
     public ConstantShader() {
-        this.c = Color.WHITE;
+        c = Color.WHITE;
     }
 
     public boolean update(ParameterList pl, SunflowAPI api) {

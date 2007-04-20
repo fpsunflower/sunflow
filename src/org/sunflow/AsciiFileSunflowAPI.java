@@ -15,6 +15,7 @@ class AsciiFileSunflowAPI extends FileSunflowAPI {
         stream = new FileOutputStream(filename);
     }
 
+    @Override
     protected void writeBoolean(boolean value) {
         if (value)
             writeString("true");
@@ -22,28 +23,34 @@ class AsciiFileSunflowAPI extends FileSunflowAPI {
             writeString("false");
     }
 
+    @Override
     protected void writeFloat(float value) {
         writeString(String.format("%s", value));
     }
 
+    @Override
     protected void writeInt(int value) {
         writeString(String.format("%d", value));
     }
 
+    @Override
     protected void writeInterpolationType(InterpolationType interp) {
         writeString(String.format("%s", interp.toString().toLowerCase(Locale.ENGLISH)));
     }
 
+    @Override
     protected void writeKeyword(Keyword keyword) {
         writeString(String.format("%s", keyword.toString().toLowerCase(Locale.ENGLISH).replace("_array", "[]")));
     }
 
+    @Override
     protected void writeMatrix(Matrix4 value) {
         writeString("row");
         for (float f : value.asRowMajor())
             writeFloat(f);
     }
 
+    @Override
     protected void writeNewline(int indentNext) {
         try {
             stream.write('\n');
@@ -54,6 +61,7 @@ class AsciiFileSunflowAPI extends FileSunflowAPI {
         }
     }
 
+    @Override
     protected void writeString(String string) {
         try {
             // check if we need to write string with quotes
@@ -67,6 +75,7 @@ class AsciiFileSunflowAPI extends FileSunflowAPI {
         }
     }
 
+    @Override
     protected void writeVerbatimString(String string) {
         writeString(String.format("<code>%s\n</code> ", string));
     }

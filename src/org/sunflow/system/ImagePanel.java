@@ -33,6 +33,7 @@ public class ImagePanel extends JPanel implements Display {
         boolean dragging;
         boolean zooming;
 
+        @Override
         public void mousePressed(MouseEvent e) {
             mx = e.getX();
             my = e.getY();
@@ -60,6 +61,7 @@ public class ImagePanel extends JPanel implements Display {
             repaint();
         }
 
+        @Override
         public void mouseDragged(MouseEvent e) {
             int mx2 = e.getX();
             int my2 = e.getY();
@@ -71,11 +73,13 @@ public class ImagePanel extends JPanel implements Display {
             my = my2;
         }
 
+        @Override
         public void mouseReleased(MouseEvent e) {
             // same behaviour
             mouseDragged(e);
         }
 
+        @Override
         public void mouseWheelMoved(MouseWheelEvent e) {
             zoom(-20 * e.getWheelRotation(), 0);
         }
@@ -241,10 +245,10 @@ public class ImagePanel extends JPanel implements Display {
         super.paintComponent(g);
         if (image == null)
             return;
-        int x = (int) Math.round(xo + (getWidth() - w) * 0.5f);
-        int y = (int) Math.round(yo + (getHeight() - h) * 0.5f);
-        int iw = (int) Math.round(w);
-        int ih = (int) Math.round(h);
+        int x = Math.round(xo + (getWidth() - w) * 0.5f);
+        int y = Math.round(yo + (getHeight() - h) * 0.5f);
+        int iw = Math.round(w);
+        int ih = Math.round(h);
         int x0 = x - 1;
         int y0 = y - 1;
         int x1 = x + iw + 1;

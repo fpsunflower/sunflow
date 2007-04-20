@@ -58,6 +58,7 @@ public class SimpleRenderer implements ImageSampler {
     private class BucketThread extends Thread {
         private final IntersectionState istate = new IntersectionState();
 
+        @Override
         public void run() {
             while (true) {
                 int bx, by;

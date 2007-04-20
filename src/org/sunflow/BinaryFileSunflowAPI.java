@@ -16,6 +16,7 @@ class BinaryFileSunflowAPI extends FileSunflowAPI {
         stream = new DataOutputStream(new FileOutputStream(filename));
     }
 
+    @Override
     protected void writeBoolean(boolean value) {
         try {
             if (value)
@@ -29,10 +30,12 @@ class BinaryFileSunflowAPI extends FileSunflowAPI {
         }
     }
 
+    @Override
     protected void writeFloat(float value) {
         writeInt(Float.floatToRawIntBits(value));
     }
 
+    @Override
     protected void writeInt(int value) {
         try {
             // little endian, LSB first
@@ -45,6 +48,7 @@ class BinaryFileSunflowAPI extends FileSunflowAPI {
         }
     }
 
+    @Override
     protected void writeInterpolationType(InterpolationType interp) {
         try {
             switch (interp) {
@@ -68,6 +72,7 @@ class BinaryFileSunflowAPI extends FileSunflowAPI {
         }
     }
 
+    @Override
     protected void writeKeyword(Keyword keyword) {
         try {
             switch (keyword) {
@@ -181,11 +186,13 @@ class BinaryFileSunflowAPI extends FileSunflowAPI {
         writeBoolean(isArray);
     }
 
+    @Override
     protected void writeMatrix(Matrix4 value) {
         for (float f : value.asRowMajor())
             writeFloat(f);
     }
 
+    @Override
     protected void writeString(String string) {
         try {
             byte[] data = string.getBytes("UTF-8");
@@ -196,10 +203,12 @@ class BinaryFileSunflowAPI extends FileSunflowAPI {
         }
     }
 
+    @Override
     protected void writeVerbatimString(String string) {
         writeString(string);
     }
 
+    @Override
     protected void writeNewline(int indentNext) {
         // does nothing
     }

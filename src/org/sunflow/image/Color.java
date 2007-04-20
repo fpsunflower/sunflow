@@ -363,6 +363,7 @@ public final class Color {
         return false;
     }
 
+    @Override
     public String toString() {
         return String.format("(%.3f, %.3f, %.3f)", r, g, b);
     }

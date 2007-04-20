@@ -172,6 +172,7 @@ public final class RGBSpace {
         return (byte) INV_GAMMA_CURVE[r & 0xFF];
     }
 
+    @Override
     public final String toString() {
         String info = "Gamma function parameters:\n";
         info += String.format("  * Gamma:          %7.4f\n", gamma);

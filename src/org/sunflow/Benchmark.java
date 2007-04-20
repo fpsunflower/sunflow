@@ -110,6 +110,7 @@ public class Benchmark implements BenchmarkTest, UserInterface, Display {
             render(SunflowAPI.DEFAULT_OPTIONS, showWindow ? new FrameDisplay() : saveOutput ? new FileDisplay(String.format("resources/golden_%04X.png", resolution)) : Benchmark.this);
         }
 
+        @Override
         public void build() {
             // settings
             parameter("threads", threads);

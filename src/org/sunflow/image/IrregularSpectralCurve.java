@@ -31,6 +31,7 @@ public class IrregularSpectralCurve extends SpectralCurve {
                 throw new RuntimeException(String.format("Error creating irregular spectral curve: values are not sorted - error at index %d", i));
     }
 
+    @Override
     public float sample(float lambda) {
         if (wavelengths.length == 0)
             return 0; // no data

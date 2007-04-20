@@ -27,6 +27,7 @@ public class TriangleMeshLight extends TriangleMesh implements Shader, LightSour
         numSamples = 4;
     }
 
+    @Override
     public boolean update(ParameterList pl, SunflowAPI api) {
         radiance = pl.getColor("radiance", radiance);
         numSamples = pl.getInt("samples", numSamples);

@@ -14,6 +14,7 @@ public class TexturedDiffuseShader extends DiffuseShader {
         tex = null;
     }
 
+    @Override
     public boolean update(ParameterList pl, SunflowAPI api) {
         String filename = pl.getString("texture", null);
         if (filename != null)

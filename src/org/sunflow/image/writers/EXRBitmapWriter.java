@@ -58,15 +58,15 @@ public class EXRBitmapWriter implements BitmapWriter {
             }
         } else if (option.equals("channeltype")) {
             if (value.equals("float")) {
-                this.channelType = FLOAT;
-                this.channelSize = FLOAT_SIZE;
+                channelType = FLOAT;
+                channelSize = FLOAT_SIZE;
             } else if (value.equals("half")) {
-                this.channelType = HALF;
-                this.channelSize = HALF_SIZE;
+                channelType = HALF;
+                channelSize = HALF_SIZE;
             } else {
                 UI.printWarning(Module.DISP, "EXR - Channel type was not recognized - defaulting to float");
-                this.channelType = FLOAT;
-                this.channelSize = FLOAT_SIZE;
+                channelType = FLOAT;
+                channelSize = FLOAT_SIZE;
             }
         }
     }
@@ -179,12 +179,12 @@ public class EXRBitmapWriter implements BitmapWriter {
         file.write("float".getBytes());
         file.write(0);
         file.write(ByteUtil.get4Bytes(4));
-        file.write(ByteUtil.get4Bytes((int) Float.floatToIntBits(1)));
+        file.write(ByteUtil.get4Bytes(Float.floatToIntBits(1)));
 
         this.tileSize = tileSize;
 
-        tilesX = (int) ((w + tileSize - 1) / tileSize);
-        tilesY = (int) ((h + tileSize - 1) / tileSize);
+        tilesX = ((w + tileSize - 1) / tileSize);
+        tilesY = ((h + tileSize - 1) / tileSize);
 
         /*
          * twice the space for the compressing buffer, as for ex. the compressor
@@ -329,8 +329,8 @@ public class EXRBitmapWriter implements BitmapWriter {
             t1 = 1;
             int p = tmp[t1 - 1];
             while (t1 < inSize) {
-                int d = (int) tmp[t1] - p + (128 + 256);
-                p = (int) tmp[t1];
+                int d = tmp[t1] - p + (128 + 256);
+                p = tmp[t1];
                 tmp[t1] = (byte) d;
                 t1++;
             }
