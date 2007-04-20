@@ -37,7 +37,7 @@ final class InstanceList implements PrimitiveList {
         BoundingBox bounds = new BoundingBox();
         for (Instance i : instances)
             bounds.include(i.getBounds());
-        for (Instance i: lights)
+        for (Instance i : lights)
             bounds.include(i.getBounds());
         return bounds;
     }

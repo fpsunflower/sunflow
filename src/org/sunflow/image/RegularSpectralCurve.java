@@ -4,7 +4,7 @@ public class RegularSpectralCurve extends SpectralCurve {
     private final float[] spectrum;
     private final float lambdaMin, lambdaMax;
     private final float delta, invDelta;
-    
+
     public RegularSpectralCurve(float[] spectrum, float lambdaMin, float lambdaMax) {
         this.lambdaMin = lambdaMin;
         this.lambdaMax = lambdaMax;
@@ -12,7 +12,7 @@ public class RegularSpectralCurve extends SpectralCurve {
         delta = (lambdaMax - lambdaMin) / (spectrum.length - 1);
         invDelta = 1 / delta;
     }
-    
+
     @Override
     public float sample(float lambda) {
         // reject wavelengths outside the valid range

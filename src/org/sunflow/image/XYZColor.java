@@ -30,7 +30,7 @@ public final class XYZColor {
         Z *= s;
         return this;
     }
-    
+
     public final void normalize() {
         float XYZ = X + Y + Z;
         if (XYZ < 1e-6f)

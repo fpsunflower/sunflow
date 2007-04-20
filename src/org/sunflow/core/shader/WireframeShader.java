@@ -17,7 +17,8 @@ public class WireframeShader implements Shader {
     public WireframeShader() {
         lineColor = Color.BLACK;
         fillColor = Color.WHITE;
-        // pick a very small angle - should be roughly the half the angular width of a
+        // pick a very small angle - should be roughly the half the angular
+        // width of a
         // pixel
         width = (float) (Math.PI * 0.5 / 4096);
         cosWidth = (float) Math.cos(width);
@@ -34,11 +35,11 @@ public class WireframeShader implements Shader {
     public Color getFillColor(ShadingState state) {
         return fillColor;
     }
-    
+
     public Color getLineColor(ShadingState state) {
         return lineColor;
     }
-    
+
     public Color getRadiance(ShadingState state) {
         Point3[] p = new Point3[3];
         if (!state.getTrianglePoints(p))

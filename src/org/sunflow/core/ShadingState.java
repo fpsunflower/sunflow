@@ -261,7 +261,7 @@ public final class ShadingState implements Iterable<LightSample> {
     public final float getW() {
         return hitW;
     }
-    
+
     /**
      * Get the instance which was intersected
      * 

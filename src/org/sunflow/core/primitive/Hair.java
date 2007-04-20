@@ -254,7 +254,7 @@ public class Hair implements PrimitiveList, Shader {
 
     public void scatterPhoton(ShadingState state, Color power) {
     }
-    
+
     public PrimitiveList getBakingPrimitives() {
         return null;
     }

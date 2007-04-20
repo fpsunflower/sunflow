@@ -146,7 +146,7 @@ public class Plane implements PrimitiveList {
     public BoundingBox getWorldBounds(Matrix4 o2w) {
         return null;
     }
-    
+
     public PrimitiveList getBakingPrimitives() {
         return null;
     }

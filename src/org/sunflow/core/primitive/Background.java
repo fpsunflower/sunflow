@@ -38,7 +38,7 @@ public class Background implements PrimitiveList {
         if (r.getMax() == Float.POSITIVE_INFINITY)
             state.setIntersection(0, 0, 0);
     }
-    
+
     public PrimitiveList getBakingPrimitives() {
         return null;
     }

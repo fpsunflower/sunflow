@@ -14,6 +14,7 @@ public class NormalMapModifier implements Modifier {
     public NormalMapModifier() {
         normalMap = null;
     }
+
     public boolean update(ParameterList pl, SunflowAPI api) {
         String filename = pl.getString("texture", null);
         if (filename != null)
