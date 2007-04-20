@@ -79,7 +79,7 @@ public class Sphere implements PrimitiveList {
                 r.setMax((float) t[0]);
             else
                 r.setMax((float) t[1]);
-            state.setIntersection(0, 0, 0);
+            state.setIntersection(0);
         }
     }
 

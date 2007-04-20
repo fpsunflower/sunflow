@@ -131,7 +131,7 @@ public class Plane implements PrimitiveList {
         float t = (((center.x - r.ox) * normal.x) + ((center.y - r.oy) * normal.y) + ((center.z - r.oz) * normal.z)) / dn;
         if (r.isInside(t)) {
             r.setMax(t);
-            state.setIntersection(0, 0, 0);
+            state.setIntersection(0);
         }
     }
 

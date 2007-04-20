@@ -63,8 +63,6 @@ public final class IntersectionState {
      * pinpoint the location on the surface if needed.
      * 
      * @param id primitive id of the intersected object
-     * @param u u surface paramater of the intersection point
-     * @param v v surface parameter of the intersection point
      */
     public final void setIntersection(int id) {
         instance = current;

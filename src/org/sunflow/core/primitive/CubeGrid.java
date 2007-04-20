@@ -238,7 +238,7 @@ public abstract class CubeGrid implements PrimitiveList {
                 // if we are inside, the last bit needs to be flipped
                 if (isInside)
                     curr ^= 1;
-                state.setIntersection(curr, 0, 0);
+                state.setIntersection(curr);
                 return;
             }
             if (tnextX < tnextY && tnextX < tnextZ) {

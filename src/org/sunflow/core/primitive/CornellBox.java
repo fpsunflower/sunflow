@@ -254,10 +254,10 @@ public class CornellBox implements PrimitiveList, Shader, LightSource {
         // can't hit minY wall, there is none
         if (sideIn != 2 && r.isInside(intervalMin)) {
             r.setMax(intervalMin);
-            state.setIntersection(sideIn, 0, 0);
+            state.setIntersection(sideIn);
         } else if (sideOut != 2 && r.isInside(intervalMax)) {
             r.setMax(intervalMax);
-            state.setIntersection(sideOut, 0, 0);
+            state.setIntersection(sideOut);
         }
     }
 

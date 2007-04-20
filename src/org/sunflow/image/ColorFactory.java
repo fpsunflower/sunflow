@@ -20,7 +20,8 @@ public final class ColorFactory {
      * file.
      * 
      * @param colorspace
-     * @return
+     * @return number of floating point numbers expected, -1 for any, -2 on
+     *         error
      */
     public static int getRequiredDataValues(String colorspace) {
         if (colorspace == null)

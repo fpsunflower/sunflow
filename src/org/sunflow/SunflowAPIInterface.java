@@ -75,7 +75,9 @@ public interface SunflowAPIInterface {
      * parameter list.
      * 
      * @param name parameter name
-     * @param value parameter value
+     * @param colorspace color space or <code>null</code> to assume internal
+     *            color space
+     * @param data floating point color data
      */
     public void parameter(String name, String colorspace, float... data);
 

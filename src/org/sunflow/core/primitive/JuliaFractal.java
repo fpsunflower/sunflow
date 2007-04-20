@@ -129,7 +129,7 @@ public class JuliaFractal implements PrimitiveList {
         if (dist * invRayLength < epsilon) {
             // valid hit
             r.setMax(qt);
-            state.setIntersection(0, 0, 0);
+            state.setIntersection(0);
         }
     }
 

@@ -121,7 +121,7 @@ public class Torus implements PrimitiveList {
             for (int i = 0; i < t.length; i++) {
                 if (t[i] > r.getMin()) {
                     r.setMax((float) t[i]);
-                    state.setIntersection(0, 0, 0);
+                    state.setIntersection(0);
                     return;
                 }
             }

@@ -153,10 +153,10 @@ public class Box implements PrimitiveList {
             return;
         if (r.isInside(intervalMin)) {
             r.setMax(intervalMin);
-            state.setIntersection(sideIn, 0, 0);
+            state.setIntersection(sideIn);
         } else if (r.isInside(intervalMax)) {
             r.setMax(intervalMax);
-            state.setIntersection(sideOut, 0, 0);
+            state.setIntersection(sideOut);
         }
     }
 

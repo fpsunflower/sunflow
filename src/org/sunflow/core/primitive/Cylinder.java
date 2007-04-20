@@ -73,7 +73,7 @@ public class Cylinder implements PrimitiveList {
                 float z = r.oz + (float) t[0] * r.dz;
                 if (z >= -1 && z <= 1) {
                     r.setMax((float) t[0]);
-                    state.setIntersection(0, 0, 0);
+                    state.setIntersection(0);
                     return;
                 }
             }
@@ -81,7 +81,7 @@ public class Cylinder implements PrimitiveList {
                 float z = r.oz + (float) t[1] * r.dz;
                 if (z >= -1 && z <= 1) {
                     r.setMax((float) t[1]);
-                    state.setIntersection(0, 0, 0);
+                    state.setIntersection(0);
                 }
             }
         }

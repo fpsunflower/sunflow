@@ -36,7 +36,7 @@ public class Background implements PrimitiveList {
 
     public void intersectPrimitive(Ray r, int primID, IntersectionState state) {
         if (r.getMax() == Float.POSITIVE_INFINITY)
-            state.setIntersection(0, 0, 0);
+            state.setIntersection(0);
     }
 
     public PrimitiveList getBakingPrimitives() {

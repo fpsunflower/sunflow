@@ -60,7 +60,7 @@ public class ParticleSurface implements PrimitiveList {
                 r.setMax((float) t[0]);
             else
                 r.setMax((float) t[1]);
-            state.setIntersection(primID, 0, 0);
+            state.setIntersection(primID);
         }
     }
 
