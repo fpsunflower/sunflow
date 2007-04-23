@@ -132,7 +132,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions="/subsystem:windows /incremental:no /machine:I386 /export:initializePlugin /export:uninitializePlugin"
-				AdditionalDependencies="odbc32.lib odbccp32.lib OpenMaya.lib OpenMayaUI.lib OpenMayaRender.lib Foundation.lib opengl32.lib"
+				AdditionalDependencies="odbc32.lib odbccp32.lib OpenMaya.lib OpenMayaUI.lib OpenMayaRender.lib Foundation.lib opengl32.lib glu32.lib"
 				OutputFile="bin/sunflowExport_85_x32.mll"
 				AdditionalLibraryDirectories="$(MAYA_LOCATION)\lib"
 				ProgramDatabaseFile="$(IntDir)/sunflowExport_85_x32.pdb"
@@ -461,6 +461,26 @@
 		</Configuration>
 	</Configurations>
 	<References>
+		<AssemblyReference
+			RelativePath="System.dll"
+			AssemblyName="System, Version=2.0.0.0, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL"
+		/>
+		<AssemblyReference
+			RelativePath="System.Data.dll"
+			AssemblyName="System.Data, Version=2.0.0.0, PublicKeyToken=b77a5c561934e089, processorArchitecture=x86"
+		/>
+		<AssemblyReference
+			RelativePath="System.Drawing.dll"
+			AssemblyName="System.Drawing, Version=2.0.0.0, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL"
+		/>
+		<AssemblyReference
+			RelativePath="System.Windows.Forms.dll"
+			AssemblyName="System.Windows.Forms, Version=2.0.0.0, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL"
+		/>
+		<AssemblyReference
+			RelativePath="System.XML.dll"
+			AssemblyName="System.Xml, Version=2.0.0.0, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL"
+		/>
 	</References>
 	<Files>
 		<Filter
@@ -489,6 +509,10 @@
 			</File>
 			<File
 				RelativePath=".\src\sunflowGlobalsNode.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\src\sunflowHelperNode.cpp"
 				>
 			</File>
 			<File
@@ -525,6 +549,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\src\sunflowHelperNode.h"
+				>
+			</File>
+			<File
 				RelativePath=".\src\sunflowShaderNode.h"
 				>
 			</File>
@@ -541,6 +569,10 @@
 			Name="Miscellaneous Files"
 			Filter="txt"
 			>
+			<File
+				RelativePath=".\mel\AEsunflowHelperNodeTemplate.mel"
+				>
+			</File>
 			<File
 				RelativePath=".\mel\AEsunflowShaderTemplate.mel"
 				>
@@ -563,6 +595,14 @@
 			</File>
 			<File
 				RelativePath=".\mel\registerSunflowRenderer.mel"
+				>
+			</File>
+			<File
+				RelativePath=".\mel\sunflowCreateMenu.mel"
+				>
+			</File>
+			<File
+				RelativePath=".\mel\sunflowDeleteMenu.mel"
 				>
 			</File>
 			<File

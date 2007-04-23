@@ -6,14 +6,15 @@ global proc sunflowStartup(){
 		"registerSunflowRenderer.mel",
 		"unregisterSunflowRenderer.mel",
 		"sunflowRender.mel",
+		"sunflowCreateMenu.mel",
+		"sunflowDeleteMenu.mel",
 		"sunflowShutdown.mel"
 	};
-
-	//string $sunflowPath = "H:/Projects/madcrew/programming/sunflowExport/sunflowExport/";
+	
 	int $i;
-	for ( $i = 0; $i < size($mel_files); $i++) {
-		//eval( "source \""+$sunflowPath+$mel_files[$i]+"\"" );
+	for ( $i = 0; $i < size($mel_files); $i++) {		
 		eval( "source \""+$mel_files[$i]+"\"" );
 	}
 	registerSunflowRenderer();
+	sunflowCreateMenu();
 }

@@ -524,7 +524,7 @@ void sunflowExportCmd::exportSurface(const MDagPath& path, std::ofstream& file) 
 		return;
 	}
 
-	file << "object {" << std::endl;
+	file << "\n\nobject {" << std::endl;
 	file << "\tshader default"  << std::endl;	
 	file << "\ttype bezier-mesh"  << std::endl;	
 	file << "\tn " << surface.numCVsInU() << " " << surface.numCVsInV() << std::endl;
@@ -550,7 +550,6 @@ void sunflowExportCmd::exportSurface(const MDagPath& path, std::ofstream& file) 
         cerr << "Error creating iterator!" << endl;
     }
 	file << "}" << std::endl;
-	file << std::endl;	
 }
 
 void sunflowExportCmd::exportCamera(const MDagPath& path, std::ofstream& file) {
@@ -569,7 +568,7 @@ void sunflowExportCmd::exportCamera(const MDagPath& path, std::ofstream& file) {
 	bool DOF = camera.isDepthOfField();
 	float frameAspect = getAttributeFloat("defaultResolution", "deviceAspectRatio", 1.333333f);
 
-	file << "% " << path.fullPathName().asChar() << std::endl;
+	file << "\n\n% " << path.fullPathName().asChar() << std::endl;
 	file << "camera {" << std::endl;
 	if(DOF){
 		float FocusDist = camera.focusDistance();
@@ -591,7 +590,6 @@ void sunflowExportCmd::exportCamera(const MDagPath& path, std::ofstream& file) {
 		file << "\taspect " << frameAspect << std::endl;
 	}
 	file << "}" << std::endl;
-	file << std::endl;
 }
 
 bool sunflowExportCmd::findShaderInList(MString shader){
@@ -819,9 +817,9 @@ MStatus sunflowExportCmd::doIt(const MArgList& args) {
 		getCustomAttribute(bucketReverse, "bucketReverse", globals);
 
 		if(bucketReverse)
-			file << "bucket " << bucketSize << " \"reverse " << BUCKET_ORDERS[bucketOrder] << "\"" << std::endl;			
+			file << "\n\nbucket " << bucketSize << " \"reverse " << BUCKET_ORDERS[bucketOrder] << "\"" << std::endl;			
 		else
-			file << "bucket " << bucketSize << " " << BUCKET_ORDERS[bucketOrder] << std::endl;
+			file << "\n\nbucket " << bucketSize << " " << BUCKET_ORDERS[bucketOrder] << std::endl;
 
 		paramPlug = globals.findPlug( "skyNode", &status );
 		MPlugArray connectedPlugs;
@@ -1326,7 +1324,65 @@ MStatus sunflowExportCmd::doIt(const MArgList& args) {
                  file << "\tp " << o2w[3][0] << " " << o2w[3][1] << " " << o2w[3][2] << " " << std::endl;                
                  file << "}" << std::endl;
             } break;
-			default: break;
+			case MFn::kPluginLocatorNode: {
+				MFnDependencyNode depNode(path.node(),&status);
+				if(!status)
+					break;
+				if(depNode.typeName()=="sunflowHelperNode"){
+					int helperType;
+					getCustomAttribute(helperType, "type", depNode);					
+					MPlug paramPlug;
+					paramPlug = depNode.findPlug( "shaderNode", &status );
+					MPlugArray connectedPlugs;
+					MString materialName = "default";
+					if(paramPlug.connectedTo(connectedPlugs,true,false,&status) && connectedPlugs.length()){
+						MFnDependencyNode materialNode;
+						if(connectedPlugs[0].node().apiType() == MFn::kShadingEngine)
+							getShaderFromEngine(connectedPlugs[0].node(),materialNode);
+						else
+							materialNode.setObject(connectedPlugs[0].node());										
+						if(findShaderInList(materialNode.name()))
+							materialName = materialNode.name();
+					}
+					switch(helperType){
+							case 0:{
+								std::cout << "Exporting File Mesh: " << path.fullPathName().asChar() << " |Shader: " << materialName << std::endl;
+								MMatrix o2w = path.inclusiveMatrix();
+								MVector up(0,1,0);
+								up *= o2w;
+								MString fileName;
+								getCustomAttribute(fileName, "meshPath", depNode);
+								file << "\n\nobject {" << std::endl;
+								file << "\tshader " << materialName.asChar() << std::endl;
+								file << "\ttype file-mesh" << std::endl;
+								file << "\tfilename " << fileName.asChar() << std::endl;
+								file << "\tsmooth_normals true" << std::endl;
+								file << "\t}" << std::endl;
+
+								file << "\n\nobject {" << std::endl;											
+								file << "\tshader " << materialName.asChar() << std::endl;
+								file << "\ttype plane" << std::endl;
+								file << "\tp " << o2w[3][0] << " " << o2w[3][0] << " " << o2w[3][0] << std::endl;
+								file << "\tn " << up.x << " " << up.y << " " << up.z << std::endl;
+								file << "}" << std::endl;														
+								}break;
+							case 1: {
+								std::cout << "Exporting Infinite Plane: " << path.fullPathName().asChar() << " |Shader: " << materialName << std::endl;
+								MMatrix o2w = path.inclusiveMatrix();
+								MVector up(0,1,0);
+								up *= o2w;
+								file << "\n\nobject {" << std::endl;											
+								file << "\tshader " << materialName.asChar() << std::endl;
+								file << "\ttype plane" << std::endl;
+								file << "\tp " << o2w[3][0] << " " << o2w[3][0] << " " << o2w[3][0] << std::endl;
+								file << "\tn " << up.x << " " << up.y << " " << up.z << std::endl;
+								file << "}" << std::endl;
+								}break;
+							default: break;
+					}
+				}
+				
+			}break;
         }
     }
     std::cout << "Exporting scene done." << std::endl;
