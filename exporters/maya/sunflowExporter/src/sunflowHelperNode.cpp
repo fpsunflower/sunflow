@@ -188,11 +188,14 @@ void sunflowHelperNode::draw(  M3dView & view, const MDagPath & /*path*/,
 
     case 1:
        // CLIPPING PLANE
-      glPushAttrib( GL_ALL_ATTRIB_BITS );
-
-      glEnable( GL_LINE_STIPPLE);
-      glLineStipple(1,0xff);
-      if ( displaystatus == M3dView::kDormant ) glColor4f( m_helperColor.r, m_helperColor.g, m_helperColor.b, 1.0f );
+       
+       // Extra OpenGL stuff disabled for now - there seems to be a problem on Linux with Nvidia drivers (glPushAttrib/glPopAttrib not respected?)
+       
+//      glPushAttrib( GL_ALL_ATTRIB_BITS );
+//
+//      glEnable( GL_LINE_STIPPLE);
+//      glLineStipple(1,0xff);
+//      if ( displaystatus == M3dView::kDormant ) glColor4f( m_helperColor.r, m_helperColor.g, m_helperColor.b, 1.0f );
 
 
       glBegin( GL_LINES );
@@ -213,23 +216,23 @@ void sunflowHelperNode::draw(  M3dView & view, const MDagPath & /*path*/,
 
       glEnd();
 
-      glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-      glEnable(GL_ALPHA_TEST);
-      glAlphaFunc(GL_ALWAYS ,0.1);
-      glEnable(GL_BLEND);
-      glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-      glEnable(GL_DEPTH_TEST);
-      glDepthFunc(GL_LEQUAL);
-      glDepthMask( GL_FALSE );
-      glColor4f( m_helperColor.r, m_helperColor.g, m_helperColor.b, m_helperColor.a );
-      glBegin( GL_QUADS );
-        glVertex3f( -1.0f , 0.0f, 1.0f );
-        glVertex3f(  1.0f , 0.0f, 1.0f );
-        glVertex3f(  1.0f , 0.0f, -1.0f );
-        glVertex3f( -1.0f , 0.0f, -1.0f );
-      glEnd();
-
-      glPopAttrib();
+//      glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+//      glEnable(GL_ALPHA_TEST);
+//      glAlphaFunc(GL_ALWAYS ,0.1);
+//      glEnable(GL_BLEND);
+//      glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+//      glEnable(GL_DEPTH_TEST);
+//      glDepthFunc(GL_LEQUAL);
+//      glDepthMask( GL_FALSE );
+//      glColor4f( m_helperColor.r, m_helperColor.g, m_helperColor.b, m_helperColor.a );
+//      glBegin( GL_QUADS );
+//        glVertex3f( -1.0f , 0.0f, 1.0f );
+//        glVertex3f(  1.0f , 0.0f, 1.0f );
+//        glVertex3f(  1.0f , 0.0f, -1.0f );
+//        glVertex3f( -1.0f , 0.0f, -1.0f );
+//      glEnd();
+//
+//      glPopAttrib();
       break;   
   }
 

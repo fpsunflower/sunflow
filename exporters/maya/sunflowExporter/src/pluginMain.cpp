@@ -5,7 +5,7 @@
 #include "sunflowExportCmd.h"
 #include "sunflowShaderNode.h"
 #include "sunflowSkyNode.h"
-#include "sunflowInfinitePlaneNode.h"
+#include "sunflowHelperNode.h"
 
 MStatus initializePlugin( MObject obj )
 { 

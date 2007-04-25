@@ -1265,7 +1265,7 @@ MStatus sunflowExportCmd::doIt(const MArgList& args) {
 				MPoint source; source.x=o2w[3][0];source.y=o2w[3][1];source.z=o2w[3][2];
 				MPoint target = source+dir;				
 				MColor color = light.color();
-				float radius = light.shadowRadius();
+				//float radius = light.shadowRadius();
 				float intensity = light.intensity();
 
 				file << "light {" << std::endl;
@@ -1381,8 +1381,8 @@ MStatus sunflowExportCmd::doIt(const MArgList& args) {
 							default: break;
 					}
 				}
-				
 			}break;
+            default: break;
         }
     }
     std::cout << "Exporting scene done." << std::endl;

@@ -1,3 +1,6 @@
+#ifndef SUNFLOW_HELPER_NODE_H
+#define SUNFLOW_HELPER_NODE_H
+
 #include <maya/MPxLocatorNode.h>
 #include <maya/MString.h>
 #include <maya/MTypeId.h>
@@ -44,3 +47,5 @@ class sunflowHelperNode : public MPxLocatorNode
     MColor  m_helperColor;
 
 };
+
+#endif /* SUNFLOW_HELPER_NODE_H */
