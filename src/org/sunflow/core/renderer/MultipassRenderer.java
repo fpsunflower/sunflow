@@ -17,6 +17,7 @@ import org.sunflow.system.UI;
 import org.sunflow.system.UI.Module;
 
 public class MultipassRenderer implements ImageSampler {
+    private static final int SIGMA_ORDER = 13;
     private Scene scene;
     private Display display;
     // resolution
@@ -33,7 +34,6 @@ public class MultipassRenderer implements ImageSampler {
     private int numSamples;
     private float invNumSamples;
     private boolean shadingCache;
-    private int[] sigma;
 
     public MultipassRenderer() {
         bucketSize = 32;
@@ -63,7 +63,6 @@ public class MultipassRenderer implements ImageSampler {
         numSamples = Math.max(1, numSamples);
         invNumSamples = 1.0f / numSamples;
         // prepare QMC sampling
-        sigma = QMC.generateSigmaTable(1 << 12);
         UI.printInfo(Module.BCKT, "Multipass renderer settings:");
         UI.printInfo(Module.BCKT, "  * Resolution:         %dx%d", imageWidth, imageHeight);
         UI.printInfo(Module.BCKT, "  * Bucket size:        %d", bucketSize);
@@ -155,7 +154,7 @@ public class MultipassRenderer implements ImageSampler {
                 // sample pixel
                 Color c = Color.black();
                 float a = 0;
-                int instance = (cx & (sigma.length - 1)) * sigma.length + sigma[cy & (sigma.length - 1)];
+                int instance = ((cx & ((1 << SIGMA_ORDER) - 1)) << SIGMA_ORDER) + QMC.sigma(cy & ((1 << SIGMA_ORDER) - 1), SIGMA_ORDER);
                 double jitterX = QMC.halton(0, instance);
                 double jitterY = QMC.halton(1, instance);
                 double jitterT = QMC.halton(2, instance);

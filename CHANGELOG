@@ -1,4 +1,7 @@
 v0.07.3
+* Added total rays to statistics output
+* Fixed filtering in y direction for BucketRenderer
+* Fixes to QMC sigma table - no longer requires precomputation
 * Implemented low sampling density for ImageBasedLight in fixed mode
 * Added PerlinModifier
 * Bug fix to writeVerbatimString() in binary scene writer

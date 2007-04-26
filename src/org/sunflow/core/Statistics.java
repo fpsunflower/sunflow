@@ -66,6 +66,7 @@ public class Statistics {
         printRayTypeStats("glossy", numGlossyRays);
         printRayTypeStats("refraction", numRefractionRays);
         printRayTypeStats("other", numRays - numEyeRays - numShadowRays - numReflectionRays - numGlossyRays - numRefractionRays);
+        printRayTypeStats("total", numRays);
         if (cacheHits + cacheMisses > 0) {
             UI.printInfo(Module.LIGHT, "Shading cache stats:");
             UI.printInfo(Module.LIGHT, "  * Lookups:             %d", cacheHits + cacheMisses);

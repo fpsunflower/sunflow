@@ -75,14 +75,14 @@ public final class QMC {
         for (int v = 1 << 31; i != 0; i >>>= 1, v ^= v >>> 1)
             if ((i & 1) != 0)
                 r ^= v;
-        return (double) r / (double) 0x100000000L;
+        return (double) (r & 0xFFFFFFFFL) / (double) 0x100000000L;
     }
 
     public static double riLP(int i, int r) {
         for (int v = 1 << 31; i != 0; i >>>= 1, v |= v >>> 1)
             if ((i & 1) != 0)
                 r ^= v;
-        return (double) r / (double) 0x100000000L;
+        return (double) (r & 0xFFFFFFFFL) / (double) 0x100000000L;
     }
 
     public static final double halton(int d, int i) {
@@ -118,23 +118,34 @@ public final class QMC {
         return v;
     }
 
+    /**
+     * Compute mod(x,1), assuming that x is positive or 0.
+     * 
+     * @param x any number >= 0
+     * @return mod(x,1)
+     */
     public static final double mod1(double x) {
         // assumes x >= 0
         return x - (int) x;
     }
 
-    public static final int[] generateSigmaTable(int n) {
-        assert (n & (n - 1)) == 0;
-        int[] sigma = new int[n];
-        for (int i = 0; i < n; i++) {
-            int digit = n;
-            sigma[i] = 0;
-            for (int bits = i; bits != 0; bits >>= 1) {
-                digit >>= 1;
-                if ((bits & 1) != 0)
-                    sigma[i] += digit;
-            }
-        }
-        return sigma;
+    /**
+     * Compute sigma function used to seed QMC sequence trees. The sigma table
+     * is exactly 2^order elements long, and therefore i should be in the: [0,
+     * 2^order) interval. This function is equal to 2^order*halton(0,i)
+     * 
+     * @param i index
+     * @param order
+     * @return sigma function
+     */
+    public static final int sigma(int i, int order) {
+        assert order > 0 && order < 32;
+        assert i >= 0 && i < (1 << order);
+        i = (i << 16) | (i >>> 16);
+        i = ((i & 0x00ff00ff) << 8) | ((i & 0xff00ff00) >>> 8);
+        i = ((i & 0x0f0f0f0f) << 4) | ((i & 0xf0f0f0f0) >>> 4);
+        i = ((i & 0x33333333) << 2) | ((i & 0xcccccccc) >>> 2);
+        i = ((i & 0x55555555) << 1) | ((i & 0xaaaaaaaa) >>> 1);
+        return i >>> (32 - order);
     }
 }

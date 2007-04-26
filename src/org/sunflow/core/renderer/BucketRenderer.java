@@ -48,7 +48,8 @@ public class BucketRenderer implements ImageSampler {
     private int subPixelSize;
     private int minStepSize;
     private int maxStepSize;
-    private int[] sigma;
+    private int sigmaOrder;
+    private int sigmaLength;
     private float thresh;
     private boolean useJitter;
 
@@ -118,7 +119,8 @@ public class BucketRenderer implements ImageSampler {
         fs = (int) Math.ceil(subPixelSize * (fhs - 0.5f));
 
         // prepare QMC sampling
-        sigma = QMC.generateSigmaTable(subPixelSize << 7);
+        sigmaOrder = Math.max(0, maxAADepth) + 13; // FIXME: how big should the table be?
+        sigmaLength = 1 << sigmaOrder;
         UI.printInfo(Module.BCKT, "Bucket renderer settings:");
         UI.printInfo(Module.BCKT, "  * Resolution:         %dx%d", imageWidth, imageHeight);
         UI.printInfo(Module.BCKT, "  * Bucket size:        %d", bucketSize);
@@ -237,14 +239,14 @@ public class BucketRenderer implements ImageSampler {
             for (int x = 0; x < sbw; x++, index++) {
                 int sx = sx0 + x;
                 int sy = sy0 + y;
-                int j = sx & (sigma.length - 1);
-                int k = sy & (sigma.length - 1);
-                int i = j * sigma.length + sigma[k];
-                float dx = useJitter ? (float) sigma[k] / (float) sigma.length : 0.5f;
-                float dy = useJitter ? (float) sigma[j] / (float) sigma.length : 0.5f;
+                int j = sx & (sigmaLength - 1);
+                int k = sy & (sigmaLength - 1);
+                int i = (j << sigmaOrder) + QMC.sigma(k, sigmaOrder);
+                float dx = useJitter ? (float) QMC.halton(0, k) : 0.5f;
+                float dy = useJitter ? (float) QMC.halton(0, j) : 0.5f;
                 float rx = (sx + dx) * invSubPixelSize;
                 float ry = (sy + dy) * invSubPixelSize;
-                ry = imageHeight - ry - 1;
+                ry = imageHeight - ry;
                 samples[index] = new ImageSample(rx, ry, i);
             }
         }
@@ -279,7 +281,7 @@ public class BucketRenderer implements ImageSampler {
             }
         } else {
             // filter samples into pixels
-            float cy = imageHeight - 1 - (y0 + 0.5f);
+            float cy = imageHeight - (y0 + 0.5f);
             for (int y = 0, index = 0; y < bh; y++, cy--) {
                 float cx = x0 + 0.5f;
                 for (int x = 0; x < bw; x++, index++, cx++) {

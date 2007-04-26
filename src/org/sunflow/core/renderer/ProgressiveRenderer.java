@@ -15,9 +15,9 @@ import org.sunflow.system.UI;
 import org.sunflow.system.UI.Module;
 
 public class ProgressiveRenderer implements ImageSampler {
+    private static final int SIGMA_ORDER = 13;
     private Scene scene;
     private int imageWidth, imageHeight;
-    private int[] sigma;
     private PriorityBlockingQueue<SmallBucket> smallBucketQueue;
     private Display display;
     private int counter, counterMax;
@@ -25,7 +25,6 @@ public class ProgressiveRenderer implements ImageSampler {
     public ProgressiveRenderer() {
         imageWidth = 640;
         imageHeight = 480;
-        sigma = null;
         smallBucketQueue = null;
     }
 
@@ -34,7 +33,6 @@ public class ProgressiveRenderer implements ImageSampler {
         imageWidth = w;
         imageHeight = h;
         // prepare table used by deterministic anti-aliasing
-        sigma = QMC.generateSigmaTable(1 << 7);
         return true;
     }
 
@@ -113,7 +111,7 @@ public class ProgressiveRenderer implements ImageSampler {
                 // check to see if this is a pixel from a higher level tile
                 if (useMask && (x & mask) == 0 && (y & mask) == 0)
                     continue;
-                int instance = (x & (sigma.length - 1)) * sigma.length + sigma[y & (sigma.length - 1)];
+                int instance = ((x & ((1 << SIGMA_ORDER) - 1)) << SIGMA_ORDER) + QMC.sigma(y & ((1 << SIGMA_ORDER) - 1), SIGMA_ORDER);
                 double time = QMC.halton(1, instance);
                 double lensU = QMC.halton(2, instance);
                 double lensV = QMC.halton(3, instance);
