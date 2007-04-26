@@ -59,7 +59,7 @@ public class Statistics {
     void displayStats() {
         // display raytracing stats
         UI.printInfo(Module.SCENE, "Raytracing stats:");
-        UI.printInfo(Module.SCENE, "  * Rays traced:            (per pixel) (per eye ray)", numRays);
+        UI.printInfo(Module.SCENE, "  * Rays traced:            (per pixel) (per eye ray) (percentage)", numRays);
         printRayTypeStats("eye", numEyeRays);
         printRayTypeStats("shadow", numShadowRays);
         printRayTypeStats("reflection", numReflectionRays);
@@ -78,6 +78,6 @@ public class Statistics {
 
     private void printRayTypeStats(String name, long n) {
         if (n > 0)
-            UI.printInfo(Module.SCENE, "      %-10s  %9d   %6.2f       %6.2f", name, n, (double) n / (double) numPixels, (double) n / (double) numEyeRays);
+            UI.printInfo(Module.SCENE, "      %-10s  %9d   %6.2f       %6.2f       %6.2f%%", name, n, (double) n / (double) numPixels, (double) n / (double) numEyeRays, (double) (n * 100) / (double) numRays);
     }
 }
