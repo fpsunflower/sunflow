@@ -33,9 +33,7 @@ public class RealtimeBenchmark extends SunflowAPI {
         Point3 eye = new Point3(30, 0, 10.967f);
         Point3 target = new Point3(0, 0, 5.4f);
         Vector3 up = new Vector3(0, 0, 1);
-        parameter("eye", eye);
-        parameter("target", target);
-        parameter("up", up);
+        parameter("transform", Matrix4.lookAt(eye, target, up));
         parameter("fov", 45.0f);
         camera("camera", "pinhole");
         parameter("camera", "camera");
@@ -59,9 +57,7 @@ public class RealtimeBenchmark extends SunflowAPI {
             phi += Math.PI / 30;
             frames++;
             // update camera
-            parameter("eye", eye);
-            parameter("target", target);
-            parameter("up", up);
+            parameter("transform", Matrix4.lookAt(eye, target, up));
             camera("camera", null);
             render(SunflowAPI.DEFAULT_OPTIONS, display);
         }

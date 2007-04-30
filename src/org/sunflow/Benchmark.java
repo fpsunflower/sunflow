@@ -136,9 +136,7 @@ public class Benchmark implements BenchmarkTest, UserInterface, Display {
 
         private void buildCornellBox() {
             // camera
-            parameter("eye", new Point3(0, 0, -600));
-            parameter("target", new Point3(0, 0, 0));
-            parameter("up", new Vector3(0, 1, 0));
+            parameter("transform", Matrix4.lookAt(new Point3(0, 0, -600), new Point3(0, 0, 0), new Vector3(0, 1, 0)));
             parameter("fov", 45.0f);
             camera("main_camera", "pinhole");
             parameter("camera", "main_camera");

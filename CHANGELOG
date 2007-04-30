@@ -1,4 +1,8 @@
 v0.07.3
+* Added shutter parameter to camera to allow motion blur of scene objects even when the camera is static
+* Camera and Instances are now controlled by moving matrices and may be motion blurred
+* Added MovingMatrix4 class
+* Removed eye/target/up syntax for describing camera transform (parameters only - not .sc syntax)
 * Added total rays to statistics output
 * Fixed filtering in y direction for BucketRenderer
 * Fixes to QMC sigma table - no longer requires precomputation

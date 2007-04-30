@@ -4,6 +4,7 @@ import java.util.Locale;
 
 import org.sunflow.image.Color;
 import org.sunflow.math.Matrix4;
+import org.sunflow.math.MovingMatrix4;
 import org.sunflow.math.Point2;
 import org.sunflow.math.Point3;
 import org.sunflow.math.Vector3;
@@ -539,6 +540,41 @@ public class ParameterList {
             this.interp = interp;
             this.data = data;
         }
+    }
+
+    public final MovingMatrix4 getMovingMatrix(String name, MovingMatrix4 defaultValue) {
+        // step 1: check for a non-moving specification:
+        Matrix4 m = getMatrix(name, null);
+        if (m != null)
+            return new MovingMatrix4(m);
+        // step 2: check to see if the time range has been updated
+        FloatParameter times = getFloatArray(name + ".times");
+        if (times != null) {
+            if (times.data.length <= 1)
+                defaultValue.updateTimes(0, 0);
+            else {
+                if (times.data.length != 2)
+                    UI.printWarning(Module.API, "Time value specification using only endpoints of %d values specified", times.data.length);
+                // get endpoint times - we might allow multiple time values
+                // later
+                float t0 = times.data[0];
+                float t1 = times.data[times.data.length - 1];
+                defaultValue.updateTimes(t0, t1);
+            }
+        } else {
+            // time range stays at default
+        }
+        // step 3: check to see if a number of steps has been specified
+        int steps = getInt(name + ".steps", 0);
+        if (steps <= 0) {
+            // not specified - return default value
+        } else {
+            // update each element
+            defaultValue.setSteps(steps);
+            for (int i = 0; i < steps; i++)
+                defaultValue.updateData(i, getMatrix(String.format("%s[%d]", name, i), defaultValue.getData(i)));
+        }
+        return defaultValue;
     }
 
     protected static final class Parameter {

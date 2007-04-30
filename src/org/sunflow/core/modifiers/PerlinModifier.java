@@ -22,11 +22,11 @@ public class PerlinModifier implements Modifier {
     }
 
     public void modify(ShadingState state) {
-        Point3 p = state.getInstance().transformWorldToObject(state.getPoint());
+        Point3 p = state.transformWorldToObject(state.getPoint());
         p.x *= size;
         p.y *= size;
         p.z *= size;
-        Vector3 normal = state.getInstance().transformNormalWorldToObject(state.getNormal());
+        Vector3 normal = state.transformNormalWorldToObject(state.getNormal());
         double f0 = f(p.x, p.y, p.z);
         double fx = f(p.x + .0001, p.y, p.z);
         double fy = f(p.x, p.y + .0001, p.z);
@@ -37,7 +37,7 @@ public class PerlinModifier implements Modifier {
         normal.z -= scale * (fz - f0) / .0001;
         normal.normalize();
 
-        state.getNormal().set(state.getInstance().transformNormalObjectToWorld(normal));
+        state.getNormal().set(state.transformNormalObjectToWorld(normal));
         state.getNormal().normalize();
         state.setBasis(OrthoNormalBasis.makeFromW(state.getNormal()));
     }

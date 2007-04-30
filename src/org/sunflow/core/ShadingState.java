@@ -18,7 +18,7 @@ import org.sunflow.math.Vector3;
 public final class ShadingState implements Iterable<LightSample> {
     private IntersectionState istate;
     private LightServer server;
-    private float rx, ry;
+    private float rx, ry, time;
     private Color result;
     private Point3 p;
     private Vector3 n;
@@ -31,6 +31,7 @@ public final class ShadingState implements Iterable<LightSample> {
     private float hitU, hitV, hitW;
     private Instance instance;
     private int primitiveID;
+    private Matrix4 o2w, w2o;
     private Ray r;
     private int d; // quasi monte carlo instance variables
     private int i; // quasi monte carlo instance variables
@@ -54,11 +55,12 @@ public final class ShadingState implements Iterable<LightSample> {
 
     }
 
-    static ShadingState createState(IntersectionState istate, float rx, float ry, Ray r, int i, int d, LightServer server) {
+    static ShadingState createState(IntersectionState istate, float rx, float ry, float time, Ray r, int i, int d, LightServer server) {
         ShadingState s = new ShadingState(null, istate, r, i, d);
         s.server = server;
         s.rx = rx;
         s.ry = ry;
+        s.time = time;
         return s;
     }
 
@@ -101,15 +103,20 @@ public final class ShadingState implements Iterable<LightSample> {
         this.istate = istate;
         this.i = i;
         this.d = d;
+        time = istate.time;
         instance = istate.instance; // local copy
         primitiveID = istate.id;
         hitU = istate.u;
         hitV = istate.v;
         hitW = istate.w;
+        // get matrices for current time
+        o2w = instance.getObjectToWorld(time);
+        w2o = instance.getWorldToObject(time);
         if (previous == null) {
             diffuseDepth = 0;
             reflectionDepth = 0;
             refractionDepth = 0;
+            
         } else {
             diffuseDepth = previous.diffuseDepth;
             reflectionDepth = previous.reflectionDepth;
@@ -278,6 +285,72 @@ public final class ShadingState implements Iterable<LightSample> {
      */
     public final int getPrimitiveID() {
         return primitiveID;
+    }
+
+    /**
+     * Transform the given point from object space to world space. A new
+     * {@link Point3} object is returned.
+     * 
+     * @param p object space position to transform
+     * @return transformed position
+     */
+    public Point3 transformObjectToWorld(Point3 p) {
+        return o2w == null ? new Point3(p) : o2w.transformP(p);
+    }
+
+    /**
+     * Transform the given point from world space to object space. A new
+     * {@link Point3} object is returned.
+     * 
+     * @param p world space position to transform
+     * @return transformed position
+     */
+    public Point3 transformWorldToObject(Point3 p) {
+        return w2o == null ? new Point3(p) : w2o.transformP(p);
+    }
+
+    /**
+     * Transform the given normal from object space to world space. A new
+     * {@link Vector3} object is returned.
+     * 
+     * @param n object space normal to transform
+     * @return transformed normal
+     */
+    public Vector3 transformNormalObjectToWorld(Vector3 n) {
+        return o2w == null ? new Vector3(n) : w2o.transformTransposeV(n);
+    }
+
+    /**
+     * Transform the given normal from world space to object space. A new
+     * {@link Vector3} object is returned.
+     * 
+     * @param n world space normal to transform
+     * @return transformed normal
+     */
+    public Vector3 transformNormalWorldToObject(Vector3 n) {
+        return o2w == null ? new Vector3(n) : o2w.transformTransposeV(n);
+    }
+
+    /**
+     * Transform the given vector from object space to world space. A new
+     * {@link Vector3} object is returned.
+     * 
+     * @param v object space vector to transform
+     * @return transformed vector
+     */
+    public Vector3 transformVectorObjectToWorld(Vector3 v) {
+        return o2w == null ? new Vector3(v) : o2w.transformV(v);
+    }
+
+    /**
+     * Transform the given vector from world space to object space. A new
+     * {@link Vector3} object is returned.
+     * 
+     * @param v world space vector to transform
+     * @return transformed vector
+     */
+    public Vector3 transformVectorWorldToObject(Vector3 v) {
+        return o2w == null ? new Vector3(v) : w2o.transformV(v);
     }
 
     final void setResult(Color c) {
@@ -511,7 +584,7 @@ public final class ShadingState implements Iterable<LightSample> {
      */
     public final Matrix4 getCameraToWorld() {
         Camera c = server.getScene().getCamera();
-        return c != null ? c.getCameraToWorld() : Matrix4.IDENTITY;
+        return c != null ? c.getCameraToWorld(time) : Matrix4.IDENTITY;
     }
 
     /**
@@ -522,7 +595,7 @@ public final class ShadingState implements Iterable<LightSample> {
      */
     public final Matrix4 getWorldToCamera() {
         Camera c = server.getScene().getCamera();
-        return c != null ? c.getWorldToCamera() : Matrix4.IDENTITY;
+        return c != null ? c.getWorldToCamera(time) : Matrix4.IDENTITY;
     }
 
     /**

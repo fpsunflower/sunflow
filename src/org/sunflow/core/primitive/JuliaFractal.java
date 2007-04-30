@@ -138,7 +138,7 @@ public class JuliaFractal implements PrimitiveList {
         state.getRay().getPoint(state.getPoint());
         Instance parent = state.getInstance();
         // compute local normal
-        Point3 p = parent.transformWorldToObject(state.getPoint());
+        Point3 p = state.transformWorldToObject(state.getPoint());
         float gx1w = p.x - DELTA;
         float gx1x = p.y;
         float gx1y = p.z;
@@ -220,7 +220,7 @@ public class JuliaFractal implements PrimitiveList {
         float gradY = length(gy2w, gy2x, gy2y, gy2z) - length(gy1w, gy1x, gy1y, gy1z);
         float gradZ = length(gz2w, gz2x, gz2y, gz2z) - length(gz1w, gz1x, gz1y, gz1z);
         Vector3 n = new Vector3(gradX, gradY, gradZ);
-        state.getNormal().set(parent.transformNormalObjectToWorld(n));
+        state.getNormal().set(state.transformNormalObjectToWorld(n));
         state.getNormal().normalize();
         state.getGeoNormal().set(state.getNormal());
         state.setBasis(OrthoNormalBasis.makeFromW(state.getNormal()));

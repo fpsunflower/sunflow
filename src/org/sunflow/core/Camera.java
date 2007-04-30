@@ -2,9 +2,8 @@ package org.sunflow.core;
 
 import org.sunflow.SunflowAPI;
 import org.sunflow.math.Matrix4;
-import org.sunflow.math.OrthoNormalBasis;
+import org.sunflow.math.MovingMatrix4;
 import org.sunflow.math.Point3;
-import org.sunflow.math.Vector3;
 import org.sunflow.system.UI;
 import org.sunflow.system.UI.Module;
 
@@ -15,64 +14,51 @@ import org.sunflow.system.UI.Module;
  */
 public class Camera implements RenderObject {
     private final CameraLens lens;
-    private Matrix4[] c2w;
-    private Matrix4[] w2c;
+    private float shutterOpen;
+    private float shutterClose;
+    private MovingMatrix4 c2w;
+    private MovingMatrix4 w2c;
 
     public Camera(CameraLens lens) {
         this.lens = lens;
-        c2w = w2c = new Matrix4[1]; // null
+        c2w = new MovingMatrix4(null);
+        w2c = new MovingMatrix4(null);
+        shutterOpen = shutterClose = 0;
     }
 
     public boolean update(ParameterList pl, SunflowAPI api) {
-        int n = pl.getInt("transform.steps", 0);
-        if (n <= 0) {
-            // no motion blur, get regular arguments or leave unchanged
-            updateCameraMatrix(-1, pl);
-        } else {
-            // new motion blur settings - get transform for each step
-            c2w = new Matrix4[n];
-            for (int i = 0; i < n; i++) {
-                if (!updateCameraMatrix(i, pl)) {
-                    UI.printError(Module.CAM, "Camera matrix for step %d was not specified!", i + 1);
-                    return false;
-                }
-            }
-        }
-        w2c = new Matrix4[c2w.length];
-        for (int i = 0; i < c2w.length; i++) {
-            if (c2w[i] != null) {
-                w2c[i] = c2w[i].inverse();
-                if (w2c[i] == null) {
-                    UI.printError(Module.CAM, "Camera matrix is not invertible");
-                    return false;
-                }
-            } else
-                w2c[i] = null;
+        shutterOpen = pl.getFloat("shutter.open", shutterOpen);
+        shutterClose = pl.getFloat("shutter.close", shutterClose);
+        c2w = pl.getMovingMatrix("transform", c2w);
+        w2c = c2w.inverse();
+        if (w2c == null) {
+            UI.printWarning(Module.CAM, "Unable to compute camera's inverse transform");
+            return false;
         }
         return lens.update(pl, api);
     }
 
-    private boolean updateCameraMatrix(int index, ParameterList pl) {
-        String offset = index < 0 ? "" : String.format("[%d]", index);
-        if (index < 0)
-            index = 0;
-        Matrix4 transform = pl.getMatrix(String.format("transform%s", offset), null);
-        if (transform == null) {
-            // no transform was specified, check eye/target/up
-            Point3 eye = pl.getPoint(String.format("eye%s", offset), null);
-            Point3 target = pl.getPoint(String.format("target%s", offset), null);
-            Vector3 up = pl.getVector(String.format("up%s", offset), null);
-            if (eye != null && target != null && up != null) {
-                c2w[index] = Matrix4.fromBasis(OrthoNormalBasis.makeFromWV(Point3.sub(eye, target, new Vector3()), up));
-                c2w[index] = Matrix4.translation(eye.x, eye.y, eye.z).multiply(c2w[index]);
-            } else {
-                // the matrix for this index was not specified
-                // return an error, unless this is a regular update
-                return offset.length() == 0;
-            }
-        } else
-            c2w[index] = transform;
-        return true;
+    /**
+     * Computes actual time from a time sample in the interval [0,1). This
+     * random number is mapped somewhere between the shutterOpen and
+     * shutterClose times.
+     * 
+     * @param time
+     * @return
+     */
+    public float getTime(float time) {
+        if (shutterOpen >= shutterClose)
+            return shutterOpen;
+        // warp the time sample by a tent filter - this helps simulates the
+        // behaviour of a standard shutter as explained here:
+        // "Shutter Efficiency and Temporal Sampling" by "Ian Stephenson"
+        // http://www.dctsystems.co.uk/Text/shutter.pdf
+        if (time < 0.5)
+            time = -1 + (float) Math.sqrt(2 * time);
+        else
+            time = 1 - (float) Math.sqrt(2 - 2 * time);
+        time = 0.5f * (time + 1);
+        return (1 - time) * shutterOpen + time * shutterClose;
     }
 
     /**
@@ -92,19 +78,11 @@ public class Camera implements RenderObject {
      *            sampling
      * @return a ray passing through the specified pixel, or <code>null</code>
      */
-    public Ray getRay(float x, float y, int imageWidth, int imageHeight, double lensX, double lensY, double time) {
+    public Ray getRay(float x, float y, int imageWidth, int imageHeight, double lensX, double lensY, float time) {
         Ray r = lens.getRay(x, y, imageWidth, imageHeight, lensX, lensY, time);
         if (r != null) {
-            if (c2w.length == 1) {
-                // regular sampling
-                r = r.transform(c2w[0]);
-            } else {
-                // motion blur
-                double nt = time * (c2w.length - 1);
-                int idx0 = (int) nt;
-                int idx1 = Math.min(idx0 + 1, c2w.length - 1);
-                r = r.transform(Matrix4.blend(c2w[idx0], c2w[idx1], (float) (nt - idx0)));
-            }
+            // transform from camera space to world space
+            r = r.transform(c2w.sample(time));
             // renormalize to account for scale factors embeded in the transform
             r.normalize();
         }
@@ -118,8 +96,8 @@ public class Camera implements RenderObject {
      * @param p point in world space
      * @return ray from the origin of camera space to the specified point
      */
-    Ray getRay(Point3 p) {
-        return new Ray(c2w == null ? new Point3(0, 0, 0) : c2w[0].transformP(new Point3(0, 0, 0)), p);
+    Ray getRay(Point3 p, float time) {
+        return new Ray(c2w == null ? new Point3(0, 0, 0) : c2w.sample(time).transformP(new Point3(0, 0, 0)), p);
     }
 
     /**
@@ -127,8 +105,8 @@ public class Camera implements RenderObject {
      * 
      * @return a transformation matrix
      */
-    Matrix4 getCameraToWorld() {
-        return c2w == null ? Matrix4.IDENTITY : c2w[0];
+    Matrix4 getCameraToWorld(float time) {
+        return c2w == null ? Matrix4.IDENTITY : c2w.sample(time);
     }
 
     /**
@@ -136,7 +114,7 @@ public class Camera implements RenderObject {
      * 
      * @return a transformation matrix
      */
-    Matrix4 getWorldToCamera() {
-        return w2c == null ? Matrix4.IDENTITY : w2c[0];
+    Matrix4 getWorldToCamera(float time) {
+        return w2c == null ? Matrix4.IDENTITY : w2c.sample(time);
     }
 }

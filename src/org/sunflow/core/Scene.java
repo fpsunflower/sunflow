@@ -158,27 +158,19 @@ public class Scene {
      */
     public ShadingState getRadiance(IntersectionState istate, float rx, float ry, double lensU, double lensV, double time, int instance, int dim, ShadingCache cache) {
         istate.numEyeRays++;
+        float sceneTime = camera.getTime((float) time);
         if (bakingPrimitives == null) {
-            // warp the time sample by a tent filter - this helps simulates the
-            // behaviour of a standard shutter as explained here:
-            // "Shutter Efficiency and Temporal Sampling" by "Ian Stephenson"
-            // http://www.dctsystems.co.uk/Text/shutter.pdf
-            if (time < 0.5)
-                time = -1 + Math.sqrt(2 * time);
-            else
-                time = 1 - Math.sqrt(2 - 2 * time);
-            time = 0.5 * (time + 1);
-            Ray r = camera.getRay(rx, ry, imageWidth, imageHeight, lensU, lensV, time);
-            return r != null ? lightServer.getRadiance(rx, ry, instance, dim, r, istate, cache) : null;
+            Ray r = camera.getRay(rx, ry, imageWidth, imageHeight, lensU, lensV, sceneTime);
+            return r != null ? lightServer.getRadiance(rx, ry, sceneTime, instance, dim, r, istate, cache) : null;
         } else {
             Ray r = new Ray(rx / imageWidth, ry / imageHeight, -1, 0, 0, 1);
             traceBake(r, istate);
             if (!istate.hit())
                 return null;
-            ShadingState state = ShadingState.createState(istate, rx, ry, r, instance, dim, lightServer);
+            ShadingState state = ShadingState.createState(istate, rx, ry, sceneTime, r, instance, dim, lightServer);
             bakingPrimitives.prepareShadingState(state);
             if (bakingViewDependent)
-                state.setRay(camera.getRay(state.getPoint()));
+                state.setRay(camera.getRay(state.getPoint(), sceneTime));
             else {
                 Point3 p = state.getPoint();
                 Vector3 n = state.getNormal();

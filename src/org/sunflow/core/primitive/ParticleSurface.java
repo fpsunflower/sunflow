@@ -67,7 +67,7 @@ public class ParticleSurface implements PrimitiveList {
     public void prepareShadingState(ShadingState state) {
         state.init();
         state.getRay().getPoint(state.getPoint());
-        Point3 localPoint = state.getInstance().transformWorldToObject(state.getPoint());
+        Point3 localPoint = state.transformWorldToObject(state.getPoint());
 
         localPoint.x -= particles[3 * state.getPrimitiveID() + 0];
         localPoint.y -= particles[3 * state.getPrimitiveID() + 1];
@@ -79,7 +79,7 @@ public class ParticleSurface implements PrimitiveList {
         state.setShader(state.getInstance().getShader(0));
         state.setModifier(state.getInstance().getModifier(0));
         // into object space
-        Vector3 worldNormal = state.getInstance().transformNormalObjectToWorld(state.getNormal());
+        Vector3 worldNormal = state.transformNormalObjectToWorld(state.getNormal());
         state.getNormal().set(worldNormal);
         state.getNormal().normalize();
         state.getGeoNormal().set(state.getNormal());

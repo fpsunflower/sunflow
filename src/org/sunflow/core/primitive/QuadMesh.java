@@ -270,7 +270,7 @@ public class QuadMesh implements PrimitiveList {
         float nz = tanux * tanvy - tanuy * tanvx;
 
         Vector3 ng = new Vector3(nx, ny, nz);
-        ng = parent.transformNormalObjectToWorld(ng);
+        ng = state.transformNormalObjectToWorld(ng);
         ng.normalize();
         state.getGeoNormal().set(ng);
 
@@ -294,7 +294,7 @@ public class QuadMesh implements PrimitiveList {
                 state.getNormal().x = k00 * normals[i30 + 0] + k10 * normals[i31 + 0] + k11 * normals[i32 + 0] + k01 * normals[i33 + 0];
                 state.getNormal().y = k00 * normals[i30 + 1] + k10 * normals[i31 + 1] + k11 * normals[i32 + 1] + k01 * normals[i33 + 1];
                 state.getNormal().z = k00 * normals[i30 + 2] + k10 * normals[i31 + 2] + k11 * normals[i32 + 2] + k01 * normals[i33 + 2];
-                state.getNormal().set(parent.transformNormalObjectToWorld(state.getNormal()));
+                state.getNormal().set(state.transformNormalObjectToWorld(state.getNormal()));
                 state.getNormal().normalize();
                 break;
             }
@@ -304,7 +304,7 @@ public class QuadMesh implements PrimitiveList {
                 state.getNormal().x = k00 * normals[idx + 0] + k10 * normals[idx + 3] + k11 * normals[idx + 6] + k01 * normals[idx + 9];
                 state.getNormal().y = k00 * normals[idx + 1] + k10 * normals[idx + 4] + k11 * normals[idx + 7] + k01 * normals[idx + 10];
                 state.getNormal().z = k00 * normals[idx + 2] + k10 * normals[idx + 5] + k11 * normals[idx + 8] + k01 * normals[idx + 11];
-                state.getNormal().set(parent.transformNormalObjectToWorld(state.getNormal()));
+                state.getNormal().set(state.transformNormalObjectToWorld(state.getNormal()));
                 state.getNormal().normalize();
                 break;
             }
@@ -370,7 +370,7 @@ public class QuadMesh implements PrimitiveList {
                 dpdv.x = (-du2 * dp1.x + du1 * dp2.x) * invdet;
                 dpdv.y = (-du2 * dp1.y + du1 * dp2.y) * invdet;
                 dpdv.z = (-du2 * dp1.z + du1 * dp2.z) * invdet;
-                dpdv = parent.transformVectorObjectToWorld(dpdv);
+                dpdv = state.transformVectorObjectToWorld(dpdv);
                 // create basis in world space
                 state.setBasis(OrthoNormalBasis.makeFromWV(state.getNormal(), dpdv));
             }

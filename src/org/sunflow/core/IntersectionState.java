@@ -7,6 +7,7 @@ package org.sunflow.core;
  */
 public final class IntersectionState {
     private static final int MAX_STACK_SIZE = 64;
+    float time;
     float u, v, w;
     Instance instance;
     int id;
@@ -36,6 +37,17 @@ public final class IntersectionState {
         for (int i = 0; i < stacks.length; i++)
             for (int j = 0; j < stacks[i].length; j++)
                 stacks[i][j] = new StackNode();
+    }
+
+    /**
+     * Returns the time at which the intersection should be calculated. This
+     * will be constant for a given ray-tree. This value is guarenteed to be
+     * between the camera's shutter open and shutter close time.
+     * 
+     * @return time value
+     */
+    public float getTime() {
+        return time;
     }
 
     /**

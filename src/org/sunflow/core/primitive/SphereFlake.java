@@ -80,7 +80,7 @@ public class SphereFlake implements PrimitiveList {
         state.init();
         state.getRay().getPoint(state.getPoint());
         Instance parent = state.getInstance();
-        Point3 localPoint = parent.transformWorldToObject(state.getPoint());
+        Point3 localPoint = state.transformWorldToObject(state.getPoint());
 
         float cx = state.getU();
         float cy = state.getV();
@@ -102,8 +102,8 @@ public class SphereFlake implements PrimitiveList {
         state.setShader(parent.getShader(0));
         state.setModifier(parent.getModifier(0));
         // into world space
-        Vector3 worldNormal = parent.transformNormalObjectToWorld(state.getNormal());
-        v = parent.transformVectorObjectToWorld(v);
+        Vector3 worldNormal = state.transformNormalObjectToWorld(state.getNormal());
+        v = state.transformVectorObjectToWorld(v);
         state.getNormal().set(worldNormal);
         state.getNormal().normalize();
         state.getGeoNormal().set(state.getNormal());

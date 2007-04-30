@@ -69,7 +69,7 @@ public class Torus implements PrimitiveList {
         state.getRay().getPoint(state.getPoint());
         Instance parent = state.getInstance();
         // get local point
-        Point3 p = parent.transformWorldToObject(state.getPoint());
+        Point3 p = state.transformWorldToObject(state.getPoint());
         // compute local normal
         float deriv = p.x * p.x + p.y * p.y + p.z * p.z - ri2 - ro2;
         state.getNormal().set(p.x * deriv, p.y * deriv, p.z * deriv + 2 * ro2 * p.z);
@@ -84,7 +84,7 @@ public class Torus implements PrimitiveList {
         state.setShader(parent.getShader(0));
         state.setModifier(parent.getModifier(0));
         // into world space
-        Vector3 worldNormal = parent.transformNormalObjectToWorld(state.getNormal());
+        Vector3 worldNormal = state.transformNormalObjectToWorld(state.getNormal());
         state.getNormal().set(worldNormal);
         state.getNormal().normalize();
         state.getGeoNormal().set(state.getNormal());

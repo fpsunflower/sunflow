@@ -38,7 +38,7 @@ public class Cylinder implements PrimitiveList {
         state.init();
         state.getRay().getPoint(state.getPoint());
         Instance parent = state.getInstance();
-        Point3 localPoint = parent.transformWorldToObject(state.getPoint());
+        Point3 localPoint = state.transformWorldToObject(state.getPoint());
         state.getNormal().set(localPoint.x, localPoint.y, 0);
         state.getNormal().normalize();
 
@@ -50,8 +50,8 @@ public class Cylinder implements PrimitiveList {
         state.setShader(parent.getShader(0));
         state.setModifier(parent.getModifier(0));
         // into world space
-        Vector3 worldNormal = parent.transformNormalObjectToWorld(state.getNormal());
-        Vector3 v = parent.transformVectorObjectToWorld(new Vector3(0, 0, 1));
+        Vector3 worldNormal = state.transformNormalObjectToWorld(state.getNormal());
+        Vector3 v = state.transformVectorObjectToWorld(new Vector3(0, 0, 1));
         state.getNormal().set(worldNormal);
         state.getNormal().normalize();
         state.getGeoNormal().set(state.getNormal());

@@ -103,6 +103,18 @@ public final class Matrix4 {
         }
     }
 
+    public final boolean isIndentity() {
+        return equals(IDENTITY);
+    }
+
+    public final boolean equals(Matrix4 m) {
+        if (m == null)
+            return false;
+        if (this == m)
+            return true;
+        return m00 == m.m00 && m01 == m.m01 && m02 == m.m02 && m03 == m.m03 && m10 == m.m10 && m11 == m.m11 && m12 == m.m12 && m13 == m.m13 && m20 == m.m20 && m21 == m.m21 && m22 == m.m22 && m23 == m.m23;
+    }
+
     public final float[] asRowMajor() {
         return new float[] { m00, m01, m02, m03, m10, m11, m12, m13, m20, m21,
                 m22, m23, 0, 0, 0, 1 };
@@ -512,6 +524,20 @@ public final class Matrix4 {
         m.m21 = v.z;
         m.m22 = w.z;
         return m;
+    }
+
+    /**
+     * Creates a camera positioning matrix from the given eye and target points
+     * and up vector.
+     * 
+     * @param eye location of the eye
+     * @param target location of the target
+     * @param up vector pointing upwards
+     * @return
+     */
+    public final static Matrix4 lookAt(Point3 eye, Point3 target, Vector3 up) {
+        Matrix4 m = Matrix4.fromBasis(OrthoNormalBasis.makeFromWV(Point3.sub(eye, target, new Vector3()), up));
+        return Matrix4.translation(eye.x, eye.y, eye.z).multiply(m);
     }
 
     public final static Matrix4 blend(Matrix4 m0, Matrix4 m1, float t) {

@@ -370,6 +370,10 @@ public class SCParser implements SceneParser {
         p.checkNextToken("type");
         String type = p.getNextToken();
         UI.printInfo(Module.API, "Reading %s camera ...", type);
+        if (p.peekNextToken("shutter")) {
+            api.parameter("shutter.open", p.getNextFloat());
+            api.parameter("shutter.close", p.getNextFloat());
+        }
         parseCameraTransform(api);
         String name = generateUniqueName("camera");
         if (type.equals("pinhole")) {
@@ -423,6 +427,12 @@ public class SCParser implements SceneParser {
             // motion blur camera
             int n = p.getNextInt();
             api.parameter("transform.steps", n);
+            // parse time extents
+            p.checkNextToken("times");
+            float t0 = p.getNextFloat();
+            float t1 = p.getNextFloat();
+            api.parameter("transform.times", "float", "none", new float[] { t0,
+                    t1 });
             for (int i = 0; i < n; i++)
                 parseCameraMatrix(i, api);
         } else
@@ -439,11 +449,12 @@ public class SCParser implements SceneParser {
                 p.checkNextToken("{");
             // regular camera specification
             p.checkNextToken("eye");
-            api.parameter(String.format("eye%s", offset), parsePoint());
+            Point3 eye = parsePoint();
             p.checkNextToken("target");
-            api.parameter(String.format("target%s", offset), parsePoint());
+            Point3 target = parsePoint();
             p.checkNextToken("up");
-            api.parameter(String.format("up%s", offset), parseVector());
+            Vector3 up = parseVector();
+            api.parameter(String.format("transform%s", offset), Matrix4.lookAt(eye, target, up));
             if (index >= 0)
                 p.checkNextToken("}");
         }

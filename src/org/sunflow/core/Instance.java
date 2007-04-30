@@ -3,8 +3,7 @@ package org.sunflow.core;
 import org.sunflow.SunflowAPI;
 import org.sunflow.math.BoundingBox;
 import org.sunflow.math.Matrix4;
-import org.sunflow.math.Point3;
-import org.sunflow.math.Vector3;
+import org.sunflow.math.MovingMatrix4;
 import org.sunflow.system.UI;
 import org.sunflow.system.UI.Module;
 
@@ -14,22 +13,29 @@ import org.sunflow.system.UI.Module;
  * modifiers attached to the surface.
  */
 public class Instance implements RenderObject {
-    private Matrix4 o2w;
-    private Matrix4 w2o;
+    private MovingMatrix4 o2w;
+    private MovingMatrix4 w2o;
     private BoundingBox bounds;
     private Geometry geometry;
     private Shader[] shaders;
     private Modifier[] modifiers;
 
+    public Instance() {
+        o2w = new MovingMatrix4(null);
+        w2o = new MovingMatrix4(null);
+        bounds = null;
+        geometry = null;
+        shaders = null;
+        modifiers = null;
+    }
+
     public static Instance createTemporary(PrimitiveList primitives, Matrix4 transform, Shader shader) {
         Instance i = new Instance();
-        i.o2w = transform;
-        if (transform != null) {
-            i.w2o = transform.inverse();
-            if (i.w2o == null) {
-                UI.printError(Module.GEOM, "Unable to compute transform inverse - determinant is: %g", i.o2w.determinant());
-                return null;
-            }
+        i.o2w = new MovingMatrix4(transform);
+        i.w2o = i.o2w.inverse();
+        if (i.w2o == null) {
+            UI.printError(Module.GEOM, "Unable to compute transform inverse");
+            return null;
         }
         i.geometry = new Geometry(primitives);
         i.shaders = new Shader[] { shader };
@@ -72,17 +78,11 @@ public class Instance implements RenderObject {
                     UI.printWarning(Module.GEOM, "Modifier \"%s\" was not declared yet - ignoring", modifierNames[i]);
             }
         }
-        Matrix4 transform = pl.getMatrix("transform", o2w);
-        if (transform != o2w) {
-            o2w = transform;
-            if (o2w != null) {
-                w2o = o2w.inverse();
-                if (w2o == null) {
-                    UI.printError(Module.GEOM, "Unable to compute transform inverse - determinant is: %g", o2w.determinant());
-                    return false;
-                }
-            } else
-                o2w = w2o = null;
+        o2w = pl.getMovingMatrix("transform", o2w);
+        w2o = o2w.inverse();
+        if (w2o == null) {
+            UI.printError(Module.GEOM, "Unable to compute transform inverse");
+            return false;
         }
         return true;
     }
@@ -91,7 +91,9 @@ public class Instance implements RenderObject {
      * Recompute world space bounding box of this instance.
      */
     public void updateBounds() {
-        bounds = geometry.getWorldBounds(o2w);
+        bounds = geometry.getWorldBounds(o2w.getData(0));
+        for (int i = 1; i < o2w.numSegments(); i++)
+            bounds.include(geometry.getWorldBounds(o2w.getData(i)));
     }
 
     /**
@@ -146,7 +148,7 @@ public class Instance implements RenderObject {
     }
 
     void intersect(Ray r, IntersectionState state) {
-        Ray localRay = r.transform(w2o);
+        Ray localRay = r.transform(w2o.sample(state.time));
         state.current = this;
         geometry.intersect(localRay, state);
         // FIXME: transfer max distance to current ray
@@ -193,70 +195,12 @@ public class Instance implements RenderObject {
         return modifiers[i];
     }
 
-    /**
-     * Transform the given point from object space to world space. A new
-     * {@link Point3} object is returned.
-     * 
-     * @param p object space position to transform
-     * @return transformed position
-     */
-    public Point3 transformObjectToWorld(Point3 p) {
-        return o2w == null ? new Point3(p) : o2w.transformP(p);
+    Matrix4 getObjectToWorld(float time) {
+        return o2w.sample(time);
     }
 
-    /**
-     * Transform the given point from world space to object space. A new
-     * {@link Point3} object is returned.
-     * 
-     * @param p world space position to transform
-     * @return transformed position
-     */
-    public Point3 transformWorldToObject(Point3 p) {
-        return o2w == null ? new Point3(p) : w2o.transformP(p);
-    }
-
-    /**
-     * Transform the given normal from object space to world space. A new
-     * {@link Vector3} object is returned.
-     * 
-     * @param n object space normal to transform
-     * @return transformed normal
-     */
-    public Vector3 transformNormalObjectToWorld(Vector3 n) {
-        return o2w == null ? new Vector3(n) : w2o.transformTransposeV(n);
-    }
-
-    /**
-     * Transform the given normal from world space to object space. A new
-     * {@link Vector3} object is returned.
-     * 
-     * @param n world space normal to transform
-     * @return transformed normal
-     */
-    public Vector3 transformNormalWorldToObject(Vector3 n) {
-        return o2w == null ? new Vector3(n) : o2w.transformTransposeV(n);
-    }
-
-    /**
-     * Transform the given vector from object space to world space. A new
-     * {@link Vector3} object is returned.
-     * 
-     * @param v object space vector to transform
-     * @return transformed vector
-     */
-    public Vector3 transformVectorObjectToWorld(Vector3 v) {
-        return o2w == null ? new Vector3(v) : o2w.transformV(v);
-    }
-
-    /**
-     * Transform the given vector from world space to object space. A new
-     * {@link Vector3} object is returned.
-     * 
-     * @param v world space vector to transform
-     * @return transformed vector
-     */
-    public Vector3 transformVectorWorldToObject(Vector3 v) {
-        return o2w == null ? new Vector3(v) : w2o.transformV(v);
+    Matrix4 getWorldToObject(float time) {
+        return w2o.sample(time);
     }
 
     PrimitiveList getBakingPrimitives() {

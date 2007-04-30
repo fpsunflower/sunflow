@@ -70,7 +70,7 @@ public abstract class CubeGrid implements PrimitiveList {
                 normal = new Vector3(0, 0, 0);
                 break;
         }
-        state.getNormal().set(parent.transformNormalObjectToWorld(normal));
+        state.getNormal().set(state.transformNormalObjectToWorld(normal));
         state.getGeoNormal().set(state.getNormal());
         state.setBasis(OrthoNormalBasis.makeFromW(state.getNormal()));
         state.setShader(parent.getShader(0));

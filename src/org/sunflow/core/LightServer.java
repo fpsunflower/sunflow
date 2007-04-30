@@ -248,10 +248,12 @@ class LightServer {
 
     }
 
-    ShadingState getRadiance(float rx, float ry, int i, int d, Ray r, IntersectionState istate, ShadingCache cache) {
+    ShadingState getRadiance(float rx, float ry, float time, int i, int d, Ray r, IntersectionState istate, ShadingCache cache) {
+        // set this value once - will stay constant for the entire ray-tree
+        istate.time = time;
         scene.trace(r, istate);
         if (istate.hit()) {
-            ShadingState state = ShadingState.createState(istate, rx, ry, r, i, d, this);
+            ShadingState state = ShadingState.createState(istate, rx, ry, time, r, i, d, this);
             state.getInstance().prepareShadingState(state);
             Shader shader = getShader(state);
             if (shader == null) {

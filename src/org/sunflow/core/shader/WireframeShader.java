@@ -49,7 +49,7 @@ public class WireframeShader implements Shader {
         Matrix4 w2c = state.getWorldToCamera();
         center = w2c.transformP(center);
         for (int i = 0; i < 3; i++)
-            p[i] = w2c.transformP(state.getInstance().transformObjectToWorld(p[i]));
+            p[i] = w2c.transformP(state.transformObjectToWorld(p[i]));
         float cn = 1.0f / (float) Math.sqrt(center.x * center.x + center.y * center.y + center.z * center.z);
         for (int i = 0, i2 = 2; i < 3; i2 = i, i++) {
             // compute orthogonal projection of the shading point onto each

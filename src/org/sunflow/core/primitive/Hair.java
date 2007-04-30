@@ -182,7 +182,7 @@ public class Hair implements PrimitiveList, Shader {
 
         // tangent vector
         Vector3 v = getTangent(line, v0, state.getV());
-        v = i.transformVectorObjectToWorld(v);
+        v = state.transformVectorObjectToWorld(v);
         state.setBasis(OrthoNormalBasis.makeFromWV(v, new Vector3(-r.dx, -r.dy, -r.dz)));
         state.getBasis().swapVW();
         // normal
