@@ -948,7 +948,18 @@ public class SCParser implements SceneParser {
         p.checkNextToken("geometry");
         String geoname = p.getNextToken();
         p.checkNextToken("transform");
-        api.parameter("transform", parseMatrix());
+        if (p.peekNextToken("steps")) {
+            int n = p.getNextInt();
+            api.parameter("transform.steps", n);
+            p.checkNextToken("times");
+            float[] times = new float[2];
+            times[0] = p.getNextFloat();
+            times[1] = p.getNextFloat();
+            api.parameter("transform.times", "float", "none", times);
+            for (int i = 0; i < n; i++)
+                api.parameter(String.format("transform[%d]", i), parseMatrix());
+        } else
+            api.parameter("transform", parseMatrix());
         String[] shaders;
         if (p.peekNextToken("shaders")) {
             int n = p.getNextInt();

@@ -1,11 +1,14 @@
 image {
   resolution 640 480
-  aa 0 1
-  filter mitchell
+  sampler multipass
+  samples 16
+%  aa 0 1
+%  filter mitchell
 }
 
 camera {
   type pinhole
+  shutter  101.8 102.2
   eye    -10.5945 -30.0581 10.967
   target 0.0554193 0.00521195 5.38209
   up     0 0 1
@@ -29,7 +32,7 @@ shader {
 }
 
 object {
-  shader default-shader
+  noinstance
   type mesh
   name polySurfac
   32368 64524
@@ -96925,6 +96928,19 @@ object {
   t 15456 31419 15400
   t 31419 15456 15399
   t 15399 15456 15455
+}
+
+instance {
+  name thebunny
+  geometry polySurfac
+  transform
+    steps 4
+    times 101.8 102.2
+    { rotatez 0   translate 0 0 0 }
+    { rotatez 2   translate 0 0 0.5 }    
+    { rotatez 4   translate 0 0 1.0 }    
+    { rotatez 6   translate 0 0 1.5 }
+  shader default-shader
 }
 
 object {
