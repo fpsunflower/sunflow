@@ -1,14 +1,14 @@
 #!BPY
 
 """
-Name: 'Sunflow Exporter 1.1.11 (.sc)...'
+Name: 'Sunflow Exporter 1.2.0 (.sc)...'
 Blender: 2.43
 Group: 'Export'
 Tip: ''
 """
 
 """
-Version         :       1.1.11 (April 2007)
+Version         :       1.2.0 (April 2007)
 Author          :       R Lindsay (hayfever) / Christopher Kulla / MADCello / 
 			olivS / Eugene Reilly / Heavily Tessellated / Humfred
 Description     :       Export to Sunflow renderer http://sunflow.sourceforge.net/
@@ -192,7 +192,7 @@ JAVAPATH = ""
 #######################
 
 print "\n\n"
-print "blend2sunflow v1.1.11"
+print "blend2sunflow v1.2.0"
 
 ## Export logic for simple options ##
 #####################################
@@ -267,10 +267,16 @@ def import_output():
                         horcol2 = SCENE.properties['HorizonColB']
                         BACKGROUND.val = 0
                         Draw.Redraw()
-                elif SCENE.properties['Script Background'] == "true":
+                else:
+                        IMP_BCKGRD.val = 0
+                        Draw.Redraw()                        
+                if SCENE.properties['Script Background'] == "true":
                         BACKGROUND.val = 1
                         BCKGRD.val = SCENE.properties['HorizonCol'][0], SCENE.properties['HorizonCol'][1], SCENE.properties['HorizonCol'][2]
                         IMP_BCKGRD.val = 0
+                        Draw.Redraw()
+                else:
+                        BACKGROUND.val = 0
                         Draw.Redraw()
 
 def export_output():
@@ -1043,7 +1049,7 @@ def import_camera():
 		DOFRADIUS.val = CAMERA.properties['DOF Radius']
                 LENSSIDES.val = CAMERA.properties['Lens Sides']
                 LENSROTATION.val = CAMERA.properties['Lens Rotation']
-                if CAMERA.properties['DOF Radius'] == "true":
+                if CAMERA.properties['DOF'] == "true":
                         DOF.val = 1
                         Draw.Redraw()
                 else:
@@ -1095,8 +1101,8 @@ def export_camera(cam):
 		FILE.write("\taspect %s \n" % (1.0 * IM_WIDTH / IM_HEIGHT))
 		FILE.write("\tfdist %s \n" % DOFDIST)
 		FILE.write("\tlensr %s \n" % DOFRADIUS)
-		FILE.write("\tsides %s \n" % LENSSIDES)		#added by olivS
-		FILE.write("\trotation %s \n" % LENSROTATION)	#added by olivS
+		FILE.write("\tsides %s \n" % LENSSIDES)
+		FILE.write("\trotation %s \n" % LENSROTATION)
 	elif SPHERICALCAMERA.val == 1:
 		camtype = "spherical"
 		FILE.write("\ttype   %s\n" % camtype)
@@ -1123,10 +1129,12 @@ def export_camera(cam):
 ##############################
 
 def export_geometry(obj):
-	#mesh = "";verts="";faces="";numverts=""
 	islight = obj.name.startswith("meshlight")
+        isparticleob = obj.name.startswith("particleob")
 	if islight:
 		print "o exporting meshlight " + obj.name+"..."
+        if isparticleob:
+		print "o exporting particle object " + obj.name+"..."
 	# get the mesh data
 	if obj.getType() <> "Empty":
                 mesh = NMesh.GetRawFromObject(obj.name)
@@ -1182,100 +1190,143 @@ def export_geometry(obj):
                                         ##End Modifiers##
                                 else:
                                         FILE.write("\tshader def\n")
-                                FILE.write("\ttype generic-mesh\n")
-                                FILE.write("\tname \"" + obj.name + "\"\n")
-
-                        FILE.write("\tpoints %d\n" % (numverts))
-                        for vert in verts:
-                                FILE.write("\t\t%s %s %s\n" % (vert.co[0], vert.co[1], vert.co[2]))
-                        numtris = 0
-                        for face in faces:
-                                num = len(face.v)
-                                if num == 4:
-                                        numtris = numtris + 2
-                                elif num == 3:
-                                        numtris = numtris + 1
-                        FILE.write("\ttriangles %d\n" % (numtris))
-                        allsmooth = True
-                        allflat = True
-                        for face in faces:
-                                num = len(face.v)
-                                smooth = face.smooth <> 0
-                                allsmooth &= smooth
-                                allflat &= not smooth
-                                if num == 4:
-                                        FILE.write("\t\t%d %d %d\n" % (face.v[0].index, face.v[1].index, face.v[2].index))
-                                        FILE.write("\t\t%d %d %d\n" % (face.v[0].index, face.v[2].index, face.v[3].index))
-                                elif num == 3:
-                                        FILE.write("\t\t%d %d %d\n" % (face.v[0].index, face.v[1].index, face.v[2].index))
-                        ## what kind of normals do we have?
-                        if not islight:
-                                if allflat:
-                                        FILE.write("\tnormals none\n")
-                                elif allsmooth:
-                                        FILE.write("\tnormals vertex\n")
+                                ##Particle/hair object section.  Works with Sunflow 0.07.3 and up.##
+                                ## Check if there are particles on the object##
+                          	ob = Object.Get(obj.name)
+                          	if len(ob.effects) <> 0:
+                                        effect = ob.effects[0]
+                                        particles = effect.getParticlesLoc()
+                                        effects= Effect.Get()
+                                ## Check that particles are points only (not static and not vectors)##
+                                        if not effect.getFlag() & Effect.Flags.STATIC or not effect.getStype():
+                                                FILE.write("\ttype particles\n")
+                                                FILE.write("\tname \"" + obj.name + "\"\n")
+                                                FILE.write("\tpoints %d\n" % (len(particles)))        
+                                                for pt in particles:
+                                                        FILE.write("\t\t%s %s %s\n" % (pt[0], pt[1], pt[2]))
+                                                FILE.write("\tradius 0.05\n}\n")
+                                        elif type(particles)==list: # Is it a strand or pair?
+                                                if len(particles)>1:
+                                                        pointnum = ((len(particles)*effect.getLifetime())*3)
+                                                        print "o exporting hair object " + obj.name+"..."
+                                                        FILE.write("\ttype hair\n")
+                                                        FILE.write("\tname \"" + obj.name + "\"\n")
+                                                        FILE.write("\tsegments %d\n" % (effect.getLifetime()-1)) 
+                                                        FILE.write("\twidth .01\n")
+                                                        FILE.write("\tpoints %d" % pointnum)
+                                                        #To get the correct number of points, Blender's step value must be se to 1 by the user.
+                                                        for eff in effects:
+                                                                for p in eff.getParticlesLoc():
+                                                                        if type(p)==list: # Are we a strand or a pair, then add edges.
+                                                                                if len(p)>1:
+                                                                                        destData = str()
+                                                                                        for vect in p:
+                                                                                                for elem in vect:
+                                                                                                        destData+=" "+str(elem)
+                                                                                        FILE.write("\t%s\n" % (destData))
+                                                        FILE.write("}\n")                                                        
+                                elif isparticleob:
+                                        FILE.write("\ttype particles\n")
+                                        FILE.write("\tname \"" + obj.name + "\"\n")
+                                        FILE.write("\tpoints %d\n" % (numverts))        
                                         for vert in verts:
-                                                FILE.write("\t\t%s %s %s\n" % (vert.no[0], vert.no[1], vert.no[2]))
-                                else:
-                                        FILE.write("\tnormals facevarying\n")
+                                                FILE.write("\t\t%s %s %s\n" % (vert.co[0], vert.co[1], vert.co[2]))
+                                        FILE.write("\tradius 0.05\n}\n")
+                                ##End particle/hair section##
+                                else:        
+                                        FILE.write("\ttype generic-mesh\n")
+                                        FILE.write("\tname \"" + obj.name + "\"\n")
+                                        FILE.write("\tpoints %d\n" % (numverts))
+                                        for vert in verts:
+                                                FILE.write("\t\t%s %s %s\n" % (vert.co[0], vert.co[1], vert.co[2]))
+                                        numtris = 0
                                         for face in faces:
                                                 num = len(face.v)
-                                                if face.smooth <> 0:
-                                                        if num == 4:
-                                                                index0 = face.v[0].index
-                                                                index1 = face.v[1].index
-                                                                index2 = face.v[2].index
-                                                                index3 = face.v[3].index
-                                                                FILE.write("\t\t%s %s %s %s %s %s %s %s %s\n" % (verts[index0].no[0], verts[index0].no[1], verts[index0].no[2],
-                                                                                                                                                                                                                        verts[index1].no[0], verts[index1].no[1], verts[index1].no[2],
-                                                                                                                                                                                                                        verts[index2].no[0], verts[index2].no[1], verts[index2].no[2]))
-                                                                FILE.write("\t\t%s %s %s %s %s %s %s %s %s\n" % (verts[index0].no[0], verts[index0].no[1], verts[index0].no[2],
-                                                                                                                                                                                                                        verts[index2].no[0], verts[index2].no[1], verts[index2].no[2],
-                                                                                                                                                                                                                        verts[index3].no[0], verts[index3].no[1], verts[index3].no[2]))
-                                                        elif num == 3:
-                                                                index0 = face.v[0].index
-                                                                index1 = face.v[1].index
-                                                                index2 = face.v[2].index
-                                                                FILE.write("\t\t%s %s %s %s %s %s %s %s %s\n" % (verts[index0].no[0], verts[index0].no[1], verts[index0].no[2],
-                                                                                                                                                                                                                        verts[index1].no[0], verts[index1].no[1], verts[index1].no[2],
-                                                                                                                                                                                                                        verts[index2].no[0], verts[index2].no[1], verts[index2].no[2]))
+                                                if num == 4:
+                                                        numtris = numtris + 2
+                                                elif num == 3:
+                                                        numtris = numtris + 1
+                                        FILE.write("\ttriangles %d\n" % (numtris))
+                                        allsmooth = True
+                                        allflat = True
+                                        for face in faces:
+                                                num = len(face.v)
+                                                smooth = face.smooth <> 0
+                                                allsmooth &= smooth
+                                                allflat &= not smooth
+                                                if num == 4:
+                                                        FILE.write("\t\t%d %d %d\n" % (face.v[0].index, face.v[1].index, face.v[2].index))
+                                                        FILE.write("\t\t%d %d %d\n" % (face.v[0].index, face.v[2].index, face.v[3].index))
+                                                elif num == 3:
+                                                        FILE.write("\t\t%d %d %d\n" % (face.v[0].index, face.v[1].index, face.v[2].index))
+                                        ## what kind of normals do we have?
+                                        if not islight:
+                                                if allflat:
+                                                        FILE.write("\tnormals none\n")
+                                                elif allsmooth:
+                                                        FILE.write("\tnormals vertex\n")
+                                                        for vert in verts:
+                                                                FILE.write("\t\t%s %s %s\n" % (vert.no[0], vert.no[1], vert.no[2]))
                                                 else:
-                                                        fnx = face.no[0]
-                                                        fny = face.no[1]
-                                                        fnz = face.no[2]
-                                                        if num == 4:
-                                                                FILE.write("\t\t%s %s %s %s %s %s %s %s %s\n" % (fnx, fny, fnz, fnx, fny, fnz, fnx, fny, fnz))
-                                                                FILE.write("\t\t%s %s %s %s %s %s %s %s %s\n" % (fnx, fny, fnz, fnx, fny, fnz, fnx, fny, fnz))
-                                                        elif num == 3:
-                                                                FILE.write("\t\t%s %s %s %s %s %s %s %s %s\n" % (fnx, fny, fnz, fnx, fny, fnz, fnx, fny, fnz))
-                                if mesh.hasFaceUV():
-                                        tx = 1
-                                        ty = 1
-                                        if len(mesh.materials) >= 1:
-                                                if len(mesh.materials[0].getTextures()) >= 1:
-                                                        if mesh.materials[0].getTextures()[0] <> None:
-                                                                tx = mesh.materials[0].getTextures()[0].tex.repeat[0]
-                                                                ty = mesh.materials[0].getTextures()[0].tex.repeat[1]
-                                        FILE.write("\tuvs facevarying\n")
-                                        for face in faces:
-                                                num = len(face.v)
-                                                if num == 4:
-                                                        FILE.write("\t\t%s %s %s %s %s %s\n" % (tx * face.uv[0][0], ty * face.uv[0][1], tx * face.uv[1][0], ty * face.uv[1][1], tx * face.uv[2][0], ty * face.uv[2][1]))
-                                                        FILE.write("\t\t%s %s %s %s %s %s\n" % (tx * face.uv[0][0], ty * face.uv[0][1], tx * face.uv[2][0], ty * face.uv[2][1], tx * face.uv[3][0], ty * face.uv[3][1]))
-                                                elif num == 3:
-                                                        FILE.write("\t\t%s %s %s %s %s %s\n" % (tx * face.uv[0][0], ty * face.uv[0][1], tx * face.uv[1][0], ty * face.uv[1][1], tx * face.uv[2][0], ty * face.uv[2][1]))
-                                else:
-                                        FILE.write("\tuvs none\n")
-                                if len(mesh.materials) > 1:
-                                        FILE.write("\tface_shaders\n")
-                                        for face in faces:
-                                                num = len(face.v)
-                                                if num == 4:
-                                                        FILE.write("\t\t%d\n" % (face.materialIndex))
-                                                        FILE.write("\t\t%d\n" % (face.materialIndex))
-                                                elif num == 3:
-                                                        FILE.write("\t\t%d\n" % (face.materialIndex))
-                        FILE.write("}\n")
+                                                        FILE.write("\tnormals facevarying\n")
+                                                        for face in faces:
+                                                                num = len(face.v)
+                                                                if face.smooth <> 0:
+                                                                        if num == 4:
+                                                                                index0 = face.v[0].index
+                                                                                index1 = face.v[1].index
+                                                                                index2 = face.v[2].index
+                                                                                index3 = face.v[3].index
+                                                                                FILE.write("\t\t%s %s %s %s %s %s %s %s %s\n" % (verts[index0].no[0], verts[index0].no[1], verts[index0].no[2],
+                                                                                                                                                                                                                                        verts[index1].no[0], verts[index1].no[1], verts[index1].no[2],
+                                                                                                                                                                                                                                        verts[index2].no[0], verts[index2].no[1], verts[index2].no[2]))
+                                                                                FILE.write("\t\t%s %s %s %s %s %s %s %s %s\n" % (verts[index0].no[0], verts[index0].no[1], verts[index0].no[2],
+                                                                                                                                                                                                                                        verts[index2].no[0], verts[index2].no[1], verts[index2].no[2],
+                                                                                                                                                                                                                                        verts[index3].no[0], verts[index3].no[1], verts[index3].no[2]))
+                                                                        elif num == 3:
+                                                                                index0 = face.v[0].index
+                                                                                index1 = face.v[1].index
+                                                                                index2 = face.v[2].index
+                                                                                FILE.write("\t\t%s %s %s %s %s %s %s %s %s\n" % (verts[index0].no[0], verts[index0].no[1], verts[index0].no[2],
+                                                                                                                                                                                                                                        verts[index1].no[0], verts[index1].no[1], verts[index1].no[2],
+                                                                                                                                                                                                                                        verts[index2].no[0], verts[index2].no[1], verts[index2].no[2]))
+                                                                else:
+                                                                        fnx = face.no[0]
+                                                                        fny = face.no[1]
+                                                                        fnz = face.no[2]
+                                                                        if num == 4:
+                                                                                FILE.write("\t\t%s %s %s %s %s %s %s %s %s\n" % (fnx, fny, fnz, fnx, fny, fnz, fnx, fny, fnz))
+                                                                                FILE.write("\t\t%s %s %s %s %s %s %s %s %s\n" % (fnx, fny, fnz, fnx, fny, fnz, fnx, fny, fnz))
+                                                                        elif num == 3:
+                                                                                FILE.write("\t\t%s %s %s %s %s %s %s %s %s\n" % (fnx, fny, fnz, fnx, fny, fnz, fnx, fny, fnz))
+                                                if mesh.hasFaceUV():
+                                                        tx = 1
+                                                        ty = 1
+                                                        if len(mesh.materials) >= 1:
+                                                                if len(mesh.materials[0].getTextures()) >= 1:
+                                                                        if mesh.materials[0].getTextures()[0] <> None:
+                                                                                tx = mesh.materials[0].getTextures()[0].tex.repeat[0]
+                                                                                ty = mesh.materials[0].getTextures()[0].tex.repeat[1]
+                                                        FILE.write("\tuvs facevarying\n")
+                                                        for face in faces:
+                                                                num = len(face.v)
+                                                                if num == 4:
+                                                                        FILE.write("\t\t%s %s %s %s %s %s\n" % (tx * face.uv[0][0], ty * face.uv[0][1], tx * face.uv[1][0], ty * face.uv[1][1], tx * face.uv[2][0], ty * face.uv[2][1]))
+                                                                        FILE.write("\t\t%s %s %s %s %s %s\n" % (tx * face.uv[0][0], ty * face.uv[0][1], tx * face.uv[2][0], ty * face.uv[2][1], tx * face.uv[3][0], ty * face.uv[3][1]))
+                                                                elif num == 3:
+                                                                        FILE.write("\t\t%s %s %s %s %s %s\n" % (tx * face.uv[0][0], ty * face.uv[0][1], tx * face.uv[1][0], ty * face.uv[1][1], tx * face.uv[2][0], ty * face.uv[2][1]))
+                                                else:
+                                                        FILE.write("\tuvs none\n")
+                                                if len(mesh.materials) > 1:
+                                                        FILE.write("\tface_shaders\n")
+                                                        for face in faces:
+                                                                num = len(face.v)
+                                                                if num == 4:
+                                                                        FILE.write("\t\t%d\n" % (face.materialIndex))
+                                                                        FILE.write("\t\t%d\n" % (face.materialIndex))
+                                                                elif num == 3:
+                                                                        FILE.write("\t\t%d\n" % (face.materialIndex))
+                                        FILE.write("}\n")
 
         elif obj.getType() == "Empty":
                 ob = Object.Get(obj.name)
@@ -2006,7 +2057,7 @@ def drawShad():
 		col=10; line=225; BGL.glRasterPos2i(col, line); Draw.Text("Col RGB (Bright) and Spe RGB (Dark) values")
 	if SHADTYPE == 5:
 		col=10; line=250; BGL.glRasterPos2i(col, line); Draw.Text("Phong: shader name sould start with 'sfpho' - imports Blender's Col RGB and")
-		col=10; line=225; BGL.glRasterPos2i(col, line); Draw.Text("Spe RGB values")
+		col=10; line=225; BGL.glRasterPos2i(col, line); Draw.Text("Spe RGB values, as well as the spec's hard value")
 	if SHADTYPE == 6:
 		col=10; line=250; BGL.glRasterPos2i(col, line); Draw.Text("Ward: shader name sould start with 'sfwar' - imports Blender's Col RGB and")
 		col=10; line=225; BGL.glRasterPos2i(col, line); Draw.Text("Spe RGB values")
