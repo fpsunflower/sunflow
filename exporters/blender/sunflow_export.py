@@ -1,14 +1,14 @@
 #!BPY
 
 """
-Name: 'Sunflow Exporter 1.2.0 (.sc)...'
+Name: 'Sunflow Exporter 1.2.1 (.sc)...'
 Blender: 2.43
 Group: 'Export'
 Tip: ''
 """
 
 """
-Version         :       1.2.0 (April 2007)
+Version         :       1.2.1 (April 2007)
 Author          :       R Lindsay (hayfever) / Christopher Kulla / MADCello / 
 			olivS / Eugene Reilly / Heavily Tessellated / Humfred
 Description     :       Export to Sunflow renderer http://sunflow.sourceforge.net/
@@ -21,7 +21,7 @@ Usage           :       See how to use the script at http://sunflow.sourceforge.
 
 import Blender, os, sys, time
 
-from Blender import Mathutils, NMesh, Lamp, Object, Scene, Mesh, Material, Draw, BGL
+from Blender import Mathutils, NMesh, Lamp, Object, Scene, Mesh, Material, Draw, BGL, Effect
 from math import *
 
 ######################
@@ -192,7 +192,7 @@ JAVAPATH = ""
 #######################
 
 print "\n\n"
-print "blend2sunflow v1.2.0"
+print "blend2sunflow v1.2.1"
 
 ## Export logic for simple options ##
 #####################################
