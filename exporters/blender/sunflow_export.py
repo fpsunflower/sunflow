@@ -1,14 +1,14 @@
 #!BPY
 
 """
-Name: 'Sunflow Exporter 1.2.1 (.sc)...'
+Name: 'Sunflow Exporter 1.2.2 (.sc)...'
 Blender: 2.43
 Group: 'Export'
 Tip: ''
 """
 
 """
-Version         :       1.2.1 (April 2007)
+Version         :       1.2.2 (April 2007)
 Author          :       R Lindsay (hayfever) / Christopher Kulla / MADCello / 
 			olivS / Eugene Reilly / Heavily Tessellated / Humfred
 Description     :       Export to Sunflow renderer http://sunflow.sourceforge.net/
@@ -192,7 +192,7 @@ JAVAPATH = ""
 #######################
 
 print "\n\n"
-print "blend2sunflow v1.2.1"
+print "blend2sunflow v1.2.2"
 
 ## Export logic for simple options ##
 #####################################
@@ -762,6 +762,21 @@ def export_modifiers():
 			else:
 				pass
 
+                if textures[1] <> None and textures[1].tex.getType() <> "Image":
+                        textu = textures[1]
+                        Scale_value = str(textu.norfac)
+                        if textu.tex.name.startswith("perlin"):
+                                if textu.tex.getName() not in modifs_list:
+                                        modifs_list.append (str(textu.tex.getName()))
+                                        print "  o exporting modifier "+str(textu.tex.getName())+"..."
+                                        FILE.write("\n\nmodifier {\n\tname "+str(textu.tex.getName())+"\n\ttype perlin\n")
+                                        FILE.write("\tfunction 0\n")
+                                        FILE.write("\tsize 50\n")
+                                        FILE.write("\tscale %s\n}\n" % Scale_value)
+                        
+                        else:
+                                pass
+
 ## Export logic for Blender's light sources ##
 ##############################################
 
@@ -1166,7 +1181,7 @@ def export_geometry(obj):
                                         for mat in mesh.materials:
                                                 textures = mat.getTextures()
                                                 textu = textures[1]
-                                                if textu <> None and (textu.tex.name.startswith("bump") or textu.tex.name.startswith("normal")):
+                                                if textu <> None and (textu.tex.name.startswith("bump") or textu.tex.name.startswith("normal") or textu.tex.name.startswith("perlin")):
                                                         FILE.write("\tmodifier \"" + str(textu.tex.getName()) + "\"\n")
                                         ##End Modifier##
                                         
@@ -1182,7 +1197,7 @@ def export_geometry(obj):
 
                                                 textures = mat.getTextures()
                                                 textu = textures[1]
-                                                if textu <> None and (textu.tex.name.startswith("bump") or textu.tex.name.startswith("normal")):
+                                                if textu <> None and (textu.tex.name.startswith("bump") or textu.tex.name.startswith("normal") or textu.tex.name.startswith("perlin")):
                                                         FILE.write("\t\t\"" + textu.tex.getName() + "\"\n")
                                                 else:
                                                         FILE.write("\t\t\"" + "None" + "\"\n")
