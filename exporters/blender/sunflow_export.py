@@ -1,14 +1,14 @@
 #!BPY
 
 """
-Name: 'Sunflow Exporter 1.2.2 (.sc)...'
+Name: 'Sunflow Exporter 1.2.3 (.sc)...'
 Blender: 2.43
 Group: 'Export'
 Tip: ''
 """
 
 """
-Version         :       1.2.2 (April 2007)
+Version         :       1.2.3 (April 2007)
 Author          :       R Lindsay (hayfever) / Christopher Kulla / MADCello / 
 			olivS / Eugene Reilly / Heavily Tessellated / Humfred
 Description     :       Export to Sunflow renderer http://sunflow.sourceforge.net/
@@ -192,7 +192,7 @@ JAVAPATH = ""
 #######################
 
 print "\n\n"
-print "blend2sunflow v1.2.2"
+print "blend2sunflow v1.2.3"
 
 ## Export logic for simple options ##
 #####################################
@@ -1670,6 +1670,8 @@ def render():
 			ext="hdr"
 		elif FILETYPE == 4:
 			ext="exr"
+		elif FILETYPE == 5:
+			ext="igi"	
 
 		# Definition of the command to render the scene:
                 if EXP_ANIM.val == 0:
@@ -1678,7 +1680,7 @@ def render():
                 if EXP_ANIM.val == 1:
                         COMMAND="%s -anim %s %s -o \"%s.#.%s\" \"%s.java\"" % (EXEC, STARTFRAME, ENDFRAME, destname, ext, destname)
                         print COMMAND
-		if FILETYPE == 2 or FILETYPE == 3 or FILETYPE == 4:
+		if FILETYPE != 1:
 			COMMAND="%s -nogui %s%s%s%s%s%s%s -o \"%s.%s\" \"%s\"" % (EXEC, option2, option3, option4, option5, option6, option7, option8, destname, ext, fname)
                         print COMMAND
 		# Execute the command:
@@ -2094,7 +2096,7 @@ def drawRender():
 	col=10; line=325; BGL.glRasterPos2i(col, line); Draw.Text("Rendering actions:")
 	col=10; line=300; EXPORT=Draw.Button("Export .sc", EXP_EVT, col, line, 140, 18, "Export the scene to .sc file")
 	col=160; RENDER=Draw.Button("Render exported", REND_EVT, col, line, 130, 18, "Render it (Export a .sc file first)")
-	col=300; FILETYPE=Draw.Menu("%tFile type|png|tga|hdr|exr", FILE_TYPE, col, line, 85, 18, FILETYPE.val)
+	col=300; FILETYPE=Draw.Menu("%tFile type|png|tga|hdr|exr|igi", FILE_TYPE, col, line, 85, 18, FILETYPE.val)
 	col=10; line=275; BGL.glRasterPos2i(col, line); Draw.Text("Max raytrace depths:")
 	col=10; line=250; DEPTH_DIFF=Draw.Number("Diffuse Depth", 2, col, line, 125, 18, DEPTH_DIFF.val, 1, 100)
 	col=150; DEPTH_REFL=Draw.Number("Reflection Depth", 2, col, line, 125, 18, DEPTH_REFL.val, 1, 100)
