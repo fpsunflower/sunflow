@@ -5,7 +5,6 @@ import java.awt.Graphics;
 import java.awt.event.InputEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseWheelEvent;
-import java.awt.event.MouseWheelListener;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
@@ -27,7 +26,7 @@ public class ImagePanel extends JPanel implements Display {
     private float w, h;
     private long repaintCounter;
 
-    private class ScrollZoomListener extends MouseInputAdapter implements MouseWheelListener {
+    private class ScrollZoomListener extends MouseInputAdapter {
         int mx;
         int my;
         boolean dragging;
@@ -79,6 +78,7 @@ public class ImagePanel extends JPanel implements Display {
             mouseDragged(e);
         }
 
+        @Override
         public void mouseWheelMoved(MouseWheelEvent e) {
             zoom(-20 * e.getWheelRotation(), 0);
         }

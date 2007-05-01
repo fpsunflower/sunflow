@@ -914,6 +914,7 @@ public class SunflowGUI extends javax.swing.JFrame implements UserInterface {
 
     private void buildMenuItemActionPerformed(ActionEvent evt) {
         new Thread() {
+            @Override
             public void run() {
                 setEnableInterface(false);
                 if (clearLogMenuItem.isSelected())
@@ -1024,6 +1025,7 @@ public class SunflowGUI extends javax.swing.JFrame implements UserInterface {
 
     private void renderMenuItemActionPerformed(ActionEvent evt) {
         new Thread() {
+            @Override
             public void run() {
                 setEnableInterface(false);
                 if (clearLogMenuItem.isSelected())
@@ -1041,6 +1043,7 @@ public class SunflowGUI extends javax.swing.JFrame implements UserInterface {
 
     private void iprMenuItemActionPerformed(ActionEvent evt) {
         new Thread() {
+            @Override
             public void run() {
                 setEnableInterface(false);
                 if (clearLogMenuItem.isSelected())
@@ -1195,6 +1198,7 @@ public class SunflowGUI extends javax.swing.JFrame implements UserInterface {
     }
 
     private class SceneTransferHandler extends TransferHandler {
+        @Override
         public boolean importData(JComponent c, Transferable t) {
             if (!sceneMenu.isEnabled())
                 return false;
@@ -1223,6 +1227,7 @@ public class SunflowGUI extends javax.swing.JFrame implements UserInterface {
             return false;
         }
 
+        @Override
         public boolean canImport(JComponent c, DataFlavor[] flavors) {
             // Just a quick check to see if a file can be accepted at this time
             // Are there any files around?
