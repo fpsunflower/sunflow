@@ -1,14 +1,14 @@
 #!BPY
 
 """
-Name: 'Sunflow Exporter 1.2.3 (.sc)...'
+Name: 'Sunflow Exporter 1.2.4 (.sc)...'
 Blender: 2.43
 Group: 'Export'
 Tip: ''
 """
 
 """
-Version         :       1.2.3 (April 2007)
+Version         :       1.2.4 (April 2007)
 Author          :       R Lindsay (hayfever) / Christopher Kulla / MADCello / 
 			olivS / Eugene Reilly / Heavily Tessellated / Humfred
 Description     :       Export to Sunflow renderer http://sunflow.sourceforge.net/
@@ -192,7 +192,7 @@ JAVAPATH = ""
 #######################
 
 print "\n\n"
-print "blend2sunflow v1.2.3"
+print "blend2sunflow v1.2.4"
 
 ## Export logic for simple options ##
 #####################################
@@ -1172,7 +1172,6 @@ def export_geometry(obj):
                                 FILE.write("\tradiance %s\n" % (MESHLIGHTPOWER.val))
                                 FILE.write("\tsamples %s\n" % DSAMPLES.val)
                         else:
-                                print "o exporting mesh " + obj.name+"..."
                                 FILE.write("\n\nobject {\n")
                                 if len(mesh.materials) == 1:
                                         FILE.write("\tshader \"" + mesh.materials[0].name + ".shader\"\n")
@@ -1249,6 +1248,7 @@ def export_geometry(obj):
                                         FILE.write("\tradius 0.05\n}\n")
                                 ##End particle/hair section##
                                 else:        
+                                        print "o exporting mesh " + obj.name+"..."
                                         FILE.write("\ttype generic-mesh\n")
                                         FILE.write("\tname \"" + obj.name + "\"\n")
                                         FILE.write("\tpoints %d\n" % (numverts))
