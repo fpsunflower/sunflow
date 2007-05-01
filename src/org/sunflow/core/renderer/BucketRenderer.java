@@ -119,7 +119,7 @@ public class BucketRenderer implements ImageSampler {
         fs = (int) Math.ceil(subPixelSize * (fhs - 0.5f));
 
         // prepare QMC sampling
-        sigmaOrder = Math.max(0, maxAADepth) + 13; // FIXME: how big should the table be?
+        sigmaOrder = Math.min(QMC.MAX_SIGMA_ORDER, Math.max(0, maxAADepth) + 13); // FIXME: how big should the table be?
         sigmaLength = 1 << sigmaOrder;
         UI.printInfo(Module.BCKT, "Bucket renderer settings:");
         UI.printInfo(Module.BCKT, "  * Resolution:         %dx%d", imageWidth, imageHeight);

@@ -17,7 +17,6 @@ import org.sunflow.system.UI;
 import org.sunflow.system.UI.Module;
 
 public class MultipassRenderer implements ImageSampler {
-    private static final int SIGMA_ORDER = 13;
     private Scene scene;
     private Display display;
     // resolution
@@ -154,7 +153,7 @@ public class MultipassRenderer implements ImageSampler {
                 // sample pixel
                 Color c = Color.black();
                 float a = 0;
-                int instance = ((cx & ((1 << SIGMA_ORDER) - 1)) << SIGMA_ORDER) + QMC.sigma(cy & ((1 << SIGMA_ORDER) - 1), SIGMA_ORDER);
+                int instance = ((cx & ((1 << QMC.MAX_SIGMA_ORDER) - 1)) << QMC.MAX_SIGMA_ORDER) + QMC.sigma(cy & ((1 << QMC.MAX_SIGMA_ORDER) - 1), QMC.MAX_SIGMA_ORDER);
                 double jitterX = QMC.halton(0, instance);
                 double jitterY = QMC.halton(1, instance);
                 double jitterT = QMC.halton(2, instance);

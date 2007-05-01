@@ -15,7 +15,6 @@ import org.sunflow.system.UI;
 import org.sunflow.system.UI.Module;
 
 public class ProgressiveRenderer implements ImageSampler {
-    private static final int SIGMA_ORDER = 13;
     private Scene scene;
     private int imageWidth, imageHeight;
     private PriorityBlockingQueue<SmallBucket> smallBucketQueue;
@@ -111,7 +110,7 @@ public class ProgressiveRenderer implements ImageSampler {
                 // check to see if this is a pixel from a higher level tile
                 if (useMask && (x & mask) == 0 && (y & mask) == 0)
                     continue;
-                int instance = ((x & ((1 << SIGMA_ORDER) - 1)) << SIGMA_ORDER) + QMC.sigma(y & ((1 << SIGMA_ORDER) - 1), SIGMA_ORDER);
+                int instance = ((x & ((1 << QMC.MAX_SIGMA_ORDER) - 1)) << QMC.MAX_SIGMA_ORDER) + QMC.sigma(y & ((1 << QMC.MAX_SIGMA_ORDER) - 1), QMC.MAX_SIGMA_ORDER);
                 double time = QMC.halton(1, instance);
                 double lensU = QMC.halton(2, instance);
                 double lensV = QMC.halton(3, instance);

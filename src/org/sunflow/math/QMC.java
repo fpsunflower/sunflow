@@ -4,6 +4,7 @@ import org.sunflow.system.UI;
 import org.sunflow.system.UI.Module;
 
 public final class QMC {
+    public static final int MAX_SIGMA_ORDER = 15;
     private static final int NUM = 128;
     private static final int[][] SIGMA = new int[NUM][];
     private static final int[] PRIMES = new int[NUM];
