@@ -32,7 +32,14 @@ shader {
 }
 
 object {
-  noinstance
+  shader default-shader
+  transform
+    steps 4
+    times 101.8 102.2
+    { rotatez 0   translate 0 0 0 }
+    { rotatez 15   translate 0 0 0.5 }    
+    { rotatez 30   translate 0 0 1.0 }    
+    { rotatez 45   translate 0 0 1.5 }
   type mesh
   name polySurfac
   32368 64524
@@ -96928,19 +96935,6 @@ object {
   t 15456 31419 15400
   t 31419 15456 15399
   t 15399 15456 15455
-}
-
-instance {
-  name thebunny
-  geometry polySurfac
-  transform
-    steps 4
-    times 101.8 102.2
-    { rotatez 0   translate 0 0 0 }
-    { rotatez 2   translate 0 0 0.5 }    
-    { rotatez 4   translate 0 0 1.0 }    
-    { rotatez 6   translate 0 0 1.5 }
-  shader default-shader
 }
 
 object {

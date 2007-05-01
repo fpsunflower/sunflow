@@ -638,7 +638,8 @@ public class SCParser implements SceneParser {
     private void parseObjectBlock(SunflowAPIInterface api) throws ParserException, IOException {
         p.checkNextToken("{");
         boolean noInstance = false;
-        Matrix4 transform = null;
+        Matrix4[] transform = null;
+        float transformTime0 = 0, transformTime1 = 0;
         String name = null;
         String[] shaders = null;
         String[] modifiers = null;
@@ -664,8 +665,17 @@ public class SCParser implements SceneParser {
                     modifiers[i] = p.getNextToken();
             } else if (p.peekNextToken("modifier"))
                 modifiers = new String[] { p.getNextToken() };
-            if (p.peekNextToken("transform"))
-                transform = parseMatrix();
+            if (p.peekNextToken("transform")) {
+                if (p.peekNextToken("steps")) {
+                    transform = new Matrix4[p.getNextInt()];
+                    p.checkNextToken("times");
+                    transformTime0 = p.getNextFloat();
+                    transformTime1 = p.getNextFloat();
+                    for (int i = 0; i < transform.length; i++)
+                        transform[i] = parseMatrix();
+                } else
+                    transform = new Matrix4[] { parseMatrix() };
+            }
         }
         if (p.peekNextToken("accel"))
             api.parameter("accel", p.getNextToken());
@@ -933,8 +943,17 @@ public class SCParser implements SceneParser {
             api.parameter("shaders", shaders);
             if (modifiers != null)
                 api.parameter("modifiers", modifiers);
-            if (transform != null)
-                api.parameter("transform", transform);
+            if (transform != null && transform.length > 0) {
+                if (transform.length == 1)
+                    api.parameter("transform", transform[0]);
+                else {
+                    api.parameter("transform.steps", transform.length);
+                    api.parameter("transform.times", "float", "none", new float[] {
+                            transformTime0, transformTime1 });
+                    for (int i = 0; i < transform.length; i++)
+                        api.parameter(String.format("transform[%d]", i), transform[i]);
+                }
+            }
             api.instance(name + ".instance", name);
         }
         p.checkNextToken("}");

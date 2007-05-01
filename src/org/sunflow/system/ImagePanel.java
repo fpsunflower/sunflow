@@ -79,7 +79,6 @@ public class ImagePanel extends JPanel implements Display {
             mouseDragged(e);
         }
 
-        @Override
         public void mouseWheelMoved(MouseWheelEvent e) {
             zoom(-20 * e.getWheelRotation(), 0);
         }
