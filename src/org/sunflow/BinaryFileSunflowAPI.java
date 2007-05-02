@@ -213,4 +213,13 @@ class BinaryFileSunflowAPI extends FileSunflowAPI {
     protected void writeNewline(int indentNext) {
         // does nothing
     }
+
+    @Override
+    public void close() {
+        try {
+            stream.close();
+        } catch (IOException e) {
+            throw new RuntimeException(e.getMessage());
+        }
+    }
 }

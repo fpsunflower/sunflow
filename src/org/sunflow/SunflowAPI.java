@@ -620,7 +620,7 @@ public class SunflowAPI implements SunflowAPIInterface {
      * @return <code>true</code> upon success, <code>false</code> otherwise
      */
     public static boolean translate(String filename, String outputFilename) {
-        SunflowAPIInterface api = null;
+        FileSunflowAPI api = null;
         try {
             if (outputFilename.endsWith(".sca"))
                 api = new AsciiFileSunflowAPI(outputFilename);
@@ -646,6 +646,8 @@ public class SunflowAPI implements SunflowAPIInterface {
             e.printStackTrace();
             UI.printError(Module.API, "Error occured during translation: %s", e.getMessage());
             return false;
+        } finally {
+            api.close();
         }
     }
 

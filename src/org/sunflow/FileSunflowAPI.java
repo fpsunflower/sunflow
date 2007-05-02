@@ -310,4 +310,6 @@ abstract class FileSunflowAPI implements SunflowAPIInterface {
     protected abstract void writeMatrix(Matrix4 value);
 
     protected abstract void writeNewline(int indentNext);
+    
+    public abstract void close();
 }

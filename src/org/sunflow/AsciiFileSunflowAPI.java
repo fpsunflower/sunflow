@@ -79,4 +79,13 @@ class AsciiFileSunflowAPI extends FileSunflowAPI {
     protected void writeVerbatimString(String string) {
         writeString(String.format("<code>%s\n</code> ", string));
     }
+
+    @Override
+    public void close() {
+        try {
+            stream.close();
+        } catch (IOException e) {
+            throw new RuntimeException(e.getMessage());
+        }
+    }
 }
