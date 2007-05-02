@@ -1,7 +1,9 @@
 package org.sunflow;
 
+import java.io.BufferedOutputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.util.Locale;
 
 import org.sunflow.core.ParameterList.InterpolationType;
@@ -9,10 +11,10 @@ import org.sunflow.core.parser.SCAbstractParser.Keyword;
 import org.sunflow.math.Matrix4;
 
 class AsciiFileSunflowAPI extends FileSunflowAPI {
-    private FileOutputStream stream;
+    private OutputStream stream;
 
     AsciiFileSunflowAPI(String filename) throws IOException {
-        stream = new FileOutputStream(filename);
+        stream = new BufferedOutputStream(new FileOutputStream(filename));
     }
 
     @Override
