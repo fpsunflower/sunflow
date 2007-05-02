@@ -1,5 +1,6 @@
 package org.sunflow.core.parser;
 
+import java.io.BufferedInputStream;
 import java.io.DataInputStream;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -17,7 +18,7 @@ public class SCBinaryParser extends SCAbstractParser {
 
     @Override
     protected void openParser(String filename) throws IOException {
-        stream = new DataInputStream(new FileInputStream(filename));
+        stream = new DataInputStream(new BufferedInputStream(new FileInputStream(filename)));
     }
 
     @Override

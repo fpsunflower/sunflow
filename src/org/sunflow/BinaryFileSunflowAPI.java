@@ -1,5 +1,6 @@
 package org.sunflow;
 
+import java.io.BufferedOutputStream;
 import java.io.DataOutputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -13,7 +14,7 @@ class BinaryFileSunflowAPI extends FileSunflowAPI {
     private DataOutputStream stream;
 
     BinaryFileSunflowAPI(String filename) throws FileNotFoundException {
-        stream = new DataOutputStream(new FileOutputStream(filename));
+        stream = new DataOutputStream(new BufferedOutputStream(new FileOutputStream(filename)));
     }
 
     @Override
