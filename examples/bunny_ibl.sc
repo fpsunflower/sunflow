@@ -1,14 +1,11 @@
 image {
   resolution 640 480
-  sampler multipass
-  samples 16
-%  aa 0 1
-%  filter mitchell
+  aa 0 1
+  filter mitchell
 }
 
 camera {
   type pinhole
-  shutter  101.8 102.2
   eye    -10.5945 -30.0581 10.967
   target 0.0554193 0.00521195 5.38209
   up     0 0 1
@@ -33,13 +30,6 @@ shader {
 
 object {
   shader default-shader
-  transform
-    steps 4
-    times 101.8 102.2
-    { rotatez 0   translate 0 0 0 }
-    { rotatez 15   translate 0 0 0.5 }    
-    { rotatez 30   translate 0 0 1.0 }    
-    { rotatez 45   translate 0 0 1.5 }
   type mesh
   name polySurfac
   32368 64524
