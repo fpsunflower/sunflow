@@ -23,17 +23,17 @@ class SU2SF
   def initialize
     reset_state
     @scene_settings = {
-        "aa_min" => 0,
-        "aa_max" => 1,
-        "filter" => "gaussian",
+        "aa_min" => 1,
+        "aa_max" => 2,
+        "filter" => "mitchell",
         "gi" => nil,
-        "sky_samples" => 8,
-        "sky_turbidity" => 4,
+        "sky_samples" => 32,
+        "sky_turbidity" => 5,
         "trace-diff" => 4,
         "trace-refl" => 4,
         "trace-refr" => 4,
-        "image_width" => 400,
-        "image_height" => 300,
+        "image_width" => 800,
+        "image_height" => 600,
     }
     @export_textures = false
   end
@@ -309,15 +309,40 @@ class SU2SF
     
     name = reserve_name( MATERIAL_PREFIX + mat.display_name )
     @exported_materials[mat] = name
-    
-    @stream.print "shader {",
-      "\n\tname \"#{name}\"",
-      "\n\ttype diffuse",
-      "\n\tdiff ", mat.color.to_a[0..2].collect{ |x| "%.3f" % (x.to_f/255) }.join( " " ),
-      "\n}\n\n"
-    return name
+
+    if mat.display_name[0,5] == "sfgla"
+      @stream.print "shader {",
+        "\n\tname \"#{name}\"",
+        "\n\ttype glass",
+        "\n\teta 1.5",
+        "\n\tcolor { \"sRGB nonlinear\" ", mat.color.to_a[0..2].collect{ |x| "%.3f" % (x.to_f/255) }.join( " " ), " }",
+        "\n\tabsorbtion.distance 5.0",
+        "\n\tabsorbtion.color { \"sRGB nonlinear\" 1.0 1.0 1.0 }",
+        "\n}\n\n"
+      return name
+    else
+      if mat.display_name[0,5] == "sftra"
+        @stream.print "shader {",
+          "\n\tname \"#{name}\"",
+          "\n\ttype glass",
+          "\n\teta 1.0",
+          "\n\tcolor { \"sRGB nonlinear\" ", mat.color.to_a[0..2].collect{ |x| "%.3f" % (x.to_f/255) }.join( " " ), " }",
+          "\n\tabsorbtion.distance 0.0",
+          "\n\tabsorbtion.color { \"sRGB nonlinear\" 1.0 1.0 1.0 }",
+          "\n}\n\n"
+        return name
+      else
+        @stream.print "shader {",
+          "\n\tname \"#{name}\"",
+          "\n\ttype diffuse",
+          "\n\tdiff ", mat.color.to_a[0..2].collect{ |x| "%.3f" % (x.to_f/255) }.join( " " ),
+          "\n}\n\n"
+        return name
+      end
+    end
   end
   
+  # Materialcode
   def export_default_material
     return if @exported_names.include? DEFAULT_MATERIAL
     reserve_name( DEFAULT_MATERIAL )
