@@ -1,7 +1,9 @@
 package org.sunflow.image.readers;
 
+import java.io.BufferedInputStream;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 
 import org.sunflow.image.Bitmap;
 import org.sunflow.image.BitmapReader;
@@ -13,7 +15,7 @@ import org.sunflow.image.formats.BitmapXYZ;
  */
 public class IGIBitmapReader implements BitmapReader {
     public Bitmap load(String filename, boolean isLinear) throws IOException, BitmapFormatException {
-        FileInputStream stream = new FileInputStream(filename);
+        InputStream stream = new BufferedInputStream(new FileInputStream(filename));
         // read header
         int magic = read32i(stream);
         int version = read32i(stream);
@@ -78,7 +80,7 @@ public class IGIBitmapReader implements BitmapReader {
             return new BitmapXYZ(width, height, xyz);
     }
 
-    private static final int read32i(FileInputStream stream) throws IOException {
+    private static final int read32i(InputStream stream) throws IOException {
         int i = stream.read();
         i |= stream.read() << 8;
         i |= stream.read() << 16;
@@ -86,7 +88,7 @@ public class IGIBitmapReader implements BitmapReader {
         return i;
     }
 
-    private static final float read32f(FileInputStream stream) throws IOException {
+    private static final float read32f(InputStream stream) throws IOException {
         return Float.intBitsToFloat(read32i(stream));
     }
 }

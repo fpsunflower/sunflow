@@ -1,7 +1,9 @@
 package org.sunflow.image.writers;
 
+import java.io.BufferedOutputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 
 import org.sunflow.image.BitmapWriter;
 import org.sunflow.image.Color;
@@ -41,7 +43,7 @@ public class IGIBitmapWriter implements BitmapWriter {
     }
 
     public void closeFile() throws IOException {
-        FileOutputStream stream = new FileOutputStream(filename);
+        OutputStream stream = new BufferedOutputStream(new FileOutputStream(filename));
         write32(stream, 66613373); // magic number
         write32(stream, 1); // version
         write32(stream, 0); // this should be a double - assume it won't be used
@@ -58,14 +60,14 @@ public class IGIBitmapWriter implements BitmapWriter {
         stream.close();
     }
 
-    private static final void write32(FileOutputStream stream, int i) throws IOException {
+    private static final void write32(OutputStream stream, int i) throws IOException {
         stream.write(i & 0xFF);
         stream.write((i >> 8) & 0xFF);
         stream.write((i >> 16) & 0xFF);
         stream.write((i >> 24) & 0xFF);
     }
 
-    private static final void write32(FileOutputStream stream, float f) throws IOException {
+    private static final void write32(OutputStream stream, float f) throws IOException {
         write32(stream, Float.floatToIntBits(f));
     }
 }

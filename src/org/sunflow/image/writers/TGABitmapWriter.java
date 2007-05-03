@@ -1,7 +1,9 @@
 package org.sunflow.image.writers;
 
+import java.io.BufferedOutputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 
 import org.sunflow.image.BitmapWriter;
 import org.sunflow.image.Color;
@@ -42,7 +44,7 @@ public class TGABitmapWriter implements BitmapWriter {
 
     public void closeFile() throws IOException {
         // actually write the file from here
-        FileOutputStream f = new FileOutputStream(filename);
+        OutputStream f = new BufferedOutputStream(new FileOutputStream(filename));
         // no id, no colormap, uncompressed 32bpp RGBA
         byte[] tgaHeader = { 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
         f.write(tgaHeader);

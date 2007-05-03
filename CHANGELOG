@@ -1,4 +1,5 @@
 v0.07.3
+* Fixed all image readers/writer to use buffered I/O
 * Added motion blur syntax for instances and objects in .sc files
 * Added shutter parameter to camera to allow motion blur of scene objects even when the camera is static
 * Camera and Instances are now controlled by moving matrices and may be motion blurred

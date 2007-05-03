@@ -1,7 +1,9 @@
 package org.sunflow.image.readers;
 
+import java.io.BufferedInputStream;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 
 import org.sunflow.image.Bitmap;
 import org.sunflow.image.BitmapReader;
@@ -10,7 +12,7 @@ import org.sunflow.image.formats.BitmapRGBE;
 public class HDRBitmapReader implements BitmapReader {
     public Bitmap load(String filename, boolean isLinear) throws IOException, BitmapFormatException {
         // load radiance rgbe file
-        FileInputStream f = new FileInputStream(filename);
+        InputStream f = new BufferedInputStream(new FileInputStream(filename));
         // parse header
         boolean parseWidth = false, parseHeight = false;
         int width = 0, height = 0;
@@ -133,7 +135,7 @@ public class HDRBitmapReader implements BitmapReader {
         return new BitmapRGBE(width, height, pixels);
     }
 
-    private void readFlatRGBE(FileInputStream f, int rasterPos, int numPixels, int[] pixels) throws IOException {
+    private void readFlatRGBE(InputStream f, int rasterPos, int numPixels, int[] pixels) throws IOException {
         while (numPixels-- > 0) {
             int r = f.read();
             int g = f.read();

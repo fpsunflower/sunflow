@@ -1,7 +1,9 @@
 package org.sunflow.image.readers;
 
+import java.io.BufferedInputStream;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 
 import org.sunflow.image.Bitmap;
 import org.sunflow.image.BitmapReader;
@@ -14,7 +16,7 @@ public class TGABitmapReader implements BitmapReader {
     private static final int[] CHANNEL_INDEX = { 2, 1, 0, 3 };
 
     public Bitmap load(String filename, boolean isLinear) throws IOException, BitmapFormatException {
-        FileInputStream f = new FileInputStream(filename);
+        InputStream f = new BufferedInputStream(new FileInputStream(filename));
         byte[] read = new byte[4];
 
         // read header
