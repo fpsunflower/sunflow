@@ -77,7 +77,7 @@ public class UberShader implements Shader {
             cos = 1 - cos;
             float cos2 = cos * cos;
             float cos5 = cos2 * cos2 * cos;
-
+            Color spec = getSpecular(state);
             Color ret = Color.white();
             ret.sub(spec);
             ret.mul(cos5);
