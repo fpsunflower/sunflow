@@ -1,14 +1,14 @@
 #!BPY
 
 """
-Name: 'Sunflow Exporter 1.2.4 (.sc)...'
+Name: 'Sunflow Exporter 1.2.5 (.sc)...'
 Blender: 2.43
 Group: 'Export'
 Tip: ''
 """
 
 """
-Version         :       1.2.4 (April 2007)
+Version         :       1.2.5 (April 2007)
 Author          :       R Lindsay (hayfever) / Christopher Kulla / MADCello / 
 			olivS / Eugene Reilly / Heavily Tessellated / Humfred
 Description     :       Export to Sunflow renderer http://sunflow.sourceforge.net/
@@ -192,7 +192,7 @@ JAVAPATH = ""
 #######################
 
 print "\n\n"
-print "blend2sunflow v1.2.4"
+print "blend2sunflow v1.2.5"
 
 ## Export logic for simple options ##
 #####################################
@@ -1100,8 +1100,14 @@ def export_camera(cam):
 	upV     = upV * objmatrix
 
 	# get the fov value
-	fov = 360.0 * atan(16.0 / camera.getLens()) / pi
-
+	# image higher than wide?
+        if IM_HEIGHT > IM_WIDTH:
+                factor=float(IM_WIDTH) / float(IM_HEIGHT)
+        # if the image is wider than high, or of equal height and width then:
+        else:
+                factor=1
+                
+	fov = 360.0 * atan((factor*16.0) / camera.lens) / pi
 	DOFDIST=camera.dofDist
 
 	FILE.write("\n\ncamera {\n")
