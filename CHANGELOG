@@ -1,4 +1,6 @@
 v0.07.3
+* Added lattice sampling routines (experimental)
+* Fixed CornellBox light source sampling
 * Fixed all image readers/writer to use buffered I/O
 * Added motion blur syntax for instances and objects in .sc files
 * Added shutter parameter to camera to allow motion blur of scene objects even when the camera is static

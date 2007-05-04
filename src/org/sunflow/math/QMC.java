@@ -8,6 +8,9 @@ public final class QMC {
     private static final int NUM = 128;
     private static final int[][] SIGMA = new int[NUM][];
     private static final int[] PRIMES = new int[NUM];
+    private static final int[] FIBONACCI = new int[47];
+    private static final double[] FIBONACCI_INV = new double[FIBONACCI.length];
+    private static final double[] KOROBOV = new double[NUM];
 
     static {
         UI.printInfo(Module.QMC, "Initializing Faure scrambling tables ...");
@@ -42,6 +45,16 @@ public final class QMC {
             SIGMA[i] = new int[p];
             System.arraycopy(table[p], 0, SIGMA[i], 0, p);
         }
+        UI.printInfo(Module.QMC, "Initializing lattice tables ...");
+        FIBONACCI[0] = 0;
+        FIBONACCI[1] = 1;
+        for (int i = 2; i < FIBONACCI.length; i++) {
+            FIBONACCI[i] = FIBONACCI[i - 1] + FIBONACCI[i - 2];
+            FIBONACCI_INV[i] = 1.0 / FIBONACCI[i];
+        }
+        KOROBOV[0] = 1;
+        for (int i = 1; i < KOROBOV.length; i++)
+            KOROBOV[i] = 203 * KOROBOV[i - 1];
     }
 
     private static final int nextPrime(int p) {
@@ -148,5 +161,34 @@ public final class QMC {
         i = ((i & 0x33333333) << 2) | ((i & 0xcccccccc) >>> 2);
         i = ((i & 0x55555555) << 1) | ((i & 0xaaaaaaaa) >>> 1);
         return i >>> (32 - order);
+    }
+
+    public static final int getFibonacciRank(int n) {
+        int k = 3;
+        while (FIBONACCI[k] <= n)
+            k++;
+        return k - 1;
+    }
+
+    public static final int fibonacci(int k) {
+        return FIBONACCI[k];
+    }
+
+    public static final double fibonacciLattice(int k, int i, int d) {
+        return d == 0 ? i * FIBONACCI_INV[k] : mod1((i * FIBONACCI[k - 1]) * FIBONACCI_INV[k]);
+    }
+
+    public static final double reducedCPRotation(int k, int d, double x0, double x1) {
+        int j1 = FIBONACCI[2 * ((k - 1) >> 2) + 1];
+        int j2 = FIBONACCI[2 * ((k + 1) >> 2)];
+        if (d == 1) {
+            j1 = ((j1 * FIBONACCI[k - 1]) % FIBONACCI[k]);
+            j2 = ((j2 * FIBONACCI[k - 1]) % FIBONACCI[k]) - FIBONACCI[k];
+        }
+        return (x0 * j1 + x1 * j2) * FIBONACCI_INV[k];
+    }
+
+    public static final double korobovLattice(int m, int i, int d) {
+        return mod1(i * KOROBOV[d] / (1 << m));
     }
 }

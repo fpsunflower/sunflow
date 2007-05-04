@@ -352,12 +352,9 @@ public class CornellBox implements PrimitiveList, Shader, LightSource {
             int n = state.getDiffuseDepth() > 0 ? 1 : samples;
             float a = area / n;
             for (int i = 0; i < n; i++) {
-                // random offset on unit square, we use the infinite version of
-                // getRandom
-                // because the light sampling is adaptive
-                double randX = state.getRandom(i, 0);
-                double randY = state.getRandom(i, 1);
-
+                // random offset on unit square
+                double randX = state.getRandom(i, 0, n);
+                double randY = state.getRandom(i, 1, n);
                 Point3 p = new Point3();
                 p.x = (float) (lxmin * (1 - randX) + lxmax * randX);
                 p.y = (float) (lymin * (1 - randY) + lymax * randY);
