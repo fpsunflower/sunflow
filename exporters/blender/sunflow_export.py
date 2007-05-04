@@ -1,14 +1,14 @@
 #!BPY
 
 """
-Name: 'Sunflow Exporter 1.2.5 (.sc)...'
+Name: 'Sunflow Exporter 1.2.6 (.sc)...'
 Blender: 2.43
 Group: 'Export'
 Tip: ''
 """
 
 """
-Version         :       1.2.5 (April 2007)
+Version         :       1.2.6 (April 2007)
 Author          :       R Lindsay (hayfever) / Christopher Kulla / MADCello / 
 			olivS / Eugene Reilly / Heavily Tessellated / Humfred
 Description     :       Export to Sunflow renderer http://sunflow.sourceforge.net/
@@ -192,7 +192,7 @@ JAVAPATH = ""
 #######################
 
 print "\n\n"
-print "blend2sunflow v1.2.5"
+print "blend2sunflow v1.2.6"
 
 ## Export logic for simple options ##
 #####################################
@@ -818,6 +818,7 @@ def import_lights():
                 LAMPPOWER.val = SCENE.properties['Lamp Multiplier']
                 MESHLIGHTPOWER.val = SCENE.properties['Meshlight Multiplier']
                 DSAMPLES.val = SCENE.properties['Light Samples']
+                IBLSAMPLES.val = SCENE.properties['IBL Samples']
                 if SCENE.properties['Convert Unsupported Lamps'] == "true":
                         CONVLAMP.val = 1
                         Draw.Redraw()
@@ -1106,7 +1107,7 @@ def export_camera(cam):
         # if the image is wider than high, or of equal height and width then:
         else:
                 factor=1
-                
+        # fov = 2*(degrees(atan((factor*16.0) / camera.lens))) #Same as below, just uses the python "degrees" instead:
 	fov = 360.0 * atan((factor*16.0) / camera.lens) / pi
 	DOFDIST=camera.dofDist
 
