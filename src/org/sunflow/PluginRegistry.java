@@ -31,6 +31,7 @@ import org.sunflow.core.camera.ThinLens;
 import org.sunflow.core.filter.BlackmanHarrisFilter;
 import org.sunflow.core.filter.BoxFilter;
 import org.sunflow.core.filter.CatmullRomFilter;
+import org.sunflow.core.filter.CubicBSpline;
 import org.sunflow.core.filter.GaussianFilter;
 import org.sunflow.core.filter.LanczosFilter;
 import org.sunflow.core.filter.MitchellFilter;
@@ -259,6 +260,7 @@ public final class PluginRegistry {
         filterPlugins.registerPlugin("mitchell", MitchellFilter.class);
         filterPlugins.registerPlugin("sinc", SincFilter.class);
         filterPlugins.registerPlugin("triangle", TriangleFilter.class);
+        filterPlugins.registerPlugin("bspline", CubicBSpline.class);
     }
 
     static {

@@ -43,7 +43,7 @@ public class BoundingIntervalHierarchy implements AccelerationStructure {
         // display stats
         stats.printStats();
         UI.printDetailed(Module.ACCEL, "  * Creation time:  %s", t);
-        UI.printDetailed(Module.ACCEL, "  * Usage of init:  %3d%%", 100 * tree.length / initialSize);
+        UI.printDetailed(Module.ACCEL, "  * Usage of init:  %6.2f%%", (double) (100.0 * tree.length) / initialSize);
         UI.printDetailed(Module.ACCEL, "  * Tree memory:    %s", Memory.sizeof(tree));
         UI.printDetailed(Module.ACCEL, "  * Indices memory: %s", Memory.sizeof(objects));
     }

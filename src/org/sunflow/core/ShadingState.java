@@ -643,7 +643,6 @@ public final class ShadingState implements Iterable<LightSample> {
      * @return color observed along specified ray.
      */
     public final Color traceGlossy(Ray r, int i) {
-        istate.numGlossyRays++;
         return server.traceGlossy(this, r, i);
     }
 
@@ -656,7 +655,6 @@ public final class ShadingState implements Iterable<LightSample> {
      * @return color observed along specified ray.
      */
     public final Color traceReflection(Ray r, int i) {
-        istate.numReflectionRays++;
         return server.traceReflection(this, r, i);
     }
 
@@ -668,7 +666,6 @@ public final class ShadingState implements Iterable<LightSample> {
      * @return color observed along specified ray.
      */
     public final Color traceRefraction(Ray r, int i) {
-        istate.numRefractionRays++;
         // this assumes the refraction ray is pointing away from the normal
         r.ox -= 2 * bias * ng.x;
         r.oy -= 2 * bias * ng.y;

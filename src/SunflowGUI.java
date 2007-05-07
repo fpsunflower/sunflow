@@ -147,6 +147,7 @@ public class SunflowGUI extends javax.swing.JFrame implements UserInterface {
             System.out.println("  -quick_wire      Renders using a wireframe shader");
             System.out.println("  -resolution w h  Changes the render resolution to the specified width and height (in pixels)");
             System.out.println("  -aa min max      Overrides the image anti-aliasing depths");
+            System.out.println("  -samples n       Overrides the image sample count (affects bucket and multipass samplers)");
             System.out.println("  -bucket n order  Changes the default bucket size to n pixels and the default order");
             System.out.println("  -bake name       Bakes a lightmap for the specified instance");
             System.out.println("  -bakedir dir     Selects the type of lightmap baking: dir=view or ortho");
@@ -178,8 +179,9 @@ public class SunflowGUI extends javax.swing.JFrame implements UserInterface {
             int pathGI = 0;
             float maxDist = 0;
             String shaderOverride = null;
-            int resolutionW = 0, resolutionH = 0;
+            int resolutionW = 0, resolutionH = 0; 
             int aaMin = -5, aaMax = -5;
+            int samples = -1;
             int bucketSize = 0;
             String bucketOrder = null;
             String bakingName = null;
@@ -290,6 +292,11 @@ public class SunflowGUI extends javax.swing.JFrame implements UserInterface {
                     aaMin = Integer.parseInt(args[i + 1]);
                     aaMax = Integer.parseInt(args[i + 2]);
                     i += 3;
+                } else if (args[i].equals("-samples")) {
+                    if (i > args.length - 2)
+                        usage(false);
+                    samples = Integer.parseInt(args[i+1]);
+                    i += 2;
                 } else if (args[i].equals("-bucket")) {
                     if (i > args.length - 3)
                         usage(false);
@@ -392,6 +399,8 @@ public class SunflowGUI extends javax.swing.JFrame implements UserInterface {
                     api.parameter("aa.min", aaMin);
                     api.parameter("aa.max", aaMax);
                 }
+                if (samples >= 0)
+                    api.parameter("aa.samples", samples);
                 if (bucketSize > 0)
                     api.parameter("bucket.size", bucketSize);
                 if (bucketOrder != null)

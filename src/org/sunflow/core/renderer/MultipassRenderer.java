@@ -160,8 +160,8 @@ public class MultipassRenderer implements ImageSampler {
                 double jitterU = QMC.halton(3, instance);
                 double jitterV = QMC.halton(4, instance);
                 for (int s = 0; s < numSamples; s++) {
-                    float rx = cx + 0.5f + warp((float) QMC.mod1(jitterX + s * invNumSamples));
-                    float ry = cy + 0.5f + warp((float) QMC.mod1(jitterY + QMC.halton(0, s)));
+                    float rx = cx + 0.5f + (float) warpCubic(QMC.mod1(jitterX + s * invNumSamples));
+                    float ry = cy + 0.5f + (float) warpCubic(QMC.mod1(jitterY + QMC.halton(0, s)));
                     double time = QMC.mod1(jitterT + QMC.halton(1, s));
                     double lensU = QMC.mod1(jitterU + QMC.halton(2, s));
                     double lensV = QMC.mod1(jitterV + QMC.halton(3, s));
@@ -182,16 +182,45 @@ public class MultipassRenderer implements ImageSampler {
     }
 
     /**
-     * Tent filter warping function. Could be improved by using a higher order
-     * b-spline.
+     * Tent filter warping function.
      * 
      * @param x sample in the [0,1) range
      * @return warped sample in the [-1,+1) range
      */
-    private float warp(float x) {
+    @SuppressWarnings("unused")
+    private static final float warpTent(float x) {
         if (x < 0.5f)
             return -1 + (float) Math.sqrt(2 * x);
         else
             return +1 - (float) Math.sqrt(2 - 2 * x);
+    }
+
+    /**
+     * Cubic BSpline warping functions. Formulas from: "Generation of Stratified
+     * Samples for B-Spline Pixel Filtering"
+     * http://www.cs.utah.edu/~mstark/papers/
+     * 
+     * @param x samples in the [0,1) range
+     * @return warped sample in the [-2,+2) range
+     */
+    private static final double warpCubic(double x) {
+        if (x < (1.0 / 24))
+            return qpow(24 * x) - 2;
+        if (x < 0.5f)
+            return distb1((24.0 / 11.0) * (x - (1.0 / 24.0))) - 1;
+        if (x < (23.0f / 24))
+            return 1 - distb1((24.0 / 11.0) * ((23.0 / 24.0) - x));
+        return 2 - qpow(24 * (1 - x));
+    }
+
+    private static final double qpow(double x) {
+        return Math.sqrt(Math.sqrt(x));
+    }
+
+    private static final double distb1(double x) {
+        double u = x;
+        for (int i = 0; i < 5; i++)
+            u = (11 * x + u * u * (6 + u * (8 - 9 * u))) / (4 + 12 * u * (1 + u * (1 - u)));
+        return u;
     }
 }

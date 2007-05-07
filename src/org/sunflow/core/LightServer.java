@@ -302,6 +302,7 @@ class LightServer {
         if (previous.getReflectionDepth() >= maxReflectionDepth || previous.getDiffuseDepth() > 0)
             return Color.BLACK;
         IntersectionState istate = previous.getIntersectionState();
+        istate.numGlossyRays++;
         scene.trace(r, istate);
         return istate.hit() ? shadeHit(ShadingState.createGlossyBounceState(previous, r, i)) : Color.BLACK;
     }
@@ -311,6 +312,7 @@ class LightServer {
         if (previous.getReflectionDepth() >= maxReflectionDepth || previous.getDiffuseDepth() > 0)
             return Color.BLACK;
         IntersectionState istate = previous.getIntersectionState();
+        istate.numReflectionRays++;
         scene.trace(r, istate);
         return istate.hit() ? shadeHit(ShadingState.createReflectionBounceState(previous, r, i)) : Color.BLACK;
     }
@@ -320,6 +322,7 @@ class LightServer {
         if (previous.getRefractionDepth() >= maxRefractionDepth || previous.getDiffuseDepth() > 0)
             return Color.BLACK;
         IntersectionState istate = previous.getIntersectionState();
+        istate.numRefractionRays++;
         scene.trace(r, istate);
         return istate.hit() ? shadeHit(ShadingState.createRefractionBounceState(previous, r, i)) : Color.BLACK;
     }

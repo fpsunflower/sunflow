@@ -1,4 +1,9 @@
 v0.07.3
+* Added command line override for samples paramter (affect bucket and multipas samplers)
+* Added cubic bspline filter to multipass image sampler (via warp function)
+* Fixed "usage of init" statistic report in BIH
+* Added cubic bspline filter
+* Fixed counting of secondary rays clipped by ray depth limit
 * Added lattice sampling routines (experimental)
 * Fixed CornellBox light source sampling
 * Fixed all image readers/writer to use buffered I/O
