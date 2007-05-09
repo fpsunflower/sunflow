@@ -7,6 +7,7 @@ import org.sunflow.image.Bitmap;
 import org.sunflow.image.BitmapReader;
 import org.sunflow.image.Color;
 import org.sunflow.image.BitmapReader.BitmapFormatException;
+import org.sunflow.image.formats.BitmapBlack;
 import org.sunflow.math.MathUtils;
 import org.sunflow.math.OrthoNormalBasis;
 import org.sunflow.math.Vector3;
@@ -47,9 +48,10 @@ public class Texture {
                 if (bitmap.getWidth() == 0 || bitmap.getHeight() == 0)
                     bitmap = null;
             }
-            if (bitmap == null)
+            if (bitmap == null) {
                 UI.printError(Module.TEX, "Bitmap reading failed");
-            else
+                bitmap = new BitmapBlack();
+            } else
                 UI.printDetailed(Module.TEX, "Texture bitmap reading complete: %dx%d pixels found", bitmap.getWidth(), bitmap.getHeight());
         } catch (IOException e) {
             UI.printError(Module.TEX, "%s", e.getMessage());
@@ -77,8 +79,6 @@ public class Texture {
      */
     public Color getPixel(float x, float y) {
         Bitmap bitmap = getBitmap();
-        if (bitmap == null)
-            return Color.BLACK;
         x = MathUtils.frac(x);
         y = MathUtils.frac(y);
         float dx = x * (bitmap.getWidth() - 1);
@@ -113,13 +113,11 @@ public class Texture {
 
     public Vector3 getBump(float x, float y, OrthoNormalBasis basis, float scale) {
         Bitmap bitmap = getBitmap();
-        if (bitmap == null)
-            return basis.transform(new Vector3(0, 0, 1));
-        float dx = 1.0f / (bitmap.getWidth() - 1);
-        float dy = 1.0f / (bitmap.getHeight() - 1);
+        float dx = 1.0f / bitmap.getWidth();
+        float dy = 1.0f / bitmap.getHeight();
         float b0 = getPixel(x, y).getLuminance();
         float bx = getPixel(x + dx, y).getLuminance();
         float by = getPixel(x, y + dy).getLuminance();
-        return basis.transform(new Vector3(scale * (bx - b0) / dx, scale * (by - b0) / dy, 1)).normalize();
+        return basis.transform(new Vector3(scale * (b0 - bx) / dx, scale * (b0 - by ) / dy, 1)).normalize();
     }
 }
