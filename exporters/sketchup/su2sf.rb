@@ -1,5 +1,8 @@
 #su2sf
 # Written by Tony Wooster, though not quite done yet, 24 MAR 07
+#
+# Edited by dandruff, added glas, transparent and phong support as
+# well as tre different sizes of output picture, 9 MAY 07
 
 require 'sketchup.rb'
 
@@ -72,7 +75,7 @@ class SU2SF
     end
     #TODO output trace settings here
   end
-  
+ 
   def output_sky_settings( shinfo )    
     sd = shinfo["SunDirection"]
     # FIXME: adjust for NorthAngle
@@ -84,6 +87,20 @@ class SU2SF
       "\n\tsundir #{PRECISION % (sd.x)} #{PRECISION % (sd.y)} #{PRECISION % (sd.z)}",
       "\n\tturbidity #{@scene_settings["sky_turbidity"]}",
       "\n\tsamples #{@scene_settings["sky_samples"]}",
+      "\n}\n\n"
+  end
+
+  def output_sky_settingslow( shinfo )    
+    sd = shinfo["SunDirection"]
+    # FIXME: adjust for NorthAngle
+    set_status("Exporting sun...")
+    @stream.print "light {",
+      "\n\ttype sunsky",
+      "\n\tup 0 0 1",
+      "\n\teast 1 0 0",
+      "\n\tsundir #{PRECISION % (sd.x)} #{PRECISION % (sd.y)} #{PRECISION % (sd.z)}",
+      "\n\tturbidity #{@scene_settings["sky_turbidity"]}",
+      "\n\tsamples #{((@scene_settings["sky_samples"])/2)}",
       "\n}\n\n"
   end
   
@@ -316,8 +333,8 @@ class SU2SF
         "\n\ttype glass",
         "\n\teta 1.5",
         "\n\tcolor { \"sRGB nonlinear\" ", mat.color.to_a[0..2].collect{ |x| "%.3f" % (x.to_f/255) }.join( " " ), " }",
-        "\n\tabsorbtion.distance 5.0",
-        "\n\tabsorbtion.color { \"sRGB nonlinear\" 1.0 1.0 1.0 }",
+        "\n\tabsorbtion.distance 20.0",
+        "\n\tabsorbtion.color { \"sRGB nonlinear\" 0.5 0.5 0.5 }",
         "\n}\n\n"
       return name
     else
@@ -327,17 +344,28 @@ class SU2SF
           "\n\ttype glass",
           "\n\teta 1.0",
           "\n\tcolor { \"sRGB nonlinear\" ", mat.color.to_a[0..2].collect{ |x| "%.3f" % (x.to_f/255) }.join( " " ), " }",
-          "\n\tabsorbtion.distance 0.0",
-          "\n\tabsorbtion.color { \"sRGB nonlinear\" 1.0 1.0 1.0 }",
+          "\n\tabsorbtion.distance 20.0",
+          "\n\tabsorbtion.color { \"sRGB nonlinear\" 0.5 0.5 0.5 }",
           "\n}\n\n"
         return name
       else
-        @stream.print "shader {",
-          "\n\tname \"#{name}\"",
-          "\n\ttype diffuse",
-          "\n\tdiff ", mat.color.to_a[0..2].collect{ |x| "%.3f" % (x.to_f/255) }.join( " " ),
-          "\n}\n\n"
-        return name
+        if mat.display_name[0,5] == "sfpho"
+          @stream.print "shader {",
+            "\n\tname \"#{name}\"",
+            "\n\ttype phong",
+            "\n\tdiff { \"sRGB nonlinear\" ", mat.color.to_a[0..2].collect{ |x| "%.3f" % (x.to_f/255) }.join( " " ), " }",
+            "\n\tspec { \"sRGB nonlinear\" ", mat.color.to_a[0..2].collect{ |x| "%.3f" % (x.to_f/255) }.join( " " ), " } 150 ",
+            "\n\tsamples 8",
+            "\n}\n\n"
+          return name
+        else
+          @stream.print "shader {",
+            "\n\tname \"#{name}\"",
+            "\n\ttype diffuse",
+            "\n\tdiff ", mat.color.to_a[0..2].collect{ |x| "%.3f" % (x.to_f/255) }.join( " " ),
+            "\n}\n\n"
+          return name
+        end
       end
     end
   end
@@ -369,7 +397,7 @@ class SU2SF
 
 end
 
-def SU2SF::export_dialog
+def SU2SF::export_dialoglow
   model = Sketchup.active_model
 
   if model.selection.length > 0 then
@@ -393,8 +421,80 @@ def SU2SF::export_dialog
   return if output_file == nil
 
   exporter = SU2SF.new
-  exporter.scene_settings["image_width"] = model.active_view.vpwidth
-  exporter.scene_settings["image_height"] = model.active_view.vpheight  
+  exporter.scene_settings["image_width"] = (1600 / 4)
+  exporter.scene_settings["image_height"] = (1200 / 4)
+  exporter.output_begin( output_file )
+  exporter.output_image_settings( model.active_view )
+  exporter.output_sky_settings( model.shadow_info )
+  exporter.output_camera( model.active_view.camera )
+  exporter.output_scene_objects( ents )
+  exporter.output_end
+  #exporter.instance_variables.each { |v| puts v + " = " + exporter.instance_variable_get(v).to_s }
+  output_file.close
+end
+
+def SU2SF::export_dialogmed
+  model = Sketchup.active_model
+
+  if model.selection.length > 0 then
+    ents = model.selection
+  else
+    ents = model.entities
+  end
+
+  model_filename = File.basename( model.path )
+  if model_filename != ""
+    model_name = model_filename.split(".")[0]
+    model_name += ".sc"
+  else
+    model_name = "Untitled.sc"
+  end
+
+  output_filename = UI.savepanel( "Export to SunFlow", "", model_name );
+  return if output_filename == nil
+
+  output_file = File.new( output_filename, "w+" )
+  return if output_file == nil
+
+  exporter = SU2SF.new
+  exporter.scene_settings["image_width"] = (600)
+  exporter.scene_settings["image_height"] = (450)
+  exporter.output_begin( output_file )
+  exporter.output_image_settings( model.active_view )
+  exporter.output_sky_settings( model.shadow_info )
+  exporter.output_camera( model.active_view.camera )
+  exporter.output_scene_objects( ents )
+  exporter.output_end
+  #exporter.instance_variables.each { |v| puts v + " = " + exporter.instance_variable_get(v).to_s }
+  output_file.close
+end
+
+def SU2SF::export_dialoghigh
+  model = Sketchup.active_model
+
+  if model.selection.length > 0 then
+    ents = model.selection
+  else
+    ents = model.entities
+  end
+
+  model_filename = File.basename( model.path )
+  if model_filename != ""
+    model_name = model_filename.split(".")[0]
+    model_name += ".sc"
+  else
+    model_name = "Untitled.sc"
+  end
+
+  output_filename = UI.savepanel( "Export to SunFlow", "", model_name );
+  return if output_filename == nil
+
+  output_file = File.new( output_filename, "w+" )
+  return if output_file == nil
+
+  exporter = SU2SF.new
+  exporter.scene_settings["image_width"] = (1600)
+  exporter.scene_settings["image_height"] = (1200)
   exporter.output_begin( output_file )
   exporter.output_image_settings( model.active_view )
   exporter.output_sky_settings( model.shadow_info )
@@ -408,7 +508,9 @@ end
 unless file_loaded? "su2sf.rb" 
 
 	main_menu = UI.menu("Plugins").add_submenu("SunFlow Exporter")
-	main_menu.add_item("Export Model") { (SU2SF.export_dialog) }
+	main_menu.add_item("Export Model -Small") { (SU2SF.export_dialoglow) }
+	main_menu.add_item("Export Model -Medium") { (SU2SF.export_dialogmed) }
+	main_menu.add_item("Export Model -Big") { (SU2SF.export_dialoghigh) }
 
 end
 
