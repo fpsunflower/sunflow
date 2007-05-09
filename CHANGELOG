@@ -1,4 +1,5 @@
 v0.07.3
+* Fixed bump mapping to correctly treat black as the lowest point in the map
 * Added command line override for samples paramter (affect bucket and multipas samplers)
 * Added cubic bspline filter to multipass image sampler (via warp function)
 * Fixed "usage of init" statistic report in BIH
