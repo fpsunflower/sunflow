@@ -118,6 +118,6 @@ public class Texture {
         float b0 = getPixel(x, y).getLuminance();
         float bx = getPixel(x + dx, y).getLuminance();
         float by = getPixel(x, y + dy).getLuminance();
-        return basis.transform(new Vector3(scale * (b0 - bx) / dx, scale * (b0 - by ) / dy, 1)).normalize();
+        return basis.transform(new Vector3(scale * (b0 - bx), scale * (b0 - by), 1)).normalize();
     }
 }
