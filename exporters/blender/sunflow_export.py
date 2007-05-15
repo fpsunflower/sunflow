@@ -1,14 +1,14 @@
 #!BPY
 
 """
-Name: 'Sunflow Exporter 1.2.6 (.sc)...'
-Blender: 2.43
+Name: 'Sunflow Exporter 1.3.0 (.sc)...'
+Blender: 2.44
 Group: 'Export'
 Tip: ''
 """
 
 """
-Version         :       1.2.6 (April 2007)
+Version         :       1.3.0 (May 2007)
 Author          :       R Lindsay (hayfever) / Christopher Kulla / MADCello / 
 			olivS / Eugene Reilly / Heavily Tessellated / Humfred
 Description     :       Export to Sunflow renderer http://sunflow.sourceforge.net/
@@ -21,106 +21,8 @@ Usage           :       See how to use the script at http://sunflow.sourceforge.
 
 import Blender, os, sys, time
 
-from Blender import Mathutils, NMesh, Lamp, Object, Scene, Mesh, Material, Draw, BGL, Effect
+from Blender import Mathutils, Lamp, Object, Scene, Mesh, Material, Draw, BGL, Effect
 from math import *
-
-######################
-##  global gui vars ##
-######################
-
-## Default values of buttons ##
-###############################
-
-FILETYPE = Draw.Create(1)
-
-#AA panel
-MINAA = Draw.Create(0)
-MAXAA = Draw.Create(2)
-AASAMPLES = Draw.Create(1)
-AAJITTER = Draw.Create(0)
-DSAMPLES = Draw.Create(16)
-IMGFILTER = Draw.Create(1)
-IMGFILTERW = Draw.Create(1)
-IMGFILTERH = Draw.Create(1)
-
-# Camera panel
-DOF = Draw.Create(0)
-DOFRADIUS = Draw.Create(1.00)
-LENSSIDES = Draw.Create(2)
-LENSROTATION = Draw.Create(0.0)
-SPHERICALCAMERA = Draw.Create(0)
-FISHEYECAMERA = Draw.Create(0)
-
-# Background panel
-IMP_BCKGRD  = Draw.Create(1)
-IMP_SUN  = Draw.Create(0)
-BCKGRD = Draw.Create(0.0, 0.0, 0.0)
-BACKGROUND = Draw.Create(0)
-SUN_TURB = Draw.Create(6.0)
-SUN_SAMPLES = Draw.Create(16)
-IBL = Draw.Create(0)
-IBLLOCK = Draw.Create(0)
-IBLSAMPLES = Draw.Create(16)
-INFINITEPLANE = Draw.Create(0)
-IPLANECOLOR= Draw.Create(1.0, 1.0, 1.0)
-
-# Light panel
-MESHLIGHTPOWER = Draw.Create(100)
-LAMPPOWER = Draw.Create(100)
-CONVLAMP    = Draw.Create(0)
-
-# Config panel
-MEM = Draw.Create(1024)
-THREADS    = Draw.Create(0)
-
-#GI/Caustic panel
-CAUSTICS = Draw.Create(0)
-PHOTONNUMBER = Draw.Create(1000000)
-PHOTONMAP = Draw.Create(1)
-PHOTONESTIMATE = Draw.Create(100)
-PHOTONRADIUS = Draw.Create(0.5)
-INSTANTGI = Draw.Create(0)
-IGISAMPLES = Draw.Create(64)
-IGISETS = Draw.Create(1)
-IGIBIAS = Draw.Create(0.00003)
-IGIBIASSAMPLES = Draw.Create(0)
-IRRCACHE = Draw.Create(0)
-IRRSAMPLES = Draw.Create(512)
-IRRTOLERANCE = Draw.Create(0.01)
-IRRSPACEMIN = Draw.Create(0.05)
-IRRSPACEMAX = Draw.Create(5.0)
-USEGLOBALS = Draw.Create(0)
-gPHOTONNUMBER = Draw.Create(1000000)
-gPHOTONMAP = Draw.Create(2)
-gPHOTONESTIMATE = Draw.Create(100)
-gPHOTONRADIUS = Draw.Create(0.5)
-PATHTRACE = Draw.Create(0)
-PATHSAMPLES = Draw.Create(32)
-VIEWCAUSTICS = Draw.Create(0)
-VIEWGLOBALS = Draw.Create(0)
-VIEWGI = Draw.Create(0)
-OCCLUSION = Draw.Create(0)
-OCCBRIGHT = Draw.Create(1.0, 1.0, 1.0)
-OCCDARK = Draw.Create(0.0, 0.0, 0.0)
-OCCSAMPLES  = Draw.Create(32)
-OCCDIST     = Draw.Create(0.0)
-
-# Shader panel
-SHADTYPE = Draw.Create(1)
-
-# Render panel
-QUICKOPT = Draw.Create(1)
-IPR = Draw.Create(0)
-EXP_ANIM = Draw.Create(0)
-DEPTH_DIFF = Draw.Create(1)
-DEPTH_REFL = Draw.Create(4)
-DEPTH_REFR = Draw.Create(4)
-NOGI    = Draw.Create(0)
-NOCAUSTICS    = Draw.Create(0)
-QUICKOCC    = Draw.Create(0)
-QOCCDIST    = Draw.Create(0.5)
-NOGUI    = Draw.Create(0)
-SMALLMESH    = Draw.Create(0)
 
 ## Events numbers ##
 ####################
@@ -165,16 +67,10 @@ SET_JAVAPATH = 37
 SHADER_TYPE = 38
 SHAD_OK = 39
 EXPORT_ID = 40
-IMPORT_ID = 41
+DEFAULT_ID = 41
 IP_COLOR = 42
-
-## Lists ##
-###########
-
-IMGFILTERLIST = ["box", "gaussian", "mitchell", "triangle", "catmull-rom", "blackman-harris", "sinc", "lanczos"]
-FILETYPE
-PHOTONMAPLIST = ["kd"]
-gPHOTONMAPLIST = ["kd", "grid"]
+BUCKET_EVENT = 43
+IMPORT_ID = 44
 
 ###################
 ##  global vars  ##
@@ -192,7 +88,125 @@ JAVAPATH = ""
 #######################
 
 print "\n\n"
-print "blend2sunflow v1.2.6"
+print "blend2sunflow v1.3.0"
+
+###############################
+## Default values of buttons ##
+###############################
+
+def default_values():
+        global FILETYPE, MINAA, MAXAA, AASAMPLES, AAJITTER, DSAMPLES, IMGFILTER, IMGFILTERW, IMGFILTERH, BUCKETSIZE,\
+        BUCKETTYPE, REVERSE, DOF, DOFRADIUS, LENSSIDES, LENSROTATION, SPHERICALCAMERA, FISHEYECAMERA, IMP_BCKGRD,\
+        IMP_SUN, BCKGRD, BACKGROUND, SUN_TURB, SUN_SAMPLES, IBL, IBLLOCK, IBLSAMPLES, INFINITEPLANE, IPLANECOLOR,\
+        MESHLIGHTPOWER, LAMPPOWER, CONVLAMP, MEM, THREADS, CAUSTICS, PHOTONNUMBER, PHOTONMAP, PHOTONESTIMATE,\
+        PHOTONRADIUS, INSTANTGI, IGISAMPLES, IGISETS, IGIBIAS, IGIBIASSAMPLES, IRRCACHE, IRRSAMPLES, IRRTOLERANCE,\
+        IRRSPACEMIN, IRRSPACEMAX, USEGLOBALS, gPHOTONNUMBER, gPHOTONMAP, gPHOTONESTIMATE, gPHOTONRADIUS, PATHTRACE,\
+        PATHSAMPLES, VIEWCAUSTICS, VIEWGLOBALS, VIEWGI, OCCLUSION, OCCBRIGHT, OCCDARK, OCCSAMPLES, OCCDIST,\
+        SHADTYPE, QUICKOPT, IPR, EXP_ANIM, DEPTH_DIFF, DEPTH_REFL, DEPTH_REFR, NOGI, NOCAUSTICS, QUICKOCC, QOCCDIST,\
+        NOGUI, SMALLMESH, IMGFILTERLIST, BUCKETTYPELIST, PHOTONMAPLIST, gPHOTONMAPLIST
+
+        FILETYPE = Draw.Create(1)
+
+        #AA panel
+        MINAA = Draw.Create(0)
+        MAXAA = Draw.Create(2)
+        AASAMPLES = Draw.Create(1)
+        AAJITTER = Draw.Create(0)
+        DSAMPLES = Draw.Create(16)
+        IMGFILTER = Draw.Create(1)
+        IMGFILTERW = Draw.Create(1)
+        IMGFILTERH = Draw.Create(1)
+        BUCKETSIZE = Draw.Create(32)
+        BUCKETTYPE = Draw.Create(1)
+        REVERSE = Draw.Create(0)
+
+        # Camera panel
+        DOF = Draw.Create(0)
+        DOFRADIUS = Draw.Create(1.00)
+        LENSSIDES = Draw.Create(2)
+        LENSROTATION = Draw.Create(0.0)
+        SPHERICALCAMERA = Draw.Create(0)
+        FISHEYECAMERA = Draw.Create(0)
+
+        # Background panel
+        IMP_BCKGRD  = Draw.Create(1)
+        IMP_SUN  = Draw.Create(0)
+        BCKGRD = Draw.Create(0.0, 0.0, 0.0)
+        BACKGROUND = Draw.Create(0)
+        SUN_TURB = Draw.Create(6.0)
+        SUN_SAMPLES = Draw.Create(16)
+        IBL = Draw.Create(0)
+        IBLLOCK = Draw.Create(0)
+        IBLSAMPLES = Draw.Create(16)
+        INFINITEPLANE = Draw.Create(0)
+        IPLANECOLOR= Draw.Create(1.0, 1.0, 1.0)
+
+        # Light panel
+        MESHLIGHTPOWER = Draw.Create(100)
+        LAMPPOWER = Draw.Create(100)
+        CONVLAMP    = Draw.Create(0)
+
+        # Config panel
+        MEM = Draw.Create(1024)
+        THREADS    = Draw.Create(0)
+
+        #GI/Caustic panel
+        CAUSTICS = Draw.Create(0)
+        PHOTONNUMBER = Draw.Create(1000000)
+        PHOTONMAP = Draw.Create(1)
+        PHOTONESTIMATE = Draw.Create(100)
+        PHOTONRADIUS = Draw.Create(0.5)
+        INSTANTGI = Draw.Create(0)
+        IGISAMPLES = Draw.Create(64)
+        IGISETS = Draw.Create(1)
+        IGIBIAS = Draw.Create(0.00003)
+        IGIBIASSAMPLES = Draw.Create(0)
+        IRRCACHE = Draw.Create(0)
+        IRRSAMPLES = Draw.Create(512)
+        IRRTOLERANCE = Draw.Create(0.01)
+        IRRSPACEMIN = Draw.Create(0.05)
+        IRRSPACEMAX = Draw.Create(5.0)
+        USEGLOBALS = Draw.Create(0)
+        gPHOTONNUMBER = Draw.Create(1000000)
+        gPHOTONMAP = Draw.Create(2)
+        gPHOTONESTIMATE = Draw.Create(100)
+        gPHOTONRADIUS = Draw.Create(0.5)
+        PATHTRACE = Draw.Create(0)
+        PATHSAMPLES = Draw.Create(32)
+        VIEWCAUSTICS = Draw.Create(0)
+        VIEWGLOBALS = Draw.Create(0)
+        VIEWGI = Draw.Create(0)
+        OCCLUSION = Draw.Create(0)
+        OCCBRIGHT = Draw.Create(1.0, 1.0, 1.0)
+        OCCDARK = Draw.Create(0.0, 0.0, 0.0)
+        OCCSAMPLES  = Draw.Create(32)
+        OCCDIST     = Draw.Create(0.0)
+
+        # Shader panel
+        SHADTYPE = Draw.Create(1)
+
+        # Render panel
+        QUICKOPT = Draw.Create(1)
+        IPR = Draw.Create(0)
+        EXP_ANIM = Draw.Create(0)
+        DEPTH_DIFF = Draw.Create(1)
+        DEPTH_REFL = Draw.Create(4)
+        DEPTH_REFR = Draw.Create(4)
+        NOGI    = Draw.Create(0)
+        NOCAUSTICS    = Draw.Create(0)
+        QUICKOCC    = Draw.Create(0)
+        QOCCDIST    = Draw.Create(0.5)
+        NOGUI    = Draw.Create(0)
+        SMALLMESH    = Draw.Create(0)
+
+        ## Lists ##
+        ###########
+
+        IMGFILTERLIST = ["box", "gaussian", "mitchell", "triangle", "catmull-rom", "blackman-harris", "sinc", "lanczos"]
+        BUCKETTYPELIST = ["hilbert", "spiral", "column", "row", "diagonal", "random"]
+        FILETYPE
+        PHOTONMAPLIST = ["kd"]
+        gPHOTONMAPLIST = ["kd", "grid"]
 
 ## Export logic for simple options ##
 #####################################
@@ -233,6 +247,12 @@ def def_output():
 		SCENE.properties['HorizonCol'] = BCKGRD.val
 	else:
                 SCENE.properties['Script Background'] = "false"
+	SCENE.properties['Bucket Size'] = BUCKETSIZE.val
+	SCENE.properties['Bucket Type'] = BUCKETTYPE.val
+	if REVERSE == 1:
+		SCENE.properties['Reverse Bucket'] = "true"
+	else:
+		SCENE.properties['Reverse Bucket'] = "false"
 
 def import_output():
 	global IM_HEIGHT, IM_WIDTH
@@ -278,7 +298,15 @@ def import_output():
                 else:
                         BACKGROUND.val = 0
                         Draw.Redraw()
-
+                BUCKETSIZE.val = SCENE.properties['Bucket Size']
+                BUCKETTYPE.val = SCENE.properties['Bucket Type']
+                if SCENE.properties['Reverse Bucket'] == "true":
+                        REVERSE.val = 1
+                        Draw.Redraw()	
+                else:
+                        REVERSE.val = 0
+                        Draw.Redraw()
+                        
 def export_output():
                 print "o exporting output details..."
                 FILE.write("image {\n")
@@ -312,6 +340,14 @@ def export_output():
                         FILE.write("background {\n")
                         FILE.write("\tcolor  { \"sRGB nonlinear\" %s %s %s }\n" % BCKGRD.val)
                         FILE.write("}")
+                        FILE.write("\n")
+                if REVERSE.val == 0:
+                        FILE.write("\nbucket %s %s\n" % (BUCKETSIZE.val, BUCKETTYPELIST[BUCKETTYPE.val-1]))
+                elif REVERSE.val == 1:
+                        FILE.write("\nbucket %s " % BUCKETSIZE.val)
+                        FILE.write('''"reverse ''')
+                        FILE.write("%s" % BUCKETTYPELIST[BUCKETTYPE.val-1])
+                        FILE.write('''"''')
                         FILE.write("\n")
 
 ## Export caustic and global illumination settings ##
@@ -743,7 +779,7 @@ def export_modifiers():
 
 		if textures[1] <> None and textures[1].tex.getType() == "Image":
 			textu = textures[1]
-			Scale_value = str(textu.norfac * textu.mtNor)
+			Scale_value = str(textu.norfac * textu.mtNor*0.001)
 			
 			if textu.tex.name.startswith("bump"):
 				if textu.tex.getName() not in modifs_list:
@@ -1040,7 +1076,7 @@ def export_ibl():
 ## Export method for Blender camera ##
 ######################################
 def def_camera():
-	CAMERA=SCENE.getCurrentCamera()
+	CAMERA=SCENE.objects.camera
 	# Writes Scene properties
 	CAMERA.properties['CamProp'] = "true"
 	CAMERA.properties['DOF Radius'] = DOFRADIUS.val
@@ -1060,7 +1096,7 @@ def def_camera():
 		CAMERA.properties['Fisheye Camera'] = "false"
 
 def import_camera():
-	CAMERA=SCENE.getCurrentCamera()
+	CAMERA=SCENE.objects.camera
         if CAMERA.properties['CamProp'] == "true":	
 		DOFRADIUS.val = CAMERA.properties['DOF Radius']
                 LENSSIDES.val = CAMERA.properties['Lens Sides']
@@ -1159,11 +1195,11 @@ def export_geometry(obj):
 		print "o exporting particle object " + obj.name+"..."
 	# get the mesh data
 	if obj.getType() <> "Empty":
-                mesh = NMesh.GetRawFromObject(obj.name)
-                mesh.transform(obj.getMatrix(), 1)
-                verts = mesh.verts
-                faces = mesh.faces
-
+                mesh = Mesh.New(obj.name) # Note the mesh.verts = None at the end of this if.  Used to clear the new mesh from memory
+                mesh.getFromObject(obj, 0, 1)
+                mesh.transform(obj.mat, 1)
+		verts = mesh.verts
+		faces = mesh.faces
                 numverts = verts.__len__()
 
                 if numverts > 0:
@@ -1183,13 +1219,13 @@ def export_geometry(obj):
                                 if len(mesh.materials) == 1:
                                         FILE.write("\tshader \"" + mesh.materials[0].name + ".shader\"\n")
                                         
-                                        ##Modifiers##
+                                        ##Modfiers##
                                         for mat in mesh.materials:
                                                 textures = mat.getTextures()
                                                 textu = textures[1]
                                                 if textu <> None and (textu.tex.name.startswith("bump") or textu.tex.name.startswith("normal") or textu.tex.name.startswith("perlin")):
                                                         FILE.write("\tmodifier \"" + str(textu.tex.getName()) + "\"\n")
-                                        ##End Modifier##
+                                        ##End Modifiers##
                                         
                                 elif len(mesh.materials) > 1:
                                         FILE.write("\tshaders %d\n" % (len(mesh.materials)))
@@ -1197,7 +1233,7 @@ def export_geometry(obj):
                                         for mat in mesh.materials:
                                                 FILE.write("\t\t\"" + mat.name + ".shader\"\n")
                                                 
-                                        ##Modifiers##                                       
+                                        ##Modfiers##                                        
                                         FILE.write("\tmodifiers %d\n" % (len(mesh.materials)))
                                         for mat in mesh.materials:
 
@@ -1207,11 +1243,10 @@ def export_geometry(obj):
                                                         FILE.write("\t\t\"" + textu.tex.getName() + "\"\n")
                                                 else:
                                                         FILE.write("\t\t\"" + "None" + "\"\n")
-
                                         ##End Modifiers##
                                 else:
                                         FILE.write("\tshader def\n")
-                                ##Particle/hair object section.  Works with Sunflow 0.07.3 and up.##
+                                ##Particle object section.  Works with Sunflow 0.07.3 and up.##
                                 ## Check if there are particles on the object##
                           	ob = Object.Get(obj.name)
                           	if len(ob.effects) <> 0:
@@ -1235,7 +1270,6 @@ def export_geometry(obj):
                                                         FILE.write("\tsegments %d\n" % (effect.getLifetime()-1)) 
                                                         FILE.write("\twidth .01\n")
                                                         FILE.write("\tpoints %d" % pointnum)
-                                                        #To get the correct number of points, Blender's step value must be se to 1 by the user.
                                                         for eff in effects:
                                                                 for p in eff.getParticlesLoc():
                                                                         if type(p)==list: # Are we a strand or a pair, then add edges.
@@ -1253,8 +1287,8 @@ def export_geometry(obj):
                                         for vert in verts:
                                                 FILE.write("\t\t%s %s %s\n" % (vert.co[0], vert.co[1], vert.co[2]))
                                         FILE.write("\tradius 0.05\n}\n")
-                                ##End particle/hair section##
-                                else:        
+                                ##End particle section##
+                                else:
                                         print "o exporting mesh " + obj.name+"..."
                                         FILE.write("\ttype generic-mesh\n")
                                         FILE.write("\tname \"" + obj.name + "\"\n")
@@ -1263,7 +1297,7 @@ def export_geometry(obj):
                                                 FILE.write("\t\t%s %s %s\n" % (vert.co[0], vert.co[1], vert.co[2]))
                                         numtris = 0
                                         for face in faces:
-                                                num = len(face.v)
+                                                num = len(face.verts)
                                                 if num == 4:
                                                         numtris = numtris + 2
                                                 elif num == 3:
@@ -1272,15 +1306,15 @@ def export_geometry(obj):
                                         allsmooth = True
                                         allflat = True
                                         for face in faces:
-                                                num = len(face.v)
+                                                num = len(face.verts)
                                                 smooth = face.smooth <> 0
                                                 allsmooth &= smooth
                                                 allflat &= not smooth
                                                 if num == 4:
-                                                        FILE.write("\t\t%d %d %d\n" % (face.v[0].index, face.v[1].index, face.v[2].index))
-                                                        FILE.write("\t\t%d %d %d\n" % (face.v[0].index, face.v[2].index, face.v[3].index))
+                                                        FILE.write("\t\t%d %d %d\n" % (face.verts[0].index, face.verts[1].index, face.verts[2].index))
+                                                        FILE.write("\t\t%d %d %d\n" % (face.verts[0].index, face.verts[2].index, face.verts[3].index))
                                                 elif num == 3:
-                                                        FILE.write("\t\t%d %d %d\n" % (face.v[0].index, face.v[1].index, face.v[2].index))
+                                                        FILE.write("\t\t%d %d %d\n" % (face.verts[0].index, face.verts[1].index, face.verts[2].index))
                                         ## what kind of normals do we have?
                                         if not islight:
                                                 if allflat:
@@ -1292,13 +1326,13 @@ def export_geometry(obj):
                                                 else:
                                                         FILE.write("\tnormals facevarying\n")
                                                         for face in faces:
-                                                                num = len(face.v)
+                                                                num = len(face.verts)
                                                                 if face.smooth <> 0:
                                                                         if num == 4:
-                                                                                index0 = face.v[0].index
-                                                                                index1 = face.v[1].index
-                                                                                index2 = face.v[2].index
-                                                                                index3 = face.v[3].index
+                                                                                index0 = face.verts[0].index
+                                                                                index1 = face.verts[1].index
+                                                                                index2 = face.verts[2].index
+                                                                                index3 = face.verts[3].index
                                                                                 FILE.write("\t\t%s %s %s %s %s %s %s %s %s\n" % (verts[index0].no[0], verts[index0].no[1], verts[index0].no[2],
                                                                                                                                                                                                                                         verts[index1].no[0], verts[index1].no[1], verts[index1].no[2],
                                                                                                                                                                                                                                         verts[index2].no[0], verts[index2].no[1], verts[index2].no[2]))
@@ -1306,9 +1340,9 @@ def export_geometry(obj):
                                                                                                                                                                                                                                         verts[index2].no[0], verts[index2].no[1], verts[index2].no[2],
                                                                                                                                                                                                                                         verts[index3].no[0], verts[index3].no[1], verts[index3].no[2]))
                                                                         elif num == 3:
-                                                                                index0 = face.v[0].index
-                                                                                index1 = face.v[1].index
-                                                                                index2 = face.v[2].index
+                                                                                index0 = face.verts[0].index
+                                                                                index1 = face.verts[1].index
+                                                                                index2 = face.verts[2].index
                                                                                 FILE.write("\t\t%s %s %s %s %s %s %s %s %s\n" % (verts[index0].no[0], verts[index0].no[1], verts[index0].no[2],
                                                                                                                                                                                                                                         verts[index1].no[0], verts[index1].no[1], verts[index1].no[2],
                                                                                                                                                                                                                                         verts[index2].no[0], verts[index2].no[1], verts[index2].no[2]))
@@ -1321,7 +1355,7 @@ def export_geometry(obj):
                                                                                 FILE.write("\t\t%s %s %s %s %s %s %s %s %s\n" % (fnx, fny, fnz, fnx, fny, fnz, fnx, fny, fnz))
                                                                         elif num == 3:
                                                                                 FILE.write("\t\t%s %s %s %s %s %s %s %s %s\n" % (fnx, fny, fnz, fnx, fny, fnz, fnx, fny, fnz))
-                                                if mesh.hasFaceUV():
+                                                if mesh.faceUV <> 0:
                                                         tx = 1
                                                         ty = 1
                                                         if len(mesh.materials) >= 1:
@@ -1331,7 +1365,7 @@ def export_geometry(obj):
                                                                                 ty = mesh.materials[0].getTextures()[0].tex.repeat[1]
                                                         FILE.write("\tuvs facevarying\n")
                                                         for face in faces:
-                                                                num = len(face.v)
+                                                                num = len(face.verts)
                                                                 if num == 4:
                                                                         FILE.write("\t\t%s %s %s %s %s %s\n" % (tx * face.uv[0][0], ty * face.uv[0][1], tx * face.uv[1][0], ty * face.uv[1][1], tx * face.uv[2][0], ty * face.uv[2][1]))
                                                                         FILE.write("\t\t%s %s %s %s %s %s\n" % (tx * face.uv[0][0], ty * face.uv[0][1], tx * face.uv[2][0], ty * face.uv[2][1], tx * face.uv[3][0], ty * face.uv[3][1]))
@@ -1342,13 +1376,14 @@ def export_geometry(obj):
                                                 if len(mesh.materials) > 1:
                                                         FILE.write("\tface_shaders\n")
                                                         for face in faces:
-                                                                num = len(face.v)
+                                                                num = len(face.verts)
                                                                 if num == 4:
                                                                         FILE.write("\t\t%d\n" % (face.materialIndex))
                                                                         FILE.write("\t\t%d\n" % (face.materialIndex))
                                                                 elif num == 3:
                                                                         FILE.write("\t\t%d\n" % (face.materialIndex))
                                         FILE.write("}\n")
+                mesh.verts = None
 
         elif obj.getType() == "Empty":
                 ob = Object.Get(obj.name)
@@ -1381,6 +1416,7 @@ def export_geometry(obj):
                 FILE.write("\ttype plane\n")
                 FILE.write("\tp 0 0 0\n")
                 FILE.write("\tn 0 0 1\n}\n")
+
 
 ########################
 ## Main export method ##
@@ -1431,7 +1467,7 @@ public void build() {
 
 		CTX.currentFrame(cntr)
 		SCENE.makeCurrent()
-		OBJECTS = Blender.Scene.GetCurrent().getChildren()
+		OBJECTS = SCENE.objects
 
 		if ANIM == 1:
 			filename = filename.replace(".sc", ".%d.sc" % (CTX.currentFrame()))
@@ -1447,7 +1483,7 @@ public void build() {
 		export_shaders()
 		export_modifiers()
 		export_ibl()
-		export_camera(SCENE.getCurrentCamera())
+		export_camera(SCENE.objects.camera)
 		for object in OBJECTS:
 			if object.users > 1 and object.layers[0] in LAYERS:
 				if object.getType() == 'Lamp':
@@ -1738,6 +1774,8 @@ def buttonEvent(evt):
 				Draw.Redraw()
 	if evt == FILTER_EVENT:
 		Draw.Redraw()
+	if evt == BUCKET_EVENT:
+		Draw.Redraw()
 	if evt == FORCE_INSTANTGI:
 		if INSTANTGI.val == 1:
 			if IRRCACHE.val == 1:
@@ -1949,23 +1987,43 @@ def buttonEvent(evt):
 		def_render()
 		print "  o Finished sending settings."
 		return
-	if evt == IMPORT_ID:
-		if SCENE.properties.has_key('SceneProp'):
-			print "  o Script settings found in .blend, importing to script..."
-			import_output()
-			import_gi()
-			import_globalao()
-			import_lights()
-			import_camera()
-			import_render()
-			print "  o Finished importing script settings to script."
-			return
- 		else:
-			print "  o No script settings in .blend, using defaults."
-			return
+	if evt == DEFAULT_ID:
+                default_values()
+                print "  o Default settings restored."
+		return
+        if evt == IMPORT_ID:
+                if SCENE.properties.has_key('SceneProp'):
+                        print "  o Script settings found in .blend, importing to script..."
+                        import_output()
+                        import_gi()
+                        import_globalao()
+                        import_lights()
+                        import_camera()
+                        import_render()
+                        print "  o Finished importing script settings to script."
+                        return
+                else:
+                        print "  o No script settings in .blend, using defaults."
+                        default_values()
+                        return
+
+def auto_import():
+        if SCENE.properties.has_key('SceneProp'):
+                print "  o Script settings found in .blend, importing to script..."
+                default_values()
+                import_output()
+                import_gi()
+                import_globalao()
+                import_lights()
+                import_camera()
+                import_render()
+                print "  o Finished importing script settings to script."
+                return
+        else:
+                print "  o No script settings in .blend, using defaults."
+                default_values()
+                return
 	
-
-
 ## Draws the individual panels ##
 #################################
 
@@ -2070,7 +2128,9 @@ def drawShad():
 		col=10; line=250; BGL.glRasterPos2i(col, line); Draw.Text("Uber: shader name should start with 'sfube' - imports Blender's Col and Spe RGB")
 		col=10; line=225; BGL.glRasterPos2i(col, line); Draw.Text("values")
 		col=10; line=200; BGL.glRasterPos2i(col, line); Draw.Text("\t\tIF Texture Slot 0: diffuse texture(Mapto Col value), else Col RGB values")
-		col=10; line=175; BGL.glRasterPos2i(col, line); Draw.Text("\t\tIF Texture Slot 2: specular texture(Mapto Var value), else Spe RGB values")
+                col=10; line=175; BGL.glRasterPos2i(col, line); Draw.Text("\t\tThe blend factor for the diffuse texture is controlled by the Map Input Col slider")
+		col=10; line=150; BGL.glRasterPos2i(col, line); Draw.Text("\t\tIF Texture Slot 2: specular texture(Mapto Var value), else Spe RGB values")
+		col=10; line=125; BGL.glRasterPos2i(col, line); Draw.Text("\t\tThe blend factor for the specular texture is controlled by the Map Input Var slider")
 	if SHADTYPE == 2:
 		col=10; line=250; BGL.glRasterPos2i(col, line); Draw.Text("Diffuse: shader name should start with 'sfdif' - imports Blender's Col RGB values")
 	if SHADTYPE == 3:
@@ -2099,24 +2159,28 @@ def drawShad():
 #############################################
 
 def drawRender():
-	global EXPORT, RENDER, SMALLMESH, NOGI, NOCAUSTICS, QUICKUV, QUICKNORM, QUICKID, QUICKPRIMS, QUICKGRAY, QUICKWIRE, QUICKOCC, QOCCDIST, FILETYPE, DEPTH_DIFF, DEPTH_REFL, DEPTH_REFR, QUICKOPT, EXP_ANIM, IPR
+	global EXPORT, RENDER, SMALLMESH, NOGI, NOCAUSTICS, QUICKUV, QUICKNORM, QUICKID, QUICKPRIMS, QUICKGRAY, QUICKWIRE, QUICKOCC, QOCCDIST, FILETYPE, DEPTH_DIFF, DEPTH_REFL, DEPTH_REFR, QUICKOPT, EXP_ANIM, IPR, BUCKETSIZE, BUCKETTYPE, REVERSE
 	col=10; line=325; BGL.glRasterPos2i(col, line); Draw.Text("Rendering actions:")
 	col=10; line=300; EXPORT=Draw.Button("Export .sc", EXP_EVT, col, line, 140, 18, "Export the scene to .sc file")
 	col=160; RENDER=Draw.Button("Render exported", REND_EVT, col, line, 130, 18, "Render it (Export a .sc file first)")
 	col=300; FILETYPE=Draw.Menu("%tFile type|png|tga|hdr|exr|igi", FILE_TYPE, col, line, 85, 18, FILETYPE.val)
-	col=10; line=275; BGL.glRasterPos2i(col, line); Draw.Text("Max raytrace depths:")
-	col=10; line=250; DEPTH_DIFF=Draw.Number("Diffuse Depth", 2, col, line, 125, 18, DEPTH_DIFF.val, 1, 100)
+	col=10; line=280; BGL.glRasterPos2i(col, line); Draw.Text("Max raytrace depths:")
+	col=10; line=255; DEPTH_DIFF=Draw.Number("Diffuse Depth", 2, col, line, 125, 18, DEPTH_DIFF.val, 1, 100)
 	col=150; DEPTH_REFL=Draw.Number("Reflection Depth", 2, col, line, 125, 18, DEPTH_REFL.val, 1, 100)
 	col=290; DEPTH_REFR=Draw.Number("Refraction Depth", 2, col, line, 125, 18, DEPTH_REFR.val, 1, 100)
-	col=10; line=225; BGL.glRasterPos2i(col, line); Draw.Text("Rendering options:")
-	col=10; line=200; SMALLMESH=Draw.Toggle("Small mesh", 2, col, line, 85, 18, SMALLMESH.val, "Load triangle meshes using triangles optimized for memory use")
+        col=10; line=240; BGL.glRasterPos2i(col, line); Draw.Text("Bucket Order:")
+	col=10; line=215; BUCKETSIZE=Draw.Number("Bucket Size", 2, col, line, 125, 18, BUCKETSIZE.val, 8, 64)
+	col=150; BUCKETTYPE=Draw.Menu("%tBucket Order|hilbert (default)|spiral|column|row|diagonal|random", BUCKET_EVENT, col, line, 125, 18, BUCKETTYPE.val)
+	col=290; REVERSE=Draw.Toggle("Reverse Order", 2, col, line, 125, 18, REVERSE.val, "Use reverse bucket order")
+	col=10; line=195; BGL.glRasterPos2i(col, line); Draw.Text("Rendering options:")
+	col=10; line=170; SMALLMESH=Draw.Toggle("Small mesh", 2, col, line, 85, 18, SMALLMESH.val, "Load triangle meshes using triangles optimized for memory use")
 	col=100; NOGI=Draw.Toggle("No GI", 2, col, line, 85, 18, NOGI.val, "Disable any global illumination engines in the scene")
 	col=190; NOCAUSTICS=Draw.Toggle("No Caustics", 2, col, line, 85, 18, NOCAUSTICS.val, "Disable any caustic engine in the scene")
 	col=280; NOGUI=Draw.Toggle("No GUI", 2, col, line, 85, 18, NOCAUSTICS.val, "Don't open the frame showing rendering progress")
 	col=370; IPR=Draw.Toggle("IPR", 2, col, line, 85, 18, IPR.val, "Render using progressive algorithm")
-	col=10; line=180; BGL.glRasterPos2i(col, line); Draw.Text("Quick override options:")
-	col=10; line=150; QUICKOPT=Draw.Menu("%tQuick option|None|Quick UVs|Quick Normals|Quick ID|Quick Primitives|Quick Gray|Quick Wire", QUICK_OPT, col, line, 100, 18, QUICKOPT.val)
-	col=10; line=125; QUICKOCC=Draw.Toggle("Quick Amb Occ", QUICK_OCC, col, line, 85, 18, QUICKOCC.val, "Applies ambient occlusion to the scene with specified maximum distance")
+	col=10; line=150; BGL.glRasterPos2i(col, line); Draw.Text("Quick override options:")
+	col=10; line=125; QUICKOPT=Draw.Menu("%tQuick option|None|Quick UVs|Quick Normals|Quick ID|Quick Primitives|Quick Gray|Quick Wire", QUICK_OPT, col, line, 100, 18, QUICKOPT.val)
+	col=10; line=100; QUICKOCC=Draw.Toggle("Quick Amb Occ", QUICK_OCC, col, line, 85, 18, QUICKOCC.val, "Applies ambient occlusion to the scene with specified maximum distance")
 	col=100; QOCCDIST=Draw.Number("Distance", 2, col, line, 125, 18, QOCCDIST.val, 0.00, 1000.00)
 	col=10; line=75; EXP_ANIM=Draw.Toggle("Export As Animation", 2, col, line, 140, 18, EXP_ANIM.val, "Export the scene as animation")
 	drawButtons()
@@ -2128,7 +2192,8 @@ def drawConfig():
 	global SET_PATH, THREADS, MEM, SET_JAVAPATH
         col=10; line = 315; BGL.glRasterPos2i(col, line); Draw.Text("ID properties for script settings:")
         col= 10; line = 285; Draw.Button("Send Script Settings", EXPORT_ID, col, line, 140,18, "Send script settings to the .blend")
-        col= 155; line = 285; Draw.Button("Import Script Settings", IMPORT_ID, col, line, 140,18, "Import script setting from .blend")
+        col= 155; Draw.Button("Restore Default Settings", DEFAULT_ID, col, line, 140,18, "Use script defaults")
+        col= 300; Draw.Button("Reload ID Settings", IMPORT_ID, col, line, 140,18, "Reload id properties from .blend")
         col=10; line = 255; BGL.glRasterPos2i(col, line); Draw.Text("Settings needed to render directly from the script:")
 	col=155; line = 230; BGL.glRasterPos2i(col, line); Draw.Text("(threads=0 means auto-detect)")
 	col=10; line = 225; THREADS=Draw.Number("Threads", 2, col, line, 140, 18, THREADS.val, 0, 8)
@@ -2220,4 +2285,6 @@ def drawButtons():
 	Draw.Button("Render settings", CHANGE_EXP, 400, 10, 90, 50)
 
 SCREEN=7
+auto_import()
 Draw.Register(drawGUI, event, buttonEvent)
+
