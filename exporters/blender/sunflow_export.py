@@ -1,14 +1,14 @@
 #!BPY
 
 """
-Name: 'Sunflow Exporter 1.3.0 (.sc)...'
+Name: 'Sunflow Exporter 1.3.1 (.sc)...'
 Blender: 2.44
 Group: 'Export'
 Tip: ''
 """
 
 """
-Version         :       1.3.0 (May 2007)
+Version         :       1.3.1 (May 2007)
 Author          :       R Lindsay (hayfever) / Christopher Kulla / MADCello / 
 			olivS / Eugene Reilly / Heavily Tessellated / Humfred
 Description     :       Export to Sunflow renderer http://sunflow.sourceforge.net/
@@ -88,7 +88,7 @@ JAVAPATH = ""
 #######################
 
 print "\n\n"
-print "blend2sunflow v1.3.0"
+print "blend2sunflow v1.3.1"
 
 ###############################
 ## Default values of buttons ##
@@ -1181,6 +1181,8 @@ def export_camera(cam):
 		FILE.write("\tup     %s %s %s\n" % (upV[0], upV[1], upV[2]))
 		FILE.write("\tfov    %s \n" % fov)
 		FILE.write("\taspect %s \n" % (1.0 * IM_WIDTH / IM_HEIGHT))
+                #To be uncommented when 0.07.3 is released
+		#FILE.write("\tshift %s %s\n" % (camera.shiftx, camera.shifty)
 	FILE.write("}")
 
 ## Export method for meshes ##
@@ -1378,10 +1380,10 @@ def export_geometry(obj):
                                                         for face in faces:
                                                                 num = len(face.verts)
                                                                 if num == 4:
-                                                                        FILE.write("\t\t%d\n" % (face.materialIndex))
-                                                                        FILE.write("\t\t%d\n" % (face.materialIndex))
+                                                                        FILE.write("\t\t%d\n" % (face.mat))
+                                                                        FILE.write("\t\t%d\n" % (face.mat))
                                                                 elif num == 3:
-                                                                        FILE.write("\t\t%d\n" % (face.materialIndex))
+                                                                        FILE.write("\t\t%d\n" % (face.mat))
                                         FILE.write("}\n")
                 mesh.verts = None
 
