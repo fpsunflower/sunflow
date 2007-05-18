@@ -326,8 +326,8 @@ public final class Color {
 
     public final Color clamp(float min, float max) {
         r = MathUtils.clamp(r, min, max);
-        g = MathUtils.clamp(r, min, max);
-        b = MathUtils.clamp(r, min, max);
+        g = MathUtils.clamp(g, min, max);
+        b = MathUtils.clamp(b, min, max);
         return this;
     }
 
