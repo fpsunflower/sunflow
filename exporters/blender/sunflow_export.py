@@ -15,18 +15,16 @@ Description     :       Export to Sunflow renderer http://sunflow.sourceforge.ne
 Usage           :       See how to use the script at http://sunflow.sourceforge.net/phpbb2/viewtopic.php?t=125
 """
 
-###############
-##  imports  ##
-###############
+####### General Script Properties Section #######
+#################################################
 
-import Blender, os, sys, time
+## Imports ##
+import Blender, os, sys, time#, subprocess
 
 from Blender import Mathutils, Lamp, Object, Scene, Mesh, Material, Draw, BGL, Effect
 from math import *
 
-## Events numbers ##
-####################
-
+## Event numbers ##
 CHANGE_EXP = 1
 NO_EVENT   = 2
 DOF_CAMERA = 3
@@ -72,10 +70,7 @@ IP_COLOR = 42
 BUCKET_EVENT = 43
 IMPORT_ID = 44
 
-###################
-##  global vars  ##
-###################
-
+## global vars ##
 global FILE, SCENE, IM_HEIGHT, IM_WIDTH, TEXTURES, OBJECTS, IBLLIGHT, LAYERS, SCREEN, SCENE
 global DOFDIST
 FILENAME = Blender.Get('filename').replace(".blend", ".sc")
@@ -83,17 +78,11 @@ SCENE     = Blender.Scene.GetCurrent()
 SFPATH = ""
 JAVAPATH = ""
 
-#######################
-##  start of export  ##
-#######################
-
+## start of export ##
 print "\n\n"
 print "blend2sunflow v1.3.1"
 
-###############################
 ## Default values of buttons ##
-###############################
-
 def default_values():
         global FILETYPE, MINAA, MAXAA, AASAMPLES, AAJITTER, DSAMPLES, IMGFILTER, IMGFILTERW, IMGFILTERH, BUCKETSIZE,\
         BUCKETTYPE, REVERSE, DOF, DOFRADIUS, LENSSIDES, LENSROTATION, SPHERICALCAMERA, FISHEYECAMERA, IMP_BCKGRD,\
@@ -107,7 +96,7 @@ def default_values():
 
         FILETYPE = Draw.Create(1)
 
-        #AA panel
+        # AA panel values
         MINAA = Draw.Create(0)
         MAXAA = Draw.Create(2)
         AASAMPLES = Draw.Create(1)
@@ -120,7 +109,7 @@ def default_values():
         BUCKETTYPE = Draw.Create(1)
         REVERSE = Draw.Create(0)
 
-        # Camera panel
+        # Camera panel values
         DOF = Draw.Create(0)
         DOFRADIUS = Draw.Create(1.00)
         LENSSIDES = Draw.Create(2)
@@ -128,7 +117,7 @@ def default_values():
         SPHERICALCAMERA = Draw.Create(0)
         FISHEYECAMERA = Draw.Create(0)
 
-        # Background panel
+        # Background panel values
         IMP_BCKGRD  = Draw.Create(1)
         IMP_SUN  = Draw.Create(0)
         BCKGRD = Draw.Create(0.0, 0.0, 0.0)
@@ -141,16 +130,16 @@ def default_values():
         INFINITEPLANE = Draw.Create(0)
         IPLANECOLOR= Draw.Create(1.0, 1.0, 1.0)
 
-        # Light panel
+        # Light panel values
         MESHLIGHTPOWER = Draw.Create(100)
         LAMPPOWER = Draw.Create(100)
         CONVLAMP    = Draw.Create(0)
 
-        # Config panel
+        # Config panel values
         MEM = Draw.Create(1024)
         THREADS    = Draw.Create(0)
 
-        #GI/Caustic panel
+        # GI/Caustic panel values
         CAUSTICS = Draw.Create(0)
         PHOTONNUMBER = Draw.Create(1000000)
         PHOTONMAP = Draw.Create(1)
@@ -182,10 +171,10 @@ def default_values():
         OCCSAMPLES  = Draw.Create(32)
         OCCDIST     = Draw.Create(0.0)
 
-        # Shader panel
+        # Shader panel values
         SHADTYPE = Draw.Create(1)
 
-        # Render panel
+        # Render panel values
         QUICKOPT = Draw.Create(1)
         IPR = Draw.Create(0)
         EXP_ANIM = Draw.Create(0)
@@ -200,17 +189,17 @@ def default_values():
         SMALLMESH    = Draw.Create(0)
 
         ## Lists ##
-        ###########
-
         IMGFILTERLIST = ["box", "gaussian", "mitchell", "triangle", "catmull-rom", "blackman-harris", "sinc", "lanczos"]
         BUCKETTYPELIST = ["hilbert", "spiral", "column", "row", "diagonal", "random"]
         FILETYPE
         PHOTONMAPLIST = ["kd"]
         gPHOTONMAPLIST = ["kd", "grid"]
 
-## Export logic for simple options ##
-#####################################
+####### Script Settings Section #######
+#######################################
 
+## Background and AA settings ##
+# Send background and AA values to Blender as IDs #
 def def_output():
 	global IM_HEIGHT, IM_WIDTH
 	# Define Blender's values
@@ -254,6 +243,7 @@ def def_output():
 	else:
 		SCENE.properties['Reverse Bucket'] = "false"
 
+# Import background and AA values from Blender IDs to script #
 def import_output():
 	global IM_HEIGHT, IM_WIDTH
 	# Retrieve Blender's Scene ID values
@@ -306,7 +296,8 @@ def import_output():
                 else:
                         REVERSE.val = 0
                         Draw.Redraw()
-                        
+
+# Export background and AA values #                        
 def export_output():
                 print "o exporting output details..."
                 FILE.write("image {\n")
@@ -350,9 +341,8 @@ def export_output():
                         FILE.write('''"''')
                         FILE.write("\n")
 
-## Export caustic and global illumination settings ##
-#####################################################
-
+## Caustic and global illumination settings ##
+# Send GI and caustic values to Blender as IDs #
 def def_gi():
         # Writes GI properties
         if CAUSTICS.val == 1:
@@ -405,6 +395,7 @@ def def_gi():
 	else:
 		SCENE.properties['View GI'] = "false"
 
+# Import GI values from Blender IDs to script #
 def import_gi():
         # Retrieve Blender's GI/Caustic ID values
         if SCENE.properties['SceneProp'] == "true":
@@ -473,7 +464,8 @@ def import_gi():
                 else:
                         VIEWGI.val = 0
                         Draw.Redraw() 
-		
+
+# Export global illumination values #		
 def export_gi():
              	#Caustic Settings 
                 if CAUSTICS.val == 1:
@@ -539,8 +531,8 @@ def export_gi():
         		FILE.write("}\n")
         		FILE.write("override debug_gi false\n")
 
-## Export logic for materials ##
-################################
+## Shader and AO settings ##
+# Send AO values to Blender as IDs #
 def def_globalao():
         #Writes ID values for the global ao values
         if OCCLUSION.val ==1:
@@ -552,6 +544,7 @@ def def_globalao():
 	else:
                SCENE.properties['Global AO'] = "false"
 
+# Import AO values from Blender IDs to script #
 def import_globalao():
         # Retrieve Blender's global ID values
         if SCENE.properties['SceneProp'] == "true":
@@ -764,8 +757,6 @@ def export_shaders():
 				FILE.write("\tdiff { \"sRGB nonlinear\" %s %s %s }\n}" % (RGB[0], RGB[1], RGB[2]))
 
 ## Export modifiers ##
-######################
-
 def export_modifiers():
 	print "o exporting modifiers..."
 		
@@ -813,9 +804,8 @@ def export_modifiers():
                         else:
                                 pass
 
-## Export logic for Blender's light sources ##
-##############################################
-
+## Light settings ##
+# Send light values to Blender as IDs #
 def def_lights():
         #Write light ID properties
 	SCENE.properties['LightProp'] = "true"
@@ -848,6 +838,7 @@ def def_lights():
 		SCENE.properties['Infinite Plane'] = "false"
 	SCENE.properties['Infinite Plane Color'] = IPLANECOLOR.val
 
+# Import light values from Blender IDs to script #
 def import_lights():
         # Retrieve Blender's light ID values including IBL/LOCK
 	if SCENE.properties['LightProp'] == "true":
@@ -890,8 +881,8 @@ def import_lights():
                         Draw.Redraw()
 		IPLANECOLOR.val = SCENE.properties['Infinite Plane Color'][0], SCENE.properties['Infinite Plane Color'][1], SCENE.properties['Infinite Plane Color'][2], 
 
+# Export light values #
 def export_lights(lmp):
-
 	# only lamps type 0, 1 and 4 supported at the moment
 	# lamp types are: 0 - Lamp, 1 - Sun, 2 - Spot, 3 - Hemi, 4 - Area
 	# Spots are replaced by directional (cylinrical) lights: adjust dist as close as possible to the ground receiving the
@@ -1038,9 +1029,7 @@ def export_lights(lmp):
 			FILE.write("\tp %s %s %s\n" % (lampV[0], lampV[1], lampV[2]))
 			FILE.write("}")
 
-## Export method for Image Based Lights ##
-##########################################
-
+## Export of Image Based Lights ##
 def export_ibl():
 	global IBLLIGHT
 
@@ -1073,8 +1062,8 @@ def export_ibl():
 			FILE.write("\tsamples %s\n" % IBLSAMPLES.val)
 			FILE.write("}")
 
-## Export method for Blender camera ##
-######################################
+## Camera settings ##
+# Send camera values to Blender as IDs #
 def def_camera():
 	CAMERA=SCENE.objects.camera
 	# Writes Scene properties
@@ -1095,6 +1084,7 @@ def def_camera():
 	else:
 		CAMERA.properties['Fisheye Camera'] = "false"
 
+# Import Background and AA values from Blender IDs to script #
 def import_camera():
 	CAMERA=SCENE.objects.camera
         if CAMERA.properties['CamProp'] == "true":	
@@ -1119,9 +1109,9 @@ def import_camera():
                 else:
                         FISHEYECAMERA.val = 0
                         Draw.Redraw() 
-        
-def export_camera(cam):
 
+# Export camera values #        
+def export_camera(cam):
 	# get the camera
 	camera = cam.getData()
 	print "o exporting Camera "+camera.getName()+"..."
@@ -1186,8 +1176,6 @@ def export_camera(cam):
 	FILE.write("}")
 
 ## Export method for meshes ##
-##############################
-
 def export_geometry(obj):
 	islight = obj.name.startswith("meshlight")
         isparticleob = obj.name.startswith("particleob")
@@ -1197,7 +1185,7 @@ def export_geometry(obj):
 		print "o exporting particle object " + obj.name+"..."
 	# get the mesh data
 	if obj.getType() <> "Empty":
-                mesh = Mesh.New(obj.name) # Note the mesh.verts = None at the end of this if.  Used to clear the new mesh from memory
+                mesh = Mesh.New(obj.name) # Note the "mesh.verts = None" at the end of this if.  Used to clear the new mesh from memory
                 mesh.getFromObject(obj, 0, 1)
                 mesh.transform(obj.mat, 1)
 		verts = mesh.verts
@@ -1221,13 +1209,12 @@ def export_geometry(obj):
                                 if len(mesh.materials) == 1:
                                         FILE.write("\tshader \"" + mesh.materials[0].name + ".shader\"\n")
                                         
-                                        ##Modfiers##
+                                        ##Check for and write modfiers##
                                         for mat in mesh.materials:
                                                 textures = mat.getTextures()
                                                 textu = textures[1]
                                                 if textu <> None and (textu.tex.name.startswith("bump") or textu.tex.name.startswith("normal") or textu.tex.name.startswith("perlin")):
                                                         FILE.write("\tmodifier \"" + str(textu.tex.getName()) + "\"\n")
-                                        ##End Modifiers##
                                         
                                 elif len(mesh.materials) > 1:
                                         FILE.write("\tshaders %d\n" % (len(mesh.materials)))
@@ -1235,7 +1222,7 @@ def export_geometry(obj):
                                         for mat in mesh.materials:
                                                 FILE.write("\t\t\"" + mat.name + ".shader\"\n")
                                                 
-                                        ##Modfiers##                                        
+                                        ##Check for and write modfiers##                                        
                                         FILE.write("\tmodifiers %d\n" % (len(mesh.materials)))
                                         for mat in mesh.materials:
 
@@ -1245,17 +1232,17 @@ def export_geometry(obj):
                                                         FILE.write("\t\t\"" + textu.tex.getName() + "\"\n")
                                                 else:
                                                         FILE.write("\t\t\"" + "None" + "\"\n")
-                                        ##End Modifiers##
+
                                 else:
                                         FILE.write("\tshader def\n")
-                                ##Particle object section.  Works with Sunflow 0.07.3 and up.##
-                                ## Check if there are particles on the object##
+                                ##Particle object section.  Works with Sunflow 0.07.3 and up. ##
+                                # Check if there are particles on the object #
                           	ob = Object.Get(obj.name)
                           	if len(ob.effects) <> 0:
                                         effect = ob.effects[0]
                                         particles = effect.getParticlesLoc()
                                         effects= Effect.Get()
-                                ## Check that particles are points only (not static and not vectors)##
+                                # Check that particles are points only (not static and not vectors) #
                                         if not effect.getFlag() & Effect.Flags.STATIC or not effect.getStype():
                                                 FILE.write("\ttype particles\n")
                                                 FILE.write("\tname \"" + obj.name + "\"\n")
@@ -1274,7 +1261,7 @@ def export_geometry(obj):
                                                         FILE.write("\tpoints %d" % pointnum)
                                                         for eff in effects:
                                                                 for p in eff.getParticlesLoc():
-                                                                        if type(p)==list: # Are we a strand or a pair, then add edges.
+                                                                        if type(p)==list: # Are we a strand or a pair, then add hair data.
                                                                                 if len(p)>1:
                                                                                         destData = str()
                                                                                         for vect in p:
@@ -1289,7 +1276,7 @@ def export_geometry(obj):
                                         for vert in verts:
                                                 FILE.write("\t\t%s %s %s\n" % (vert.co[0], vert.co[1], vert.co[2]))
                                         FILE.write("\tradius 0.05\n}\n")
-                                ##End particle section##
+
                                 else:
                                         print "o exporting mesh " + obj.name+"..."
                                         FILE.write("\ttype generic-mesh\n")
@@ -1317,6 +1304,7 @@ def export_geometry(obj):
                                                         FILE.write("\t\t%d %d %d\n" % (face.verts[0].index, face.verts[2].index, face.verts[3].index))
                                                 elif num == 3:
                                                         FILE.write("\t\t%d %d %d\n" % (face.verts[0].index, face.verts[1].index, face.verts[2].index))
+
                                         ## what kind of normals do we have?
                                         if not islight:
                                                 if allflat:
@@ -1357,6 +1345,7 @@ def export_geometry(obj):
                                                                                 FILE.write("\t\t%s %s %s %s %s %s %s %s %s\n" % (fnx, fny, fnz, fnx, fny, fnz, fnx, fny, fnz))
                                                                         elif num == 3:
                                                                                 FILE.write("\t\t%s %s %s %s %s %s %s %s %s\n" % (fnx, fny, fnz, fnx, fny, fnz, fnx, fny, fnz))
+                                                # Check for UVs #
                                                 if mesh.faceUV <> 0:
                                                         tx = 1
                                                         ty = 1
@@ -1375,6 +1364,8 @@ def export_geometry(obj):
                                                                         FILE.write("\t\t%s %s %s %s %s %s\n" % (tx * face.uv[0][0], ty * face.uv[0][1], tx * face.uv[1][0], ty * face.uv[1][1], tx * face.uv[2][0], ty * face.uv[2][1]))
                                                 else:
                                                         FILE.write("\tuvs none\n")
+
+                                                # Check for multiple materials on the mesh (face indices) #
                                                 if len(mesh.materials) > 1:
                                                         FILE.write("\tface_shaders\n")
                                                         for face in faces:
@@ -1385,8 +1376,10 @@ def export_geometry(obj):
                                                                 elif num == 3:
                                                                         FILE.write("\t\t%d\n" % (face.mat))
                                         FILE.write("}\n")
+                # This clears the data from the new mesh created. #
                 mesh.verts = None
 
+        # Look for Instances/Dupligroups #
         elif obj.getType() == "Empty":
                 ob = Object.Get(obj.name)
                 dupe_obs = ob.DupObjects
@@ -1412,6 +1405,7 @@ def export_geometry(obj):
                                                 FILE.write("\tmodifier \"" + str(textu.tex.getName()) + "\"\n")
                                 FILE.write("}\n")
 
+        # Add infinite plane object #
 	if INFINITEPLANE.val == 1:
 		FILE.write("\n\nobject {\n")
                 FILE.write("\tshader iplane\n")
@@ -1419,11 +1413,7 @@ def export_geometry(obj):
                 FILE.write("\tp 0 0 0\n")
                 FILE.write("\tn 0 0 1\n}\n")
 
-
-########################
 ## Main export method ##
-########################
-
 def exportfile(filename):
 	global FILE, SCENE, IM_HEIGHT, IM_WIDTH, TEXTURES, OBJECTS, LAYERS, IBLLIGHT, EXP_ANIM, fname, destname
 	global PATH
@@ -1454,8 +1444,8 @@ public void build() {
 	parse("%s" + ".settings.sc");
 	parse("%s" + "." + getCurrentFrame() + ".sc");
 }
-""" % (base, base)) ### FIM DO FILE.WRITE ###
-
+""" % (base, base))
+		
 		FILE.close()
 		FILE = open(filename.replace(".sc", ".settings.sc"), "wb")
 		export_output()
@@ -1520,19 +1510,15 @@ if __name__ == '__main__':
 	Blender.Window.FileSelector(exportfile, "Export .sc", Blender.sys.makename(ext=".sc"))
 
 ## Global event handler ##
-##########################
-
 def event(evt, val):
 	if evt == Draw.ESCKEY:
 		print "quitting exporter..."
 		Draw.Exit()
 
-## Macro for writing the SF config file ##
-##########################################
-
+## Writing of the SF config file ##
 def setpath(SFPATH):
 	datadir=Blender.Get("datadir")
-	# create 'path2sf.cfg
+	# create 'path2sf.cfg in the .blend/bpydata directory
 	f = open(datadir + '/path2sf.cfg', 'w')
 	f.write(str(SFPATH)+"\n")
 	f.write(str(MEM)+"\n")
@@ -1545,8 +1531,8 @@ def setjavapath(JAVAPATH):
 	f.write(str(JAVAPATH))
 	f.close()
 
-## Macro for render execution ##
-################################
+## Render to Sunflow from inside the script ##
+# Send render values to Blender as IDs #
 def def_render():
 	# Writes render setting properties
 	SCENE.properties['RenderProp'] = "true"
@@ -1582,6 +1568,7 @@ def def_render():
         else:
                 SCENE.properties['animation'] = "false"
 
+# Import render values from Blender IDs to script #
 def import_render():
         global EXP_ANIM
         if SCENE.properties['RenderProp'] == "true":	
@@ -1630,10 +1617,9 @@ def import_render():
                 else:
                         EXP_ANIM.val = 0
                         Draw.Redraw()
-                        
+
+# Export render values #                        
 def render():
-	# TODO:
-	# 1- Make compatible with animations
 	global COMMAND, memory, threads, sfpath, trial, javapath, fname, destname, STARTFRAME, ENDFRAME
 	exportfile(fname)
 	destname = fname.replace(".sc", "")
@@ -1730,16 +1716,19 @@ def render():
                         print COMMAND
 		# Execute the command:
 		pid=os.system(COMMAND)
+		#pid = subprocess.Popen(args=COMMAND, shell=True)
 	
-## GUI button event handler ##
-##############################
-
+####### GUI button event handler #######
+########################################
+		
 def buttonEvent(evt):
 	global FILE, SCREEN, SETPATH, SETJAVAPATH, FILENAME, SCENE
 
 	## Common events:
 	if evt == EXP_EVT:
 		Blender.Window.FileSelector(exportfile, "Export .sc", FILENAME)
+
+	## Config file events
 	if evt == SET_PATH:
 		Blender.Window.FileSelector(setpath, "SET SF PATH", SFPATH)
 		setpath(SFPATH)
@@ -1979,6 +1968,7 @@ def buttonEvent(evt):
 	if evt == SHAD_OK:
 		Draw.Redraw()
 		return
+	# Events for the import and export of ID values and setting of default values
 	if evt == EXPORT_ID:
                 print "  o Sending script settings to .blend..."
 		def_output()
@@ -2009,6 +1999,7 @@ def buttonEvent(evt):
                         default_values()
                         return
 
+# Same as the IMPORT_ID event, but needed it to be a function so we can load it on script start up #
 def auto_import():
         if SCENE.properties.has_key('SceneProp'):
                 print "  o Script settings found in .blend, importing to script..."
@@ -2025,10 +2016,11 @@ def auto_import():
                 print "  o No script settings in .blend, using defaults."
                 default_values()
                 return
-	
-## Draws the individual panels ##
-#################################
 
+####### Draw GUI Section #######
+################################
+        
+## Draws the individual panels ##
 def drawGUI():
 	global SCREEN
 	if SCREEN==0:
@@ -2048,9 +2040,7 @@ def drawGUI():
 	if SCREEN==8:
 		drawConfig()
 
-## Draw AA settings ##
-######################
-
+## Draw AA options ##
 def drawAA():
 	global MINAA, MAXAA, AASAMPLES, AAJITTER, IMGFILTERW, IMGFILTERH, IMGFILTER
 	col=10; line=150; BGL.glRasterPos2i(col, line); Draw.Text("AA:")
@@ -2060,11 +2050,10 @@ def drawAA():
 	col=230; AAJITTER=Draw.Toggle("AA Jitter", 2, col, line, 120, 18, AAJITTER.val, "Use jitter for anti-aliasing")
 	col=10; line=105; BGL.glRasterPos2i(col, line); Draw.Text("Image Filter:")
 	col=100; line=100; IMGFILTER=Draw.Menu("%tImage Filter|box|gaussian|mitchell|triangle|catmull-rom|blackman-harris|sinc|lanczos", FILTER_EVENT, col, line, 120, 18, IMGFILTER.val)
+
 	drawButtons()
 
 ## Draw camera options ##
-#########################
-
 def drawCamera(): 
 	global DOF, DOFRADIUS, SPHERICALCAMERA, FISHEYECAMERA, LENSSIDES, LENSROTATION
 	col=10; line=150; BGL.glRasterPos2i(col, line); Draw.Text("Camera:")
@@ -2075,11 +2064,10 @@ def drawCamera():
 	col=350; LENSROTATION=Draw.Number("Rotation", 2, col, line, 120, 18, LENSROTATION.val, 0.0, 360.0)
 	col=100; line=95; SPHERICALCAMERA=Draw.Toggle("Spherical", SPHER_CAMERA, col, line, 120, 18, SPHERICALCAMERA.val, "Use the sperical camera type")
 	col=100; line=70; FISHEYECAMERA=Draw.Toggle("Fisheye", FISH_CAMERA, col, line, 120, 18, FISHEYECAMERA.val, "Use the fisheye camera type")
+
 	drawButtons()
 
 ## Draw Background options ##
-#############################
-
 def drawBackground():
 	global IMP_BCKGRD, IMP_SUN, BACKGROUND, BCKGRD, IBL, IBLLOCK, IBLSAMPLES, SUN_TURB, SUN_SAMPLES, INFINITEPLANE, IPLANECOLOR
 	col=10; line=225; BGL.glRasterPos2i(col, line); Draw.Text("Simple background:")
@@ -2096,11 +2084,10 @@ def drawBackground():
 	col=270; SUN_SAMPLES=Draw.Number("Samples", 2, col, line, 120, 18, SUN_SAMPLES.val, 1, 10000)
 	col=400; INFINITEPLANE=Draw.Toggle("Infinite Plane", 2, col, line, 90, 18, INFINITEPLANE.val, "Use an infinite plane in the scene")
 	col=500; IPLANECOLOR=Draw.ColorPicker(2, 495, 75, 30, 18, IPLANECOLOR.val, "Infinite plane color")
+
 	drawButtons()
 
 ## Draw light options ##
-########################
-
 def drawLights():
 	global MESHLIGHTPOWER, LAMPPOWER, DSAMPLES, CONVLAMP
 	col=10; line=205; BGL.glRasterPos2i(col, line); Draw.Text("Global Options:")
@@ -2112,11 +2099,10 @@ def drawLights():
 	col=110; line=125; DSAMPLES=Draw.Number("Direct Samples", 2, col, line, 200, 18, DSAMPLES.val, 0, 1024) 
 	col=10; line=105; BGL.glRasterPos2i(col, line); Draw.Text("Unknown lamps:")
 	col=10; line = 75; CONVLAMP=Draw.Toggle("Convert lamps", 2, col, line, 140, 18, CONVLAMP.val, "Convert unsupported lamps into point light")
+
 	drawButtons()
 
 ## Draw Shader options ##
-#########################
-
 def drawShad():
 	global SHADTYPE, SHADOK
 	col=10; line=400; BGL.glRasterPos2i(col, line); Draw.Text("Specific instructions for exporting shaders:")
@@ -2155,11 +2141,10 @@ def drawShad():
 		col=10; line=225; BGL.glRasterPos2i(col, line); Draw.Text("IOR values, Ray Transp button must be on")
 	if SHADTYPE == 9:
 		col=10; line=250; BGL.glRasterPos2i(col, line); Draw.Text("Constant: shader name should start with 'sfcon' - imports Blender's Col RGB values")
+
 	drawButtons()
 
 ## Draw export and render options settings ##
-#############################################
-
 def drawRender():
 	global EXPORT, RENDER, SMALLMESH, NOGI, NOCAUSTICS, QUICKUV, QUICKNORM, QUICKID, QUICKPRIMS, QUICKGRAY, QUICKWIRE, QUICKOCC, QOCCDIST, FILETYPE, DEPTH_DIFF, DEPTH_REFL, DEPTH_REFR, QUICKOPT, EXP_ANIM, IPR, BUCKETSIZE, BUCKETTYPE, REVERSE
 	col=10; line=325; BGL.glRasterPos2i(col, line); Draw.Text("Rendering actions:")
@@ -2185,11 +2170,10 @@ def drawRender():
 	col=10; line=100; QUICKOCC=Draw.Toggle("Quick Amb Occ", QUICK_OCC, col, line, 85, 18, QUICKOCC.val, "Applies ambient occlusion to the scene with specified maximum distance")
 	col=100; QOCCDIST=Draw.Number("Distance", 2, col, line, 125, 18, QOCCDIST.val, 0.00, 1000.00)
 	col=10; line=75; EXP_ANIM=Draw.Toggle("Export As Animation", 2, col, line, 140, 18, EXP_ANIM.val, "Export the scene as animation")
+
 	drawButtons()
 
 ## Draw the SF configuration settings ##
-########################################
-
 def drawConfig():
 	global SET_PATH, THREADS, MEM, SET_JAVAPATH
         col=10; line = 315; BGL.glRasterPos2i(col, line); Draw.Text("ID properties for script settings:")
@@ -2223,11 +2207,10 @@ def drawConfig():
 	# If config file doesn't exist, issue a warning:
 	if trial == 0:
 		col=10; line = 105; BGL.glRasterPos2i(col, line); Draw.Text("Sunflow is not configured yet - set Memory, Number of Threads and Path to sunflow.jar")
+
 	drawButtons()
 
 ## Draw caustic and global illumination settings ##
-###################################################
-
 def drawGI():
 	global CAUSTICS, PHOTONNUMBER, PHOTONMAP, PHOTONESTIMATE, PHOTONRADIUS
 	global INSTANTGI, IGISAMPLES, IGISETS, IGIBIAS, IGIBIASSAMPLES
@@ -2237,6 +2220,7 @@ def drawGI():
 	global VIEWCAUSTICS, VIEWGLOBALS, VIEWGI
 	global OCCLUSION, OCCBRIGHT, OCCDARK, OCCSAMPLES, OCCDIST
 
+        # GI/Caustics part #
 	col=10; line=325; BGL.glRasterPos2i(col, line); Draw.Text("Caustics and Global Illumination")
 	col=10; line=300; CAUSTICS=Draw.Toggle("Caustics", EVENT_CAUSTICS, col, line, 85, 18, CAUSTICS.val, "Turn on caustics in the scene")
 	col=100; PHOTONNUMBER=Draw.Number("Photons", 2, col, line, 125, 18, PHOTONNUMBER.val, 0, 5000000)
@@ -2264,6 +2248,7 @@ def drawGI():
 	col=190; VIEWGLOBALS=Draw.Toggle("Just Globals", OVERRIDE_GLOBALS, col, line, 85, 18, VIEWGLOBALS.val, "Render only the global photons in the scene (Use Globals must be on)")
 	col=280; VIEWGI=Draw.Toggle("Just GI", OVERRIDE_GI, col, line, 85, 18, VIEWGI.val, "Render only the gi components in the scene (A GI engine must be selected)")
 
+        # AO part#
 	col=10; line=100; BGL.glRasterPos2i(col, line); Draw.Text("Ambient Occlusion")
 	col=10; line=75; OCCLUSION=Draw.Toggle("Amb Occ", 2, col, line, 85, 18, OCCLUSION.val, "Turn on ambient occlusion for the whole scene")
 	col=100; OCCBRIGHT=Draw.ColorPicker(2, 100, 75, 30, 18, OCCBRIGHT.val, "Ambient Occlusion bright color")
@@ -2274,8 +2259,6 @@ def drawGI():
 	drawButtons()
 
 ## Draw the bottom bar of buttons in the interface ##
-#####################################################
-
 def drawButtons():
 	Draw.Button("Configure SF", CHANGE_CFG, 20, 10, 90, 50)
 	Draw.Button("AA", CHANGE_AA, 115 , 40, 90, 20)
@@ -2286,6 +2269,9 @@ def drawButtons():
 	Draw.Button("Background", CHANGE_BCKGRD,305, 10, 90, 20)
 	Draw.Button("Render settings", CHANGE_EXP, 400, 10, 90, 50)
 
+####### Script Startup Section #######
+######################################
+	
 SCREEN=7
 auto_import()
 Draw.Register(drawGUI, event, buttonEvent)
