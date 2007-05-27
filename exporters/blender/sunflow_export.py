@@ -1,12 +1,12 @@
 #!BPY
 
 """
-Name: 'Sunflow Exporter 1.3.1 (.sc)...'
+Name: 'Sunflow Exporter 1.3.2 (.sc)...'
 Blender: 2.44
 Group: 'Export'
 Tip: 'Export to a Sunflow Scene File'
 
-Version         :       1.3.1 (May 2007)
+Version         :       1.3.2 (May 2007)
 Author          :       R Lindsay (hayfever) / Christopher Kulla / MADCello / 
 			olivS / Eugene Reilly / Heavily Tessellated / Humfred
 Description     :       Export to Sunflow renderer http://sunflow.sourceforge.net/
@@ -96,7 +96,7 @@ JAVAPATH = ""
 
 ## start of export ##
 print "\n\n"
-print "blend2sunflow v1.3.1"
+print "blend2sunflow v1.3.2"
 
 ## Default values of buttons ##
 def default_values():
@@ -1022,7 +1022,26 @@ def export_lights(lmp):
 		FILE.write("\tradius %s\n" % (radius))
 		FILE.write("\temit { \"sRGB nonlinear\" %s %s %s }\n" % (red, green, blue))
 		FILE.write("}")
+	elif lamp.type == 3:
+		print "  o exporting spherical light "+lmp.name+"..."
+		objmatrix = lmp.matrix
+		lampV = Mathutils.Vector([0, 0, 0, 1])
+		lampV = lampV * objmatrix
+		dist = lamp.getDist()
 
+		red   = lamp.col[0]
+		green = lamp.col[1]
+		blue  = lamp.col[2]
+		power = lamp.energy * LAMPPOWER.val
+
+		FILE.write("\n\nlight {\n")
+		FILE.write("\ttype spherical\n")
+		FILE.write("\tcolor { \"sRGB nonlinear\" %s %s %s }\n" % (red, green, blue))
+                FILE.write("\tradiance %s\n" % (power))
+                FILE.write("\tcenter %s %s %s\n" % (lampV[0], lampV[1], lampV[2]))
+                FILE.write("\tradius %s\n" % (dist))
+                FILE.write("\tsamples %s\n" % DSAMPLES.val)
+		FILE.write("}")
 	else:
 		print "Unsupported type lamp detected"
 		if CONVLAMP.val == 1:
