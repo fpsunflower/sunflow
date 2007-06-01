@@ -1,12 +1,12 @@
 #!BPY
 
 """
-Name: 'Sunflow Exporter 1.3.2 (.sc)...'
+Name: 'Sunflow Exporter 1.3.3 (.sc)...'
 Blender: 2.44
 Group: 'Export'
 Tip: 'Export to a Sunflow Scene File'
 
-Version         :       1.3.2 (May 2007)
+Version         :       1.3.3 (May 2007)
 Author          :       R Lindsay (hayfever) / Christopher Kulla / MADCello / 
 			olivS / Eugene Reilly / Heavily Tessellated / Humfred
 Description     :       Export to Sunflow renderer http://sunflow.sourceforge.net/
@@ -96,7 +96,7 @@ JAVAPATH = ""
 
 ## start of export ##
 print "\n\n"
-print "blend2sunflow v1.3.2"
+print "blend2sunflow v1.3.3"
 
 ## Default values of buttons ##
 def default_values():
@@ -805,7 +805,7 @@ def export_modifiers():
 			else:
 				pass
 
-                if textures[1] <> None and textures[1].tex.getType() <> "Image":
+                if textures[3] <> None and textures[1].tex.getType() <> "Image":
                         textu = textures[1]
                         Scale_value = str(textu.norfac)
                         if textu.tex.name.startswith("perlin"):
@@ -814,7 +814,7 @@ def export_modifiers():
                                         print "  o exporting modifier "+str(textu.tex.getName())+"..."
                                         FILE.write("\n\nmodifier {\n\tname "+str(textu.tex.getName())+"\n\ttype perlin\n")
                                         FILE.write("\tfunction 0\n")
-                                        FILE.write("\tsize 50\n")
+                                        FILE.write("\tsize 1\n")
                                         FILE.write("\tscale %s\n}\n" % Scale_value)
                         
                         else:
@@ -2019,38 +2019,36 @@ def buttonEvent(evt):
                 print "  o Default settings restored."
 		return
         if evt == IMPORT_ID:
-                if SCENE.properties.has_key('SceneProp'):
-                        print "  o Script settings found in .blend, importing to script..."
-                        import_output()
-                        import_gi()
-                        import_globalao()
-                        import_lights()
-                        import_camera()
-                        import_render()
-                        print "  o Finished importing script settings to script."
-                        return
-                else:
+                try: 
+                        if SCENE.properties['SceneProp'] == "true":
+                                print "  o Script settings found in .blend, importing to script..."
+                                import_output()
+                                import_gi()
+                                import_globalao()
+                                import_lights()
+                                import_camera()
+                                import_render()
+                except:
                         print "  o No script settings in .blend, using defaults."
                         default_values()
                         return
 
 # Same as the IMPORT_ID event, but needed it to be a function so we can load it on script start up #
 def auto_import():
-        if SCENE.properties.has_key('SceneProp'):
-                print "  o Script settings found in .blend, importing to script..."
                 default_values()
-                import_output()
-                import_gi()
-                import_globalao()
-                import_lights()
-                import_camera()
-                import_render()
-                print "  o Finished importing script settings to script."
-                return
-        else:
-                print "  o No script settings in .blend, using defaults."
-                default_values()
-                return
+                try: 
+                        if SCENE.properties['SceneProp'] == "true":
+                                print "  o Script settings found in .blend, importing to script..."
+                                import_output()
+                                import_gi()
+                                import_globalao()
+                                import_lights()
+                                import_camera()
+                                import_render()
+                except:
+                        print "  o No script settings in .blend, using defaults."
+                        default_values()
+                        return
 
 ####### Draw GUI Section #######
 ################################
@@ -2214,7 +2212,7 @@ def drawConfig():
         col=10; line = 315; BGL.glRasterPos2i(col, line); Draw.Text("ID properties for script settings:")
         col= 10; line = 285; Draw.Button("Send Script Settings", EXPORT_ID, col, line, 140,18, "Send script settings to the .blend")
         col= 155; Draw.Button("Restore Default Settings", DEFAULT_ID, col, line, 140,18, "Use script defaults")
-        col= 300; Draw.Button("Reload ID Settings", IMPORT_ID, col, line, 140,18, "Reload id properties from .blend")
+        col= 300; Draw.Button("Reload ID Settings", IMPORT_ID, col, line, 140,18, "Reload ID properties from .blend")
         col=10; line = 255; BGL.glRasterPos2i(col, line); Draw.Text("Settings needed to render directly from the script:")
 	col=155; line = 230; BGL.glRasterPos2i(col, line); Draw.Text("(threads=0 means auto-detect)")
 	col=10; line = 225; THREADS=Draw.Number("Threads", 2, col, line, 140, 18, THREADS.val, 0, 8)
