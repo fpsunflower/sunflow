@@ -1,12 +1,12 @@
 #!BPY
 
 """
-Name: 'Sunflow Exporter 1.3.4 (.sc)...'
+Name: 'Sunflow Exporter 1.3.5 (.sc)...'
 Blender: 2.44
 Group: 'Export'
 Tip: 'Export to a Sunflow Scene File'
 
-Version         :       1.3.4 (May 2007)
+Version         :       1.3.5 (May 2007)
 Author          :       R Lindsay (hayfever) / Christopher Kulla / MADCello / 
 			olivS / Eugene Reilly / Heavily Tessellated / Humfred
 Description     :       Export to Sunflow renderer http://sunflow.sourceforge.net/
@@ -96,7 +96,7 @@ JAVAPATH = ""
 
 ## start of export ##
 print "\n\n"
-print "blend2sunflow v1.3.4"
+print "blend2sunflow v1.3.5"
 
 ## Default values of buttons ##
 def default_values():
@@ -2263,7 +2263,7 @@ def drawGI():
 	col=10; line=275; INSTANTGI=Draw.Toggle("Instant GI", FORCE_INSTANTGI, col, line, 85, 18, INSTANTGI.val, "Enable Instant GI for GI in the scene")
 	col=100; IGISAMPLES=Draw.Number("Samples", 2, col, line, 125, 18, IGISAMPLES.val, 0, 1024)
 	col=230; IGISETS=Draw.Number("Number of Sets", 2, col, line, 125, 18, IGISETS.val, 1.0, 100.0)
-	col=100; line=250; IGIBIAS=Draw.Number("Bias", 2, col, line, 125, 18, IGIBIAS.val, 0.00, 10.00)
+	col=100; line=250; IGIBIAS=Draw.Number("Bias", 2, col, line, 125, 18, IGIBIAS.val, 0.000, 1.000)
 	col=230; IGIBIASSAMPLES=Draw.Number("Bias Samples", 2, col, line, 125, 18, IGIBIASSAMPLES.val, 0, 64)
 	col=10; line=225; IRRCACHE=Draw.Toggle("Irr. Cache", FORCE_IRRCACHE, col, line, 85, 18, IRRCACHE.val, "Enable Irradiance Caching for GI in the scene")
 	col=100; IRRSAMPLES=Draw.Number("Samples", 2, col, line, 125, 18, IRRSAMPLES.val, 0, 1024)
