@@ -1,12 +1,12 @@
 #!BPY
 
 """
-Name: 'Sunflow Exporter 1.3.5 (.sc)...'
+Name: 'Sunflow Exporter 1.3.6 (.sc)...'
 Blender: 2.44
 Group: 'Export'
 Tip: 'Export to a Sunflow Scene File'
 
-Version         :       1.3.5 (May 2007)
+Version         :       1.3.6 (May 2007)
 Author          :       R Lindsay (hayfever) / Christopher Kulla / MADCello / 
 			olivS / Eugene Reilly / Heavily Tessellated / Humfred
 Description     :       Export to Sunflow renderer http://sunflow.sourceforge.net/
@@ -96,7 +96,7 @@ JAVAPATH = ""
 
 ## start of export ##
 print "\n\n"
-print "blend2sunflow v1.3.5"
+print "blend2sunflow v1.3.6"
 
 ## Default values of buttons ##
 def default_values():
@@ -1656,7 +1656,7 @@ def import_render():
 # Export render values #                        
 def render():
 	global COMMAND, memory, threads, sfpath, trial, javapath, fname, destname, STARTFRAME, ENDFRAME
-	exportfile(fname)
+	#exportfile(fname)
 	destname = fname.replace(".sc", "")
 	STARTFRAME = SCENE.getRenderingContext().startFrame()
 	ENDFRAME  = SCENE.getRenderingContext().endFrame()
