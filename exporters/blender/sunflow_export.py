@@ -1,12 +1,12 @@
 #!BPY
 
 """
-Name: 'Sunflow Exporter 1.3.6 (.sc)...'
+Name: 'Sunflow Exporter 1.3.7 (.sc)...'
 Blender: 2.44
 Group: 'Export'
 Tip: 'Export to a Sunflow Scene File'
 
-Version         :       1.3.6 (May 2007)
+Version         :       1.3.7 (June 2007)
 Author          :       R Lindsay (hayfever) / Christopher Kulla / MADCello / 
 			olivS / Eugene Reilly / Heavily Tessellated / Humfred
 Description     :       Export to Sunflow renderer http://sunflow.sourceforge.net/
@@ -96,7 +96,7 @@ JAVAPATH = ""
 
 ## start of export ##
 print "\n\n"
-print "blend2sunflow v1.3.6"
+print "blend2sunflow v1.3.7"
 
 ## Default values of buttons ##
 def default_values():
@@ -185,7 +185,7 @@ def default_values():
         OCCBRIGHT = Draw.Create(1.0, 1.0, 1.0)
         OCCDARK = Draw.Create(0.0, 0.0, 0.0)
         OCCSAMPLES  = Draw.Create(32)
-        OCCDIST     = Draw.Create(0.0)
+        OCCDIST     = Draw.Create(3.0)
 
         # Shader panel values
         SHADTYPE = Draw.Create(1)
@@ -651,7 +651,7 @@ def export_shaders():
 				FILE.write("\ttexture \"" + textu.tex.getImage().getFilename() + "\"\n")
 				FILE.write("\tdark %s %s %s\n" % (speccol[0], speccol[1], speccol[2]))
 				FILE.write("\tsamples 32\n")
-				FILE.write("\tdist 0.0\n}")
+				FILE.write("\tdist 3.0\n}")
 				
 			# diffuse texture shader
 			elif mat.name.startswith("sfdif"):
@@ -725,7 +725,7 @@ def export_shaders():
 				FILE.write("\tbright %s %s %s\n" % (RGB[0], RGB[1], RGB[2]))
 				FILE.write("\tdark %s %s %s\n" % (speccol[0], speccol[1], speccol[2]))
 				FILE.write("\tsamples 32\n")
-				FILE.write("\tdist 0.0\n}")
+				FILE.write("\tdist 3.0\n}")
 				
 			## phong shader
 			elif mat.name.startswith("sfpho"):
