@@ -1,12 +1,12 @@
 #!BPY
 
 """
-Name: 'Sunflow Exporter 1.3.7 (.sc)...'
+Name: 'Sunflow Exporter 1.3.8 (.sc)...'
 Blender: 2.44
 Group: 'Export'
 Tip: 'Export to a Sunflow Scene File'
 
-Version         :       1.3.7 (June 2007)
+Version         :       1.3.8 (June 2007)
 Author          :       R Lindsay (hayfever) / Christopher Kulla / MADCello / 
 			olivS / Eugene Reilly / Heavily Tessellated / Humfred
 Description     :       Export to Sunflow renderer http://sunflow.sourceforge.net/
@@ -96,7 +96,7 @@ JAVAPATH = ""
 
 ## start of export ##
 print "\n\n"
-print "blend2sunflow v1.3.7"
+print "blend2sunflow v1.3.8"
 
 ## Default values of buttons ##
 def default_values():
@@ -339,13 +339,13 @@ def export_output():
                         horcol = world.getHor()
                         horcol0, horcol1, horcol2 = horcol[0], horcol[1], horcol[2]
                         FILE.write("background {\n")
-                        FILE.write("\tcolor  { \"sRGB nonlinear\" %s %s %s }\n" % (horcol0, horcol1, horcol2))
+                        FILE.write("\tcolor  { \"sRGB nonlinear\" %.3f %.3f %.3f }\n" % (horcol0, horcol1, horcol2))
                         FILE.write("}")
                         FILE.write("\n")
                 elif BACKGROUND.val == 1:
                 	print "o creating background..."
                         FILE.write("background {\n")
-                        FILE.write("\tcolor  { \"sRGB nonlinear\" %s %s %s }\n" % BCKGRD.val)
+                        FILE.write("\tcolor  { \"sRGB nonlinear\" %.3f %.3f %.3f }\n" % BCKGRD.val)
                         FILE.write("}")
                         FILE.write("\n")
                 if REVERSE.val == 0:
@@ -649,7 +649,7 @@ def export_shaders():
 				FILE.write("\tname \""+mat.name+".shader\"\n")
 				FILE.write("\ttype amb-occ\n")
 				FILE.write("\ttexture \"" + textu.tex.getImage().getFilename() + "\"\n")
-				FILE.write("\tdark %s %s %s\n" % (speccol[0], speccol[1], speccol[2]))
+				FILE.write("\tdark %.3f %.3f %.3f\n" % (speccol[0], speccol[1], speccol[2]))
 				FILE.write("\tsamples 32\n")
 				FILE.write("\tdist 3.0\n}")
 				
@@ -668,7 +668,7 @@ def export_shaders():
 				FILE.write("\tname \""+mat.name+".shader\"\n")
 				FILE.write("\ttype phong\n")
 				FILE.write("\ttexture \"" + textu.tex.getImage().getFilename() + "\"\n")
-				FILE.write("\tspec { \"sRGB nonlinear\" %s %s %s } %s\n" %(speccol[0], speccol[1], speccol[2], mat.hard))
+				FILE.write("\tspec { \"sRGB nonlinear\" %.3f %.3f %.3f } %s\n" %(speccol[0], speccol[1], speccol[2], mat.hard))
 				FILE.write("\tsamples 4\n}")
 				
 			# ward texture shader
@@ -679,7 +679,7 @@ def export_shaders():
 				FILE.write("\ttype ward\n")
 				FILE.write("\ttexture \"" + textu.tex.getImage().getFilename() + "\"\n")
 				speccol = mat.specCol
-				FILE.write("\tspec { \"sRGB nonlinear\" %s %s %s }\n" %(speccol[0], speccol[1], speccol[2]))
+				FILE.write("\tspec { \"sRGB nonlinear\" %.3f %.3f %.3f }\n" %(speccol[0], speccol[1], speccol[2]))
 				FILE.write("\trough .2 .01\n")
 				FILE.write("\tsamples 4\n}")
 
@@ -709,21 +709,21 @@ def export_shaders():
 			if mat.name.startswith("sfdif"):
 				print "  o exporting diffuse shader "+mat.name+"..."
 				FILE.write("\ttype diffuse\n")
-				FILE.write("\tdiff { \"sRGB nonlinear\" %s %s %s }\n}" % (RGB[0], RGB[1], RGB[2]))
+				FILE.write("\tdiff { \"sRGB nonlinear\" %.3f %.3f %.3f }\n}" % (RGB[0], RGB[1], RGB[2]))
 			
 			## shiny shader
 			elif mat.name.startswith("sfshi"):
 				print "  o exporting shiny shader "+mat.name+"..."
 				FILE.write("\ttype shiny\n")
-				FILE.write("\tdiff { \"sRGB nonlinear\" %s %s %s }\n" % (RGB[0], RGB[1], RGB[2]))
+				FILE.write("\tdiff { \"sRGB nonlinear\" %.3f %.3f %.3f }\n" % (RGB[0], RGB[1], RGB[2]))
 				FILE.write("\trefl %s\n}" % mat.getRayMirr())
 				
 			## amb-occ shader
 			elif mat.name.startswith("sfamb"):
 				print "  o exporting ambient occlusion shader "+mat.name+"..."
 				FILE.write("\ttype amb-occ\n")
-				FILE.write("\tbright %s %s %s\n" % (RGB[0], RGB[1], RGB[2]))
-				FILE.write("\tdark %s %s %s\n" % (speccol[0], speccol[1], speccol[2]))
+				FILE.write("\tbright %.3f %.3f %.3f\n" % (RGB[0], RGB[1], RGB[2]))
+				FILE.write("\tdark %.3f %.3f %.3f\n" % (speccol[0], speccol[1], speccol[2]))
 				FILE.write("\tsamples 32\n")
 				FILE.write("\tdist 3.0\n}")
 				
@@ -731,17 +731,17 @@ def export_shaders():
 			elif mat.name.startswith("sfpho"):
 				print "  o exporting phong shader "+ mat.name+"..."
 				FILE.write("\ttype phong\n")
-				FILE.write("\tdiff { \"sRGB nonlinear\" %s %s %s }\n" % (RGB[0],RGB[1],RGB[2]))
-				FILE.write("\tspec { \"sRGB nonlinear\" %s %s %s } %s\n" %(speccol[0], speccol[1], speccol[2], mat.hard))
+				FILE.write("\tdiff { \"sRGB nonlinear\" %.3f %.3f %.3f }\n" % (RGB[0],RGB[1],RGB[2]))
+				FILE.write("\tspec { \"sRGB nonlinear\" %.3f %.3f %.3f } %s\n" %(speccol[0], speccol[1], speccol[2], mat.hard))
 				FILE.write("\tsamples 4\n}")
 				
 			## ward shader
 			elif mat.name.startswith("sfwar"):
 				print "  o exporting ward shader "+ mat.name+"..."
 				FILE.write("\ttype ward\n")
-				FILE.write("\tdiff { \"sRGB nonlinear\" %s %s %s }\n" %(RGB[0],RGB[1],RGB[2]))
+				FILE.write("\tdiff { \"sRGB nonlinear\" %.3f %.3f %.3f }\n" %(RGB[0],RGB[1],RGB[2]))
 				speccol = mat.specCol
-				FILE.write("\tspec { \"sRGB nonlinear\" %s %s %s }\n" %(speccol[0], speccol[1], speccol[2]))
+				FILE.write("\tspec { \"sRGB nonlinear\" %.3f %.3f %.3f }\n" %(speccol[0], speccol[1], speccol[2]))
 				FILE.write("\trough .2 .01\n")
 				FILE.write("\tsamples 4\n}")
 
@@ -749,28 +749,28 @@ def export_shaders():
 			elif mat.name.startswith("sfmir") and flags & Material.Modes['RAYMIRROR']:
 				print "  o exporting mirror shader "+mat.name+"..."
 				FILE.write("\ttype mirror\n")
-				FILE.write("\trefl { \"sRGB nonlinear\" %s %s %s }\n}" %(RGB[0],RGB[1],RGB[2]))
+				FILE.write("\trefl { \"sRGB nonlinear\" %.3f %.3f %.3f }\n}" %(RGB[0],RGB[1],RGB[2]))
 				
 			## glass shader
 			elif mat.name.startswith("sfgla") and flags & Material.Modes['RAYTRANSP']:
 				print "  o exporting glass shader "+mat.name+"..."
 				FILE.write("\ttype glass\n")
 				FILE.write("\teta " + str(mat.getIOR()) + "\n")
-				FILE.write("\tcolor { \"sRGB nonlinear\" %s %s %s }\n" %(RGB[0],RGB[1],RGB[2]))
+				FILE.write("\tcolor { \"sRGB nonlinear\" %.3f %.3f %.3f }\n" %(RGB[0],RGB[1],RGB[2]))
 				FILE.write("\tabsorbtion.distance 5.0\n")
-				FILE.write("\tabsorbtion.color { \"sRGB nonlinear\" %s %s %s }\n}" %(speccol[0], speccol[1], speccol[2]))
+				FILE.write("\tabsorbtion.color { \"sRGB nonlinear\" %.3f %.3f %.3f }\n}" %(speccol[0], speccol[1], speccol[2]))
 				
 			## constant shader
 			elif mat.name.startswith("sfcon"):
 				print "  o exporting constant shader "+mat.name+"..."
 				FILE.write("\ttype constant\n")
-				FILE.write("\tcolor { \"sRGB nonlinear\" %s %s %s }\n}" % (RGB[0], RGB[1], RGB[2]))
+				FILE.write("\tcolor { \"sRGB nonlinear\" %.3f %.3f %.3f }\n}" % (RGB[0], RGB[1], RGB[2]))
 
 			## newcommers default diffuse shader
 			else:
 				print "  o exporting default diffuse shader "+mat.name+"..."
 				FILE.write("\ttype diffuse\n")
-				FILE.write("\tdiff { \"sRGB nonlinear\" %s %s %s }\n}" % (RGB[0], RGB[1], RGB[2]))
+				FILE.write("\tdiff { \"sRGB nonlinear\" %.3f %.3f %.3f }\n}" % (RGB[0], RGB[1], RGB[2]))
 
 ## Export modifiers ##
 def export_modifiers():
