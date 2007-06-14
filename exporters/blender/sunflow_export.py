@@ -1,12 +1,12 @@
 #!BPY
 
 """
-Name: 'Sunflow Exporter 1.3.8 (.sc)...'
+Name: 'Sunflow Exporter 1.3.9 (.sc)...'
 Blender: 2.44
 Group: 'Export'
 Tip: 'Export to a Sunflow Scene File'
 
-Version         :       1.3.8 (June 2007)
+Version         :       1.3.9 (June 2007)
 Author          :       R Lindsay (hayfever) / Christopher Kulla / MADCello / 
 			olivS / Eugene Reilly / Heavily Tessellated / Humfred
 Description     :       Export to Sunflow renderer http://sunflow.sourceforge.net/
@@ -96,7 +96,7 @@ JAVAPATH = ""
 
 ## start of export ##
 print "\n\n"
-print "blend2sunflow v1.3.8"
+print "blend2sunflow v1.3.9"
 
 ## Default values of buttons ##
 def default_values():
@@ -614,7 +614,7 @@ def export_shaders():
 			FILE.write("\ttype uber\n")
 			
 			# DIFF values
-			FILE.write("\tdiff %s %s %s\n" % (RGB[0], RGB[1], RGB[2]))
+			FILE.write("\tdiff %.3f %.3f %.3f\n" % (RGB[0], RGB[1], RGB[2]))
 			if textures[0] <> None and textures[0].tex.getType() == "Image" and textu.tex.getImage() != None:
 				FILE.write("\tdiff.texture \"" + textu.tex.getImage().getFilename() + "\"\n")
 			else:
@@ -622,7 +622,7 @@ def export_shaders():
 			FILE.write("\tdiff.blend %s\n" % (colvalue * 1.0))
 			
 			# SPEC values
-			FILE.write("\tspec %s %s %s\n" % (speccol[0], speccol[1], speccol[2]))
+			FILE.write("\tspec %.3f %.3f %.3f\n" % (speccol[0], speccol[1], speccol[2]))
 			if textures[2] <> None and textures[2].tex.getType() == "Image" and textu2.tex.getImage() != None:
 				FILE.write("\tspec.texture \"" + textu2.tex.getImage().getFilename() + "\"\n")
 			else:
@@ -921,7 +921,7 @@ def export_lights(lmp):
 
 		FILE.write("\n\nlight {\n")
 		FILE.write("\ttype point\n")
-		FILE.write("\tcolor { \"sRGB nonlinear\" %s %s %s }\n" % (red, green, blue))
+		FILE.write("\tcolor { \"sRGB nonlinear\" %.3f %.3f %.3f }\n" % (red, green, blue))
 		FILE.write("\tpower %s\n" % (power))
 		FILE.write("\tp %s %s %s\n" % (lampV[0], lampV[1], lampV[2]))
 		FILE.write("}")
@@ -952,7 +952,7 @@ def export_lights(lmp):
 
 			FILE.write("\n\nlight {\n")
 			FILE.write("\ttype point\n")
-			FILE.write("\tcolor { \"sRGB nonlinear\" %s %s %s }\n" % (red, green, blue))
+			FILE.write("\tcolor { \"sRGB nonlinear\" %.3f %.3f %.3f }\n" % (red, green, blue))
 			FILE.write("\tpower %s\n" % (power))
 			FILE.write("\tp %s %s %s\n" % (lampV[0], lampV[1], lampV[2]))
 			FILE.write("}")
@@ -987,7 +987,7 @@ def export_lights(lmp):
 		FILE.write("\n\nlight {\n")
 		FILE.write("\ttype meshlight\n")
 		FILE.write("\tname \"%s\"\n" % (lmp.name))
-		FILE.write("\temit { \"sRGB nonlinear\" %s %s %s }\n" % (red, green, blue))
+		FILE.write("\temit { \"sRGB nonlinear\" %.3f %.3f %.3f }\n" % (red, green, blue))
 		FILE.write("\tradiance %s\n" % (radiance))
 		FILE.write("\tsamples %s\n" % DSAMPLES.val)
 		FILE.write("\tpoints 4\n")
@@ -1020,7 +1020,7 @@ def export_lights(lmp):
 		FILE.write("\tsource %s %s %s\n" % (lampV[0], lampV[1], lampV[2]))
 		FILE.write("\ttarget %s %s %s\n" % (targetV[0], targetV[1], targetV[2]))
 		FILE.write("\tradius %s\n" % (radius))
-		FILE.write("\temit { \"sRGB nonlinear\" %s %s %s }\n" % (red, green, blue))
+		FILE.write("\temit { \"sRGB nonlinear\" %.3f %.3f %.3f }\n" % (red, green, blue))
 		FILE.write("}")
 	elif lamp.type == 3:
 		print "  o exporting spherical light "+lmp.name+"..."
@@ -1036,7 +1036,7 @@ def export_lights(lmp):
 
 		FILE.write("\n\nlight {\n")
 		FILE.write("\ttype spherical\n")
-		FILE.write("\tcolor { \"sRGB nonlinear\" %s %s %s }\n" % (red, green, blue))
+		FILE.write("\tcolor { \"sRGB nonlinear\" %.3f %.3f %.3f }\n" % (red, green, blue))
                 FILE.write("\tradiance %s\n" % (power))
                 FILE.write("\tcenter %s %s %s\n" % (lampV[0], lampV[1], lampV[2]))
                 FILE.write("\tradius %s\n" % (dist))
@@ -1059,7 +1059,7 @@ def export_lights(lmp):
 
 			FILE.write("\n\nlight {\n")
 			FILE.write("\ttype point\n")
-			FILE.write("\tcolor { \"sRGB nonlinear\" %s %s %s }\n" % (red, green, blue))
+			FILE.write("\tcolor { \"sRGB nonlinear\" %.3f %.3f %.3f }\n" % (red, green, blue))
 			FILE.write("\tpower %s\n" % (power))
 			FILE.write("\tp %s %s %s\n" % (lampV[0], lampV[1], lampV[2]))
 			FILE.write("}")
@@ -1234,7 +1234,7 @@ def export_geometry(obj):
                                 FILE.write("\tname \"" + obj.name + "\"\n")
                                 if len(mesh.materials) >= 1:
                                         matrl = mesh.materials[0]
-                                        FILE.write("\temit { \"sRGB nonlinear\" %s %s %s }\n" % (matrl.R, matrl.G, matrl.B))
+                                        FILE.write("\temit { \"sRGB nonlinear\" %.3f %.3f %.3f }\n" % (matrl.R, matrl.G, matrl.B))
                                 else:
                                         FILE.write("\temit 1 1 1\n")
                                 FILE.write("\tradiance %s\n" % (MESHLIGHTPOWER.val))
