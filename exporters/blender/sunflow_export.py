@@ -1,12 +1,12 @@
 #!BPY
 
 """
-Name: 'Sunflow Exporter 1.3.9 (.sc)...'
+Name: 'Sunflow Exporter 1.3.10 (.sc)...'
 Blender: 2.44
 Group: 'Export'
 Tip: 'Export to a Sunflow Scene File'
 
-Version         :       1.3.9 (June 2007)
+Version         :       1.3.10 (June 2007)
 Author          :       R Lindsay (hayfever) / Christopher Kulla / MADCello / 
 			olivS / Eugene Reilly / Heavily Tessellated / Humfred
 Description     :       Export to Sunflow renderer http://sunflow.sourceforge.net/
@@ -96,7 +96,7 @@ JAVAPATH = ""
 
 ## start of export ##
 print "\n\n"
-print "blend2sunflow v1.3.9"
+print "blend2sunflow v1.3.10"
 
 ## Default values of buttons ##
 def default_values():
@@ -1239,6 +1239,31 @@ def export_geometry(obj):
                                         FILE.write("\temit 1 1 1\n")
                                 FILE.write("\tradiance %s\n" % (MESHLIGHTPOWER.val))
                                 FILE.write("\tsamples %s\n" % DSAMPLES.val)
+                                FILE.write("\tpoints %d\n" % (numverts))
+                                for vert in verts:
+                                        FILE.write("\t\t%s %s %s\n" % (vert.co[0], vert.co[1], vert.co[2]))
+                                numtris = 0
+                                for face in faces:
+                                        num = len(face.verts)
+                                        if num == 4:
+                                                numtris = numtris + 2
+                                        elif num == 3:
+                                                numtris = numtris + 1
+                                FILE.write("\ttriangles %d\n" % (numtris))
+                                allsmooth = True
+                                allflat = True
+                                for face in faces:
+                                        num = len(face.verts)
+                                        smooth = face.smooth <> 0
+                                        allsmooth &= smooth
+                                        allflat &= not smooth
+                                        if num == 4:
+                                                FILE.write("\t\t%d %d %d\n" % (face.verts[0].index, face.verts[1].index, face.verts[2].index))
+                                                FILE.write("\t\t%d %d %d\n" % (face.verts[0].index, face.verts[2].index, face.verts[3].index))
+                                        elif num == 3:
+                                                FILE.write("\t\t%d %d %d\n" % (face.verts[0].index, face.verts[1].index, face.verts[2].index))
+                                FILE.write("}")
+
                         else:
                                 FILE.write("\n\nobject {\n")
                                 if len(mesh.materials) == 1:
