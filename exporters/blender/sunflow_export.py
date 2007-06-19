@@ -1,12 +1,12 @@
 #!BPY
 
 """
-Name: 'Sunflow Exporter 1.3.10 (.sc)...'
+Name: 'Sunflow Exporter 1.4.1 (.sc)...'
 Blender: 2.44
 Group: 'Export'
 Tip: 'Export to a Sunflow Scene File'
 
-Version         :       1.3.10 (June 2007)
+Version         :       1.4.1 (June 2007)
 Author          :       R Lindsay (hayfever) / Christopher Kulla / MADCello / 
 			olivS / Eugene Reilly / Heavily Tessellated / Humfred
 Description     :       Export to Sunflow renderer http://sunflow.sourceforge.net/
@@ -85,6 +85,8 @@ DEFAULT_ID = 41
 IP_COLOR = 42
 BUCKET_EVENT = 43
 IMPORT_ID = 44
+FORCE_OCCLUSION = 45
+FORCE_FAKEAMB = 46
 
 ## global vars ##
 global FILE, SCENE, IM_HEIGHT, IM_WIDTH, TEXTURES, OBJECTS, IBLLIGHT, LAYERS, SCREEN, SCENE
@@ -96,7 +98,7 @@ JAVAPATH = ""
 
 ## start of export ##
 print "\n\n"
-print "blend2sunflow v1.3.10"
+print "blend2sunflow v1.4.1"
 
 ## Default values of buttons ##
 def default_values():
@@ -108,7 +110,7 @@ def default_values():
         IRRSPACEMIN, IRRSPACEMAX, USEGLOBALS, gPHOTONNUMBER, gPHOTONMAP, gPHOTONESTIMATE, gPHOTONRADIUS, PATHTRACE,\
         PATHSAMPLES, VIEWCAUSTICS, VIEWGLOBALS, VIEWGI, OCCLUSION, OCCBRIGHT, OCCDARK, OCCSAMPLES, OCCDIST,\
         SHADTYPE, QUICKOPT, IPR, EXP_ANIM, DEPTH_DIFF, DEPTH_REFL, DEPTH_REFR, NOGI, NOCAUSTICS, QUICKOCC, QOCCDIST,\
-        NOGUI, SMALLMESH, IMGFILTERLIST, BUCKETTYPELIST, PHOTONMAPLIST, gPHOTONMAPLIST
+        NOGUI, SMALLMESH, IMGFILTERLIST, BUCKETTYPELIST, PHOTONMAPLIST, gPHOTONMAPLIST, FAKEAMB, FAMBSKY, FAMBGROUND
 
         FILETYPE = Draw.Create(1)
 
@@ -184,8 +186,11 @@ def default_values():
         OCCLUSION = Draw.Create(0)
         OCCBRIGHT = Draw.Create(1.0, 1.0, 1.0)
         OCCDARK = Draw.Create(0.0, 0.0, 0.0)
-        OCCSAMPLES  = Draw.Create(32)
-        OCCDIST     = Draw.Create(3.0)
+        OCCSAMPLES = Draw.Create(32)
+        OCCDIST = Draw.Create(3.0)
+        FAKEAMB = Draw.Create(0)
+        FAMBSKY = Draw.Create(1.0, 1.0, 1.0)
+        FAMBGROUND = Draw.Create(0.0, 0.0, 0.0) 
 
         # Shader panel values
         SHADTYPE = Draw.Create(1)
@@ -325,6 +330,11 @@ def export_output():
                 	FILE.write("\tjitter true\n")
                 FILE.write("}")
                 FILE.write("\n")
+
+                #Infinite Plane
+                if INFINITEPLANE.val == 1:
+                        FILE.write("\n\nshader {\n\tname iplane\n\ttype diffuse\n")
+                        FILE.write("\tdiff %s %s %s \n}" % IPLANECOLOR.val)
 	
                 print "o exporting trace-depths options..."
                 FILE.write("trace-depths {\n")
@@ -398,6 +408,20 @@ def def_gi():
 		SCENE.properties['Path Tracing Samples'] = PATHSAMPLES.val
 	else:
 		SCENE.properties['Path Tracing'] = "false"
+	if OCCLUSION.val ==1:
+                SCENE.properties['Global AO'] = "true"
+                SCENE.properties['Global AO Bright'] = OCCBRIGHT.val
+                SCENE.properties['Global AO Dark'] = OCCDARK.val
+                SCENE.properties['Global AO Samples'] = OCCSAMPLES.val
+                SCENE.properties['Global AO Distance'] = OCCDIST.val
+	else:
+               SCENE.properties['Global AO'] = "false"
+        if FAKEAMB.val ==1:
+                SCENE.properties['Fake Ambient Term'] = "true"
+                SCENE.properties['Fake Ambient Term Sky'] = FAMBSKY.val
+                SCENE.properties['Fake Ambient Term Ground'] = FAMBGROUND.val
+	else:
+               SCENE.properties['Fake Ambient Term'] = "false"
 	if VIEWCAUSTICS.val == 1:
 		SCENE.properties['View Caustics'] = "true"
 	else:
@@ -462,6 +486,24 @@ def import_gi():
                 else:
                         PATHTRACE.val = 0
                         Draw.Redraw()
+                if SCENE.properties['Global AO'] == "true":
+                        OCCLUSION.val = 1
+                        OCCBRIGHT.val = SCENE.properties['Global AO Bright'][0], SCENE.properties['Global AO Bright'][1], SCENE.properties['Global AO Bright'][2]
+                        OCCDARK.val = SCENE.properties['Global AO Dark'][0], SCENE.properties['Global AO Dark'][1], SCENE.properties['Global AO Dark'][2]
+                        OCCSAMPLES.val = SCENE.properties['Global AO Samples']
+                        OCCDIST.val = SCENE.properties['Global AO Distance']
+                        Draw.Redraw()
+                else:
+                        OCCLUSION.val = 0
+                        Draw.Redraw()
+                if SCENE.properties['Fake Ambient Term'] == "true":
+                        FAKEAMB.val = 1
+                        FAMBSKY.val = SCENE.properties['Fake Ambient Term Sky'][0], SCENE.properties['Fake Ambient Term Sky'][1], SCENE.properties['Fake Ambient Term Sky'][2]
+                        FAMBGROUND.val = SCENE.properties['Fake Ambient Term Ground'][0], SCENE.properties['Fake Ambient Term Ground'][1], SCENE.properties['Fake Ambient Term Ground'][2]
+                        Draw.Redraw()
+                else:
+                        FAKEAMB.val = 0
+                        Draw.Redraw() 
                 if SCENE.properties['View Caustics'] == "true":
                         VIEWCAUSTICS.val = 1
                         Draw.Redraw()
@@ -524,6 +566,24 @@ def export_gi():
         		FILE.write("\ttype path\n")
         		FILE.write("\tsamples %s\n" % PATHSAMPLES.val)
         		FILE.write("}\n")
+        	#Ambient Occlusion GI Settings
+        	if OCCLUSION.val == 1:
+                        print "o exporting Ambient Occlusion GI settings..."
+                        FILE.write("\n\ngi {\n")
+                        FILE.write("\ttype ambocc\n")
+                        FILE.write("\tbright { \"sRGB nonlinear\" %s %s %s }\n" % OCCBRIGHT.val)
+                        FILE.write("\tdark { \"sRGB nonlinear\" %s %s %s }\n" % OCCDARK.val)
+                        FILE.write("\tsamples %s\n" % OCCSAMPLES.val)
+                        FILE.write("\tmaxdist %s\n}" % OCCDIST.val)
+                #Fake Ambient Term GI Settings
+        	if FAKEAMB.val == 1:
+                        print "o exporting Fake Ambient Term GI settings..."
+                        FILE.write("\n\ngi {\n")
+                        FILE.write("\ttype fake\n")
+                        FILE.write("\tup 0 1 0\n")
+                        FILE.write("\tsky { \"sRGB nonlinear\" %s %s %s }\n" % FAMBSKY.val)
+                        FILE.write("\tground { \"sRGB nonlinear\" %s %s %s }\n" % FAMBGROUND.val)
+                        FILE.write("\n}")
         	#View Overrides
                 if VIEWCAUSTICS.val == 1:
         		print "o exporting caustic override..."
@@ -547,49 +607,10 @@ def export_gi():
         		FILE.write("}\n")
         		FILE.write("override debug_gi false\n")
 
-## Shader and AO settings ##
-# Send AO values to Blender as IDs #
-def def_globalao():
-        #Writes ID values for the global ao values
-        if OCCLUSION.val ==1:
-                SCENE.properties['Global AO'] = "true"
-                SCENE.properties['Global AO Bright'] = OCCBRIGHT.val
-                SCENE.properties['Global AO Dark'] = OCCDARK.val
-                SCENE.properties['Global AO Samples'] = OCCSAMPLES.val
-                SCENE.properties['Global AO Distance'] = OCCDIST.val
-	else:
-               SCENE.properties['Global AO'] = "false"
-
-# Import AO values from Blender IDs to script #
-def import_globalao():
-        # Retrieve Blender's global ID values
-        if SCENE.properties['SceneProp'] == "true":
-                if SCENE.properties['Global AO'] == "true":
-                        OCCLUSION.val = 1
-                        OCCBRIGHT.val = SCENE.properties['Global AO Bright'][0], SCENE.properties['Global AO Bright'][1], SCENE.properties['Global AO Bright'][2]
-                        OCCDARK.val = SCENE.properties['Global AO Dark'][0], SCENE.properties['Global AO Dark'][1], SCENE.properties['Global AO Dark'][2]
-                        OCCSAMPLES.val = SCENE.properties['Global AO Samples']
-                        OCCDIST.val = SCENE.properties['Global AO Distance']
-                        Draw.Redraw()
-                else:
-                        OCCLUSION.val = 0
-                        Draw.Redraw()    
-
 def export_shaders():
 	print "o exporting shaders..."
 	# default shader
 	FILE.write("\n\nshader {\n\tname def\n\ttype diffuse\n\tdiff 1 1 1\n}")
-	if INFINITEPLANE.val == 1:
-		FILE.write("\n\nshader {\n\tname iplane\n\ttype diffuse\n")
-		FILE.write("\tdiff %s %s %s \n}" % IPLANECOLOR.val)
-	if OCCLUSION.val == 1:
-		FILE.write("\n\nshader {\n   name amboccshader\n   type amb-occ2\n")
-		FILE.write("\tbright { \"sRGB nonlinear\" %s %s %s }\n" % OCCBRIGHT.val)
-		FILE.write("\tdark { \"sRGB nonlinear\" %s %s %s }\n" % OCCDARK.val)
-		FILE.write("\tsamples %s\n" % OCCSAMPLES.val)
-		FILE.write("\tdist %s\n}" % OCCDIST.val)
-		FILE.write("\n\noverride amboccshader true")
-
 	materials = Blender.Material.get()
 
 	for mat in materials:
@@ -1838,11 +1859,17 @@ def buttonEvent(evt):
 			if PATHTRACE.val == 1:
 				PATHTRACE.val = 0
 				Draw.Redraw()
-		if INSTANTGI.val == 0 and IRRCACHE.val == 0 and PATHTRACE.val == 0:
+			if OCCLUSION.val == 1:
+				OCCLUSION.val = 0
+				Draw.Redraw()
+			if FAKEAMB.val == 1:
+				FAKEAMB.val = 0
+				Draw.Redraw()
+		if INSTANTGI.val == 0 and IRRCACHE.val == 0 and PATHTRACE.val == 0 and OCCLUSION.val == 0 and FAKEAMB.val == 0:
 			if VIEWGI.val == 1:
 				VIEWGI.val = 0
 				Draw.Redraw()
-		if INSTANTGI.val == 1 or PATHTRACE.val == 1:
+		if INSTANTGI.val == 1 or PATHTRACE.val == 1 or OCCLUSION.val == 1 or FAKEAMB.val == 1:
 			if VIEWGLOBALS.val == 1:
 				VIEWGLOBALS.val = 0
 				Draw.Redraw()
@@ -1854,11 +1881,17 @@ def buttonEvent(evt):
 			if PATHTRACE.val == 1:
 				PATHTRACE.val = 0
 				Draw.Redraw()
+			if OCCLUSION.val == 1:
+				OCCLUSION.val = 0
+				Draw.Redraw()
+			if FAKEAMB.val == 1:
+				FAKEAMB.val = 0
+				Draw.Redraw()
 		if IRRCACHE.val == 0:
 			if USEGLOBALS.val == 1:
 				USEGLOBALS.val = 0
 				Draw.Redraw()
-	if INSTANTGI.val == 0 and IRRCACHE.val == 0 and PATHTRACE.val == 0:
+	if INSTANTGI.val == 0 and IRRCACHE.val == 0 and PATHTRACE.val == 0 and OCCLUSION.val == 0 and FAKEAMB.val == 0:
 			if VIEWGI.val == 1:
 				VIEWGI.val = 0
 				Draw.Redraw()
@@ -1873,11 +1906,67 @@ def buttonEvent(evt):
 			if INSTANTGI.val == 1:
 				INSTANTGI.val = 0
 				Draw.Redraw()
-		if INSTANTGI.val == 0 and IRRCACHE.val == 0 and PATHTRACE.val == 0:
+			if OCCLUSION.val == 1:
+				OCCLUSION.val = 0
+				Draw.Redraw()
+			if FAKEAMB.val == 1:
+				FAKEAMB.val = 0
+				Draw.Redraw()
+		if INSTANTGI.val == 0 and IRRCACHE.val == 0 and PATHTRACE.val == 0 and OCCLUSION.val == 0 and FAKEAMB.val == 0:
 			if VIEWGI.val == 1:
 				VIEWGI.val = 0
 				Draw.Redraw()
-		if INSTANTGI.val == 1 or PATHTRACE.val == 1:
+		if INSTANTGI.val == 1 or PATHTRACE.val == 1 or OCCLUSION.val == 1 or FAKEAMB.val == 1:
+			if VIEWGLOBALS.val == 1:
+				VIEWGLOBALS.val = 0
+				Draw.Redraw()
+	if evt == FORCE_OCCLUSION:
+		if OCCLUSION.val == 1:
+			if IRRCACHE.val == 1:
+				IRRCACHE.val = 0
+				Draw.Redraw()
+			if USEGLOBALS.val == 1:
+				USEGLOBALS.val = 0
+				Draw.Redraw()
+			if INSTANTGI.val == 1:
+				INSTANTGI.val = 0
+				Draw.Redraw()
+			if PATHTRACE.val == 1:
+				PATHTRACE.val = 0
+				Draw.Redraw()
+			if FAKEAMB.val == 1:
+				FAKEAMB.val = 0
+				Draw.Redraw()
+		if INSTANTGI.val == 0 and IRRCACHE.val == 0 and PATHTRACE.val == 0 and OCCLUSION.val == 0 and FAKEAMB.val == 0:
+			if VIEWGI.val == 1:
+				VIEWGI.val = 0
+				Draw.Redraw()
+		if INSTANTGI.val == 1 or PATHTRACE.val == 1 or OCCLUSION.val == 1 or FAKEAMB.val == 1:
+			if VIEWGLOBALS.val == 1:
+				VIEWGLOBALS.val = 0
+				Draw.Redraw()
+	if evt == FORCE_FAKEAMB:
+		if FAKEAMB.val == 1:
+			if IRRCACHE.val == 1:
+				IRRCACHE.val = 0
+				Draw.Redraw()
+			if USEGLOBALS.val == 1:
+				USEGLOBALS.val = 0
+				Draw.Redraw()
+			if INSTANTGI.val == 1:
+				INSTANTGI.val = 0
+				Draw.Redraw()
+			if PATHTRACE.val == 1:
+				PATHTRACE.val = 0
+				Draw.Redraw()
+			if OCCLUSION.val == 1:
+				OCCLUSION.val = 0
+				Draw.Redraw()
+		if INSTANTGI.val == 0 and IRRCACHE.val == 0 and PATHTRACE.val == 0 and OCCLUSION.val == 0 and FAKEAMB.val == 0:
+			if VIEWGI.val == 1:
+				VIEWGI.val = 0
+				Draw.Redraw()
+		if INSTANTGI.val == 1 or PATHTRACE.val == 1 or OCCLUSION.val == 1 or FAKEAMB.val == 1:
 			if VIEWGLOBALS.val == 1:
 				VIEWGLOBALS.val = 0
 				Draw.Redraw()
@@ -1897,7 +1986,7 @@ def buttonEvent(evt):
 			if VIEWGLOBALS.val == 1:
 				VIEWGLOBALS.val = 0
 				Draw.Redraw()
-		if INSTANTGI.val == 0 and IRRCACHE.val == 0 and PATHTRACE.val == 0:
+		if INSTANTGI.val == 0 and IRRCACHE.val == 0 and PATHTRACE.val == 0 and OCCLUSION.val == 0 and FAKEAMB.val == 0:
 			if VIEWGI.val == 1:
 				VIEWGI.val = 0
 				Draw.Redraw()
@@ -1917,7 +2006,7 @@ def buttonEvent(evt):
 				VIEWGLOBALS.val = 0
 				Draw.Redraw()
 	if evt == OVERRIDE_GI:
-		if INSTANTGI.val == 0 and IRRCACHE.val == 0 and PATHTRACE.val == 0:
+		if INSTANTGI.val == 0 and IRRCACHE.val == 0 and PATHTRACE.val == 0 and OCCLUSION.val == 0 and FAKEAMB.val == 0:
 			if VIEWGI.val == 1:
 				VIEWGI.val = 0
 				Draw.Redraw()
@@ -2033,7 +2122,6 @@ def buttonEvent(evt):
                 print "  o Sending script settings to .blend..."
 		def_output()
 		def_gi()
-		def_globalao()
 		def_lights()
 		def_camera()
 		def_render()
@@ -2049,7 +2137,6 @@ def buttonEvent(evt):
                                 print "  o Script settings found in .blend, importing to script..."
                                 import_output()
                                 import_gi()
-                                import_globalao()
                                 import_lights()
                                 import_camera()
                                 import_render()
@@ -2066,7 +2153,6 @@ def auto_import():
                                 print "  o Script settings found in .blend, importing to script..."
                                 import_output()
                                 import_gi()
-                                import_globalao()
                                 import_lights()
                                 import_camera()
                                 import_render()
@@ -2277,19 +2363,23 @@ def drawGI():
 	global PATHTRACE, PATHSAMPLES
 	global VIEWCAUSTICS, VIEWGLOBALS, VIEWGI
 	global OCCLUSION, OCCBRIGHT, OCCDARK, OCCSAMPLES, OCCDIST
+	global FAKEAMB, FAMBSKY, FAMBGROUND
 
         # GI/Caustics part #
 	col=10; line=325; BGL.glRasterPos2i(col, line); Draw.Text("Caustics and Global Illumination")
+        #Caustics#
 	col=10; line=300; CAUSTICS=Draw.Toggle("Caustics", EVENT_CAUSTICS, col, line, 85, 18, CAUSTICS.val, "Turn on caustics in the scene")
 	col=100; PHOTONNUMBER=Draw.Number("Photons", 2, col, line, 125, 18, PHOTONNUMBER.val, 0, 5000000)
 	col=230; PHOTONMAP=Draw.Menu("%tCaustics Photon Map|kd", PHOTON_EVENT, col, line, 60, 18, PHOTONMAP.val)
 	col=295; PHOTONESTIMATE=Draw.Number("Photon Estim.", 2, col, line, 125, 18, PHOTONESTIMATE.val, 0, 1000)
 	col=425; PHOTONRADIUS=Draw.Number("Photon Radius", 2, col, line, 125, 18, PHOTONRADIUS.val, 0.00, 10.00)
+        #Instant GI#
 	col=10; line=275; INSTANTGI=Draw.Toggle("Instant GI", FORCE_INSTANTGI, col, line, 85, 18, INSTANTGI.val, "Enable Instant GI for GI in the scene")
 	col=100; IGISAMPLES=Draw.Number("Samples", 2, col, line, 125, 18, IGISAMPLES.val, 0, 1024)
 	col=230; IGISETS=Draw.Number("Number of Sets", 2, col, line, 125, 18, IGISETS.val, 1.0, 100.0)
 	col=100; line=250; IGIBIAS=Draw.Number("Bias", 2, col, line, 125, 18, IGIBIAS.val, 0.000, 1.000)
 	col=230; IGIBIASSAMPLES=Draw.Number("Bias Samples", 2, col, line, 125, 18, IGIBIASSAMPLES.val, 0, 64)
+        #Irradiance Caching#
 	col=10; line=225; IRRCACHE=Draw.Toggle("Irr. Cache", FORCE_IRRCACHE, col, line, 85, 18, IRRCACHE.val, "Enable Irradiance Caching for GI in the scene")
 	col=100; IRRSAMPLES=Draw.Number("Samples", 2, col, line, 125, 18, IRRSAMPLES.val, 0, 1024)
 	col=230; IRRTOLERANCE=Draw.Number("Tolerance", 2, col, line, 125, 18, IRRTOLERANCE.val, 0.0, 0.10)
@@ -2300,20 +2390,23 @@ def drawGI():
 	col=230; gPHOTONMAP=Draw.Menu("%tGlobal Photon Map|kd|grid", gPHOTON_EVENT, col, line, 60, 18, gPHOTONMAP.val)
 	col=295; gPHOTONESTIMATE=Draw.Number("Global Estim.", 2, col, line, 125, 18, gPHOTONESTIMATE.val, 0, 1000)
 	col=425; gPHOTONRADIUS=Draw.Number("Global Radius", 2, col, line, 125, 18, gPHOTONRADIUS.val, 0.00, 10.00)
+        #Path Tracing#
 	col=10; line=150; PATHTRACE=Draw.Toggle("Path Tracing", FORCE_PATHTRACE, col, line, 85, 18, PATHTRACE.val, "Enable Path Tracing for GI in the scene")
 	col=100; PATHSAMPLES=Draw.Number("Samples", 2, col, line, 125, 18, PATHSAMPLES.val, 0, 1024)
-	col=100; line=125; VIEWCAUSTICS=Draw.Toggle("Just Caustics", OVERRIDE_CAUSTICS, col, line, 85, 18, VIEWCAUSTICS.val, "Render only the caustic photons in the scene (Caustics must be on)")
-	col=190; VIEWGLOBALS=Draw.Toggle("Just Globals", OVERRIDE_GLOBALS, col, line, 85, 18, VIEWGLOBALS.val, "Render only the global photons in the scene (Use Globals must be on)")
-	col=280; VIEWGI=Draw.Toggle("Just GI", OVERRIDE_GI, col, line, 85, 18, VIEWGI.val, "Render only the gi components in the scene (A GI engine must be selected)")
-
-        # AO part#
-	col=10; line=100; BGL.glRasterPos2i(col, line); Draw.Text("Ambient Occlusion")
-	col=10; line=75; OCCLUSION=Draw.Toggle("Amb Occ", 2, col, line, 85, 18, OCCLUSION.val, "Turn on ambient occlusion for the whole scene")
-	col=100; OCCBRIGHT=Draw.ColorPicker(2, 100, 75, 30, 18, OCCBRIGHT.val, "Ambient Occlusion bright color")
-	col=135; OCCDARK=Draw.ColorPicker(2, 135, 75, 30, 18, OCCDARK.val, "Ambient Occlusion dark color")
+        #AO#
+	col=10; line=125; OCCLUSION=Draw.Toggle("Amb Occ", FORCE_OCCLUSION, col, line, 85, 18, OCCLUSION.val, "Turn on ambient occlusion for the whole scene")
+	col=100; OCCBRIGHT=Draw.ColorPicker(2, 100, 125, 30, 18, OCCBRIGHT.val, "Ambient Occlusion bright color")
+	col=135; OCCDARK=Draw.ColorPicker(2, 135, 125, 30, 18, OCCDARK.val, "Ambient Occlusion dark color")
 	col=170; OCCSAMPLES=Draw.Number("Samples", 2, col, line, 125, 18, OCCSAMPLES.val, 0, 256)
 	col=300; OCCDIST=Draw.Number("Distance", 2, col, line, 125, 18, OCCDIST.val, -1.0, 150.0)
-
+	#Fake Ambient Term#
+        col=10; line=100; FAKEAMB=Draw.Toggle("Fake Amb", FORCE_FAKEAMB, col, line, 85, 18, FAKEAMB.val, "Turn on Fake Ambient Term for the scene")
+	col=100; FAMBSKY=Draw.ColorPicker(2, 100, 100, 30, 18, FAMBSKY.val, "Fake Ambient Term sky color")
+	col=135; FAMBGROUND=Draw.ColorPicker(2, 135, 100, 30, 18, FAMBGROUND.val, "Fake Ambient Term ground color")
+	#Overrides#
+        col=100; line=75; VIEWCAUSTICS=Draw.Toggle("Just Caustics", OVERRIDE_CAUSTICS, col, line, 85, 18, VIEWCAUSTICS.val, "Render only the caustic photons in the scene (Caustics must be on)")
+	col=190; VIEWGLOBALS=Draw.Toggle("Just Globals", OVERRIDE_GLOBALS, col, line, 85, 18, VIEWGLOBALS.val, "Render only the global photons in the scene (Use Globals must be on)")
+	col=280; VIEWGI=Draw.Toggle("Just GI", OVERRIDE_GI, col, line, 85, 18, VIEWGI.val, "Render only the gi components in the scene (A GI engine must be selected)")
 	drawButtons()
 
 ## Draw the bottom bar of buttons in the interface ##
