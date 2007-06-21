@@ -189,8 +189,8 @@ def default_values():
         OCCSAMPLES = Draw.Create(32)
         OCCDIST = Draw.Create(3.0)
         FAKEAMB = Draw.Create(0)
-        FAMBSKY = Draw.Create(1.0, 1.0, 1.0)
-        FAMBGROUND = Draw.Create(0.0, 0.0, 0.0) 
+        FAMBSKY = Draw.Create(1.0, 0.95, 0.65)
+        FAMBGROUND = Draw.Create(0.5, 0.8, 1.0) 
 
         # Shader panel values
         SHADTYPE = Draw.Create(1)
