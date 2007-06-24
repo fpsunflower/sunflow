@@ -361,13 +361,7 @@ def export_output():
                         FILE.write("%s" % BUCKETTYPELIST[BUCKETTYPE.val-1])
                         FILE.write('''"''')
                         FILE.write("\n")
-
-                #Infinite Plane
-                if INFINITEPLANE.val == 1:
-                        FILE.write("\n\nshader {\n\tname iplane\n\ttype diffuse\n")
-                        FILE.write("\tdiff %s %s %s \n}" % IPLANECOLOR.val)
-                        FILE.write("\n")
-                        
+                     
 ## Caustic and global illumination settings ##
 # Send GI and caustic values to Blender as IDs #
 def def_gi():
@@ -610,6 +604,12 @@ def export_gi():
 
 def export_shaders():
 	print "o exporting shaders..."
+
+        #Infinite Plane
+        if INFINITEPLANE.val == 1:
+                FILE.write("\n\nshader {\n\tname iplane\n\ttype diffuse\n")
+                FILE.write("\tdiff %s %s %s \n}" % IPLANECOLOR.val)
+                        
 	# default shader
 	FILE.write("\n\nshader {\n\tname def\n\ttype diffuse\n\tdiff 1 1 1\n}")
 	materials = Blender.Material.get()
