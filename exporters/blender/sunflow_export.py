@@ -130,7 +130,7 @@ def default_values():
         # Camera panel values
         DOF = Draw.Create(0)
         DOFRADIUS = Draw.Create(1.00)
-        LENSSIDES = Draw.Create(2)
+        LENSSIDES = Draw.Create(6)
         LENSROTATION = Draw.Create(0.0)
         SPHERICALCAMERA = Draw.Create(0)
         FISHEYECAMERA = Draw.Create(0)
@@ -331,11 +331,6 @@ def export_output():
                 FILE.write("}")
                 FILE.write("\n")
 
-                #Infinite Plane
-                if INFINITEPLANE.val == 1:
-                        FILE.write("\n\nshader {\n\tname iplane\n\ttype diffuse\n")
-                        FILE.write("\tdiff %s %s %s \n}" % IPLANECOLOR.val)
-	
                 print "o exporting trace-depths options..."
                 FILE.write("trace-depths {\n")
                 FILE.write("\tdiff %s \n" % DEPTH_DIFF)
@@ -367,6 +362,12 @@ def export_output():
                         FILE.write('''"''')
                         FILE.write("\n")
 
+                #Infinite Plane
+                if INFINITEPLANE.val == 1:
+                        FILE.write("\n\nshader {\n\tname iplane\n\ttype diffuse\n")
+                        FILE.write("\tdiff %s %s %s \n}" % IPLANECOLOR.val)
+                        FILE.write("\n")
+                        
 ## Caustic and global illumination settings ##
 # Send GI and caustic values to Blender as IDs #
 def def_gi():
