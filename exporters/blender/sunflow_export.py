@@ -1,12 +1,12 @@
 #!BPY
 
 """
-Name: 'Sunflow Exporter 1.4.2 (.sc)...'
+Name: 'Sunflow Exporter 1.4.3 (.sc)...'
 Blender: 2.44
 Group: 'Export'
 Tip: 'Export to a Sunflow Scene File'
 
-Version         :       1.4.2 (June 2007)
+Version         :       1.4.3 (June 2007)
 Author          :       R Lindsay (hayfever) / Christopher Kulla / MADCello / 
 			olivS / Eugene Reilly / Heavily Tessellated / Humfred
 Description     :       Export to Sunflow renderer http://sunflow.sourceforge.net/
@@ -98,7 +98,7 @@ JAVAPATH = ""
 
 ## start of export ##
 print "\n\n"
-print "blend2sunflow v1.4.2"
+print "blend2sunflow v1.4.3"
 
 ## Default values of buttons ##
 def default_values():
@@ -1462,14 +1462,14 @@ def export_geometry(obj):
                 mesh.verts = None
 
         # Look for Instances/Dupligroups #
-        elif obj.getType() == "Empty":
+        if obj.getType() == "Empty":
                 ob = Object.Get(obj.name)
                 dupe_obs = ob.DupObjects
 		dupmatrix = Mathutils.Matrix(ob.getMatrix())
                 group = ob.DupGroup
                 if group <> "None":
                         for dupe_ob, dup_matrix in dupe_obs:
-                                dupobmesh = NMesh.GetRawFromObject(dupe_ob.name)
+                                dupobmesh = Mesh.Get(dupe_ob.name)
                                 instancematrix = ob.getMatrix()
                                 print "o exporting instances of " + dupe_ob.name+"..."
                                 FILE.write("\n\ninstance {\n")
