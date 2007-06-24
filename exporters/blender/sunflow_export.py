@@ -1,12 +1,12 @@
 #!BPY
 
 """
-Name: 'Sunflow Exporter 1.4.1 (.sc)...'
+Name: 'Sunflow Exporter 1.4.2 (.sc)...'
 Blender: 2.44
 Group: 'Export'
 Tip: 'Export to a Sunflow Scene File'
 
-Version         :       1.4.1 (June 2007)
+Version         :       1.4.2 (June 2007)
 Author          :       R Lindsay (hayfever) / Christopher Kulla / MADCello / 
 			olivS / Eugene Reilly / Heavily Tessellated / Humfred
 Description     :       Export to Sunflow renderer http://sunflow.sourceforge.net/
@@ -98,7 +98,7 @@ JAVAPATH = ""
 
 ## start of export ##
 print "\n\n"
-print "blend2sunflow v1.4.1"
+print "blend2sunflow v1.4.2"
 
 ## Default values of buttons ##
 def default_values():
@@ -827,8 +827,8 @@ def export_modifiers():
 			else:
 				pass
 
-                if textures[3] <> None and textures[1].tex.getType() <> "Image":
-                        textu = textures[1]
+                if textures[3] <> None and textures[3].tex.getType() <> "Image":
+                        textu = textures[3]
                         Scale_value = str(textu.norfac)
                         if textu.tex.name.startswith("perlin"):
                                 if textu.tex.getName() not in modifs_list:
