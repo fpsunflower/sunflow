@@ -1,12 +1,12 @@
 #!BPY
 
 """
-Name: 'Sunflow Exporter 1.4.3 (.sc)...'
+Name: 'Sunflow Exporter 1.4.4 (.sc)...'
 Blender: 2.44
 Group: 'Export'
 Tip: 'Export to a Sunflow Scene File'
 
-Version         :       1.4.3 (June 2007)
+Version         :       1.4.4 (June 2007)
 Author          :       R Lindsay (hayfever) / Christopher Kulla / MADCello / 
 			olivS / Eugene Reilly / Heavily Tessellated / Humfred
 Description     :       Export to Sunflow renderer http://sunflow.sourceforge.net/
@@ -98,7 +98,7 @@ JAVAPATH = ""
 
 ## start of export ##
 print "\n\n"
-print "blend2sunflow v1.4.3"
+print "blend2sunflow v1.4.4"
 
 ## Default values of buttons ##
 def default_values():
@@ -238,7 +238,7 @@ def def_output():
 	SCENE.properties['MaxAA'] = MAXAA.val
 	SCENE.properties['Samples'] = AASAMPLES.val
 	SCENE.properties['Filter'] = IMGFILTER.val
-	if AAJITTER == 1:
+	if AAJITTER.val == 1:
 		SCENE.properties['Jitter'] = "true"
 	else:
 		SCENE.properties['Jitter'] = "false"
@@ -286,10 +286,10 @@ def import_output():
 		DEPTH_REFR.val = SCENE.properties['DepthRefr']
 		Draw.Redraw()
                 if SCENE.properties['Jitter'] == "true":
-                        AAJITTER = 1
+                        AAJITTER.val = 1
                         Draw.Redraw()
                 else:
-                        AAJITTER = 0
+                        AAJITTER.val = 0
                         Draw.Redraw()
                 if  SCENE.properties['Blender Background'] == "true":
                         IMP_BCKGRD.val = 1
@@ -1469,7 +1469,7 @@ def export_geometry(obj):
                 group = ob.DupGroup
                 if group <> "None":
                         for dupe_ob, dup_matrix in dupe_obs:
-                                dupobmesh = Mesh.Get(dupe_ob.name)
+                                dupobmesh = Mesh.New(dupe_ob.name)
                                 instancematrix = ob.getMatrix()
                                 print "o exporting instances of " + dupe_ob.name+"..."
                                 FILE.write("\n\ninstance {\n")
@@ -1486,6 +1486,7 @@ def export_geometry(obj):
                                         if textu <> None and (textu.tex.name.startswith("bump") or textu.tex.name.startswith("normal")):
                                                 FILE.write("\tmodifier \"" + str(textu.tex.getName()) + "\"\n")
                                 FILE.write("}\n")
+                                mesh.verts = None
 
         # Add infinite plane object #
 	if INFINITEPLANE.val == 1:
