@@ -1,12 +1,12 @@
 #!BPY
 
 """
-Name: 'Sunflow Exporter 1.4.4 (.sc)...'
+Name: 'Sunflow Exporter 1.4.5 (.sc)...'
 Blender: 2.44
 Group: 'Export'
 Tip: 'Export to a Sunflow Scene File'
 
-Version         :       1.4.4 (June 2007)
+Version         :       1.4.5 (July 2007)
 Author          :       R Lindsay (hayfever) / Christopher Kulla / MADCello / 
 			olivS / Eugene Reilly / Heavily Tessellated / Humfred
 Description     :       Export to Sunflow renderer http://sunflow.sourceforge.net/
@@ -98,7 +98,7 @@ JAVAPATH = ""
 
 ## start of export ##
 print "\n\n"
-print "blend2sunflow v1.4.4"
+print "blend2sunflow v1.4.5"
 
 ## Default values of buttons ##
 def default_values():
@@ -926,21 +926,19 @@ def export_lights(lmp):
 	# Spots are replaced by directional (cylinrical) lights: adjust dist as close as possible to the ground receiving the
 	# cone of light if you want Radius as close as possible
 	lamp = lmp.getData()
+
+        red   = lamp.col[0]
+        green = lamp.col[1]
+        blue  = lamp.col[2]
+        power = lamp.energy * LAMPPOWER.val
+        objmatrix = lmp.matrix
+        lampV = Mathutils.Vector([0, 0, 0, 1])
+        lampV = lampV * objmatrix
+        dist = lamp.getDist()
 	print "o exporting lamps"
 
 	if lamp.type == 0:
 		print "  o exporting lamp "+lmp.name+"..."
-		# get the rgb component for the lamp
-		red   = lamp.col[0]
-		green = lamp.col[1]
-		blue  = lamp.col[2]
-		power = lamp.energy * LAMPPOWER.val
-
-		# get the location of the lamp
-		objmatrix = lmp.matrix
-		lampV = Mathutils.Vector([0, 0, 0, 1])
-		lampV = lampV * objmatrix
-
 		FILE.write("\n\nlight {\n")
 		FILE.write("\ttype point\n")
 		FILE.write("\tcolor { \"sRGB nonlinear\" %.3f %.3f %.3f }\n" % (red, green, blue))
@@ -961,17 +959,7 @@ def export_lights(lmp):
 			FILE.write("}")
 		else:
 			print "  o exporting lamp "+lmp.name+"..."
-			# get the rgb component for the lamp
-			red   = lamp.col[0]
-			green = lamp.col[1]
-			blue  = lamp.col[2]
-			power = lamp.energy * LAMPPOWER.val
-
 			# get the location of the lamp
-			objmatrix = lmp.matrix
-			lampV = Mathutils.Vector([0, 0, 0, 1])
-			lampV = lampV * objmatrix
-
 			FILE.write("\n\nlight {\n")
 			FILE.write("\ttype point\n")
 			FILE.write("\tcolor { \"sRGB nonlinear\" %.3f %.3f %.3f }\n" % (red, green, blue))
@@ -981,7 +969,6 @@ def export_lights(lmp):
 
 	elif lamp.type == 4:
 		print "  o exporting area-light "+lmp.name+"..."
-		objmatrix = lmp.matrix
 		xsize = lamp.areaSizeX * 0.5
 		if lamp.areaSizeY:
 			# If rectangular area:
@@ -1001,9 +988,6 @@ def export_lights(lmp):
 		lampV2 = lampV2 * objmatrix
 		lampV3 = lampV3 * objmatrix
 
-		red   = lamp.col[0]
-		green = lamp.col[1]
-		blue  = lamp.col[2]
 		radiance = lamp.energy * MESHLIGHTPOWER.val
 
 		FILE.write("\n\nlight {\n")
@@ -1023,18 +1007,10 @@ def export_lights(lmp):
 		FILE.write("}")
 	elif lamp.type == 2:
 		print "  o exporting spotlight "+lmp.name+"..."
-		objmatrix = lmp.matrix
 		targetV = Mathutils.Vector([0, 0, -1, 1])
 		targetV = targetV * objmatrix
-		lampV = Mathutils.Vector([0, 0, 0, 1])
-		lampV = lampV * objmatrix
 		angle = lamp.getSpotSize()*pi/360
-		dist = lamp.getDist()
 		radius = dist/cos(angle)*sin(angle)
-
-		red   = lamp.col[0]
-		green = lamp.col[1]
-		blue  = lamp.col[2]
 		radiance = lamp.energy * LAMPPOWER.val
 
 		FILE.write("\n\nlight {\n")
@@ -1046,16 +1022,6 @@ def export_lights(lmp):
 		FILE.write("}")
 	elif lamp.type == 3:
 		print "  o exporting spherical light "+lmp.name+"..."
-		objmatrix = lmp.matrix
-		lampV = Mathutils.Vector([0, 0, 0, 1])
-		lampV = lampV * objmatrix
-		dist = lamp.getDist()
-
-		red   = lamp.col[0]
-		green = lamp.col[1]
-		blue  = lamp.col[2]
-		power = lamp.energy * LAMPPOWER.val
-
 		FILE.write("\n\nlight {\n")
 		FILE.write("\ttype spherical\n")
 		FILE.write("\tcolor { \"sRGB nonlinear\" %.3f %.3f %.3f }\n" % (red, green, blue))
@@ -1069,16 +1035,6 @@ def export_lights(lmp):
 		if CONVLAMP.val == 1:
 			print "  o exporting lamp "+lmp.name+"..."
 			# get the rgb component for the lamp
-			red   = lamp.col[0]
-			green = lamp.col[1]
-			blue  = lamp.col[2]
-			power = lamp.energy * LAMPPOWER.val
-
-			# get the location of the lamp
-			objmatrix = lmp.matrix
-			lampV = Mathutils.Vector([0, 0, 0, 1])
-			lampV = lampV * objmatrix
-
 			FILE.write("\n\nlight {\n")
 			FILE.write("\ttype point\n")
 			FILE.write("\tcolor { \"sRGB nonlinear\" %.3f %.3f %.3f }\n" % (red, green, blue))
@@ -1295,8 +1251,11 @@ def export_geometry(obj):
                                         for mat in mesh.materials:
                                                 textures = mat.getTextures()
                                                 textu = textures[1]
+                                                textp = textures[3]
                                                 if textu <> None and (textu.tex.name.startswith("bump") or textu.tex.name.startswith("normal") or textu.tex.name.startswith("perlin")):
-                                                        FILE.write("\tmodifier \"" + str(textu.tex.getName()) + "\"\n")
+                                                        FILE.write("\t\t\"" + textu.tex.getName() + "\"\n")
+                                                elif textp <> None and (textp.tex.name.startswith("perlin")):
+                                                        FILE.write("\t\t\"" + textp.tex.getName() + "\"\n")
                                         
                                 elif len(mesh.materials) > 1:
                                         FILE.write("\tshaders %d\n" % (len(mesh.materials)))
@@ -1310,8 +1269,11 @@ def export_geometry(obj):
 
                                                 textures = mat.getTextures()
                                                 textu = textures[1]
+                                                textp = textures[3]
                                                 if textu <> None and (textu.tex.name.startswith("bump") or textu.tex.name.startswith("normal") or textu.tex.name.startswith("perlin")):
                                                         FILE.write("\t\t\"" + textu.tex.getName() + "\"\n")
+                                                elif textp <> None and (textp.tex.name.startswith("perlin")):
+                                                        FILE.write("\t\t\"" + textp.tex.getName() + "\"\n")
                                                 else:
                                                         FILE.write("\t\t\"" + "None" + "\"\n")
 
