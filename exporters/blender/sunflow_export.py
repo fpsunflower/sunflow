@@ -1,12 +1,12 @@
 #!BPY
 
 """
-Name: 'Sunflow Exporter 1.4.5 (.sc)...'
+Name: 'Sunflow Exporter 1.4.6 (.sc)...'
 Blender: 2.44
 Group: 'Export'
 Tip: 'Export to a Sunflow Scene File'
 
-Version         :       1.4.5 (July 2007)
+Version         :       1.4.6 (July 2007)
 Author          :       R Lindsay (hayfever) / Christopher Kulla / MADCello / 
 			olivS / Eugene Reilly / Heavily Tessellated / Humfred
 Description     :       Export to Sunflow renderer http://sunflow.sourceforge.net/
@@ -98,7 +98,7 @@ JAVAPATH = ""
 
 ## start of export ##
 print "\n\n"
-print "blend2sunflow v1.4.5"
+print "blend2sunflow v1.4.6"
 
 ## Default values of buttons ##
 def default_values():
@@ -357,10 +357,7 @@ def export_output():
                         FILE.write("\nbucket %s %s\n" % (BUCKETSIZE.val, BUCKETTYPELIST[BUCKETTYPE.val-1]))
                 elif REVERSE.val == 1:
                         FILE.write("\nbucket %s " % BUCKETSIZE.val)
-                        FILE.write('''"reverse ''')
-                        FILE.write("%s" % BUCKETTYPELIST[BUCKETTYPE.val-1])
-                        FILE.write('''"''')
-                        FILE.write("\n")
+                        FILE.write("\"reverse %s\"\n" % BUCKETTYPELIST[BUCKETTYPE.val-1])
                      
 ## Caustic and global illumination settings ##
 # Send GI and caustic values to Blender as IDs #
@@ -1448,7 +1445,7 @@ def export_geometry(obj):
                                         if textu <> None and (textu.tex.name.startswith("bump") or textu.tex.name.startswith("normal")):
                                                 FILE.write("\tmodifier \"" + str(textu.tex.getName()) + "\"\n")
                                 FILE.write("}\n")
-                                mesh.verts = None
+                                dupobmesh.verts = None
 
         # Add infinite plane object #
 	if INFINITEPLANE.val == 1:
