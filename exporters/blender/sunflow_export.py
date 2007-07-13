@@ -1,12 +1,12 @@
 #!BPY
 
 """
-Name: 'Sunflow Exporter 1.4.6 (.sc)...'
+Name: 'Sunflow Exporter 1.4.7 (.sc)...'
 Blender: 2.44
 Group: 'Export'
 Tip: 'Export to a Sunflow Scene File'
 
-Version         :       1.4.6 (July 2007)
+Version         :       1.4.7 (July 2007)
 Author          :       R Lindsay (hayfever) / Christopher Kulla / MADCello / 
 			olivS / Eugene Reilly / Heavily Tessellated / Humfred
 Description     :       Export to Sunflow renderer http://sunflow.sourceforge.net/
@@ -98,7 +98,7 @@ JAVAPATH = ""
 
 ## start of export ##
 print "\n\n"
-print "blend2sunflow v1.4.6"
+print "blend2sunflow v1.4.7"
 
 ## Default values of buttons ##
 def default_values():
@@ -606,6 +606,12 @@ def export_shaders():
         if INFINITEPLANE.val == 1:
                 FILE.write("\n\nshader {\n\tname iplane\n\ttype diffuse\n")
                 FILE.write("\tdiff %s %s %s \n}" % IPLANECOLOR.val)
+        # Add infinite plane object #
+                FILE.write("\n\nobject {\n")
+                FILE.write("\tshader iplane\n")
+                FILE.write("\ttype plane\n")
+                FILE.write("\tp 0 0 0\n")
+                FILE.write("\tn 0 0 1\n}\n")
                         
 	# default shader
 	FILE.write("\n\nshader {\n\tname def\n\ttype diffuse\n\tdiff 1 1 1\n}")
@@ -1447,14 +1453,6 @@ def export_geometry(obj):
                                 FILE.write("}\n")
                                 dupobmesh.verts = None
 
-        # Add infinite plane object #
-	if INFINITEPLANE.val == 1:
-		FILE.write("\n\nobject {\n")
-                FILE.write("\tshader iplane\n")
-                FILE.write("\ttype plane\n")
-                FILE.write("\tp 0 0 0\n")
-                FILE.write("\tn 0 0 1\n}\n")
-
 ## Main export method ##
 def exportfile(filename):
 	global FILE, SCENE, IM_HEIGHT, IM_WIDTH, TEXTURES, OBJECTS, LAYERS, IBLLIGHT, EXP_ANIM, fname, destname
@@ -1525,6 +1523,7 @@ public void build() {
 				if object.getType() == 'Mesh' or object.getType() == 'Surf':
 					if object.name.startswith("meshlight"):
 						export_geometry(object)
+						
 		if ANIM == 0:
 			FILE.write("\n\ninclude \"%s\"\n" % (os.path.basename(filename).replace(".sc", ".geo.sc")))
 			FILE.close()
@@ -1538,6 +1537,9 @@ public void build() {
 				if object.getType() == 'Mesh' or object.getType() == 'Surf':
 					if not object.name.startswith("meshlight"):
 						export_geometry(object)
+
+		for object in OBJECTS:
+			if object.users > 1 and object.layers[0] in LAYERS:
                                 if object.getType() == 'Empty':
                                         export_geometry(object)
 		FILE.close()
