@@ -1,12 +1,12 @@
 #!BPY
 
 """
-Name: 'Sunflow Exporter 1.4.8 (.sc)...'
+Name: 'Sunflow Exporter 1.4.9 (.sc)...'
 Blender: 2.44
 Group: 'Export'
 Tip: 'Export to a Sunflow Scene File'
 
-Version         :       1.4.8 (July 2007)
+Version         :       1.4.9 (July 2007)
 Author          :       R Lindsay (hayfever) / Christopher Kulla / MADCello / 
 			olivS / Eugene Reilly / Heavily Tessellated / Humfred
 Description     :       Export to Sunflow renderer http://sunflow.sourceforge.net/
@@ -98,7 +98,7 @@ JAVAPATH = ""
 
 ## start of export ##
 print "\n\n"
-print "blend2sunflow v1.4.8"
+print "blend2sunflow v1.4.9"
 
 ## Default values of buttons ##
 def default_values():
@@ -628,11 +628,8 @@ def export_shaders():
 
 		# UBER shader
 		if mat.name.startswith("sfube"):
-			textu = textures[0]
-			textu2 = textures[2]
-			colvalue = textu.colfac
-			cspvalue = textu.varfac
-			
+                        textu = textures[0]
+                        textu2 = textures[2]                        
 			print "  o exporting uber shader "+mat.name+"..."
 			FILE.write("\n\nshader {\n")
 			FILE.write("\tname \""+mat.name+".shader\"\n")	
@@ -641,18 +638,21 @@ def export_shaders():
 			# DIFF values
 			FILE.write("\tdiff %.3f %.3f %.3f\n" % (RGB[0], RGB[1], RGB[2]))
 			if textures[0] <> None and textures[0].tex.getType() == "Image" and textu.tex.getImage() != None:
+                                colvalue = textu.colfac
 				FILE.write("\tdiff.texture \"" + textu.tex.getImage().getFilename() + "\"\n")
+				FILE.write("\tdiff.blend %s\n" % (colvalue * 1.0))
 			else:
-				FILE.write("\tdiff.texture None")	
-			FILE.write("\tdiff.blend %s\n" % (colvalue * 1.0))
+
+        			FILE.write("\tdiff.blend 0.0\n")
 			
 			# SPEC values
 			FILE.write("\tspec %.3f %.3f %.3f\n" % (speccol[0], speccol[1], speccol[2]))
 			if textures[2] <> None and textures[2].tex.getType() == "Image" and textu2.tex.getImage() != None:
+                                cspvalue = textu2.varfac
 				FILE.write("\tspec.texture \"" + textu2.tex.getImage().getFilename() + "\"\n")
+        			FILE.write("\tspec.blend %s\n" % (cspvalue * 0.1))
 			else:
-				FILE.write("\tspec.texture None")	
-			FILE.write("\tspec.blend %s\n" % (cspvalue * 0.1))
+                                FILE.write("\tspec.blend 0.0\n")
 			FILE.write("\tglossy .1\n")
 			FILE.write("\tsamples 4\n}")
 
