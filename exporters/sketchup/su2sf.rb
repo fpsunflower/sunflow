@@ -3,8 +3,19 @@
 #
 # Edited by dandruff, added glas, transparent and phong support as
 # well as tre different sizes of output picture, 9 MAY 07
+#
+# Added by D. Bur:
+# dialog boxes for render, background, camera, GI settings
+# ground plane, sky/background color
 
 require 'sketchup.rb'
+
+#-------------------- Slice float to x decimals
+class Float
+    def prec( x )
+        sprintf( "%.*f", x, self ).to_f
+    end
+end
 
 class SU2SF
   #-- Constants --
@@ -38,7 +49,7 @@ class SU2SF
         "image_width" => 800,
         "image_height" => 600,
     }
-    @export_textures = false
+    @export_textures = true
   end
   
   def reset_state
@@ -66,7 +77,8 @@ class SU2SF
     set_status("Exporting image settings...")
     @stream.print "image {",
       "\n\tresolution #{@scene_settings["image_width"]} #{@scene_settings["image_height"]}",
-      "\n\taa #{@scene_settings["aa_min"]} #{@scene_settings["aa_max"]}",
+      #"\n\taa #{@scene_settings["aa_min"]} #{@scene_settings["aa_max"]}",
+      "\n\taa " + $aa_min + " " + $aa_max,
       "\n\tfilter #{@scene_settings["filter"]}",
       "\n}\n\n" 
     
@@ -76,18 +88,76 @@ class SU2SF
     #TODO output trace settings here
   end
  
-  def output_sky_settings( shinfo )    
-    sd = shinfo["SunDirection"]
-    # FIXME: adjust for NorthAngle
-    set_status("Exporting sun...")
-    @stream.print "light {",
-      "\n\ttype sunsky",
-      "\n\tup 0 0 1",
-      "\n\teast 1 0 0",
-      "\n\tsundir #{PRECISION % (sd.x)} #{PRECISION % (sd.y)} #{PRECISION % (sd.z)}",
-      "\n\tturbidity #{@scene_settings["sky_turbidity"]}",
-      "\n\tsamples #{@scene_settings["sky_samples"]}",
+  def output_background_settings
+    case $background_type
+      when "Solid color"
+        set_status("Exporting background color...")
+        bc=Sketchup.active_model.rendering_options["BackgroundColor"]
+        backc = normalize_color(bc)
+        skyc=Sketchup.active_model.rendering_options["SkyColor"]
+        @stream.print "background {"
+        @stream.print "\n\tcolor { \"sRGB nonlinear\" " + backc + " }"
+        @stream.print"\n}\n\n"
+      when "Sky"
+        shinfo=Sketchup.active_model.shadow_info
+        sd = shinfo["SunDirection"]
+        # FIXME: adjust for NorthAngle
+        set_status("Exporting sun...")
+        @stream.print "light {",
+        "\n\ttype sunsky",
+        "\n\tup 0 0 1",
+        "\n\teast 1 0 0",
+        "\n\tsundir #{PRECISION % (sd.x)} #{PRECISION % (sd.y)} #{PRECISION % (sd.z)}",
+        "\n\tturbidity #{@scene_settings["sky_turbidity"]}",
+        "\n\tsamples #{@scene_settings["sky_samples"]}",
+        "\n}\n\n"
+      end
+  end
+  
+  def output_ground_plane
+    if $ground_plane == "Yes"
+      gc=Sketchup.active_model.rendering_options["GroundColor"]
+      groundc = normalize_color(gc)
+      set_status("Exporting Ground plane...")
+      @stream.print "shader {",
+      "\n\tname \"Shader_ground\"",
+      "\n\ttype diffuse",
+      "\n\tdiff " + groundc,
       "\n}\n\n"
+      @stream.print "object {",
+      "\n\tshader \"Shader_ground\"",
+      "\n\ttype plane",
+      "\n\tp 0 0 0",
+      "\n\tn 0 0 1",
+      "\n}\n\n"
+    end
+  end
+  
+  def output_sky_settings( shinfo )
+    # if a solid color background, then set a directional light instead of sky
+    if $background_type == "Solid color"
+      sd = shinfo["SunDirection"]
+      set_status("Exporting default directional light...")
+      @stream.print "light {",
+      "\n\ttype directional",
+      "\n\tsource " + (sd.x*2000).to_s + " " + (sd.y*2000).to_s + " " + (sd.z*2000).to_s,
+      "\n\ttarget 0 0 0",
+      "\n\tradius 2000",
+      "\n\temit { \"sRGB nonlinear\" 1.000 1.000 1.000 }",
+      "\n}\n\n"
+    else    
+      #sd = shinfo["SunDirection"]
+      ## FIXME: adjust for NorthAngle
+      #set_status("Exporting sun...")
+      #@stream.print "light {",
+      #"\n\ttype sunsky",
+      #"\n\tup 0 0 1",
+      #"\n\teast 1 0 0",
+      #"\n\tsundir #{PRECISION % (sd.x)} #{PRECISION % (sd.y)} #{PRECISION % (sd.z)}",
+      #"\n\tturbidity #{@scene_settings["sky_turbidity"]}",
+      #"\n\tsamples #{@scene_settings["sky_samples"]}",
+      #"\n}\n\n"
+    end
   end
 
   def output_sky_settingslow( shinfo )    
@@ -105,18 +175,84 @@ class SU2SF
   end
   
   def output_camera( camera )
-    aspect = camera.aspect_ratio
-    aspect = (@scene_settings["image_width"].to_f / @scene_settings["image_height"].to_f) if !aspect or aspect <= 0
-
+    #aspect = camera.aspect_ratio
+    #aspect = (@scene_settings["image_width"].to_f / @scene_settings["image_height"].to_f) if !aspect or aspect <= 0
     set_status("Exporting camera...")
-    @stream.print "camera {",
-      "\n\ttype pinhole",
-      "\n\teye\t#{PRECISION % (camera.eye.x.to_inch * SCALE_FACTOR)} #{PRECISION % (camera.eye.y.to_inch * SCALE_FACTOR)} #{PRECISION % (camera.eye.z.to_inch * SCALE_FACTOR)}",
-      "\n\ttarget\t#{PRECISION % (camera.target.x.to_inch * SCALE_FACTOR)} #{PRECISION % (camera.target.y.to_inch * SCALE_FACTOR)} #{PRECISION % (camera.target.z.to_inch * SCALE_FACTOR)}",
-      "\n\tup\t#{PRECISION % camera.up.x}\t#{PRECISION % camera.up.y}\t#{PRECISION %  camera.up.z}",
-      "\n\tfov\t#{camera.fov}",
-      "\n\taspect\t" + "%.6f" % aspect,
-      "\n}\n\n"
+    
+    vfovdeg = camera.fov
+    view=Sketchup.active_model.active_view
+    w = Float(view.vpwidth)
+	  h = Float(view.vpheight)
+	  vfovrad = vfovdeg*Math::PI/180.0
+	  f = (h/2)/Math.tan(vfovrad/2.0)
+	  hfovrad = 2.0*Math.atan2((w/2),f)
+	  hfovdeg = hfovrad*180.0/Math::PI
+  
+    @stream.print "camera {\n\ttype " + $camera_type.downcase
+    @stream.print "\n\teye\t" + camera.eye.x.to_m.to_f.to_s + " " + camera.eye.y.to_m.to_f.to_s + " " + camera.eye.z.to_m.to_f.to_s
+    @stream.print "\n\ttarget\t" + camera.target.x.to_m.to_f.to_s + " " + camera.target.y.to_m.to_f.to_s + " " + camera.target.z.to_m.to_f.to_s
+    @stream.print "\n\tup\t" + camera.up.x.to_s + " " + camera.up.y.to_s + " " + camera.up.z.to_s
+    
+    case $camera_type
+      when "Pinhole"
+        @stream.print "\n\tfov\t" + hfovdeg.to_s #camera.fov.to_s
+        @stream.print "\n\taspect\t" + ($image_width.to_f / $image_height.to_f).to_s
+        if $pinhole_shift_x != "0" or $pinhole_shift_y != "0"
+          @stream.print "\n\tshift " + $pinhole_shift_x + " " + $pinhole_shift_y
+        end
+      when "Thinlens"
+        @stream.print "\n\tfov\t" + hfovdeg.to_s #camera.fov.to_s
+        @stream.print "\n\taspect\t" + ($image_width.to_f / $image_height.to_f).to_s
+        @stream.print "\n\tfdist " + $thinlens_fdist
+        @stream.print "\n\tlensr " + $thinlens_lensr
+        if $thinlens_sides != "0"
+          @stream.print "\n\tsides " + $thinlens_sides
+          @stream.print "\n\trotation " + $thinlens_rotat
+        end
+    end
+    @stream.print "\n}\n\n"
+  end
+  
+  def output_gi
+    return if $gi_type == "None"
+    case $gi_type
+      when "Instant GI"
+        @stream.print "gi {",
+        "\n\ttype igi",
+        "\n\tsamples 64",
+        "\n\tsets 1",
+        "\n\tb 0.01",
+        "\n\tbias-samples 10",
+        "\n}\n\n"
+      when "Irradiance Caching"
+        @stream.print "gi {",
+        "\n\ttype irr-cache",
+        "\n\tsamples 512",
+        "\n\ttolerance 0.01",
+        "\n\tspacing 0.05 5.0",
+        "\n\tglobal 1000000 grid 100 0.75",
+        "\n}\n\n"
+      when "Path Tracing"
+        @stream.print "gi {",
+        "\n\ttype path",
+        "\n\tsamples 32",
+        "\n}\n\n"
+      when "Ambient Occlusion"
+        @stream.print "gi {",
+        "\n\ttype ambocc",
+        "\n\tbright { \"sRGB nonlinear\" 1 1 1 }",
+        "\n\tdark { \"sRGB nonlinear\" 0 0 0 }",
+        "\n\tsamples 32",
+        "\n\tmaxdist 3.0",
+        "\n}\n\n"
+      when "Fake Ambient"
+        @stream.print "gi {",
+        "\n\ttype fake",
+        "\n\tup 0 1 0",
+        "\n\tsky { \"sRGB nonlinear\" 0 0 0 }",
+        "\n\tground { \"sRGB nonlinear\" 1 1 1 }",
+        "\n}\n\n"
+    end
   end
   
   def output_scene_objects( ents )
@@ -395,12 +531,175 @@ class SU2SF
     return b
   end
 
+end # of Class
+
+def normalize_color(c)
+  return (c.red / 255.0).to_s + " " + (c.green / 255.0).to_s + " " + (c.blue / 255.0).to_s
 end
 
-def SU2SF::export_dialoglow
-  model = Sketchup.active_model
+def su2sf_ui_settings
+ui_types = ["Standard", "Advanced"]
+list1 = ui_types.join("|")
+enums=[list1]
+prompts = ["UI type: "]
+values = [$ui]
+results = inputbox prompts, values, enums, "User interface"
+return nil if not results
+$ui = results[0]
+end
 
-  if model.selection.length > 0 then
+def su2sf_background_settings
+background_types = ["Solid color", "Sky"]
+ground_plane = ["Yes", "No"]
+list1 = background_types.join("|")
+list2 = ground_plane.join("|")
+enums=[list1, list2]
+prompts = ["Background type: " , "Ground plane: ", "Sky samples: ", " Sky turbidity: "]
+values = [$background_type, $ground_plane, $sky_samples, $sky_turbidity]
+results = inputbox prompts, values, enums, "Background settings"
+return nil if not results
+$background_type = results[0]
+$ground_plane = results[1]
+$sky_samples = results[2]
+$sky_turbidity = results[3]
+
+end
+
+def su2sf_dialogs(box, ui)
+case box
+  when "render"
+    if ui == "Standard"
+      su2sf_standard_render_settings
+    else
+      su2sf_advanced_render_settings
+    end
+end
+end
+
+def su2sf_standard_render_settings
+image_sizes = ["Sketchup window", "320 x 200", "400 x 300", "640 x 480", "768 x 576", "800 x 600", "1024 x 768", "1280 x 1024", "2048 x 1536"]
+if not image_sizes.include? $image_size
+  $image_size = "Sketchup window"
+end
+list1 = image_sizes.join("|")
+list2 = [["None", "Standard", "Medium", "High", "Final"].join("|")]
+list3 = [["None", "Standard", "Medium", "High", "Final"].join("|")]
+enums=[list1, list2, list3]
+prompts = ["Image size: " , "Global Illumination: ", "Antialiasing: "]
+values = [$image_size, $gi, $aa_type]
+results = inputbox prompts, values, enums, "Render settings"
+return nil if not results
+$image_size = results[0]
+$gi = results[1]
+$aa_type = results[2]
+$trace_diff = 4
+$trace_refl = 4
+$trace_refr = 4
+# Image width and height:
+if $image_size == "Sketchup window"
+  $image_size = Sketchup.active_model.active_view.vpwidth.to_s + " x " + Sketchup.active_model.active_view.vpheight.to_s
+  $image_width = Sketchup.active_model.active_view.vpwidth.to_s
+  $image_height = Sketchup.active_model.active_view.vpheight.to_s
+  else
+  $image_width = $image_size.split()[0]
+  $image_height = $image_size.split()[2]
+end
+# GI settings
+case $gi
+  when "Standard"
+    $gi_type = "Fake Ambient"
+  when "Medium"
+    $gi_type = "Instant GI"
+  when "High"
+    $gi_type = "Irradiance Caching"
+  when "Final"
+    $gi_type = "Path tracing"
+end
+# Antialiasing settings
+case $aa_type
+  when "Standard"
+    $aa_min = "-1"
+    $aa_max = "0"
+  when "Medium"
+    $aa_min = "0"
+    $aa_max = "1"
+  when "High"
+    $aa_min = "1"
+    $aa_max = "4"
+  when "Final"
+    $aa_min = "2"
+    $aa_max = "8"
+end
+end
+
+def su2sf_advanced_render_settings
+image_sizes = ["Sketchup window", "320 x 200", "400 x 300", "640 x 480", "768 x 576", "800 x 600", "1024 x 768", "1280 x 1024", "2048 x 1536"]
+if not image_sizes.include? $image_size
+  $image_size = "Sketchup window"
+end
+list1 = image_sizes.join("|")
+list2 = [["None", "Instant GI", "Irradiance Caching", "Path Tracing", "Ambient Occlusion", "Fake Ambient"].join("|")]
+enums=[list1, list2]
+prompts = ["Image size: " , "Global Illumination: ", "Antialiasing minimum: ", "Antialiasing maximum: ", "Trace diffuse: ", "Trace reflection:", "Trace refraction: "]
+values = [$image_size, $gi, $aa_min, $aa_max, $trace_diff, $trace_refl, $trace_refr]
+results = inputbox prompts, values, enums, "Render settings"
+return nil if not results
+$image_size = results[0]
+$gi = results[1]
+$aa_min = results[2]
+$aa_max = results[3]
+$trace_diff = results[4]
+$trace_refl = results[5]
+$trace_refr = results[6]
+# Image width and height:
+if $image_size == "Sketchup window"
+  $image_size = Sketchup.active_model.active_view.vpwidth.to_s + " x " + Sketchup.active_model.active_view.vpheight.to_s
+  $image_width = Sketchup.active_model.active_view.vpwidth.to_s
+  $image_height = Sketchup.active_model.active_view.vpheight.to_s
+  else
+  $image_width = $image_size.split()[0]
+  $image_height = $image_size.split()[2]
+end
+# GI type
+$gi_type = $gi
+end
+
+def su2sf_camera_settings
+camera_types = ["Pinhole", "Thinlens", "Spherical", "Fisheye"]
+list = [camera_types.join("|")]
+prompts = ["Camera type: "]
+values = [$camera_type]
+results = inputbox prompts, values,list, "Camera settings"
+return nil if not results
+$camera_type = results[0]
+
+case $camera_type
+  when "Pinhole"
+    # Shift
+    prompts = ["Pinhole shift X: ", "Pinhole shift Y: "]
+    values = [$pinhole_shift_x, $pinhole_shift_y]
+    results = inputbox prompts, values, "Pinhole settings"
+    return nil if not results
+    $pinhole_shift_x = results[0]
+    $pinhole_shift_y = results[1]
+  when "Thinlens"
+    # Focal distance, lens radius, sides, rotation
+    prompts = ["Focal distance: ", "Lens radius: ", "Bokeh sides: ", "Effect rotation: "]
+    values = [$thinlens_fdist, $thinlens_lensr, $thinlens_sides, $thinlens_rotat]
+    results = inputbox prompts, values, "Thinlens settings"
+    return nil if not results
+    $thinlens_fdist = results[0]
+    $thinlens_lensr = results[1]
+    $thinlens_sides = results[2]
+    $thinlens_rotat = results[3]
+end
+end
+
+#def SU2SF::export_dialoglow
+def SU2SF::export(selection)
+  model = Sketchup.active_model
+  
+  if selection == true
     ents = model.selection
   else
     ents = model.entities
@@ -421,96 +720,78 @@ def SU2SF::export_dialoglow
   return if output_file == nil
 
   exporter = SU2SF.new
-  exporter.scene_settings["image_width"] = (1600 / 4)
-  exporter.scene_settings["image_height"] = (1200 / 4)
+  #exporter.scene_settings["image_width"] = $image_size.split()[0]
+  #exporter.scene_settings["image_height"] = $image_size.split()[2]
+  exporter.scene_settings["image_width"] = $image_width
+  exporter.scene_settings["image_height"] = $image_height
   exporter.output_begin( output_file )
   exporter.output_image_settings( model.active_view )
+  exporter.output_background_settings
   exporter.output_sky_settings( model.shadow_info )
+  exporter.output_gi
   exporter.output_camera( model.active_view.camera )
   exporter.output_scene_objects( ents )
+  exporter.output_ground_plane
   exporter.output_end
   #exporter.instance_variables.each { |v| puts v + " = " + exporter.instance_variable_get(v).to_s }
   output_file.close
 end
 
-def SU2SF::export_dialogmed
-  model = Sketchup.active_model
 
-  if model.selection.length > 0 then
-    ents = model.selection
-  else
-    ents = model.entities
-  end
+# Interface default
+$ui = "Standard" if not $ui
 
-  model_filename = File.basename( model.path )
-  if model_filename != ""
-    model_name = model_filename.split(".")[0]
-    model_name += ".sc"
-  else
-    model_name = "Untitled.sc"
-  end
+# Render Defaults
+$aa_min = "0" if not $aa_min
+$aa_max = "2" if not $aa_max
+$filter = "mitchell" if not $filter
+$gi = "None" if not $gi
+$trace_diff = "4" if not $trace_diff
+$trace_refl = "4" if not $trace_refl
+$trace_refr = "4" if not $trace_refr
+$image_size = "800 x 600" if not $image_size
+$image_width = "800"
+$image_height = "600"
+$gi_type = "None" if not $gi_type
+$aa_type = "None" if not $aa_type
 
-  output_filename = UI.savepanel( "Export to SunFlow", "", model_name );
-  return if output_filename == nil
+# GI defaults
+$gi_instant_samples = "64" if not $gi_instant_samples
+$gi_instant_sets = "1" if not $gi_instant_sets
+$gi_instant_b = "0.01" if not $gi_instant_b
+$gi_instant_bias_samples = "10" if not $gi_instant_bias_samples
+$gi_icaching_samples = "512" if not $gi_icaching_samples
+$gi_icaching_tolerance = "0.01" if not $gi_icaching_tolerance
+$gi_icaching_spacing = "0.05 5.0" if not $gi_icaching_spacing
+$gi_icaching_global = "1000000" if not $gi_icaching_global
+$gi_icaching_grid = "100 0.75" if not $gi_icaching_grid
+$gi_ptracing_samples = "32"  if not $gi_ptracing_samples     
+# Camera Defaults
+$camera_type = "Pinhole" if not $camera_type
+$pinhole_shift_x = "0" if not $pinhole_shift_x
+$pinhole_shift_y = "0" if not $pinhole_shift_y
+$thinlens_fdist = "10" if not $thinlens_fdist
+$thinlens_lensr = "0.05" if not $thinlens_lensr
+$thinlens_sides = "0" if not $thinlens_sides
+$thinlens_rotat = "0" if not $thinlens_rotat
 
-  output_file = File.new( output_filename, "w+" )
-  return if output_file == nil
-
-  exporter = SU2SF.new
-  exporter.scene_settings["image_width"] = (600)
-  exporter.scene_settings["image_height"] = (450)
-  exporter.output_begin( output_file )
-  exporter.output_image_settings( model.active_view )
-  exporter.output_sky_settings( model.shadow_info )
-  exporter.output_camera( model.active_view.camera )
-  exporter.output_scene_objects( ents )
-  exporter.output_end
-  #exporter.instance_variables.each { |v| puts v + " = " + exporter.instance_variable_get(v).to_s }
-  output_file.close
-end
-
-def SU2SF::export_dialoghigh
-  model = Sketchup.active_model
-
-  if model.selection.length > 0 then
-    ents = model.selection
-  else
-    ents = model.entities
-  end
-
-  model_filename = File.basename( model.path )
-  if model_filename != ""
-    model_name = model_filename.split(".")[0]
-    model_name += ".sc"
-  else
-    model_name = "Untitled.sc"
-  end
-
-  output_filename = UI.savepanel( "Export to SunFlow", "", model_name );
-  return if output_filename == nil
-
-  output_file = File.new( output_filename, "w+" )
-  return if output_file == nil
-
-  exporter = SU2SF.new
-  exporter.scene_settings["image_width"] = (1600)
-  exporter.scene_settings["image_height"] = (1200)
-  exporter.output_begin( output_file )
-  exporter.output_image_settings( model.active_view )
-  exporter.output_sky_settings( model.shadow_info )
-  exporter.output_camera( model.active_view.camera )
-  exporter.output_scene_objects( ents )
-  exporter.output_end
-  #exporter.instance_variables.each { |v| puts v + " = " + exporter.instance_variable_get(v).to_s }
-  output_file.close
-end
+# Background Defaults
+$background_type = "Solid color" if not $background_type
+$ground_plane = "No" if not $ground_plane
+$sky_samples = "32" if not $sky_samples
+$sky_turbidity = "5" if not $sky_turbidity
 
 unless file_loaded? "su2sf.rb" 
 
 	main_menu = UI.menu("Plugins").add_submenu("SunFlow Exporter")
-	main_menu.add_item("Export Model -Small") { (SU2SF.export_dialoglow) }
-	main_menu.add_item("Export Model -Medium") { (SU2SF.export_dialogmed) }
-	main_menu.add_item("Export Model -Big") { (SU2SF.export_dialoghigh) }
+  main_menu.add_item("UI settings") { su2sf_ui_settings }
+  main_menu.add_item("Render settings") { su2sf_dialogs "render", $ui }
+  main_menu.add_item("Camera settings") { su2sf_camera_settings }
+  main_menu.add_item("Background settings") { su2sf_background_settings }
+  main_menu.add_separator
+  main_menu.add_item("Export selection") { (SU2SF.export true) }
+	main_menu.add_item("Export Model") { (SU2SF.export false) }
+  
 
 end
 
