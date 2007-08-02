@@ -1,12 +1,12 @@
 #!BPY
 
 """
-Name: 'Sunflow Exporter 1.4.10 (.sc)...'
+Name: 'Sunflow Exporter 1.4.11 (.sc)...'
 Blender: 2.44
 Group: 'Export'
 Tip: 'Export to a Sunflow Scene File'
 
-Version         :       1.4.10 (July 2007)
+Version         :       1.4.11 (August 2007)
 Author          :       R Lindsay (hayfever) / Christopher Kulla / MADCello / 
 			olivS / Eugene Reilly / Heavily Tessellated / Humfred
 Description     :       Export to Sunflow renderer http://sunflow.sourceforge.net/
@@ -35,7 +35,7 @@ Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #################################################
 
 ## Imports ##
-import Blender, os, sys, time#, subprocess
+import Blender, os, sys, time, random #, subprocess
 
 from Blender import Mathutils, Lamp, Object, Scene, Mesh, Material, Draw, BGL, Effect
 from math import *
@@ -98,7 +98,7 @@ JAVAPATH = ""
 
 ## start of export ##
 print "\n\n"
-print "blend2sunflow v1.4.10"
+print "blend2sunflow v1.4.11"
 
 ## Default values of buttons ##
 def default_values():
@@ -1436,9 +1436,10 @@ def export_geometry(obj):
                         for dupe_ob, dup_matrix in dupe_obs:
                                 dupobmesh = Mesh.Get(dupe_ob.name)
                                 instancematrix = ob.getMatrix()
+                                rand = random.uniform(1,7)
                                 print "o exporting instances of " + dupe_ob.name+"..."
                                 FILE.write("\n\ninstance {\n")
-                                FILE.write("\tname %s \n" % obj.name)
+                                FILE.write("\tname %s%s \n" % (obj.name, rand))
                                 FILE.write("\tgeometry %s \n" % dupe_ob.name)
                                 FILE.write("\ttransform col %s %s %s %s %s %s %s %s %s %s %s %s %s %s %s %s \n" % (instancematrix[0][0], instancematrix[0][1], instancematrix[0][2], instancematrix[0][3], instancematrix[1][0], instancematrix[1][1], instancematrix[1][2], instancematrix[1][3], instancematrix[2][0], instancematrix[2][1], instancematrix[2][2], instancematrix[2][3], instancematrix[3][0], instancematrix[3][1], instancematrix[3][2], instancematrix[3][3]))
                                 if len(dupobmesh.materials) >= 1:
@@ -1448,10 +1449,12 @@ def export_geometry(obj):
                                 for mat in dupobmesh.materials:
                                         textures = mat.getTextures()
                                         textu = textures[1]
+                                        textp = textures[3]
                                         if textu <> None and (textu.tex.name.startswith("bump") or textu.tex.name.startswith("normal")):
                                                 FILE.write("\tmodifier \"" + str(textu.tex.getName()) + "\"\n")
+                                        if textp <> None and (textp.tex.name.startswith("perlin")):
+                                                FILE.write("\tmodifier \"" + str(textu.tex.getName()) + "\"\n")
                                 FILE.write("}\n")
-                                #dupobmesh.verts = None
 
 ## Main export method ##
 def exportfile(filename):
