@@ -35,7 +35,7 @@ Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #################################################
 
 ## Imports ##
-import Blender, os, sys, time, random #, subprocess
+import Blender, os, sys, time #, subprocess
 
 from Blender import Mathutils, Lamp, Object, Scene, Mesh, Material, Draw, BGL, Effect
 from math import *
@@ -1436,10 +1436,9 @@ def export_geometry(obj):
                         for dupe_ob, dup_matrix in dupe_obs:
                                 dupobmesh = Mesh.Get(dupe_ob.name)
                                 instancematrix = ob.getMatrix()
-                                rand = random.uniform(1,7)
                                 print "o exporting instances of " + dupe_ob.name+"..."
                                 FILE.write("\n\ninstance {\n")
-                                FILE.write("\tname %s%s \n" % (obj.name, rand))
+                                FILE.write("\tname %s_%s \n" % (obj.name, dupe_ob.name))
                                 FILE.write("\tgeometry %s \n" % dupe_ob.name)
                                 FILE.write("\ttransform col %s %s %s %s %s %s %s %s %s %s %s %s %s %s %s %s \n" % (instancematrix[0][0], instancematrix[0][1], instancematrix[0][2], instancematrix[0][3], instancematrix[1][0], instancematrix[1][1], instancematrix[1][2], instancematrix[1][3], instancematrix[2][0], instancematrix[2][1], instancematrix[2][2], instancematrix[2][3], instancematrix[3][0], instancematrix[3][1], instancematrix[3][2], instancematrix[3][3]))
                                 if len(dupobmesh.materials) >= 1:
