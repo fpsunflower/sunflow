@@ -1,12 +1,12 @@
 #!BPY
 
 """
-Name: 'Sunflow Exporter 1.4.11 (.sc)...'
+Name: 'Sunflow Exporter 1.4.12 (.sc)...'
 Blender: 2.44
 Group: 'Export'
 Tip: 'Export to a Sunflow Scene File'
 
-Version         :       1.4.11 (August 2007)
+Version         :       1.4.12 (August 2007)
 Author          :       R Lindsay (hayfever) / Christopher Kulla / MADCello / 
 			olivS / Eugene Reilly / Heavily Tessellated / Humfred
 Description     :       Export to Sunflow renderer http://sunflow.sourceforge.net/
@@ -98,7 +98,7 @@ JAVAPATH = ""
 
 ## start of export ##
 print "\n\n"
-print "blend2sunflow v1.4.11"
+print "blend2sunflow v1.4.12"
 
 ## Default values of buttons ##
 def default_values():
@@ -946,7 +946,7 @@ def export_lights(lmp):
 		FILE.write("\ttype point\n")
 		FILE.write("\tcolor { \"sRGB nonlinear\" %.3f %.3f %.3f }\n" % (red, green, blue))
 		FILE.write("\tpower %s\n" % (power))
-		FILE.write("\tp %s %s %s\n" % (lampV[0], lampV[1], lampV[2]))
+		FILE.write("\tp %.3f %.3f %.3f\n" % (lampV[0], lampV[1], lampV[2]))
 		FILE.write("}")
 	elif lamp.type == 1:
 		if IMP_SUN.val == 1:
@@ -967,7 +967,7 @@ def export_lights(lmp):
 			FILE.write("\ttype point\n")
 			FILE.write("\tcolor { \"sRGB nonlinear\" %.3f %.3f %.3f }\n" % (red, green, blue))
 			FILE.write("\tpower %s\n" % (power))
-			FILE.write("\tp %s %s %s\n" % (lampV[0], lampV[1], lampV[2]))
+			FILE.write("\tp %.3f %.3f %.3f\n" % (lampV[0], lampV[1], lampV[2]))
 			FILE.write("}")
 
 	elif lamp.type == 4:
@@ -1000,10 +1000,10 @@ def export_lights(lmp):
 		FILE.write("\tradiance %s\n" % (radiance))
 		FILE.write("\tsamples %s\n" % DSAMPLES.val)
 		FILE.write("\tpoints 4\n")
-		FILE.write("\t\t%s %s %s\n" % (lampV0[0], lampV0[1], lampV0[2]))
-		FILE.write("\t\t%s %s %s\n" % (lampV1[0], lampV1[1], lampV1[2]))
-		FILE.write("\t\t%s %s %s\n" % (lampV2[0], lampV2[1], lampV2[2]))
-		FILE.write("\t\t%s %s %s\n" % (lampV3[0], lampV3[1], lampV3[2]))
+		FILE.write("\t\t%.3f %.3f %.3f\n" % (lampV0[0], lampV0[1], lampV0[2]))
+		FILE.write("\t\t%.3f %.3f %.3f\n" % (lampV1[0], lampV1[1], lampV1[2]))
+		FILE.write("\t\t%.3f %.3f %.3f\n" % (lampV2[0], lampV2[1], lampV2[2]))
+		FILE.write("\t\t%.3f %.3f %.3f\n" % (lampV3[0], lampV3[1], lampV3[2]))
 		FILE.write("\ttriangles 2\n")
 		FILE.write("\t\t0 1 2\n")
 		FILE.write("\t\t0 2 3\n")
@@ -1018,8 +1018,8 @@ def export_lights(lmp):
 
 		FILE.write("\n\nlight {\n")
 		FILE.write("\ttype directional\n")
-		FILE.write("\tsource %s %s %s\n" % (lampV[0], lampV[1], lampV[2]))
-		FILE.write("\ttarget %s %s %s\n" % (targetV[0], targetV[1], targetV[2]))
+		FILE.write("\tsource %.3f %.3f %.3f\n" % (lampV[0], lampV[1], lampV[2]))
+		FILE.write("\ttarget %.3f %.3f %.3f\n" % (targetV[0], targetV[1], targetV[2]))
 		FILE.write("\tradius %s\n" % (radius))
 		FILE.write("\temit { \"sRGB nonlinear\" %.3f %.3f %.3f }\n" % (red, green, blue))
 		FILE.write("}")
@@ -1029,7 +1029,7 @@ def export_lights(lmp):
 		FILE.write("\ttype spherical\n")
 		FILE.write("\tcolor { \"sRGB nonlinear\" %.3f %.3f %.3f }\n" % (red, green, blue))
                 FILE.write("\tradiance %s\n" % (power))
-                FILE.write("\tcenter %s %s %s\n" % (lampV[0], lampV[1], lampV[2]))
+                FILE.write("\tcenter %.3f %.3f %.3f\n" % (lampV[0], lampV[1], lampV[2]))
                 FILE.write("\tradius %s\n" % (dist))
                 FILE.write("\tsamples %s\n" % DSAMPLES.val)
 		FILE.write("}")
@@ -1042,7 +1042,7 @@ def export_lights(lmp):
 			FILE.write("\ttype point\n")
 			FILE.write("\tcolor { \"sRGB nonlinear\" %.3f %.3f %.3f }\n" % (red, green, blue))
 			FILE.write("\tpower %s\n" % (power))
-			FILE.write("\tp %s %s %s\n" % (lampV[0], lampV[1], lampV[2]))
+			FILE.write("\tp %.3f %.3f %.3f\n" % (lampV[0], lampV[1], lampV[2]))
 			FILE.write("}")
 
 ## Export of Image Based Lights ##
@@ -1158,9 +1158,9 @@ def export_camera(cam):
 	if DOF.val == 1:
 		camtype = "thinlens"
 		FILE.write("\ttype   %s\n" % camtype)
-		FILE.write("\teye    %s %s %s\n" % (eyeV[0], eyeV[1], eyeV[2]))
-		FILE.write("\ttarget %s %s %s\n" % (targetV[0], targetV[1], targetV[2]))
-		FILE.write("\tup     %s %s %s\n" % (upV[0], upV[1], upV[2]))
+		FILE.write("\teye    %.3f %.3f %.3f\n" % (eyeV[0], eyeV[1], eyeV[2]))
+		FILE.write("\ttarget %.3f %.3f %.3f\n" % (targetV[0], targetV[1], targetV[2]))
+		FILE.write("\tup     %.3f %.3f %.3f\n" % (upV[0], upV[1], upV[2]))
 		FILE.write("\tfov    %s \n" % fov)
 		FILE.write("\taspect %s \n" % (1.0 * IM_WIDTH / IM_HEIGHT))
 		FILE.write("\tfdist %s \n" % DOFDIST)
@@ -1170,21 +1170,21 @@ def export_camera(cam):
 	elif SPHERICALCAMERA.val == 1:
 		camtype = "spherical"
 		FILE.write("\ttype   %s\n" % camtype)
-		FILE.write("\teye    %s %s %s\n" % (eyeV[0], eyeV[1], eyeV[2]))
-		FILE.write("\ttarget %s %s %s\n" % (targetV[0], targetV[1], targetV[2]))
-		FILE.write("\tup     %s %s %s\n" % (upV[0], upV[1], upV[2]))
+		FILE.write("\teye    %.3f %.3f %.3f\n" % (eyeV[0], eyeV[1], eyeV[2]))
+		FILE.write("\ttarget %.3f %.3f %.3f\n" % (targetV[0], targetV[1], targetV[2]))
+		FILE.write("\tup     %.3f %.3f %.3f\n" % (upV[0], upV[1], upV[2]))
 	elif FISHEYECAMERA.val == 1:
 		camtype = "fisheye"
 		FILE.write("\ttype   %s\n" % camtype)
-		FILE.write("\teye    %s %s %s\n" % (eyeV[0], eyeV[1], eyeV[2]))
-		FILE.write("\ttarget %s %s %s\n" % (targetV[0], targetV[1], targetV[2]))
-		FILE.write("\tup     %s %s %s\n" % (upV[0], upV[1], upV[2]))
+		FILE.write("\teye    %.3f %.3f %.3f\n" % (eyeV[0], eyeV[1], eyeV[2]))
+		FILE.write("\ttarget %.3f %.3f %.3f\n" % (targetV[0], targetV[1], targetV[2]))
+		FILE.write("\tup     %.3f %.3f %.3f\n" % (upV[0], upV[1], upV[2]))
 	else:
 		camtype = "pinhole"
 		FILE.write("\ttype   %s\n" % camtype)
-		FILE.write("\teye    %s %s %s\n" % (eyeV[0], eyeV[1], eyeV[2]))
-		FILE.write("\ttarget %s %s %s\n" % (targetV[0], targetV[1], targetV[2]))
-		FILE.write("\tup     %s %s %s\n" % (upV[0], upV[1], upV[2]))
+		FILE.write("\teye    %.3f %.3f %.3f\n" % (eyeV[0], eyeV[1], eyeV[2]))
+		FILE.write("\ttarget %.3f %.3f %.3f\n" % (targetV[0], targetV[1], targetV[2]))
+		FILE.write("\tup     %.3f %.3f %.3f\n" % (upV[0], upV[1], upV[2]))
 		FILE.write("\tfov    %s \n" % fov)
 		FILE.write("\taspect %s \n" % (1.0 * IM_WIDTH / IM_HEIGHT))
                 #To be uncommented when 0.07.3 is released
@@ -1222,7 +1222,7 @@ def export_geometry(obj):
                                 FILE.write("\tsamples %s\n" % DSAMPLES.val)
                                 FILE.write("\tpoints %d\n" % (numverts))
                                 for vert in verts:
-                                        FILE.write("\t\t%s %s %s\n" % (vert.co[0], vert.co[1], vert.co[2]))
+                                        FILE.write("\t\t%.3f %.3f %.3f\n" % (vert.co[0], vert.co[1], vert.co[2]))
                                 numtris = 0
                                 for face in faces:
                                         num = len(face.verts)
@@ -1321,7 +1321,7 @@ def export_geometry(obj):
                                         FILE.write("\tname \"" + obj.name + "\"\n")
                                         FILE.write("\tpoints %d\n" % (numverts))        
                                         for vert in verts:
-                                                FILE.write("\t\t%s %s %s\n" % (vert.co[0], vert.co[1], vert.co[2]))
+                                                FILE.write("\t\t%.3f %.3f %.3f\n" % (vert.co[0], vert.co[1], vert.co[2]))
                                         FILE.write("\tradius 0.05\n}\n")
 
                                 else:
@@ -1330,7 +1330,7 @@ def export_geometry(obj):
                                         FILE.write("\tname \"" + obj.name + "\"\n")
                                         FILE.write("\tpoints %d\n" % (numverts))
                                         for vert in verts:
-                                                FILE.write("\t\t%s %s %s\n" % (vert.co[0], vert.co[1], vert.co[2]))
+                                                FILE.write("\t\t%.3f %.3f %.3f\n" % (vert.co[0], vert.co[1], vert.co[2]))
                                         numtris = 0
                                         for face in faces:
                                                 num = len(face.verts)
@@ -1359,7 +1359,7 @@ def export_geometry(obj):
                                                 elif allsmooth:
                                                         FILE.write("\tnormals vertex\n")
                                                         for vert in verts:
-                                                                FILE.write("\t\t%s %s %s\n" % (vert.no[0], vert.no[1], vert.no[2]))
+                                                                FILE.write("\t\t%.3f %.3f %.3f\n" % (vert.no[0], vert.no[1], vert.no[2]))
                                                 else:
                                                         FILE.write("\tnormals facevarying\n")
                                                         for face in faces:
