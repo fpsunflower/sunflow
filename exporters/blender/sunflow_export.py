@@ -1,12 +1,12 @@
 #!BPY
 
 """
-Name: 'Sunflow Exporter 1.4.12 (.sc)...'
+Name: 'Sunflow Exporter 1.4.13 (.sc)...'
 Blender: 2.44
 Group: 'Export'
 Tip: 'Export to a Sunflow Scene File'
 
-Version         :       1.4.12 (August 2007)
+Version         :       1.4.13 (August 2007)
 Author          :       R Lindsay (hayfever) / Christopher Kulla / MADCello / 
 			olivS / Eugene Reilly / Heavily Tessellated / Humfred
 Description     :       Export to Sunflow renderer http://sunflow.sourceforge.net/
@@ -98,7 +98,7 @@ JAVAPATH = ""
 
 ## start of export ##
 print "\n\n"
-print "blend2sunflow v1.4.12"
+print "blend2sunflow v1.4.13"
 
 ## Default values of buttons ##
 def default_values():
@@ -1441,18 +1441,41 @@ def export_geometry(obj):
                                 FILE.write("\tname %s_%s \n" % (obj.name, dupe_ob.name))
                                 FILE.write("\tgeometry %s \n" % dupe_ob.name)
                                 FILE.write("\ttransform col %s %s %s %s %s %s %s %s %s %s %s %s %s %s %s %s \n" % (instancematrix[0][0], instancematrix[0][1], instancematrix[0][2], instancematrix[0][3], instancematrix[1][0], instancematrix[1][1], instancematrix[1][2], instancematrix[1][3], instancematrix[2][0], instancematrix[2][1], instancematrix[2][2], instancematrix[2][3], instancematrix[3][0], instancematrix[3][1], instancematrix[3][2], instancematrix[3][3]))
-                                if len(dupobmesh.materials) >= 1:
+                                if len(dupobmesh.materials) == 1:
                                         FILE.write("\tshader \"" + dupobmesh.materials[0].name + ".shader\"\n")
+                                        
+                                        ##Check for and write modfiers##
+                                        for mat in dupobmesh.materials:
+                                                textures = mat.getTextures()
+                                                textu = textures[1]
+                                                textp = textures[3]
+                                                if textu <> None and (textu.tex.name.startswith("bump") or textu.tex.name.startswith("normal")):
+                                                        FILE.write("\tmodifier \"" + str(textu.tex.getName()) + "\"\n")
+                                                elif textp <> None and (textp.tex.name.startswith("perlin")):
+                                                        FILE.write("\tmodifier \"" + str(textp.tex.getName()) + "\"\n")
+                                        
+                                elif len(dupobmesh.materials) > 1:
+                                        FILE.write("\tshaders %d\n" % (len(dupobmesh.materials)))
+                                        
+                                        for mat in dupobmesh.materials:
+                                                FILE.write("\t\t\"" + mat.name + ".shader\"\n")
+                                                
+                                        ##Check for and write modfiers##                                        
+                                        FILE.write("\tmodifiers %d\n" % (len(dupobmesh.materials)))
+                                        for mat in dupobmesh.materials:
+
+                                                textures = mat.getTextures()
+                                                textu = textures[1]
+                                                textp = textures[3]
+                                                if textu <> None and (textu.tex.name.startswith("bump") or textu.tex.name.startswith("normal")):
+                                                        FILE.write("\t\t\"" + textu.tex.getName() + "\"\n")
+                                                elif textp <> None and (textp.tex.name.startswith("perlin")):
+                                                        FILE.write("\t\t\"" + textp.tex.getName() + "\"\n")
+                                                else:
+                                                        FILE.write("\t\t\"" + "None" + "\"\n")
+
                                 else:
                                         FILE.write("\tshader def\n")
-                                for mat in dupobmesh.materials:
-                                        textures = mat.getTextures()
-                                        textu = textures[1]
-                                        textp = textures[3]
-                                        if textu <> None and (textu.tex.name.startswith("bump") or textu.tex.name.startswith("normal")):
-                                                FILE.write("\tmodifier \"" + str(textu.tex.getName()) + "\"\n")
-                                        if textp <> None and (textp.tex.name.startswith("perlin")):
-                                                FILE.write("\tmodifier \"" + str(textu.tex.getName()) + "\"\n")
                                 FILE.write("}\n")
 
 ## Main export method ##
