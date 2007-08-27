@@ -1,12 +1,12 @@
 #!BPY
 
 """
-Name: 'Sunflow Exporter 1.4.13 (.sc)...'
+Name: 'Sunflow Exporter 1.4.14 (.sc)...'
 Blender: 2.44
 Group: 'Export'
 Tip: 'Export to a Sunflow Scene File'
 
-Version         :       1.4.13 (August 2007)
+Version         :       1.4.14 (August 2007)
 Author          :       R Lindsay (hayfever) / Christopher Kulla / MADCello / 
 			olivS / Eugene Reilly / Heavily Tessellated / Humfred
 Description     :       Export to Sunflow renderer http://sunflow.sourceforge.net/
@@ -98,7 +98,7 @@ JAVAPATH = ""
 
 ## start of export ##
 print "\n\n"
-print "blend2sunflow v1.4.13"
+print "blend2sunflow v1.4.14"
 
 ## Default values of buttons ##
 def default_values():
@@ -715,7 +715,7 @@ def export_shaders():
 				FILE.write("\tname \""+mat.name+".shader\"\n")
 				FILE.write("\ttype shiny\n")
 				FILE.write("\ttexture \"" + textu.tex.getImage().getFilename() + "\"\n")
-				FILE.write("\trefl %s\n}" % mat.getRayMirr())
+				FILE.write("\trefl %.2f\n}" % mat.getRayMirr())
 			
 			# newcommers default diffuse texture shader
 			else:
@@ -741,7 +741,7 @@ def export_shaders():
 				print "  o exporting shiny shader "+mat.name+"..."
 				FILE.write("\ttype shiny\n")
 				FILE.write("\tdiff { \"sRGB nonlinear\" %.3f %.3f %.3f }\n" % (RGB[0], RGB[1], RGB[2]))
-				FILE.write("\trefl %s\n}" % mat.getRayMirr())
+				FILE.write("\trefl %.2f\n}" % mat.getRayMirr())
 				
 			## amb-occ shader
 			elif mat.name.startswith("sfamb"):
@@ -1370,17 +1370,17 @@ def export_geometry(obj):
                                                                                 index1 = face.verts[1].index
                                                                                 index2 = face.verts[2].index
                                                                                 index3 = face.verts[3].index
-                                                                                FILE.write("\t\t%s %s %s %s %s %s %s %s %s\n" % (verts[index0].no[0], verts[index0].no[1], verts[index0].no[2],
+                                                                                FILE.write("\t\t%.3f %.3f %.3f %.3f %.3f %.3f %.3f %.3f %.3f\n" % (verts[index0].no[0], verts[index0].no[1], verts[index0].no[2],
                                                                                                                                                                                                                                         verts[index1].no[0], verts[index1].no[1], verts[index1].no[2],
                                                                                                                                                                                                                                         verts[index2].no[0], verts[index2].no[1], verts[index2].no[2]))
-                                                                                FILE.write("\t\t%s %s %s %s %s %s %s %s %s\n" % (verts[index0].no[0], verts[index0].no[1], verts[index0].no[2],
+                                                                                FILE.write("\t\t%.3f %.3f %.3f %.3f %.3f %.3f %.3f %.3f %.3f\n" % (verts[index0].no[0], verts[index0].no[1], verts[index0].no[2],
                                                                                                                                                                                                                                         verts[index2].no[0], verts[index2].no[1], verts[index2].no[2],
                                                                                                                                                                                                                                         verts[index3].no[0], verts[index3].no[1], verts[index3].no[2]))
                                                                         elif num == 3:
                                                                                 index0 = face.verts[0].index
                                                                                 index1 = face.verts[1].index
                                                                                 index2 = face.verts[2].index
-                                                                                FILE.write("\t\t%s %s %s %s %s %s %s %s %s\n" % (verts[index0].no[0], verts[index0].no[1], verts[index0].no[2],
+                                                                                FILE.write("\t\t%.3f %.3f %.3f %.3f %.3f %.3f %.3f %.3f %.3f\n" % (verts[index0].no[0], verts[index0].no[1], verts[index0].no[2],
                                                                                                                                                                                                                                         verts[index1].no[0], verts[index1].no[1], verts[index1].no[2],
                                                                                                                                                                                                                                         verts[index2].no[0], verts[index2].no[1], verts[index2].no[2]))
                                                                 else:
@@ -1388,10 +1388,10 @@ def export_geometry(obj):
                                                                         fny = face.no[1]
                                                                         fnz = face.no[2]
                                                                         if num == 4:
-                                                                                FILE.write("\t\t%s %s %s %s %s %s %s %s %s\n" % (fnx, fny, fnz, fnx, fny, fnz, fnx, fny, fnz))
-                                                                                FILE.write("\t\t%s %s %s %s %s %s %s %s %s\n" % (fnx, fny, fnz, fnx, fny, fnz, fnx, fny, fnz))
+                                                                                FILE.write("\t\t%.3f %.3f %.3f %.3f %.3f %.3f %.3f %.3f %.3f\n" % (fnx, fny, fnz, fnx, fny, fnz, fnx, fny, fnz))
+                                                                                FILE.write("\t\t%.3f %.3f %.3f %.3f %.3f %.3f %.3f %.3f %.3f\n" % (fnx, fny, fnz, fnx, fny, fnz, fnx, fny, fnz))
                                                                         elif num == 3:
-                                                                                FILE.write("\t\t%s %s %s %s %s %s %s %s %s\n" % (fnx, fny, fnz, fnx, fny, fnz, fnx, fny, fnz))
+                                                                                FILE.write("\t\t%.3f %.3f %.3f %.3f %.3f %.3f %.3f %.3f %.3f\n" % (fnx, fny, fnz, fnx, fny, fnz, fnx, fny, fnz))
                                                 # Check for UVs #
                                                 if mesh.faceUV <> 0:
                                                         tx = 1
