@@ -1,12 +1,12 @@
 #!BPY
 
 """
-Name: 'Sunflow Exporter 1.4.14 (.sc)...'
-Blender: 2.44
+Name: 'Sunflow Exporter 1.4.15 (.sc)...'
+Blender: 2.45
 Group: 'Export'
 Tip: 'Export to a Sunflow Scene File'
 
-Version         :       1.4.14 (August 2007)
+Version         :       1.4.15 (September 2007)
 Author          :       R Lindsay (hayfever) / Christopher Kulla / MADCello / 
 			olivS / Eugene Reilly / Heavily Tessellated / Humfred
 Description     :       Export to Sunflow renderer http://sunflow.sourceforge.net/
@@ -98,7 +98,7 @@ JAVAPATH = ""
 
 ## start of export ##
 print "\n\n"
-print "blend2sunflow v1.4.14"
+print "blend2sunflow v1.4.15"
 
 ## Default values of buttons ##
 def default_values():
@@ -946,7 +946,7 @@ def export_lights(lmp):
 		FILE.write("\ttype point\n")
 		FILE.write("\tcolor { \"sRGB nonlinear\" %.3f %.3f %.3f }\n" % (red, green, blue))
 		FILE.write("\tpower %s\n" % (power))
-		FILE.write("\tp %.3f %.3f %.3f\n" % (lampV[0], lampV[1], lampV[2]))
+		FILE.write("\tp %.6f %.6f %.6f\n" % (lampV[0], lampV[1], lampV[2]))
 		FILE.write("}")
 	elif lamp.type == 1:
 		if IMP_SUN.val == 1:
@@ -967,7 +967,7 @@ def export_lights(lmp):
 			FILE.write("\ttype point\n")
 			FILE.write("\tcolor { \"sRGB nonlinear\" %.3f %.3f %.3f }\n" % (red, green, blue))
 			FILE.write("\tpower %s\n" % (power))
-			FILE.write("\tp %.3f %.3f %.3f\n" % (lampV[0], lampV[1], lampV[2]))
+			FILE.write("\tp %.6f %.6f %.6f\n" % (lampV[0], lampV[1], lampV[2]))
 			FILE.write("}")
 
 	elif lamp.type == 4:
@@ -1000,10 +1000,10 @@ def export_lights(lmp):
 		FILE.write("\tradiance %s\n" % (radiance))
 		FILE.write("\tsamples %s\n" % DSAMPLES.val)
 		FILE.write("\tpoints 4\n")
-		FILE.write("\t\t%.3f %.3f %.3f\n" % (lampV0[0], lampV0[1], lampV0[2]))
-		FILE.write("\t\t%.3f %.3f %.3f\n" % (lampV1[0], lampV1[1], lampV1[2]))
-		FILE.write("\t\t%.3f %.3f %.3f\n" % (lampV2[0], lampV2[1], lampV2[2]))
-		FILE.write("\t\t%.3f %.3f %.3f\n" % (lampV3[0], lampV3[1], lampV3[2]))
+		FILE.write("\t\t%.6f %.6f %.6f\n" % (lampV0[0], lampV0[1], lampV0[2]))
+		FILE.write("\t\t%.6f %.6f %.6f\n" % (lampV1[0], lampV1[1], lampV1[2]))
+		FILE.write("\t\t%.6f %.6f %.6f\n" % (lampV2[0], lampV2[1], lampV2[2]))
+		FILE.write("\t\t%.6f %.6f %.6f\n" % (lampV3[0], lampV3[1], lampV3[2]))
 		FILE.write("\ttriangles 2\n")
 		FILE.write("\t\t0 1 2\n")
 		FILE.write("\t\t0 2 3\n")
@@ -1018,8 +1018,8 @@ def export_lights(lmp):
 
 		FILE.write("\n\nlight {\n")
 		FILE.write("\ttype directional\n")
-		FILE.write("\tsource %.3f %.3f %.3f\n" % (lampV[0], lampV[1], lampV[2]))
-		FILE.write("\ttarget %.3f %.3f %.3f\n" % (targetV[0], targetV[1], targetV[2]))
+		FILE.write("\tsource %.6f %.6f %.6f\n" % (lampV[0], lampV[1], lampV[2]))
+		FILE.write("\ttarget %.6f %.6f %.6f\n" % (targetV[0], targetV[1], targetV[2]))
 		FILE.write("\tradius %s\n" % (radius))
 		FILE.write("\temit { \"sRGB nonlinear\" %.3f %.3f %.3f }\n" % (red, green, blue))
 		FILE.write("}")
@@ -1029,7 +1029,7 @@ def export_lights(lmp):
 		FILE.write("\ttype spherical\n")
 		FILE.write("\tcolor { \"sRGB nonlinear\" %.3f %.3f %.3f }\n" % (red, green, blue))
                 FILE.write("\tradiance %s\n" % (power))
-                FILE.write("\tcenter %.3f %.3f %.3f\n" % (lampV[0], lampV[1], lampV[2]))
+                FILE.write("\tcenter %.6f %.6f %.6f\n" % (lampV[0], lampV[1], lampV[2]))
                 FILE.write("\tradius %s\n" % (dist))
                 FILE.write("\tsamples %s\n" % DSAMPLES.val)
 		FILE.write("}")
@@ -1042,7 +1042,7 @@ def export_lights(lmp):
 			FILE.write("\ttype point\n")
 			FILE.write("\tcolor { \"sRGB nonlinear\" %.3f %.3f %.3f }\n" % (red, green, blue))
 			FILE.write("\tpower %s\n" % (power))
-			FILE.write("\tp %.3f %.3f %.3f\n" % (lampV[0], lampV[1], lampV[2]))
+			FILE.write("\tp %.6f %.6f %.6f\n" % (lampV[0], lampV[1], lampV[2]))
 			FILE.write("}")
 
 ## Export of Image Based Lights ##
@@ -1158,9 +1158,9 @@ def export_camera(cam):
 	if DOF.val == 1:
 		camtype = "thinlens"
 		FILE.write("\ttype   %s\n" % camtype)
-		FILE.write("\teye    %.3f %.3f %.3f\n" % (eyeV[0], eyeV[1], eyeV[2]))
-		FILE.write("\ttarget %.3f %.3f %.3f\n" % (targetV[0], targetV[1], targetV[2]))
-		FILE.write("\tup     %.3f %.3f %.3f\n" % (upV[0], upV[1], upV[2]))
+		FILE.write("\teye    %.6f %.6f %.6f\n" % (eyeV[0], eyeV[1], eyeV[2]))
+		FILE.write("\ttarget %.6f %.6f %.6f\n" % (targetV[0], targetV[1], targetV[2]))
+		FILE.write("\tup     %.6f %.6f %.6f\n" % (upV[0], upV[1], upV[2]))
 		FILE.write("\tfov    %s \n" % fov)
 		FILE.write("\taspect %s \n" % (1.0 * IM_WIDTH / IM_HEIGHT))
 		FILE.write("\tfdist %s \n" % DOFDIST)
@@ -1170,21 +1170,21 @@ def export_camera(cam):
 	elif SPHERICALCAMERA.val == 1:
 		camtype = "spherical"
 		FILE.write("\ttype   %s\n" % camtype)
-		FILE.write("\teye    %.3f %.3f %.3f\n" % (eyeV[0], eyeV[1], eyeV[2]))
-		FILE.write("\ttarget %.3f %.3f %.3f\n" % (targetV[0], targetV[1], targetV[2]))
-		FILE.write("\tup     %.3f %.3f %.3f\n" % (upV[0], upV[1], upV[2]))
+		FILE.write("\teye    %.6f %.6f %.6f\n" % (eyeV[0], eyeV[1], eyeV[2]))
+		FILE.write("\ttarget %.6f %.6f %.6f\n" % (targetV[0], targetV[1], targetV[2]))
+		FILE.write("\tup     %.6f %.6f %.6f\n" % (upV[0], upV[1], upV[2]))
 	elif FISHEYECAMERA.val == 1:
 		camtype = "fisheye"
 		FILE.write("\ttype   %s\n" % camtype)
-		FILE.write("\teye    %.3f %.3f %.3f\n" % (eyeV[0], eyeV[1], eyeV[2]))
-		FILE.write("\ttarget %.3f %.3f %.3f\n" % (targetV[0], targetV[1], targetV[2]))
-		FILE.write("\tup     %.3f %.3f %.3f\n" % (upV[0], upV[1], upV[2]))
+		FILE.write("\teye    %.6f %.6f %.6f\n" % (eyeV[0], eyeV[1], eyeV[2]))
+		FILE.write("\ttarget %.6f %.6f %.6f\n" % (targetV[0], targetV[1], targetV[2]))
+		FILE.write("\tup     %.6f %.6f %.6f\n" % (upV[0], upV[1], upV[2]))
 	else:
 		camtype = "pinhole"
 		FILE.write("\ttype   %s\n" % camtype)
-		FILE.write("\teye    %.3f %.3f %.3f\n" % (eyeV[0], eyeV[1], eyeV[2]))
-		FILE.write("\ttarget %.3f %.3f %.3f\n" % (targetV[0], targetV[1], targetV[2]))
-		FILE.write("\tup     %.3f %.3f %.3f\n" % (upV[0], upV[1], upV[2]))
+		FILE.write("\teye    %.6f %.6f %.6f\n" % (eyeV[0], eyeV[1], eyeV[2]))
+		FILE.write("\ttarget %.6f %.6f %.6f\n" % (targetV[0], targetV[1], targetV[2]))
+		FILE.write("\tup     %.6f %.6f %.6f\n" % (upV[0], upV[1], upV[2]))
 		FILE.write("\tfov    %s \n" % fov)
 		FILE.write("\taspect %s \n" % (1.0 * IM_WIDTH / IM_HEIGHT))
                 #To be uncommented when 0.07.3 is released
@@ -1222,7 +1222,7 @@ def export_geometry(obj):
                                 FILE.write("\tsamples %s\n" % DSAMPLES.val)
                                 FILE.write("\tpoints %d\n" % (numverts))
                                 for vert in verts:
-                                        FILE.write("\t\t%.3f %.3f %.3f\n" % (vert.co[0], vert.co[1], vert.co[2]))
+                                        FILE.write("\t\t%.6f %.6f %.6f\n" % (vert.co[0], vert.co[1], vert.co[2]))
                                 numtris = 0
                                 for face in faces:
                                         num = len(face.verts)
@@ -1295,7 +1295,7 @@ def export_geometry(obj):
                                                 FILE.write("\tname \"" + obj.name + "\"\n")
                                                 FILE.write("\tpoints %d\n" % (len(particles)))        
                                                 for pt in particles:
-                                                        FILE.write("\t\t%s %s %s\n" % (pt[0], pt[1], pt[2]))
+                                                        FILE.write("\t\t%.6f %.6f %.6f\n" % (pt[0], pt[1], pt[2]))
                                                 FILE.write("\tradius 0.05\n}\n")
                                         elif type(particles)==list: # Is it a strand or pair?
                                                 if len(particles)>1:
@@ -1321,7 +1321,7 @@ def export_geometry(obj):
                                         FILE.write("\tname \"" + obj.name + "\"\n")
                                         FILE.write("\tpoints %d\n" % (numverts))        
                                         for vert in verts:
-                                                FILE.write("\t\t%.3f %.3f %.3f\n" % (vert.co[0], vert.co[1], vert.co[2]))
+                                                FILE.write("\t\t%.6f %.6f %.6f\n" % (vert.co[0], vert.co[1], vert.co[2]))
                                         FILE.write("\tradius 0.05\n}\n")
 
                                 else:
@@ -1330,7 +1330,7 @@ def export_geometry(obj):
                                         FILE.write("\tname \"" + obj.name + "\"\n")
                                         FILE.write("\tpoints %d\n" % (numverts))
                                         for vert in verts:
-                                                FILE.write("\t\t%.3f %.3f %.3f\n" % (vert.co[0], vert.co[1], vert.co[2]))
+                                                FILE.write("\t\t%.6f %.6f %.6f\n" % (vert.co[0], vert.co[1], vert.co[2]))
                                         numtris = 0
                                         for face in faces:
                                                 num = len(face.verts)
@@ -1359,7 +1359,7 @@ def export_geometry(obj):
                                                 elif allsmooth:
                                                         FILE.write("\tnormals vertex\n")
                                                         for vert in verts:
-                                                                FILE.write("\t\t%.3f %.3f %.3f\n" % (vert.no[0], vert.no[1], vert.no[2]))
+                                                                FILE.write("\t\t%.6f %.6f %.6f\n" % (vert.no[0], vert.no[1], vert.no[2]))
                                                 else:
                                                         FILE.write("\tnormals facevarying\n")
                                                         for face in faces:
@@ -1370,17 +1370,17 @@ def export_geometry(obj):
                                                                                 index1 = face.verts[1].index
                                                                                 index2 = face.verts[2].index
                                                                                 index3 = face.verts[3].index
-                                                                                FILE.write("\t\t%.3f %.3f %.3f %.3f %.3f %.3f %.3f %.3f %.3f\n" % (verts[index0].no[0], verts[index0].no[1], verts[index0].no[2],
+                                                                                FILE.write("\t\t%.6f %.6f %.6f %.6f %.6f %.6f %.6f %.6f %.6f\n" % (verts[index0].no[0], verts[index0].no[1], verts[index0].no[2],
                                                                                                                                                                                                                                         verts[index1].no[0], verts[index1].no[1], verts[index1].no[2],
                                                                                                                                                                                                                                         verts[index2].no[0], verts[index2].no[1], verts[index2].no[2]))
-                                                                                FILE.write("\t\t%.3f %.3f %.3f %.3f %.3f %.3f %.3f %.3f %.3f\n" % (verts[index0].no[0], verts[index0].no[1], verts[index0].no[2],
+                                                                                FILE.write("\t\t%.6f %.6f %.6f %.6f %.6f %.6f %.6f %.6f %.6f\n" % (verts[index0].no[0], verts[index0].no[1], verts[index0].no[2],
                                                                                                                                                                                                                                         verts[index2].no[0], verts[index2].no[1], verts[index2].no[2],
                                                                                                                                                                                                                                         verts[index3].no[0], verts[index3].no[1], verts[index3].no[2]))
                                                                         elif num == 3:
                                                                                 index0 = face.verts[0].index
                                                                                 index1 = face.verts[1].index
                                                                                 index2 = face.verts[2].index
-                                                                                FILE.write("\t\t%.3f %.3f %.3f %.3f %.3f %.3f %.3f %.3f %.3f\n" % (verts[index0].no[0], verts[index0].no[1], verts[index0].no[2],
+                                                                                FILE.write("\t\t%.6f %.6f %.6f %.6f %.6f %.6f %.6f %.6f %.6f\n" % (verts[index0].no[0], verts[index0].no[1], verts[index0].no[2],
                                                                                                                                                                                                                                         verts[index1].no[0], verts[index1].no[1], verts[index1].no[2],
                                                                                                                                                                                                                                         verts[index2].no[0], verts[index2].no[1], verts[index2].no[2]))
                                                                 else:
@@ -1388,10 +1388,10 @@ def export_geometry(obj):
                                                                         fny = face.no[1]
                                                                         fnz = face.no[2]
                                                                         if num == 4:
-                                                                                FILE.write("\t\t%.3f %.3f %.3f %.3f %.3f %.3f %.3f %.3f %.3f\n" % (fnx, fny, fnz, fnx, fny, fnz, fnx, fny, fnz))
-                                                                                FILE.write("\t\t%.3f %.3f %.3f %.3f %.3f %.3f %.3f %.3f %.3f\n" % (fnx, fny, fnz, fnx, fny, fnz, fnx, fny, fnz))
+                                                                                FILE.write("\t\t%.6f %.6f %.6f %.6f %.6f %.6f %.6f %.6f %.6f\n" % (fnx, fny, fnz, fnx, fny, fnz, fnx, fny, fnz))
+                                                                                FILE.write("\t\t%.6f %.6f %.6f %.6f %.6f %.6f %.6f %.6f %.6f\n" % (fnx, fny, fnz, fnx, fny, fnz, fnx, fny, fnz))
                                                                         elif num == 3:
-                                                                                FILE.write("\t\t%.3f %.3f %.3f %.3f %.3f %.3f %.3f %.3f %.3f\n" % (fnx, fny, fnz, fnx, fny, fnz, fnx, fny, fnz))
+                                                                                FILE.write("\t\t%.6f %.6f %.6f %.6f %.6f %.6f %.6f %.6f %.6f\n" % (fnx, fny, fnz, fnx, fny, fnz, fnx, fny, fnz))
                                                 # Check for UVs #
                                                 if mesh.faceUV <> 0:
                                                         tx = 1
