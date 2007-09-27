@@ -1,12 +1,12 @@
 #!BPY
 
 """
-Name: 'Sunflow Exporter 1.4.15 (.sc)...'
+Name: 'Sunflow Exporter 1.4.16 (.sc)...'
 Blender: 2.45
 Group: 'Export'
 Tip: 'Export to a Sunflow Scene File'
 
-Version         :       1.4.15 (September 2007)
+Version         :       1.4.16 (September 2007)
 Author          :       R Lindsay (hayfever) / Christopher Kulla / MADCello / 
 			olivS / Eugene Reilly / Heavily Tessellated / Humfred
 Description     :       Export to Sunflow renderer http://sunflow.sourceforge.net/
@@ -98,7 +98,7 @@ JAVAPATH = ""
 
 ## start of export ##
 print "\n\n"
-print "blend2sunflow v1.4.15"
+print "blend2sunflow v1.4.16"
 
 ## Default values of buttons ##
 def default_values():
@@ -1405,10 +1405,10 @@ def export_geometry(obj):
                                                         for face in faces:
                                                                 num = len(face.verts)
                                                                 if num == 4:
-                                                                        FILE.write("\t\t%s %s %s %s %s %s\n" % (tx * face.uv[0][0], ty * face.uv[0][1], tx * face.uv[1][0], ty * face.uv[1][1], tx * face.uv[2][0], ty * face.uv[2][1]))
-                                                                        FILE.write("\t\t%s %s %s %s %s %s\n" % (tx * face.uv[0][0], ty * face.uv[0][1], tx * face.uv[2][0], ty * face.uv[2][1], tx * face.uv[3][0], ty * face.uv[3][1]))
+                                                                        FILE.write("\t\t%.6f %.6f %.6f %.6f %.6f %.6f\n" % (tx * face.uv[0][0], ty * face.uv[0][1], tx * face.uv[1][0], ty * face.uv[1][1], tx * face.uv[2][0], ty * face.uv[2][1]))
+                                                                        FILE.write("\t\t%.6f %.6f %.6f %.6f %.6f %.6f\n" % (tx * face.uv[0][0], ty * face.uv[0][1], tx * face.uv[2][0], ty * face.uv[2][1], tx * face.uv[3][0], ty * face.uv[3][1]))
                                                                 elif num == 3:
-                                                                        FILE.write("\t\t%s %s %s %s %s %s\n" % (tx * face.uv[0][0], ty * face.uv[0][1], tx * face.uv[1][0], ty * face.uv[1][1], tx * face.uv[2][0], ty * face.uv[2][1]))
+                                                                        FILE.write("\t\t%.6f %.6f %.6f %.6f %.6f %.6f\n" % (tx * face.uv[0][0], ty * face.uv[0][1], tx * face.uv[1][0], ty * face.uv[1][1], tx * face.uv[2][0], ty * face.uv[2][1]))
                                                 else:
                                                         FILE.write("\tuvs none\n")
 
