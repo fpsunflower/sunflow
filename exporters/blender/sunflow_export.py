@@ -1,12 +1,12 @@
 #!BPY
 
 """
-Name: 'Sunflow Exporter 1.4.16 (.sc)...'
+Name: 'Sunflow Exporter 1.4.17 (.sc)...'
 Blender: 2.45
 Group: 'Export'
 Tip: 'Export to a Sunflow Scene File'
 
-Version         :       1.4.16 (September 2007)
+Version         :       1.4.17 (November 2007)
 Author          :       R Lindsay (hayfever) / Christopher Kulla / MADCello / 
 			olivS / Eugene Reilly / Heavily Tessellated / Humfred
 Description     :       Export to Sunflow renderer http://sunflow.sourceforge.net/
@@ -98,7 +98,7 @@ JAVAPATH = ""
 
 ## start of export ##
 print "\n\n"
-print "blend2sunflow v1.4.16"
+print "blend2sunflow v1.4.17"
 
 ## Default values of buttons ##
 def default_values():
@@ -2278,7 +2278,7 @@ def drawShad():
 
 ## Draw export and render options settings ##
 def drawRender():
-	global EXPORT, RENDER, SMALLMESH, NOGI, NOCAUSTICS, QUICKUV, QUICKNORM, QUICKID, QUICKPRIMS, QUICKGRAY, QUICKWIRE, QUICKOCC, QOCCDIST, FILETYPE, DEPTH_DIFF, DEPTH_REFL, DEPTH_REFR, QUICKOPT, EXP_ANIM, IPR, BUCKETSIZE, BUCKETTYPE, REVERSE
+	global EXPORT, RENDER, SMALLMESH, NOGI, NOGUI, NOCAUSTICS, QUICKUV, QUICKNORM, QUICKID, QUICKPRIMS, QUICKGRAY, QUICKWIRE, QUICKOCC, QOCCDIST, FILETYPE, DEPTH_DIFF, DEPTH_REFL, DEPTH_REFR, QUICKOPT, EXP_ANIM, IPR, BUCKETSIZE, BUCKETTYPE, REVERSE
 	col=10; line=325; BGL.glRasterPos2i(col, line); Draw.Text("Rendering actions:")
 	col=10; line=300; EXPORT=Draw.Button("Export .sc", EXP_EVT, col, line, 140, 18, "Export the scene to .sc file")
 	col=160; RENDER=Draw.Button("Render exported", REND_EVT, col, line, 130, 18, "Render it (Export a .sc file first)")
@@ -2295,7 +2295,7 @@ def drawRender():
 	col=10; line=170; SMALLMESH=Draw.Toggle("Small mesh", 2, col, line, 85, 18, SMALLMESH.val, "Load triangle meshes using triangles optimized for memory use")
 	col=100; NOGI=Draw.Toggle("No GI", 2, col, line, 85, 18, NOGI.val, "Disable any global illumination engines in the scene")
 	col=190; NOCAUSTICS=Draw.Toggle("No Caustics", 2, col, line, 85, 18, NOCAUSTICS.val, "Disable any caustic engine in the scene")
-	col=280; NOGUI=Draw.Toggle("No GUI", 2, col, line, 85, 18, NOCAUSTICS.val, "Don't open the frame showing rendering progress")
+	col=280; NOGUI=Draw.Toggle("No GUI", 2, col, line, 85, 18, NOGUI.val, "Don't open the frame showing rendering progress")
 	col=370; IPR=Draw.Toggle("IPR", 2, col, line, 85, 18, IPR.val, "Render using progressive algorithm")
 	col=10; line=150; BGL.glRasterPos2i(col, line); Draw.Text("Quick override options:")
 	col=10; line=125; QUICKOPT=Draw.Menu("%tQuick option|None|Quick UVs|Quick Normals|Quick ID|Quick Primitives|Quick Gray|Quick Wire", QUICK_OPT, col, line, 100, 18, QUICKOPT.val)
