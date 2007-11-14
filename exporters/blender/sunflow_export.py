@@ -1188,7 +1188,7 @@ def export_camera(cam):
 		FILE.write("\tfov    %s \n" % fov)
 		FILE.write("\taspect %s \n" % (1.0 * IM_WIDTH / IM_HEIGHT))
                 #To be uncommented when 0.07.3 is released
-		#FILE.write("\tshift %s %s\n" % (camera.shiftx, camera.shifty)
+		#FILE.write("\tshift %.2f %.2f\n" % (camera.shiftX, camera.shiftY))
 	FILE.write("}")
 
 ## Export method for meshes ##
