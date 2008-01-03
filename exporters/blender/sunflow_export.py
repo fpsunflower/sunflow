@@ -1,12 +1,12 @@
 #!BPY
 
 """
-Name: 'Sunflow Exporter 1.4.17 (.sc)...'
+Name: 'Sunflow Exporter 1.4.18 (.sc)...'
 Blender: 2.45
 Group: 'Export'
 Tip: 'Export to a Sunflow Scene File'
 
-Version         :       1.4.17 (November 2007)
+Version         :       1.4.18 (January 2008)
 Author          :       R Lindsay (hayfever) / Christopher Kulla / MADCello / 
 			olivS / Eugene Reilly / Heavily Tessellated / Humfred
 Description     :       Export to Sunflow renderer http://sunflow.sourceforge.net/
@@ -98,7 +98,7 @@ JAVAPATH = ""
 
 ## start of export ##
 print "\n\n"
-print "blend2sunflow v1.4.17"
+print "blend2sunflow v1.4.18"
 
 ## Default values of buttons ##
 def default_values():
@@ -123,7 +123,7 @@ def default_values():
         IMGFILTER = Draw.Create(1)
         IMGFILTERW = Draw.Create(1)
         IMGFILTERH = Draw.Create(1)
-        BUCKETSIZE = Draw.Create(32)
+        BUCKETSIZE = Draw.Create(64)
         BUCKETTYPE = Draw.Create(1)
         REVERSE = Draw.Create(0)
 
@@ -141,7 +141,7 @@ def default_values():
         BCKGRD = Draw.Create(0.0, 0.0, 0.0)
         BACKGROUND = Draw.Create(0)
         SUN_TURB = Draw.Create(6.0)
-        SUN_SAMPLES = Draw.Create(16)
+        SUN_SAMPLES = Draw.Create(128)
         IBL = Draw.Create(0)
         IBLLOCK = Draw.Create(0)
         IBLSAMPLES = Draw.Create(16)
@@ -175,7 +175,7 @@ def default_values():
         IRRSPACEMAX = Draw.Create(5.0)
         USEGLOBALS = Draw.Create(0)
         gPHOTONNUMBER = Draw.Create(1000000)
-        gPHOTONMAP = Draw.Create(2)
+        gPHOTONMAP = Draw.Create(1)
         gPHOTONESTIMATE = Draw.Create(100)
         gPHOTONRADIUS = Draw.Create(0.5)
         PATHTRACE = Draw.Create(0)
@@ -214,7 +214,7 @@ def default_values():
         BUCKETTYPELIST = ["hilbert", "spiral", "column", "row", "diagonal", "random"]
         FILETYPE
         PHOTONMAPLIST = ["kd"]
-        gPHOTONMAPLIST = ["kd", "grid"]
+        gPHOTONMAPLIST = ["grid"]
 
 ####### Script Settings Section #######
 #######################################
@@ -2375,7 +2375,7 @@ def drawGI():
 	col=230; IRRSPACEMAX=Draw.Number("Max. Space", 2, col, line, 125, 18, IRRSPACEMAX.val, 0.00, 10.00)
 	col=10; line=175; USEGLOBALS=Draw.Toggle("Use Globals", FORCE_GLOBALS, col, line, 85, 18, USEGLOBALS.val, "Use global photons instead of path tracing for Irr. Cache secondary bounces") 
 	col=100; gPHOTONNUMBER=Draw.Number("Glob. Phot.", 2, col, line, 125, 18, gPHOTONNUMBER.val, 0, 5000000)
-	col=230; gPHOTONMAP=Draw.Menu("%tGlobal Photon Map|kd|grid", gPHOTON_EVENT, col, line, 60, 18, gPHOTONMAP.val)
+	col=230; gPHOTONMAP=Draw.Menu("%tGlobal Photon Map|grid", gPHOTON_EVENT, col, line, 60, 18, gPHOTONMAP.val)
 	col=295; gPHOTONESTIMATE=Draw.Number("Global Estim.", 2, col, line, 125, 18, gPHOTONESTIMATE.val, 0, 1000)
 	col=425; gPHOTONRADIUS=Draw.Number("Global Radius", 2, col, line, 125, 18, gPHOTONRADIUS.val, 0.00, 10.00)
         #Path Tracing#
