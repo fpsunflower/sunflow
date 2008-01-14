@@ -1,14 +1,14 @@
 #!BPY
 
 """
-Name: 'Sunflow Exporter 1.4.18 (.sc)...'
+Name: 'Sunflow Exporter 1.4.19 (.sc)...'
 Blender: 2.45
 Group: 'Export'
 Tip: 'Export to a Sunflow Scene File'
 
-Version         :       1.4.18 (January 2008)
+Version         :       1.4.19 (January 2008)
 Author          :       R Lindsay (hayfever) / Christopher Kulla / MADCello / 
-			olivS / Eugene Reilly / Heavily Tessellated / Humfred
+			olivS / Eugene Reilly / Heavily Tessellated / Humfred / rorore
 Description     :       Export to Sunflow renderer http://sunflow.sourceforge.net/
 Usage           :       See how to use the script at http://sunflow.sourceforge.net/phpbb2/viewtopic.php?t=125
 
@@ -98,7 +98,7 @@ JAVAPATH = ""
 
 ## start of export ##
 print "\n\n"
-print "blend2sunflow v1.4.18"
+print "blend2sunflow v1.4.19"
 
 ## Default values of buttons ##
 def default_values():
@@ -110,7 +110,7 @@ def default_values():
         IRRSPACEMIN, IRRSPACEMAX, USEGLOBALS, gPHOTONNUMBER, gPHOTONMAP, gPHOTONESTIMATE, gPHOTONRADIUS, PATHTRACE,\
         PATHSAMPLES, VIEWCAUSTICS, VIEWGLOBALS, VIEWGI, OCCLUSION, OCCBRIGHT, OCCDARK, OCCSAMPLES, OCCDIST,\
         SHADTYPE, QUICKOPT, IPR, EXP_ANIM, DEPTH_DIFF, DEPTH_REFL, DEPTH_REFR, NOGI, NOCAUSTICS, QUICKOCC, QOCCDIST,\
-        NOGUI, SMALLMESH, IMGFILTERLIST, BUCKETTYPELIST, PHOTONMAPLIST, gPHOTONMAPLIST, FAKEAMB, FAMBSKY, FAMBGROUND
+        NOGUI, SMALLMESH, IMGFILTERLIST, BUCKETTYPELIST, PHOTONMAPLIST, gPHOTONMAPLIST, FAKEAMB, FAMBSKY, FAMBGROUND, NOGEOM
 
         FILETYPE = Draw.Create(1)
 
@@ -208,7 +208,8 @@ def default_values():
         QOCCDIST    = Draw.Create(0.5)
         NOGUI    = Draw.Create(0)
         SMALLMESH    = Draw.Create(0)
-
+        NOGEOM   = Draw.Create(0)
+        
         ## Lists ##
         IMGFILTERLIST = ["box", "gaussian", "mitchell", "triangle", "catmull-rom", "blackman-harris", "sinc", "lanczos"]
         BUCKETTYPELIST = ["hilbert", "spiral", "column", "row", "diagonal", "random"]
@@ -1552,22 +1553,23 @@ public void build() {
 		if ANIM == 0:
 			FILE.write("\n\ninclude \"%s\"\n" % (os.path.basename(filename).replace(".sc", ".geo.sc")))
 			FILE.close()
+                if NOGEOM.val == 0:
 			## open geo file
-			filename = filename.replace(".sc", ".geo.sc")
-			print "Exporting geometry to: %s" % (filename)
-			FILE = open(filename, 'wb')
+                        filename = filename.replace(".sc", ".geo.sc")
+                        print "Exporting geometry to: %s" % (filename)
+                        FILE = open(filename, 'wb')
 
-		for object in OBJECTS:
-			if object.users > 1 and object.layers[0] in LAYERS:
-				if object.getType() == 'Mesh' or object.getType() == 'Surf':
-					if not object.name.startswith("meshlight"):
-						export_geometry(object)
+                        for object in OBJECTS:
+                                if object.users > 1 and object.layers[0] in LAYERS:
+                                        if object.getType() == 'Mesh' or object.getType() == 'Surf':
+                                                if not object.name.startswith("meshlight"):
+                                                        export_geometry(object)
 
-		for object in OBJECTS:
-			if object.users > 1 and object.layers[0] in LAYERS:
-                                if object.getType() == 'Empty':
-                                        export_geometry(object)
-		FILE.close()
+                        for object in OBJECTS:
+                                if object.users > 1 and object.layers[0] in LAYERS:
+                                        if object.getType() == 'Empty':
+                                                export_geometry(object)
+                        FILE.close()
 
 	if ANIM == 1:
 		CTX.currentFrame(orig_frame)
@@ -2278,31 +2280,32 @@ def drawShad():
 
 ## Draw export and render options settings ##
 def drawRender():
-	global EXPORT, RENDER, SMALLMESH, NOGI, NOGUI, NOCAUSTICS, QUICKUV, QUICKNORM, QUICKID, QUICKPRIMS, QUICKGRAY, QUICKWIRE, QUICKOCC, QOCCDIST, FILETYPE, DEPTH_DIFF, DEPTH_REFL, DEPTH_REFR, QUICKOPT, EXP_ANIM, IPR, BUCKETSIZE, BUCKETTYPE, REVERSE
-	col=10; line=325; BGL.glRasterPos2i(col, line); Draw.Text("Rendering actions:")
-	col=10; line=300; EXPORT=Draw.Button("Export .sc", EXP_EVT, col, line, 140, 18, "Export the scene to .sc file")
+	global EXPORT, RENDER, NOGEOM, SMALLMESH, NOGI, NOGUI, NOCAUSTICS, QUICKUV, QUICKNORM, QUICKID, QUICKPRIMS, QUICKGRAY, QUICKWIRE, QUICKOCC, QOCCDIST, FILETYPE, DEPTH_DIFF, DEPTH_REFL, DEPTH_REFR, QUICKOPT, EXP_ANIM, IPR, BUCKETSIZE, BUCKETTYPE, REVERSE
+	col=10; line=350; BGL.glRasterPos2i(col, line); Draw.Text("Rendering actions:")
+	col=10; line=325; EXPORT=Draw.Button("Export .sc", EXP_EVT, col, line, 140, 18, "Export the scene to .sc file")
 	col=160; RENDER=Draw.Button("Render exported", REND_EVT, col, line, 130, 18, "Render it (Export a .sc file first)")
 	col=300; FILETYPE=Draw.Menu("%tFile type|png|tga|hdr|exr|igi", FILE_TYPE, col, line, 85, 18, FILETYPE.val)
-	col=10; line=280; BGL.glRasterPos2i(col, line); Draw.Text("Max raytrace depths:")
-	col=10; line=255; DEPTH_DIFF=Draw.Number("Diffuse Depth", 2, col, line, 125, 18, DEPTH_DIFF.val, 1, 100)
+	col=10; line=300; BGL.glRasterPos2i(col, line); Draw.Text("Export options:")
+	col=10; line=275; EXP_ANIM=Draw.Toggle("Export As Animation", 2, col, line, 140, 18, EXP_ANIM.val, "Export the scene as animation")
+	col=160; NOGEOM=Draw.Toggle("Export No Geometry", 2, col, line, 140, 18, NOGEOM.val, "Export the scene to .sc file without geometry")
+	col=10; line=255; BGL.glRasterPos2i(col, line); Draw.Text("Max raytrace depths:")
+	col=10; line=230; DEPTH_DIFF=Draw.Number("Diffuse Depth", 2, col, line, 125, 18, DEPTH_DIFF.val, 1, 100)
 	col=150; DEPTH_REFL=Draw.Number("Reflection Depth", 2, col, line, 125, 18, DEPTH_REFL.val, 1, 100)
 	col=290; DEPTH_REFR=Draw.Number("Refraction Depth", 2, col, line, 125, 18, DEPTH_REFR.val, 1, 100)
-        col=10; line=240; BGL.glRasterPos2i(col, line); Draw.Text("Bucket Order:")
-	col=10; line=215; BUCKETSIZE=Draw.Number("Bucket Size", 2, col, line, 125, 18, BUCKETSIZE.val, 8, 64)
+        col=10; line=210; BGL.glRasterPos2i(col, line); Draw.Text("Bucket Order:")
+	col=10; line=185; BUCKETSIZE=Draw.Number("Bucket Size", 2, col, line, 125, 18, BUCKETSIZE.val, 8, 64)
 	col=150; BUCKETTYPE=Draw.Menu("%tBucket Order|hilbert (default)|spiral|column|row|diagonal|random", BUCKET_EVENT, col, line, 125, 18, BUCKETTYPE.val)
 	col=290; REVERSE=Draw.Toggle("Reverse Order", 2, col, line, 125, 18, REVERSE.val, "Use reverse bucket order")
-	col=10; line=195; BGL.glRasterPos2i(col, line); Draw.Text("Rendering options:")
-	col=10; line=170; SMALLMESH=Draw.Toggle("Small mesh", 2, col, line, 85, 18, SMALLMESH.val, "Load triangle meshes using triangles optimized for memory use")
+	col=10; line=165; BGL.glRasterPos2i(col, line); Draw.Text("Rendering options:")
+	col=10; line=140; SMALLMESH=Draw.Toggle("Small mesh", 2, col, line, 85, 18, SMALLMESH.val, "Load triangle meshes using triangles optimized for memory use")
 	col=100; NOGI=Draw.Toggle("No GI", 2, col, line, 85, 18, NOGI.val, "Disable any global illumination engines in the scene")
 	col=190; NOCAUSTICS=Draw.Toggle("No Caustics", 2, col, line, 85, 18, NOCAUSTICS.val, "Disable any caustic engine in the scene")
 	col=280; NOGUI=Draw.Toggle("No GUI", 2, col, line, 85, 18, NOGUI.val, "Don't open the frame showing rendering progress")
 	col=370; IPR=Draw.Toggle("IPR", 2, col, line, 85, 18, IPR.val, "Render using progressive algorithm")
-	col=10; line=150; BGL.glRasterPos2i(col, line); Draw.Text("Quick override options:")
-	col=10; line=125; QUICKOPT=Draw.Menu("%tQuick option|None|Quick UVs|Quick Normals|Quick ID|Quick Primitives|Quick Gray|Quick Wire", QUICK_OPT, col, line, 100, 18, QUICKOPT.val)
-	col=10; line=100; QUICKOCC=Draw.Toggle("Quick Amb Occ", QUICK_OCC, col, line, 85, 18, QUICKOCC.val, "Applies ambient occlusion to the scene with specified maximum distance")
+	col=10; line=125; BGL.glRasterPos2i(col, line); Draw.Text("Quick override options:")
+	col=10; line=100; QUICKOPT=Draw.Menu("%tQuick option|None|Quick UVs|Quick Normals|Quick ID|Quick Primitives|Quick Gray|Quick Wire", QUICK_OPT, col, line, 100, 18, QUICKOPT.val)
+	col=10; line=75; QUICKOCC=Draw.Toggle("Quick Amb Occ", QUICK_OCC, col, line, 85, 18, QUICKOCC.val, "Applies ambient occlusion to the scene with specified maximum distance")
 	col=100; QOCCDIST=Draw.Number("Distance", 2, col, line, 125, 18, QOCCDIST.val, 0.00, 1000.00)
-	col=10; line=75; EXP_ANIM=Draw.Toggle("Export As Animation", 2, col, line, 140, 18, EXP_ANIM.val, "Export the scene as animation")
-
 	drawButtons()
 
 ## Draw the SF configuration settings ##
