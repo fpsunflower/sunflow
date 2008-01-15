@@ -8,7 +8,7 @@ Tip: 'Export to a Sunflow Scene File'
 
 Version         :       1.4.19 (January 2008)
 Author          :       R Lindsay (hayfever) / Christopher Kulla / MADCello / 
-			olivS / Eugene Reilly / Heavily Tessellated / Humfred / rorore
+			olivS / Eugene Reilly / Heavily Tessellated / Humfred / Rore
 Description     :       Export to Sunflow renderer http://sunflow.sourceforge.net/
 Usage           :       See how to use the script at http://sunflow.sourceforge.net/phpbb2/viewtopic.php?t=125
 
