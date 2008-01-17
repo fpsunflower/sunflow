@@ -1,12 +1,12 @@
 #!BPY
 
 """
-Name: 'Sunflow Exporter 1.4.19 (.sc)...'
+Name: 'Sunflow Exporter 1.4.20 (.sc)...'
 Blender: 2.45
 Group: 'Export'
 Tip: 'Export to a Sunflow Scene File'
 
-Version         :       1.4.19 (January 2008)
+Version         :       1.4.20 (January 2008)
 Author          :       R Lindsay (hayfever) / Christopher Kulla / MADCello / 
 			olivS / Eugene Reilly / Heavily Tessellated / Humfred / Rore
 Description     :       Export to Sunflow renderer http://sunflow.sourceforge.net/
@@ -98,7 +98,7 @@ JAVAPATH = ""
 
 ## start of export ##
 print "\n\n"
-print "blend2sunflow v1.4.19"
+print "blend2sunflow v1.4.20"
 
 ## Default values of buttons ##
 def default_values():
@@ -1509,6 +1509,7 @@ def exportfile(filename):
 public void build() {
 	parse("%s" + ".settings.sc");
 	parse("%s" + "." + getCurrentFrame() + ".sc");
+	parse("%s" + "." + getCurrentFrame() + ".geo.sc");
 }
 """ % (base, base))
 		
