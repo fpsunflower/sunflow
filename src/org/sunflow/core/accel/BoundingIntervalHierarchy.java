@@ -256,7 +256,7 @@ public class BoundingIntervalHierarchy implements AccelerationStructure {
             // ensure we are making progress in the subdivision
             if (right == rightOrig) {
                 // all left
-                if (clipL <= split) {
+                if (clipL <= split && gridBox[2 * axis + 1] != split) {
                     // keep looping on left half
                     gridBox[2 * axis + 1] = split;
                     prevClip = clipL;
@@ -274,7 +274,7 @@ public class BoundingIntervalHierarchy implements AccelerationStructure {
             } else if (left > right) {
                 // all right
                 right = rightOrig;
-                if (clipR >= split) {
+                if (clipR >= split && gridBox[2 * axis + 0] != split) {
                     // keep looping on right half
                     gridBox[2 * axis + 0] = split;
                     prevClip = clipR;
