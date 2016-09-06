@@ -204,6 +204,9 @@ public final class PluginRegistry {
         shaderPlugins.registerPlugin("view_caustics", ViewCausticsShader.class);
         shaderPlugins.registerPlugin("view_global", ViewGlobalPhotonsShader.class);
         shaderPlugins.registerPlugin("view_irradiance", ViewIrradianceShader.class);
+
+        // light shaders
+        shaderPlugins.registerPlugin("triangle_mesh_light", TriangleMeshLight.class);
     }
 
     static {
