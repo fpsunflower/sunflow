@@ -12,12 +12,12 @@ class AccelerationStructureFactory {
                     name = "uniformgrid";
                 else if (n > 2000000)
                     name = "bih";
-                else if (n > 2)
+                else if (n > 1)
                     name = "kdtree";
                 else
                     name = "null";
             } else {
-                if (n > 2)
+                if (n > 1)
                     name = "bih";
                 else
                     name = "null";
