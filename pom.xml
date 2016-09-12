@@ -5,7 +5,7 @@
 
     <artifactId>sunflow</artifactId>
     <groupId>net.sourceforge</groupId>
-    <version>0.07.3-SNAPSHOT</version>
+    <version>0.07.4-SNAPSHOT</version>
     <url>http://sunflow.sourceforge.net</url>
     <description>Sunflow Global Illumination Rendering System</description>
 
@@ -20,6 +20,11 @@
             <groupId>org.codehaus.janino</groupId>
             <artifactId>janino</artifactId>
             <version>2.5.16</version>
+        </dependency>
+        <dependency>
+            <groupId>net.jafama</groupId>
+            <artifactId>jafama</artifactId>
+            <version>2.1.0</version>
         </dependency>
     </dependencies>
 

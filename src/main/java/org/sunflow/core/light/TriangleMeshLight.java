@@ -1,5 +1,6 @@
 package org.sunflow.core.light;
 
+import net.jafama.FastMath;
 import org.sunflow.SunflowAPI;
 import org.sunflow.core.Instance;
 import org.sunflow.core.LightSample;
@@ -202,14 +203,14 @@ public class TriangleMeshLight extends TriangleMesh implements Shader, LightSour
             float cosBeta = MathUtils.clamp(-Vector3.dot(n0, n1), -1.0f, 1.0f);
             float cosGamma = MathUtils.clamp(-Vector3.dot(n1, n2), -1.0f, 1.0f);
 
-            float alpha = (float) Math.acos(cosAlpha);
-            float beta = (float) Math.acos(cosBeta);
-            float gamma = (float) Math.acos(cosGamma);
+            float alpha = (float) FastMath.acos(cosAlpha);
+            float beta = (float) FastMath.acos(cosBeta);
+            float gamma = (float) FastMath.acos(cosGamma);
 
             float area = alpha + beta + gamma - (float) Math.PI;
 
             float cosC = MathUtils.clamp(Vector3.dot(p0, p1), -1.0f, 1.0f);
-            float salpha = (float) Math.sin(alpha);
+            float salpha = (float) FastMath.sinQuick(alpha);
             float product = salpha * cosC;
 
             // use lower sampling depth for diffuse bounces
@@ -221,8 +222,8 @@ public class TriangleMeshLight extends TriangleMesh implements Shader, LightSour
                 double randY = state.getRandom(j, 1, samples);
 
                 float phi = (float) randX * area - alpha + (float) Math.PI;
-                float sinPhi = (float) Math.sin(phi);
-                float cosPhi = (float) Math.cos(phi);
+                float sinPhi = (float) FastMath.sinQuick(phi);
+                float cosPhi = (float) FastMath.cosQuick(phi);
 
                 float u = cosPhi + cosAlpha;
                 float v = sinPhi - product;
