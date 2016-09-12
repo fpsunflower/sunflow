@@ -30,6 +30,7 @@ public class TriangleMesh implements PrimitiveList {
     private FloatParameter normals;
     private FloatParameter uvs;
     private byte[] faceShaders;
+    private boolean backfaceCull = false;
 
     public static void setSmallTriangles(boolean smallTriangles) {
         if (smallTriangles)
@@ -62,6 +63,7 @@ public class TriangleMesh implements PrimitiveList {
     }
 
     public boolean update(ParameterList pl, SunflowAPI api) {
+        this.backfaceCull = pl.getBoolean("backfaceCull", false);
         boolean updatedTopology = false;
         {
             int[] triangles = pl.getIntArray("triangles");
@@ -191,6 +193,14 @@ public class TriangleMesh implements PrimitiveList {
     public void intersectPrimitive(Ray r, int primID, IntersectionState state) {
         // alternative test -- disabled for now
         // intersectPrimitiveRobust(r, primID, state);
+
+
+        if (backfaceCull && normals != null) {
+            int tri = primID * 3;
+            Vector3 normal = new Vector3(normals.data[tri], normals.data[tri + 1], normals.data[tri + 2]);
+            if (Vector3.dot(normal, r.getDirection()) >= 1e-5)
+                return;
+        }
 
         if (triaccel != null) {
             // optional fast intersection method
