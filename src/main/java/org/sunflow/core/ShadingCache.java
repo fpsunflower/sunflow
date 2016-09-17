@@ -2,8 +2,10 @@ package org.sunflow.core;
 
 import org.sunflow.image.Color;
 
+import java.util.Arrays;
+
 public class ShadingCache {
-    private Sample first;
+    private final Sample[] samples = new Sample[256];
     private int depth;
     // stats
     long hits;
@@ -11,26 +13,29 @@ public class ShadingCache {
     long sumDepth;
     long numCaches;
 
+    private final float dirTolerance, normalTolerance;
+
     private static class Sample {
         Instance i;
         Shader s;
         float nx, ny, nz;
         float dx, dy, dz;
         Color c;
-        Sample next; // linked list
     }
 
-    public ShadingCache() {
+    public ShadingCache(float dirTolerance, float normalTolerance) {
         reset();
         hits = 0;
         misses = 0;
+        this.dirTolerance = dirTolerance;
+        this.normalTolerance = normalTolerance;
     }
 
     public void reset() {
         sumDepth += depth;
         if (depth > 0)
             numCaches++;
-        first = null;
+        Arrays.fill(samples, null);
         depth = 0;
     }
 
@@ -38,14 +43,15 @@ public class ShadingCache {
         if (state.getNormal() == null)
             return null;
         // search further
-        for (Sample s = first; s != null; s = s.next) {
+        for (int i = 0; i < depth; i++) {
+            Sample s = samples[i];
             if (s.i != state.getInstance())
                 continue;
             if (s.s != shader)
                 continue;
-            if (state.getRay().dot(s.dx, s.dy, s.dz) < 0.999f)
+            if (state.getRay().dot(s.dx, s.dy, s.dz) < 1 - dirTolerance)
                 continue;
-            if (state.getNormal().dot(s.nx, s.ny, s.nz) < 0.99f)
+            if (state.getNormal().dot(s.nx, s.ny, s.nz) < 1 - normalTolerance)
                 continue;
             // we have a match
             hits++;
@@ -56,9 +62,8 @@ public class ShadingCache {
     }
 
     public void add(ShadingState state, Shader shader, Color c) {
-        if (state.getNormal() == null)
+        if (state.getNormal() == null || depth >= samples.length)
             return;
-        depth++;
         Sample s = new Sample();
         s.i = state.getInstance();
         s.s = shader;
@@ -69,7 +74,7 @@ public class ShadingCache {
         s.nx = state.getNormal().x;
         s.ny = state.getNormal().y;
         s.nz = state.getNormal().z;
-        s.next = first;
-        first = s;
+        samples[depth] = s;
+        depth++;
     }
 }

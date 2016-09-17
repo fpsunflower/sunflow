@@ -33,6 +33,7 @@ public class MultipassRenderer implements ImageSampler {
     private int numSamples;
     private float invNumSamples;
     private boolean shadingCache;
+    private float cacheDirTolerance = 1e-5f, cacheNormalTolerance = 1e-4f;
 
     public MultipassRenderer() {
         bucketSize = 32;
@@ -51,6 +52,8 @@ public class MultipassRenderer implements ImageSampler {
         bucketOrderName = options.getString("bucket.order", bucketOrderName);
         numSamples = options.getInt("aa.samples", numSamples);
         shadingCache = options.getBoolean("aa.cache", shadingCache);
+        cacheDirTolerance = options.getFloat("aa.cacheDirTolerance", cacheDirTolerance);
+        cacheNormalTolerance = options.getFloat("aa.cacheNormalTolerance", cacheNormalTolerance);
 
         // limit bucket size and compute number of buckets in each direction
         bucketSize = MathUtils.clamp(bucketSize, 16, 512);
@@ -109,7 +112,7 @@ public class MultipassRenderer implements ImageSampler {
         BucketThread(int threadID) {
             this.threadID = threadID;
             istate = new IntersectionState();
-            cache = shadingCache ? new ShadingCache() : null;
+            cache = shadingCache ? new ShadingCache(cacheDirTolerance, cacheNormalTolerance) : null;
         }
 
         @Override
