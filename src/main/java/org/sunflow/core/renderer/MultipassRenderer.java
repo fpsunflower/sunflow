@@ -120,6 +120,9 @@ public class MultipassRenderer implements ImageSampler {
             while (true) {
                 int bx, by;
                 synchronized (MultipassRenderer.this) {
+                    if (UI.taskCanceled())
+                        return;
+
                     if (bucketCounter >= bucketCoords.length)
                         return;
                     UI.taskUpdate(bucketCounter);
@@ -178,6 +181,9 @@ public class MultipassRenderer implements ImageSampler {
                 bucketAlpha[i] = a * invNumSamples;
                 if (cache != null)
                     cache.reset();
+
+                if (UI.taskCanceled())
+                    return;
             }
         }
         // update pixels

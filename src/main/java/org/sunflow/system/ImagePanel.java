@@ -25,6 +25,7 @@ public class ImagePanel extends JPanel implements Display {
     private float xo, yo;
     private float w, h;
     private long repaintCounter;
+    private final boolean dullPreviousImage;
 
     private class ScrollZoomListener extends MouseInputAdapter {
         int mx;
@@ -85,7 +86,12 @@ public class ImagePanel extends JPanel implements Display {
     }
 
     public ImagePanel() {
+        this(false);
+    }
+
+    public ImagePanel(boolean dullPreviousImage) {
         setPreferredSize(new Dimension(640, 480));
+        this.dullPreviousImage = dullPreviousImage;
         image = null;
         xo = yo = 0;
         w = h = 0;
@@ -177,11 +183,13 @@ public class ImagePanel extends JPanel implements Display {
 
     public synchronized void imageBegin(int w, int h, int bucketSize) {
         if (image != null && w == image.getWidth() && h == image.getHeight()) {
-            // dull image if it has same resolution (75%)
-            for (int y = 0; y < h; y++) {
-                for (int x = 0; x < w; x++) {
-                    int rgba = image.getRGB(x, y);
-                    image.setRGB(x, y, ((rgba & 0xFEFEFEFE) >>> 1) + ((rgba & 0xFCFCFCFC) >>> 2));
+            if (dullPreviousImage) {
+                // dull image if it has same resolution (75%)
+                for (int y = 0; y < h; y++) {
+                    for (int x = 0; x < w; x++) {
+                        int rgba = image.getRGB(x, y);
+                        image.setRGB(x, y, ((rgba & 0xFEFEFEFE) >>> 1) + ((rgba & 0xFCFCFCFC) >>> 2));
+                    }
                 }
             }
         } else {
