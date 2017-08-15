@@ -1,5 +1,5 @@
 Sunflow Global Illumination Rendering System 
-v0.07.3
+v0.07.5
 
 Contact: Christopher Kulla
          fpsunflower@users.sourceforge.net
@@ -95,7 +95,7 @@ Box and triangle are best for previews as they are small and fast. The other fil
 
 Bucket rendering:
 
-Sunflow proceses the image to be rendered in small squares called buckets. The size of these buckets can be controlled by a pixel width. Each rendering thread will be a assigned a single bucket. You may not get the bucket size you expect if you try to make them really small or really big, as there are some hard-coded limits to prevent excessive memory usage or excessive overhead.
+Sunflow proceses the image to be rendered in small squares called buckets. The size of these buckets can be controlled by a pixel width. Each rendering thread will be assigned to a single bucket. You may not get the bucket size you expect if you try to make them really small or really big, as there are some hard-coded limits to prevent excessive memory usage or excessive overhead.
 
 The bucket ordering simply affects the order in which the buckets appear. They shouldn't have too much of an effect on overall rendering speed.
 
