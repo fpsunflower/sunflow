@@ -1,5 +1,8 @@
 package org.sunflow;
 
+import org.sunflow.core.parameter.BucketParameter;
+import org.sunflow.core.parameter.ImageParameter;
+import org.sunflow.core.parameter.TraceDepthsParameter;
 import org.sunflow.core.Display;
 import org.sunflow.core.display.FastDisplay;
 import org.sunflow.core.display.FileDisplay;
@@ -19,15 +22,15 @@ public class RealtimeBenchmark extends SunflowAPI {
         parameter("threads", threads);
         // spawn regular priority threads
         parameter("threads.lowPriority", false);
-        parameter("resolutionX", 512);
-        parameter("resolutionY", 512);
-        parameter("aa.min", -3);
-        parameter("aa.max", 0);
-        parameter("depths.diffuse", 1);
-        parameter("depths.reflection", 1);
-        parameter("depths.refraction", 0);
-        parameter("bucket.order", "hilbert");
-        parameter("bucket.size", 32);
+        parameter(ImageParameter.PARAM_RESOLUTION_X, 512);
+        parameter(ImageParameter.PARAM_RESOLUTION_Y, 512);
+        parameter(ImageParameter.PARAM_AA_MIN, -3);
+        parameter(ImageParameter.PARAM_AA_MAX, 0);
+        parameter(TraceDepthsParameter.PARAM_DEPTHS_DIFFUSE, 1);
+        parameter(TraceDepthsParameter.PARAM_DEPTHS_REFLECTION, 1);
+        parameter(TraceDepthsParameter.PARAM_DEPTHS_REFRACTION, 0);
+        parameter(BucketParameter.PARAM_BUCKET_ORDER, BucketParameter.ORDER_HILBERT);
+        parameter(BucketParameter.PARAM_BUCKET_SIZE, 32);
         options(SunflowAPI.DEFAULT_OPTIONS);
         // camera
         Point3 eye = new Point3(30, 0, 10.967f);

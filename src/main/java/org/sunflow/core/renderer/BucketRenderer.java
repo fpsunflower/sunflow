@@ -1,6 +1,8 @@
 package org.sunflow.core.renderer;
 
 import org.sunflow.PluginRegistry;
+import org.sunflow.core.parameter.BucketParameter;
+import org.sunflow.core.parameter.ImageParameter;
 import org.sunflow.core.BucketOrder;
 import org.sunflow.core.Display;
 import org.sunflow.core.Filter;
@@ -61,7 +63,7 @@ public class BucketRenderer implements ImageSampler {
 
     public BucketRenderer() {
         bucketSize = 32;
-        bucketOrderName = "hilbert";
+        bucketOrderName = BucketParameter.ORDER_HILBERT;
         displayAA = false;
         contrastThreshold = 0.1f;
         filterName = "box";
@@ -75,14 +77,14 @@ public class BucketRenderer implements ImageSampler {
         imageHeight = h;
 
         // fetch options
-        bucketSize = options.getInt("bucket.size", bucketSize);
-        bucketOrderName = options.getString("bucket.order", bucketOrderName);
-        minAADepth = options.getInt("aa.min", minAADepth);
-        maxAADepth = options.getInt("aa.max", maxAADepth);
-        superSampling = options.getInt("aa.samples", superSampling);
-        displayAA = options.getBoolean("aa.display", displayAA);
-        jitter = options.getBoolean("aa.jitter", jitter);
-        contrastThreshold = options.getFloat("aa.contrast", contrastThreshold);
+        bucketSize = options.getInt(BucketParameter.PARAM_BUCKET_SIZE, bucketSize);
+        bucketOrderName = options.getString(BucketParameter.PARAM_BUCKET_ORDER, bucketOrderName);
+        minAADepth = options.getInt(ImageParameter.PARAM_AA_MIN, minAADepth);
+        maxAADepth = options.getInt(ImageParameter.PARAM_AA_MAX, maxAADepth);
+        superSampling = options.getInt(ImageParameter.PARAM_AA_SAMPLES, superSampling);
+        displayAA = options.getBoolean(ImageParameter.PARAM_AA_DISPLAY, displayAA);
+        jitter = options.getBoolean(ImageParameter.PARAM_AA_JITTER, jitter);
+        contrastThreshold = options.getFloat(ImageParameter.PARAM_AA_CONTRAST, contrastThreshold);
 
         // limit bucket size and compute number of buckets in each direction
         bucketSize = MathUtils.clamp(bucketSize, 16, 512);

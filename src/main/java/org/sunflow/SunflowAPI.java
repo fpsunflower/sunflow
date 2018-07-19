@@ -9,6 +9,7 @@ import java.util.Locale;
 import org.codehaus.commons.compiler.CompileException;
 import org.codehaus.janino.ClassBodyEvaluator;
 import org.codehaus.janino.Scanner;
+import org.sunflow.core.parameter.shader.ShaderParameter;
 import org.sunflow.core.Camera;
 import org.sunflow.core.CameraLens;
 import org.sunflow.core.Display;
@@ -48,31 +49,12 @@ public class SunflowAPI implements SunflowAPIInterface {
     public static final String VERSION = "0.07.3";
     public static final String DEFAULT_OPTIONS = "::options";
 
-    private Scene scene;
-    private SearchPath includeSearchPath;
-    private SearchPath textureSearchPath;
-    private ParameterList parameterList;
-    private RenderObjectMap renderObjects;
-    private int currentFrame;
-
-    /**
-     * This is a quick system test which verifies that the user has launched
-     * Java properly.
-     */
-    public static void runSystemCheck() {
-        final long RECOMMENDED_MAX_SIZE = 800;
-        long maxMb = Runtime.getRuntime().maxMemory() / 1048576;
-        if (maxMb < RECOMMENDED_MAX_SIZE)
-            UI.printError(Module.API, "JVM available memory is below %d MB (found %d MB only).\nPlease make sure you launched the program with the -Xmx command line options.", RECOMMENDED_MAX_SIZE, maxMb);
-        String compiler = System.getProperty("java.vm.name");
-        if (compiler == null || !(compiler.contains("HotSpot") && compiler.contains("Server")))
-            UI.printError(Module.API, "You do not appear to be running Sun's server JVM\nPerformance may suffer");
-        UI.printDetailed(Module.API, "Java environment settings:");
-        UI.printDetailed(Module.API, "  * Max memory available : %d MB", maxMb);
-        UI.printDetailed(Module.API, "  * Virtual machine name : %s", compiler == null ? "<unknown" : compiler);
-        UI.printDetailed(Module.API, "  * Operating system     : %s", System.getProperty("os.name"));
-        UI.printDetailed(Module.API, "  * CPU architecture     : %s", System.getProperty("os.arch"));
-    }
+    protected Scene scene;
+    protected SearchPath includeSearchPath;
+    protected SearchPath textureSearchPath;
+    protected ParameterList parameterList;
+    protected RenderObjectMap renderObjects;
+    protected int currentFrame;
 
     /**
      * Creates an empty scene.
@@ -344,9 +326,9 @@ public class SunflowAPI implements SunflowAPIInterface {
             parameter("geometry", geoname);
             renderObjects.put(name, new Instance());
         }
-        if (lookupInstance(name) != null)
+        if (lookupInstance(name) != null) {
             update(name);
-        else {
+        } else {
             UI.printError(Module.API, "Unable to update instance \"%s\" - instance object was not found", name);
             parameterList.clear(true);
         }
@@ -367,8 +349,9 @@ public class SunflowAPI implements SunflowAPIInterface {
             }
             renderObjects.put(name, light);
         }
-        if (lookupLight(name) != null)
+        if (lookupLight(name) != null) {
             update(name);
+        }
         else {
             UI.printError(Module.API, "Unable to update instance \"%s\" - instance object was not found", name);
             parameterList.clear(true);
@@ -489,15 +472,16 @@ public class SunflowAPI implements SunflowAPIInterface {
     public final void render(String optionsName, Display display) {
         renderObjects.updateScene(scene);
         Options opt = lookupOptions(optionsName);
-        if (opt == null)
+        if (opt == null) {
             opt = new Options();
+        }
         scene.setCamera(lookupCamera(opt.getString("camera", null)));
 
         // shader override
-        String shaderOverrideName = opt.getString("override.shader", "none");
+        String shaderOverrideName = opt.getString("override.shader", ShaderParameter.TYPE_NONE);
         boolean overridePhotons = opt.getBoolean("override.photons", false);
 
-        if (shaderOverrideName.equals("none"))
+        if (shaderOverrideName.equals(ShaderParameter.TYPE_NONE))
             scene.setShaderOverride(null, false);
         else {
             Shader shader = lookupShader(shaderOverrideName);
@@ -515,8 +499,9 @@ public class SunflowAPI implements SunflowAPIInterface {
                 return;
             }
             scene.setBakingInstance(bakingInstance);
-        } else
+        } else {
             scene.setBakingInstance(null);
+        }
 
         ImageSampler sampler = PluginRegistry.imageSamplerPlugins.createObject(opt.getString("sampler", "bucket"));
         scene.render(opt, sampler, display);
@@ -680,5 +665,13 @@ public class SunflowAPI implements SunflowAPIInterface {
 
     public void currentFrame(int currentFrame) {
         this.currentFrame = currentFrame;
+    }
+
+    public ParameterList getParameterList() {
+        return parameterList;
+    }
+
+    public RenderObjectMap getRenderObjects() {
+        return renderObjects;
     }
 }

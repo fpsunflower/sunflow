@@ -42,6 +42,9 @@ import javax.swing.plaf.metal.MetalLookAndFeel;
 import org.sunflow.Benchmark;
 import org.sunflow.RealtimeBenchmark;
 import org.sunflow.SunflowAPI;
+import org.sunflow.core.parameter.BucketParameter;
+import org.sunflow.core.parameter.ImageParameter;
+import org.sunflow.core.parameter.OverrideParameter;
 import org.sunflow.core.Display;
 import org.sunflow.core.TextureCache;
 import org.sunflow.core.accel.KDTree;
@@ -49,10 +52,7 @@ import org.sunflow.core.display.FileDisplay;
 import org.sunflow.core.display.FrameDisplay;
 import org.sunflow.core.display.ImgPipeDisplay;
 import org.sunflow.core.primitive.TriangleMesh;
-import org.sunflow.system.ImagePanel;
-import org.sunflow.system.Timer;
-import org.sunflow.system.UI;
-import org.sunflow.system.UserInterface;
+import org.sunflow.system.*;
 import org.sunflow.system.UI.Module;
 import org.sunflow.system.UI.PrintLevel;
 
@@ -361,18 +361,18 @@ public class SunflowGUI extends javax.swing.JFrame implements UserInterface {
                 }
             }
             if (runBenchmark) {
-                SunflowAPI.runSystemCheck();
+                SystemUtil.runSystemCheck();
                 new Benchmark().execute();
                 return;
             }
             if (runRTBenchmark) {
-                SunflowAPI.runSystemCheck();
+                SystemUtil.runSystemCheck();
                 new RealtimeBenchmark(showFrame, threads);
                 return;
             }
             if (input == null)
                 usage(false);
-            SunflowAPI.runSystemCheck();
+            SystemUtil.runSystemCheck();
             if (translateFilename != null) {
                 SunflowAPI.translate(input, translateFilename);
                 return;
@@ -392,20 +392,20 @@ public class SunflowGUI extends javax.swing.JFrame implements UserInterface {
                 if (noRender)
                     continue;
                 if (resolutionW > 0 && resolutionH > 0) {
-                    api.parameter("resolutionX", resolutionW);
-                    api.parameter("resolutionY", resolutionH);
+                    api.parameter(ImageParameter.PARAM_RESOLUTION_X, resolutionW);
+                    api.parameter(ImageParameter.PARAM_RESOLUTION_Y, resolutionH);
                 }
                 if (aaMin != -5 || aaMax != -5) {
-                    api.parameter("aa.min", aaMin);
-                    api.parameter("aa.max", aaMax);
+                    api.parameter(ImageParameter.PARAM_AA_MIN, aaMin);
+                    api.parameter(ImageParameter.PARAM_AA_MAX, aaMax);
                 }
                 if (samples >= 0)
-                    api.parameter("aa.samples", samples);
+                    api.parameter(ImageParameter.PARAM_AA_SAMPLES, samples);
                 if (bucketSize > 0)
-                    api.parameter("bucket.size", bucketSize);
+                    api.parameter(BucketParameter.PARAM_BUCKET_SIZE, bucketSize);
                 if (bucketOrder != null)
-                    api.parameter("bucket.order", bucketOrder);
-                api.parameter("aa.display", showAA);
+                    api.parameter(BucketParameter.PARAM_BUCKET_ORDER, bucketOrder);
+                api.parameter(ImageParameter.PARAM_AA_DISPLAY, showAA);
                 api.parameter("threads", threads);
                 api.parameter("threads.lowPriority", lowPriority);
                 if (bakingName != null) {
@@ -413,7 +413,7 @@ public class SunflowGUI extends javax.swing.JFrame implements UserInterface {
                     api.parameter("baking.viewdep", bakeViewdep);
                 }
                 if (filterType != null)
-                    api.parameter("filter", filterType);
+                    api.parameter(ImageParameter.PARAM_FILTER, filterType);
                 if (noGI)
                     api.parameter("gi.engine", "none");
                 else if (pathGI > 0) {
@@ -423,14 +423,14 @@ public class SunflowGUI extends javax.swing.JFrame implements UserInterface {
                 if (noCaustics)
                     api.parameter("caustics", "none");
                 if (sampler != null)
-                    api.parameter("sampler", sampler);
+                    api.parameter(ImageParameter.PARAM_SAMPLER, sampler);
                 api.options(SunflowAPI.DEFAULT_OPTIONS);
                 if (shaderOverride != null) {
                     if (shaderOverride.equals("ambient_occlusion"))
                         api.parameter("maxdist", maxDist);
                     api.shader("cmdline_override", shaderOverride);
-                    api.parameter("override.shader", "cmdline_override");
-                    api.parameter("override.photons", true);
+                    api.parameter(OverrideParameter.PARAM_OVERRIDE_SHADER, "cmdline_override");
+                    api.parameter(OverrideParameter.PARAM_OVERRIDE_PHOTONS, true);
                     api.options(SunflowAPI.DEFAULT_OPTIONS);
                 }
                 // create display
@@ -454,7 +454,7 @@ public class SunflowGUI extends javax.swing.JFrame implements UserInterface {
             if (screenRes.getWidth() <= DEFAULT_WIDTH || screenRes.getHeight() <= DEFAULT_HEIGHT)
                 gui.setExtendedState(MAXIMIZED_BOTH);
             gui.tileWindowMenuItem.doClick();
-            SunflowAPI.runSystemCheck();
+            SystemUtil.runSystemCheck();
         }
     }
 

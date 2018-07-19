@@ -9,6 +9,7 @@ import org.sunflow.core.Options;
 import org.sunflow.core.Ray;
 import org.sunflow.core.Scene;
 import org.sunflow.core.ShadingState;
+import org.sunflow.core.parameter.gi.IrrCacheGIParameter;
 import org.sunflow.image.Color;
 import org.sunflow.math.MathUtils;
 import org.sunflow.math.OrthoNormalBasis;
@@ -29,14 +30,14 @@ public class IrradianceCacheGIEngine implements GIEngine {
 
     public boolean init(Options options, Scene scene) {
         // get settings
-        samples = options.getInt("gi.irr-cache.samples", 256);
-        tolerance = options.getFloat("gi.irr-cache.tolerance", 0.05f);
+        samples = options.getInt(IrrCacheGIParameter.PARAM_SAMPLES, 256);
+        tolerance = options.getFloat(IrrCacheGIParameter.PARAM_TOLERANCE, 0.05f);
         invTolerance = 1.0f / tolerance;
-        minSpacing = options.getFloat("gi.irr-cache.min_spacing", 0.05f);
-        maxSpacing = options.getFloat("gi.irr-cache.max_spacing", 5.00f);
+        minSpacing = options.getFloat(IrrCacheGIParameter.PARAM_MIN_SPACING, 0.05f);
+        maxSpacing = options.getFloat(IrrCacheGIParameter.PARAM_MAX_SPACING, 5.00f);
         root = null;
         rwl = new ReentrantReadWriteLock();
-        globalPhotonMap = PluginRegistry.globalPhotonMapPlugins.createObject(options.getString("gi.irr-cache.gmap", null));
+        globalPhotonMap = PluginRegistry.globalPhotonMapPlugins.createObject(options.getString(IrrCacheGIParameter.PARAM_GLOBAL, null));
         // check settings
         samples = Math.max(0, samples);
         minSpacing = Math.max(0.001f, minSpacing);

@@ -33,10 +33,11 @@ public class TriangleMesh implements PrimitiveList {
     private boolean backfaceCull = false;
 
     public static void setSmallTriangles(boolean smallTriangles) {
-        if (smallTriangles)
+        if (smallTriangles) {
             UI.printInfo(Module.GEOM, "Small trimesh mode: enabled");
-        else
+        } else {
             UI.printInfo(Module.GEOM, "Small trimesh mode: disabled");
+        }
         TriangleMesh.smallTriangles = smallTriangles;
     }
 
@@ -51,11 +52,13 @@ public class TriangleMesh implements PrimitiveList {
         try {
             FileWriter file = new FileWriter(filename);
             file.write(String.format("o object\n"));
-            for (int i = 0; i < points.length; i += 3)
+            for (int i = 0; i < points.length; i += 3) {
                 file.write(String.format("v %g %g %g\n", points[i], points[i + 1], points[i + 2]));
+            }
             file.write("s off\n");
-            for (int i = 0; i < triangles.length; i += 3)
+            for (int i = 0; i < triangles.length; i += 3) {
                 file.write(String.format("f %d %d %d\n", triangles[i] + 1, triangles[i + 1] + 1, triangles[i + 2] + 1));
+            }
             file.close();
         } catch (IOException e) {
             e.printStackTrace();
@@ -124,10 +127,11 @@ public class TriangleMesh implements PrimitiveList {
         int b = 3 * triangles[tri + 1];
         int c = 3 * triangles[tri + 2];
         int axis = i >>> 1;
-        if ((i & 1) == 0)
+        if ((i & 1) == 0) {
             return MathUtils.min(points[a + axis], points[b + axis], points[c + axis]);
-        else
+        } else {
             return MathUtils.max(points[a + axis], points[b + axis], points[c + axis]);
+        }
     }
 
     public BoundingBox getWorldBounds(Matrix4 o2w) {
@@ -339,8 +343,9 @@ public class TriangleMesh implements PrimitiveList {
                 return;
             }
             triaccel = new WaldTriangle[nt];
-            for (int i = 0; i < nt; i++)
+            for (int i = 0; i < nt; i++) {
                 triaccel[i] = new WaldTriangle(this, i);
+            }
         }
     }
 

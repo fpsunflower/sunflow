@@ -8,6 +8,7 @@ import org.sunflow.core.PhotonStore;
 import org.sunflow.core.Ray;
 import org.sunflow.core.Scene;
 import org.sunflow.core.ShadingState;
+import org.sunflow.core.parameter.gi.InstantGIParameter;
 import org.sunflow.image.Color;
 import org.sunflow.math.BoundingBox;
 import org.sunflow.math.OrthoNormalBasis;
@@ -44,10 +45,10 @@ public class InstantGI implements GIEngine {
     }
 
     public boolean init(Options options, Scene scene) {
-        numPhotons = options.getInt("gi.igi.samples", 64);
-        numSets = options.getInt("gi.igi.sets", 1);
-        c = options.getFloat("gi.igi.c", 0.00003f);
-        numBias = options.getInt("gi.igi.bias_samples", 0);
+        numPhotons = options.getInt(InstantGIParameter.PARAM_SAMPLES, 64);
+        numSets = options.getInt(InstantGIParameter.PARAM_SETS, 1);
+        c = options.getFloat(InstantGIParameter.PARAM_BIAS, 0.00003f);
+        numBias = options.getInt(InstantGIParameter.PARAM_BIAS_SAMPLES, 0);
         virtualLights = null;
         if (numSets < 1)
             numSets = 1;
@@ -93,8 +94,9 @@ public class InstantGI implements GIEngine {
         }
         // bias compensation
         int nb = (state.getDiffuseDepth() == 0 || numBias <= 0) ? numBias : 1;
-        if (nb <= 0)
+        if (nb <= 0) {
             return irr;
+        }
         OrthoNormalBasis onb = state.getBasis();
         Vector3 w = new Vector3();
         float scale = (float) Math.PI / nb;

@@ -37,4 +37,36 @@ public class PinholeLens implements CameraLens {
         float dv = shiftY - av + ((2.0f * av * y) / (imageHeight - 1.0f));
         return new Ray(0, 0, 0, du, dv, -1);
     }
+
+    public float getAspect() {
+        return aspect;
+    }
+
+    public void setAspect(float aspect) {
+        this.aspect = aspect;
+    }
+
+    public float getFov() {
+        return fov;
+    }
+
+    public void setFov(float fov) {
+        this.fov = fov;
+    }
+
+    public float getShiftX() {
+        return shiftX;
+    }
+
+    public void setShiftX(float shiftX) {
+        this.shiftX = shiftX;
+    }
+
+    public float getShiftY() {
+        return shiftY;
+    }
+
+    public void setShiftY(float shiftY) {
+        this.shiftY = shiftY;
+    }
 }

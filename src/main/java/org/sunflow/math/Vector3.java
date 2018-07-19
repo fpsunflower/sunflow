@@ -1,5 +1,7 @@
 package org.sunflow.math;
 
+import java.util.Objects;
+
 public final class Vector3 {
     private static final float[] COS_THETA = new float[256];
     private static final float[] SIN_THETA = new float[256];
@@ -191,5 +193,20 @@ public final class Vector3 {
     @Override
     public final String toString() {
         return String.format("(%.2f, %.2f, %.2f)", x, y, z);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Vector3 vector3 = (Vector3) o;
+        return Float.compare(vector3.x, x) == 0 &&
+                Float.compare(vector3.y, y) == 0 &&
+                Float.compare(vector3.z, z) == 0;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(x, y, z);
     }
 }

@@ -129,4 +129,24 @@ public final class Point3 {
     public final String toString() {
         return String.format("(%.2f, %.2f, %.2f)", x, y, z);
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        Point3 point3 = (Point3) o;
+
+        if (Float.compare(point3.x, x) != 0) return false;
+        if (Float.compare(point3.y, y) != 0) return false;
+        return Float.compare(point3.z, z) == 0;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = (x != +0.0f ? Float.floatToIntBits(x) : 0);
+        result = 31 * result + (y != +0.0f ? Float.floatToIntBits(y) : 0);
+        result = 31 * result + (z != +0.0f ? Float.floatToIntBits(z) : 0);
+        return result;
+    }
 }

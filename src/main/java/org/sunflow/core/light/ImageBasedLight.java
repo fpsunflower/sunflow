@@ -12,6 +12,8 @@ import org.sunflow.core.Shader;
 import org.sunflow.core.ShadingState;
 import org.sunflow.core.Texture;
 import org.sunflow.core.TextureCache;
+import org.sunflow.core.parameter.light.ImageBasedLightParameter;
+import org.sunflow.core.parameter.light.LightParameter;
 import org.sunflow.image.Bitmap;
 import org.sunflow.image.Color;
 import org.sunflow.math.BoundingBox;
@@ -50,10 +52,10 @@ public class ImageBasedLight implements PrimitiveList, LightSource, Shader {
     }
 
     public boolean update(ParameterList pl, SunflowAPI api) {
-        updateBasis(pl.getVector("center", null), pl.getVector("up", null));
-        numSamples = pl.getInt("samples", numSamples);
-        numLowSamples = pl.getInt("lowsamples", numLowSamples);
-        String filename = pl.getString("texture", null);
+        updateBasis(pl.getVector(ImageBasedLightParameter.PARAM_CENTER, null), pl.getVector(ImageBasedLightParameter.PARAM_UP, null));
+        numSamples = pl.getInt(LightParameter.PARAM_SAMPLES, numSamples);
+        numLowSamples = pl.getInt(ImageBasedLightParameter.PARAM_LOW_SAMPLES, numLowSamples);
+        String filename = pl.getString(ImageBasedLightParameter.PARAM_TEXTURE, null);
         if (filename != null)
             texture = TextureCache.getTexture(api.resolveTextureFilename(filename), false);
 
@@ -90,7 +92,7 @@ public class ImageBasedLight implements PrimitiveList, LightSource, Shader {
             jacobian = (float) (2 * Math.PI * Math.PI) / (b.getWidth() * b.getHeight());
         }
         // take fixed samples
-        if (pl.getBoolean("fixed", samples != null)) {
+        if (pl.getBoolean(ImageBasedLightParameter.PARAM_FIXED, samples != null)) {
             // high density samples
             samples = new Vector3[numSamples];
             colors = new Color[numSamples];

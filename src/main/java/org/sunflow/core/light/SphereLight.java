@@ -8,6 +8,8 @@ import org.sunflow.core.ParameterList;
 import org.sunflow.core.Ray;
 import org.sunflow.core.Shader;
 import org.sunflow.core.ShadingState;
+import org.sunflow.core.parameter.light.LightParameter;
+import org.sunflow.core.parameter.light.SphereLightParameter;
 import org.sunflow.core.primitive.Sphere;
 import org.sunflow.image.Color;
 import org.sunflow.math.Matrix4;
@@ -31,16 +33,12 @@ public class SphereLight implements LightSource, Shader {
     }
 
     public boolean update(ParameterList pl, SunflowAPI api) {
-        radiance = pl.getColor("radiance", radiance);
-        numSamples = pl.getInt("samples", numSamples);
-        radius = pl.getFloat("radius", radius);
+        radiance = pl.getColor(LightParameter.PARAM_RADIANCE, radiance);
+        numSamples = pl.getInt(LightParameter.PARAM_SAMPLES, numSamples);
+        radius = pl.getFloat(SphereLightParameter.PARAM_RADIUS, radius);
         r2 = radius * radius;
-        center = pl.getPoint("center", center);
+        center = pl.getPoint(SphereLightParameter.PARAM_CENTER, center);
         return true;
-    }
-
-    public int getNumSamples() {
-        return numSamples;
     }
 
     public int getLowSamples() {
@@ -149,5 +147,45 @@ public class SphereLight implements LightSource, Shader {
 
     public Instance createInstance() {
         return Instance.createTemporary(new Sphere(), Matrix4.translation(center.x, center.y, center.z).multiply(Matrix4.scale(radius)), this);
+    }
+
+    public Color getRadiance() {
+        return radiance;
+    }
+
+    public void setRadiance(Color radiance) {
+        this.radiance = radiance;
+    }
+
+    public int getNumSamples() {
+        return numSamples;
+    }
+
+    public void setNumSamples(int numSamples) {
+        this.numSamples = numSamples;
+    }
+
+    public Point3 getCenter() {
+        return center;
+    }
+
+    public void setCenter(Point3 center) {
+        this.center = center;
+    }
+
+    public float getRadius() {
+        return radius;
+    }
+
+    public void setRadius(float radius) {
+        this.radius = radius;
+    }
+
+    public float getR2() {
+        return r2;
+    }
+
+    public void setR2(float r2) {
+        this.r2 = r2;
     }
 }

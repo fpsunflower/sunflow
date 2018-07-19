@@ -19,7 +19,7 @@ import org.sunflow.system.UI;
 import org.sunflow.system.UI.Module;
 import org.sunflow.util.FastHashMap;
 
-final class RenderObjectMap {
+public final class RenderObjectMap {
     private FastHashMap<String, RenderObjectHandle> renderObjects;
     private boolean rebuildInstanceList;
     private boolean rebuildLightList;
@@ -33,8 +33,12 @@ final class RenderObjectMap {
         rebuildInstanceList = rebuildLightList = false;
     }
 
-    final boolean has(String name) {
+    public final boolean has(String name) {
         return renderObjects.containsKey(name);
+    }
+
+    public final RenderObjectHandle get(String name) {
+        return renderObjects.get(name);
     }
 
     final void remove(String name) {
@@ -249,8 +253,8 @@ final class RenderObjectMap {
         return (handle == null) ? null : handle.getLight();
     }
 
-    private static final class RenderObjectHandle {
-        private final RenderObject obj;
+    public static final class RenderObjectHandle {
+        public final RenderObject obj;
         private final RenderObjectType type;
 
         private RenderObjectHandle(Shader shader) {

@@ -73,4 +73,28 @@ public class PerlinModifier implements Modifier {
         x1 = .707 * x1 - .707 * y;
         return PerlinScalar.snoise((float) (freq * x1 + 100), (float) (freq * y1), (float) (freq * z1));
     }
+
+    public int getFunction() {
+        return function;
+    }
+
+    public void setFunction(int function) {
+        this.function = function;
+    }
+
+    public float getScale() {
+        return scale;
+    }
+
+    public void setScale(float scale) {
+        this.scale = scale;
+    }
+
+    public float getSize() {
+        return size;
+    }
+
+    public void setSize(float size) {
+        this.size = size;
+    }
 }
