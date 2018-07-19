@@ -110,6 +110,10 @@ public class ImagePanel extends JPanel implements Display {
         }
     }
 
+    public BufferedImage getImage() {
+        return image;
+    }
+
     private synchronized void drag(int dx, int dy) {
         xo += dx;
         yo += dy;

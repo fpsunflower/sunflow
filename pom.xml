@@ -5,7 +5,7 @@
 
     <artifactId>sunflow</artifactId>
     <groupId>net.sourceforge</groupId>
-    <version>0.07.5-SNAPSHOT</version>
+    <version>0.07.5</version>
     <url>http://sunflow.sourceforge.net</url>
     <description>Sunflow Global Illumination Rendering System</description>
 
