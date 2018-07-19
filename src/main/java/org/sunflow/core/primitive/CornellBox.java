@@ -10,6 +10,8 @@ import org.sunflow.core.PrimitiveList;
 import org.sunflow.core.Ray;
 import org.sunflow.core.Shader;
 import org.sunflow.core.ShadingState;
+import org.sunflow.core.parameter.light.CornellBoxLightParameter;
+import org.sunflow.core.parameter.light.LightParameter;
 import org.sunflow.image.Color;
 import org.sunflow.math.BoundingBox;
 import org.sunflow.math.Matrix4;
@@ -66,22 +68,22 @@ public class CornellBox implements PrimitiveList, Shader, LightSource {
     }
 
     public boolean update(ParameterList pl, SunflowAPI api) {
-        Point3 corner0 = pl.getPoint("corner0", null);
-        Point3 corner1 = pl.getPoint("corner1", null);
+        Point3 corner0 = pl.getPoint(CornellBoxLightParameter.PARAM_MIN_CORNER, null);
+        Point3 corner1 = pl.getPoint(CornellBoxLightParameter.PARAM_MAX_CORNER, null);
         if (corner0 != null && corner1 != null) {
             updateGeometry(corner0, corner1);
         }
 
         // shader colors
-        left = pl.getColor("leftColor", left);
-        right = pl.getColor("rightColor", right);
-        top = pl.getColor("topColor", top);
-        bottom = pl.getColor("bottomColor", bottom);
-        back = pl.getColor("backColor", back);
+        left = pl.getColor(CornellBoxLightParameter.PARAM_LEFT_COLOR, left);
+        right = pl.getColor(CornellBoxLightParameter.PARAM_RIGHT_COLOR, right);
+        top = pl.getColor(CornellBoxLightParameter.PARAM_TOP_COLOR, top);
+        bottom = pl.getColor(CornellBoxLightParameter.PARAM_BOTTOM_COLOR, bottom);
+        back = pl.getColor(CornellBoxLightParameter.PARAM_BACK_COLOR, back);
 
         // light
-        radiance = pl.getColor("radiance", radiance);
-        samples = pl.getInt("samples", samples);
+        radiance = pl.getColor(LightParameter.PARAM_RADIANCE, radiance);
+        samples = pl.getInt(LightParameter.PARAM_SAMPLES, samples);
         return true;
     }
 
@@ -442,5 +444,45 @@ public class CornellBox implements PrimitiveList, Shader, LightSource {
 
     public Instance createInstance() {
         return Instance.createTemporary(this, null, this);
+    }
+
+    public Color getLeft() {
+        return left;
+    }
+
+    public void setLeft(Color left) {
+        this.left = left;
+    }
+
+    public Color getRight() {
+        return right;
+    }
+
+    public void setRight(Color right) {
+        this.right = right;
+    }
+
+    public Color getTop() {
+        return top;
+    }
+
+    public void setTop(Color top) {
+        this.top = top;
+    }
+
+    public Color getBottom() {
+        return bottom;
+    }
+
+    public void setBottom(Color bottom) {
+        this.bottom = bottom;
+    }
+
+    public Color getBack() {
+        return back;
+    }
+
+    public void setBack(Color back) {
+        this.back = back;
     }
 }

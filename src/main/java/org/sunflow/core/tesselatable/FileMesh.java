@@ -100,8 +100,9 @@ public class FileMesh implements Tesselatable {
                             tris.add(Integer.parseInt(f[3]) - 1);
                         }
                     }
-                    if (lineNumber % 100000 == 0)
+                    if (lineNumber % 100000 == 0) {
                         UI.printInfo(Module.GEOM, "OBJ -   * Parsed %7d lines ...", lineNumber);
+                    }
                     lineNumber++;
                 }
                 file.close();
@@ -161,8 +162,9 @@ public class FileMesh implements Tesselatable {
                 e.printStackTrace();
                 UI.printError(Module.GEOM, "Unable to read mesh file \"%s\" - I/O error occured", filename);
             }
-        } else
+        } else {
             UI.printWarning(Module.GEOM, "Unable to read mesh file \"%s\" - unrecognized format", filename);
+        }
         return null;
     }
 

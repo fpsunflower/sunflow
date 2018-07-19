@@ -1,6 +1,7 @@
 package org.sunflow.core;
 
 import org.sunflow.SunflowAPI;
+import org.sunflow.core.parameter.camera.CameraParameter;
 import org.sunflow.math.Matrix4;
 import org.sunflow.math.MovingMatrix4;
 import org.sunflow.math.Point3;
@@ -27,8 +28,8 @@ public class Camera implements RenderObject {
     }
 
     public boolean update(ParameterList pl, SunflowAPI api) {
-        shutterOpen = pl.getFloat("shutter.open", shutterOpen);
-        shutterClose = pl.getFloat("shutter.close", shutterClose);
+        shutterOpen = pl.getFloat(CameraParameter.PARAM_SHUTTER_OPEN, shutterOpen);
+        shutterClose = pl.getFloat(CameraParameter.PARAM_SHUTTER_CLOSE, shutterClose);
         c2w = pl.getMovingMatrix("transform", c2w);
         w2c = c2w.inverse();
         if (w2c == null) {
@@ -116,5 +117,21 @@ public class Camera implements RenderObject {
      */
     Matrix4 getWorldToCamera(float time) {
         return w2c == null ? Matrix4.IDENTITY : w2c.sample(time);
+    }
+
+    public float getShutterOpen() {
+        return shutterOpen;
+    }
+
+    public void setShutterOpen(float shutterOpen) {
+        this.shutterOpen = shutterOpen;
+    }
+
+    public float getShutterClose() {
+        return shutterClose;
+    }
+
+    public void setShutterClose(float shutterClose) {
+        this.shutterClose = shutterClose;
     }
 }

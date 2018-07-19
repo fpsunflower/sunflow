@@ -18,6 +18,10 @@ import org.sunflow.util.FastHashMap;
  * named variables as a unified way of getting data into user objects.
  */
 public class ParameterList {
+
+    public static final String PARAM_COLOR = "color";
+    public static final String PARAM_SHADERS = "shaders";
+
     protected final FastHashMap<String, Parameter> list;
     private int numVerts, numFaces, numFaceVerts;
 

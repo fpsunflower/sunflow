@@ -5,6 +5,7 @@ import org.sunflow.core.Options;
 import org.sunflow.core.Ray;
 import org.sunflow.core.Scene;
 import org.sunflow.core.ShadingState;
+import org.sunflow.core.parameter.gi.PathTracingGIParameter;
 import org.sunflow.image.Color;
 import org.sunflow.math.OrthoNormalBasis;
 import org.sunflow.math.Vector3;
@@ -15,7 +16,7 @@ public class PathTracingGIEngine implements GIEngine {
     private int samples;
 
     public boolean init(Options options, Scene scene) {
-        samples = options.getInt("gi.path.samples", 16);
+        samples = options.getInt(PathTracingGIParameter.PARAM_SAMPLES, 16);
         samples = Math.max(0, samples);
         UI.printInfo(Module.LIGHT, "Path tracer settings:");
         UI.printInfo(Module.LIGHT, "  * Samples: %d", samples);

@@ -5,6 +5,7 @@ import org.sunflow.core.Options;
 import org.sunflow.core.Ray;
 import org.sunflow.core.Scene;
 import org.sunflow.core.ShadingState;
+import org.sunflow.core.parameter.gi.AmbientOcclusionGIParameter;
 import org.sunflow.image.Color;
 import org.sunflow.math.OrthoNormalBasis;
 import org.sunflow.math.Vector3;
@@ -20,10 +21,10 @@ public class AmbientOcclusionGIEngine implements GIEngine {
     }
 
     public boolean init(Options options, Scene scene) {
-        bright = options.getColor("gi.ambocc.bright", Color.WHITE);
-        dark = options.getColor("gi.ambocc.dark", Color.BLACK);
-        samples = options.getInt("gi.ambocc.samples", 32);
-        maxDist = options.getFloat("gi.ambocc.maxdist", 0);
+        bright = options.getColor(AmbientOcclusionGIParameter.PARAM_BRIGHT, Color.WHITE);
+        dark = options.getColor(AmbientOcclusionGIParameter.PARAM_DARK, Color.BLACK);
+        samples = options.getInt(AmbientOcclusionGIParameter.PARAM_SAMPLES, 32);
+        maxDist = options.getFloat(AmbientOcclusionGIParameter.PARAM_MAXDIST, 0);
         maxDist = (maxDist <= 0) ? Float.POSITIVE_INFINITY : maxDist;
         return true;
     }

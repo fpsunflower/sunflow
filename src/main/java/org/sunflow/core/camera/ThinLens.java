@@ -100,4 +100,76 @@ public class ThinLens implements CameraLens {
         // ray
         return new Ray(eyeX, eyeY, eyeZ, dirX - eyeX, dirY - eyeY, dirZ - eyeZ);
     }
+
+    public float getAspect() {
+        return aspect;
+    }
+
+    public void setAspect(float aspect) {
+        this.aspect = aspect;
+    }
+
+    public float getFov() {
+        return fov;
+    }
+
+    public void setFov(float fov) {
+        this.fov = fov;
+    }
+
+    public float getShiftX() {
+        return shiftX;
+    }
+
+    public void setShiftX(float shiftX) {
+        this.shiftX = shiftX;
+    }
+
+    public float getShiftY() {
+        return shiftY;
+    }
+
+    public void setShiftY(float shiftY) {
+        this.shiftY = shiftY;
+    }
+
+    public float getFocusDistance() {
+        return focusDistance;
+    }
+
+    public void setFocusDistance(float focusDistance) {
+        this.focusDistance = focusDistance;
+    }
+
+    public float getLensRadius() {
+        return lensRadius;
+    }
+
+    public void setLensRadius(float lensRadius) {
+        this.lensRadius = lensRadius;
+    }
+
+    public int getLensSides() {
+        return lensSides;
+    }
+
+    public void setLensSides(int lensSides) {
+        this.lensSides = lensSides;
+    }
+
+    public float getLensRotation() {
+        return lensRotation;
+    }
+
+    public void setLensRotation(float lensRotation) {
+        this.lensRotation = lensRotation;
+    }
+
+    public float getLensRotationRadians() {
+        return lensRotationRadians;
+    }
+
+    public void setLensRotationRadians(float lensRotationRadians) {
+        this.lensRotationRadians = lensRotationRadians;
+    }
 }

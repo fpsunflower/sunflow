@@ -9,6 +9,7 @@ import org.sunflow.core.ParameterList;
 import org.sunflow.core.Ray;
 import org.sunflow.core.Shader;
 import org.sunflow.core.ShadingState;
+import org.sunflow.core.parameter.light.LightParameter;
 import org.sunflow.core.primitive.TriangleMesh;
 import org.sunflow.image.Color;
 import org.sunflow.math.MathUtils;
@@ -30,8 +31,8 @@ public class TriangleMeshLight extends TriangleMesh implements Shader, LightSour
 
     @Override
     public boolean update(ParameterList pl, SunflowAPI api) {
-        radiance = pl.getColor("radiance", radiance);
-        numSamples = pl.getInt("samples", numSamples);
+        radiance = pl.getColor(LightParameter.PARAM_RADIANCE, radiance);
+        numSamples = pl.getInt(LightParameter.PARAM_SAMPLES, numSamples);
         if (super.update(pl, api)) {
             // precompute triangle areas and normals
             areas = new float[getNumPrimitives()];

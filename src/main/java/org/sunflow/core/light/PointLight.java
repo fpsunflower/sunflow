@@ -7,22 +7,26 @@ import org.sunflow.core.LightSource;
 import org.sunflow.core.ParameterList;
 import org.sunflow.core.Ray;
 import org.sunflow.core.ShadingState;
+import org.sunflow.core.parameter.light.PointLightParameter;
 import org.sunflow.image.Color;
 import org.sunflow.math.Point3;
 import org.sunflow.math.Vector3;
 
 public class PointLight implements LightSource {
+    // Center
     private Point3 lightPoint;
-    private Color power;
+
+    // Radiance
+    private Color color;
 
     public PointLight() {
         lightPoint = new Point3(0, 0, 0);
-        power = Color.WHITE;
+        color = Color.WHITE;
     }
 
     public boolean update(ParameterList pl, SunflowAPI api) {
-        lightPoint = pl.getPoint("center", lightPoint);
-        power = pl.getColor("power", power);
+        lightPoint = pl.getPoint(PointLightParameter.PARAM_CENTER, lightPoint);
+        color = pl.getColor(PointLightParameter.PARAM_POWER, color);
         return true;
     }
 
@@ -37,7 +41,7 @@ public class PointLight implements LightSource {
             // prepare shadow ray
             dest.setShadowRay(new Ray(state.getPoint(), lightPoint));
             float scale = 1.0f / (float) (4 * Math.PI * lightPoint.distanceToSquared(state.getPoint()));
-            dest.setRadiance(power, power);
+            dest.setRadiance(color, color);
             dest.getDiffuseRadiance().mul(scale);
             dest.getSpecularRadiance().mul(scale);
             dest.traceShadow(state);
@@ -52,11 +56,27 @@ public class PointLight implements LightSource {
         dir.x = (float) Math.cos(phi) * s;
         dir.y = (float) Math.sin(phi) * s;
         dir.z = (float) (1 - 2 * randY1);
-        power.set(this.power);
+        power.set(this.color);
+    }
+
+    public Point3 getLightPoint() {
+        return lightPoint;
+    }
+
+    public void setLightPoint(Point3 lightPoint) {
+        this.lightPoint = lightPoint;
     }
 
     public float getPower() {
-        return power.getLuminance();
+        return color.getLuminance();
+    }
+
+    public void setColor(Color color) {
+        this.color = color;
+    }
+
+    public Color getColor() {
+        return color;
     }
 
     public Instance createInstance() {

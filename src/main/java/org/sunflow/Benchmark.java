@@ -6,6 +6,9 @@ import java.net.URL;
 
 import javax.imageio.ImageIO;
 
+import org.sunflow.core.parameter.BucketParameter;
+import org.sunflow.core.parameter.ImageParameter;
+import org.sunflow.core.parameter.TraceDepthsParameter;
 import org.sunflow.core.Display;
 import org.sunflow.core.display.FileDisplay;
 import org.sunflow.core.display.FrameDisplay;
@@ -116,16 +119,16 @@ public class Benchmark implements BenchmarkTest, UserInterface, Display {
             parameter("threads", threads);
             // spawn regular priority threads
             parameter("threads.lowPriority", false);
-            parameter("resolutionX", resolution);
-            parameter("resolutionY", resolution);
-            parameter("aa.min", -1);
-            parameter("aa.max", 1);
-            parameter("filter", "triangle");
-            parameter("depths.diffuse", 2);
-            parameter("depths.reflection", 2);
-            parameter("depths.refraction", 2);
-            parameter("bucket.order", "hilbert");
-            parameter("bucket.size", 32);
+            parameter(ImageParameter.PARAM_RESOLUTION_X, resolution);
+            parameter(ImageParameter.PARAM_RESOLUTION_Y, resolution);
+            parameter(ImageParameter.PARAM_AA_MIN, -1);
+            parameter(ImageParameter.PARAM_AA_MAX, 1);
+            parameter(ImageParameter.PARAM_FILTER, ImageParameter.FILTER_TRIANGLE);
+            parameter(TraceDepthsParameter.PARAM_DEPTHS_DIFFUSE, 2);
+            parameter(TraceDepthsParameter.PARAM_DEPTHS_REFLECTION, 2);
+            parameter(TraceDepthsParameter.PARAM_DEPTHS_REFRACTION, 2);
+            parameter(BucketParameter.PARAM_BUCKET_ORDER, BucketParameter.ORDER_HILBERT);
+            parameter(BucketParameter.PARAM_BUCKET_SIZE, 32);
             // gi options
             parameter("gi.engine", "igi");
             parameter("gi.igi.samples", 90);

@@ -51,6 +51,9 @@ import org.sunflow.core.light.TriangleMeshLight;
 import org.sunflow.core.modifiers.BumpMappingModifier;
 import org.sunflow.core.modifiers.NormalMapModifier;
 import org.sunflow.core.modifiers.PerlinModifier;
+import org.sunflow.core.parameter.BucketParameter;
+import org.sunflow.core.parameter.camera.CameraParameter;
+import org.sunflow.core.parameter.modifier.ModifierParameter;
 import org.sunflow.core.parser.RA2Parser;
 import org.sunflow.core.parser.RA3Parser;
 import org.sunflow.core.parser.SCAsciiParser;
@@ -211,9 +214,9 @@ public final class PluginRegistry {
 
     static {
         // modifiers
-        modifierPlugins.registerPlugin("bump_map", BumpMappingModifier.class);
-        modifierPlugins.registerPlugin("normal_map", NormalMapModifier.class);
-        modifierPlugins.registerPlugin("perlin", PerlinModifier.class);
+        modifierPlugins.registerPlugin(ModifierParameter.TYPE_BUMP_MAP, BumpMappingModifier.class);
+        modifierPlugins.registerPlugin(ModifierParameter.TYPE_NORMAL_MAP, NormalMapModifier.class);
+        modifierPlugins.registerPlugin(ModifierParameter.TYPE_PERLIN, PerlinModifier.class);
     }
 
     static {
@@ -229,10 +232,10 @@ public final class PluginRegistry {
 
     static {
         // camera lenses
-        cameraLensPlugins.registerPlugin("pinhole", PinholeLens.class);
-        cameraLensPlugins.registerPlugin("thinlens", ThinLens.class);
-        cameraLensPlugins.registerPlugin("fisheye", FisheyeLens.class);
-        cameraLensPlugins.registerPlugin("spherical", SphericalLens.class);
+        cameraLensPlugins.registerPlugin(CameraParameter.TYPE_PINHOLE, PinholeLens.class);
+        cameraLensPlugins.registerPlugin(CameraParameter.TYPE_THINLENS, ThinLens.class);
+        cameraLensPlugins.registerPlugin(CameraParameter.TYPE_FISH_EYE, FisheyeLens.class);
+        cameraLensPlugins.registerPlugin(CameraParameter.TYPE_SPHERICAL, SphericalLens.class);
     }
 
     static {
@@ -245,12 +248,12 @@ public final class PluginRegistry {
 
     static {
         // bucket orders
-        bucketOrderPlugins.registerPlugin("column", ColumnBucketOrder.class);
-        bucketOrderPlugins.registerPlugin("diagonal", DiagonalBucketOrder.class);
-        bucketOrderPlugins.registerPlugin("hilbert", HilbertBucketOrder.class);
-        bucketOrderPlugins.registerPlugin("random", RandomBucketOrder.class);
-        bucketOrderPlugins.registerPlugin("row", RowBucketOrder.class);
-        bucketOrderPlugins.registerPlugin("spiral", SpiralBucketOrder.class);
+        bucketOrderPlugins.registerPlugin(BucketParameter.ORDER_COLUMN, ColumnBucketOrder.class);
+        bucketOrderPlugins.registerPlugin(BucketParameter.ORDER_DIAGONAL, DiagonalBucketOrder.class);
+        bucketOrderPlugins.registerPlugin(BucketParameter.ORDER_HILBERT, HilbertBucketOrder.class);
+        bucketOrderPlugins.registerPlugin(BucketParameter.ORDER_RANDOM, RandomBucketOrder.class);
+        bucketOrderPlugins.registerPlugin(BucketParameter.ORDER_ROW, RowBucketOrder.class);
+        bucketOrderPlugins.registerPlugin(BucketParameter.ORDER_SPIRAL, SpiralBucketOrder.class);
     }
 
     static {

@@ -10,6 +10,8 @@ import org.sunflow.core.PrimitiveList;
 import org.sunflow.core.Ray;
 import org.sunflow.core.Shader;
 import org.sunflow.core.ShadingState;
+import org.sunflow.core.parameter.light.LightParameter;
+import org.sunflow.core.parameter.light.SunSkyLightParameter;
 import org.sunflow.image.ChromaticitySpectrum;
 import org.sunflow.image.Color;
 import org.sunflow.image.ConstantSpectralCurve;
@@ -190,17 +192,17 @@ public class SunSkyLight implements LightSource, PrimitiveList, Shader {
     }
 
     public boolean update(ParameterList pl, SunflowAPI api) {
-        Vector3 up = pl.getVector("up", null);
-        Vector3 east = pl.getVector("east", null);
+        Vector3 up = pl.getVector(SunSkyLightParameter.PARAM_UP, null);
+        Vector3 east = pl.getVector(SunSkyLightParameter.PARAM_EAST, null);
         if (up != null && east != null)
             basis = OrthoNormalBasis.makeFromWV(up, east);
         else if (up != null)
             basis = OrthoNormalBasis.makeFromW(up);
-        numSkySamples = pl.getInt("samples", numSkySamples);
-        sunDirWorld = pl.getVector("sundir", sunDirWorld);
-        turbidity = pl.getFloat("turbidity", turbidity);
-        groundExtendSky = pl.getBoolean("ground.extendsky", groundExtendSky);
-        groundColor = pl.getColor("ground.color", groundColor);
+        numSkySamples = pl.getInt(LightParameter.PARAM_SAMPLES, numSkySamples);
+        sunDirWorld = pl.getVector(SunSkyLightParameter.PARAM_SUN_DIRECTION, sunDirWorld);
+        turbidity = pl.getFloat(SunSkyLightParameter.PARAM_TURBIDITY, turbidity);
+        groundExtendSky = pl.getBoolean(SunSkyLightParameter.PARAM_GROUND_EXTENDSKY, groundExtendSky);
+        groundColor = pl.getColor(SunSkyLightParameter.PARAM_GROUND_COLOR, groundColor);
         // recompute model
         initSunSky();
         return true;

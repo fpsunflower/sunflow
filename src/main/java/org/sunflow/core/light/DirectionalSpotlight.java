@@ -7,36 +7,41 @@ import org.sunflow.core.LightSource;
 import org.sunflow.core.ParameterList;
 import org.sunflow.core.Ray;
 import org.sunflow.core.ShadingState;
+import org.sunflow.core.parameter.light.DirectionalLightParameter;
+import org.sunflow.core.parameter.light.LightParameter;
 import org.sunflow.image.Color;
 import org.sunflow.math.OrthoNormalBasis;
 import org.sunflow.math.Point3;
 import org.sunflow.math.Vector3;
 
 public class DirectionalSpotlight implements LightSource {
-    private Point3 src;
-    private Vector3 dir;
+    private Point3 source;
+    private Vector3 direction;
     private OrthoNormalBasis basis;
-    private float r, r2;
+    // Radius
+    private float r;
+    // Radius^2
+    private float r2;
     private Color radiance;
 
     public DirectionalSpotlight() {
-        src = new Point3(0, 0, 0);
-        dir = new Vector3(0, 0, -1);
-        dir.normalize();
-        basis = OrthoNormalBasis.makeFromW(dir);
+        source = new Point3(0, 0, 0);
+        direction = new Vector3(0, 0, -1);
+        direction.normalize();
+        basis = OrthoNormalBasis.makeFromW(direction);
         r = 1;
         r2 = r * r;
         radiance = Color.WHITE;
     }
 
     public boolean update(ParameterList pl, SunflowAPI api) {
-        src = pl.getPoint("source", src);
-        dir = pl.getVector("dir", dir);
-        dir.normalize();
-        r = pl.getFloat("radius", r);
-        basis = OrthoNormalBasis.makeFromW(dir);
+        source = pl.getPoint(DirectionalLightParameter.PARAM_SOURCE, source);
+        direction = pl.getVector(DirectionalLightParameter.PARAM_DIRECTION, direction);
+        direction.normalize();
+        r = pl.getFloat(DirectionalLightParameter.PARAM_RADIUS, r);
+        basis = OrthoNormalBasis.makeFromW(direction);
         r2 = r * r;
-        radiance = pl.getColor("radiance", radiance);
+        radiance = pl.getColor(LightParameter.PARAM_RADIANCE, radiance);
         return true;
     }
 
@@ -49,21 +54,21 @@ public class DirectionalSpotlight implements LightSource {
     }
 
     public void getSamples(ShadingState state) {
-        if (Vector3.dot(dir, state.getGeoNormal()) < 0 && Vector3.dot(dir, state.getNormal()) < 0) {
+        if (Vector3.dot(direction, state.getGeoNormal()) < 0 && Vector3.dot(direction, state.getNormal()) < 0) {
             // project point onto source plane
-            float x = state.getPoint().x - src.x;
-            float y = state.getPoint().y - src.y;
-            float z = state.getPoint().z - src.z;
-            float t = ((x * dir.x) + (y * dir.y) + (z * dir.z));
+            float x = state.getPoint().x - source.x;
+            float y = state.getPoint().y - source.y;
+            float z = state.getPoint().z - source.z;
+            float t = ((x * direction.x) + (y * direction.y) + (z * direction.z));
             if (t >= 0.0) {
-                x -= (t * dir.x);
-                y -= (t * dir.y);
-                z -= (t * dir.z);
+                x -= (t * direction.x);
+                y -= (t * direction.y);
+                z -= (t * direction.z);
                 if (((x * x) + (y * y) + (z * z)) <= r2) {
                     Point3 p = new Point3();
-                    p.x = src.x + x;
-                    p.y = src.y + y;
-                    p.z = src.z + z;
+                    p.x = source.x + x;
+                    p.y = source.y + y;
+                    p.z = source.z + z;
                     LightSample dest = new LightSample();
                     dest.setShadowRay(new Ray(state.getPoint(), p));
                     dest.setRadiance(radiance, radiance);
@@ -81,8 +86,8 @@ public class DirectionalSpotlight implements LightSource {
         dir.y = r * (float) Math.sin(phi) * s;
         dir.z = 0;
         basis.transform(dir);
-        Point3.add(src, dir, p);
-        dir.set(this.dir);
+        Point3.add(source, dir, p);
+        dir.set(this.direction);
         power.set(radiance).mul((float) Math.PI * r2);
     }
 
@@ -92,5 +97,37 @@ public class DirectionalSpotlight implements LightSource {
 
     public Instance createInstance() {
         return null;
+    }
+
+    public Point3 getSource() {
+        return source;
+    }
+
+    public void setSource(Point3 source) {
+        this.source = source;
+    }
+
+    public Vector3 getDirection() {
+        return direction;
+    }
+
+    public void setDirection(Vector3 direction) {
+        this.direction = direction;
+    }
+
+    public float getR() {
+        return r;
+    }
+
+    public void setR(float r) {
+        this.r = r;
+    }
+
+    public Color getRadiance() {
+        return radiance;
+    }
+
+    public void setRadiance(Color radiance) {
+        this.radiance = radiance;
     }
 }

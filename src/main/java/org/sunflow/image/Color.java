@@ -2,6 +2,8 @@ package org.sunflow.image;
 
 import org.sunflow.math.MathUtils;
 
+import java.util.Objects;
+
 public final class Color {
     private float r, g, b;
     public static final RGBSpace NATIVE_SPACE = RGBSpace.SRGB;
@@ -367,4 +369,5 @@ public final class Color {
     public String toString() {
         return String.format("(%.3f, %.3f, %.3f)", r, g, b);
     }
+
 }

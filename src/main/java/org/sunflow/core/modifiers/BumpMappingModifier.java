@@ -19,8 +19,9 @@ public class BumpMappingModifier implements Modifier {
 
     public boolean update(ParameterList pl, SunflowAPI api) {
         String filename = pl.getString("texture", null);
-        if (filename != null)
+        if (filename != null) {
             bumpTexture = TextureCache.getTexture(api.resolveTextureFilename(filename), true);
+        }
         scale = pl.getFloat("scale", scale);
         return bumpTexture != null;
     }
@@ -29,5 +30,13 @@ public class BumpMappingModifier implements Modifier {
         // apply bump
         state.getNormal().set(bumpTexture.getBump(state.getUV().x, state.getUV().y, state.getBasis(), scale));
         state.setBasis(OrthoNormalBasis.makeFromW(state.getNormal()));
+    }
+
+    public float getScale() {
+        return scale;
+    }
+
+    public void setScale(float scale) {
+        this.scale = scale;
     }
 }
