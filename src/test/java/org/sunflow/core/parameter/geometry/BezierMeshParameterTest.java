@@ -21,7 +21,9 @@ public class BezierMeshParameterTest {
     public void testSetupAPI() {
         // Set values
         parameter.setName("uniqueName");
-        parameter.setPoints(new float[]{0,0,0,1,1,1,2,0,0});
+        parameter.setPoints(new float[]{0, 0, 0, 1, 1, 1, 1, 2, 1, 2, 0, 0});
+        parameter.nu = 2;
+        parameter.nv = 2;
         parameter.setSubdivs(2);
 
         // Set parameters

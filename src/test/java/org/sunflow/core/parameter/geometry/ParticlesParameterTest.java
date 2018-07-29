@@ -21,6 +21,8 @@ public class ParticlesParameterTest {
     public void testSetupAPI() {
         // Set values
         parameter.setName("uniqueName");
+        parameter.setNum(2);
+        parameter.setPoints(new float[]{0, 0, 0, 1, 1, 1});
 
         // Set parameters
         parameter.setup(api);
