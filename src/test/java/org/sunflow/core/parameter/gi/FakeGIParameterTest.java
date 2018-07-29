@@ -4,6 +4,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.sunflow.SunflowAPI;
+import org.sunflow.core.Options;
 import org.sunflow.image.Color;
 import org.sunflow.math.Vector3;
 
@@ -28,10 +29,12 @@ public class FakeGIParameterTest {
         // Set parameters
         gi.setup(api);
 
-        Assert.assertEquals(GlobalIlluminationParameter.TYPE_FAKE, api.getParameterList().getString(GlobalIlluminationParameter.PARAM_ENGINE, ""));
-        Assert.assertArrayEquals(gi.ground.getRGB(), api.getParameterList().getColor(FakeGIParameter.PARAM_GROUND, null).getRGB(), 0);
-        Assert.assertArrayEquals(gi.sky.getRGB(), api.getParameterList().getColor(FakeGIParameter.PARAM_SKY, null).getRGB(), 0);
-        Assert.assertEquals(gi.up, api.getParameterList().getVector(FakeGIParameter.PARAM_UP,null));
+        Options options = (Options) api.getRenderObjects().get(SunflowAPI.DEFAULT_OPTIONS).obj;
+
+        Assert.assertEquals(GlobalIlluminationParameter.TYPE_FAKE, options.getString(GlobalIlluminationParameter.PARAM_ENGINE, ""));
+        Assert.assertArrayEquals(gi.ground.getRGB(), options.getColor(FakeGIParameter.PARAM_GROUND, null).getRGB(), 0);
+        Assert.assertArrayEquals(gi.sky.getRGB(), options.getColor(FakeGIParameter.PARAM_SKY, null).getRGB(), 0);
+        Assert.assertEquals(gi.up, options.getVector(FakeGIParameter.PARAM_UP,null));
     }
 
 }

@@ -19,6 +19,10 @@ public class HairParameterTest {
 
     @Test
     public void testSetupAPI() {
+        parameter.setWidth(1f);
+        parameter.setSegments(3);
+        parameter.setPoints(new float[]{0, 0, 0, 1, 1, 1, 2, 2, 2});
+
         // Set values
         parameter.setName("uniqueName");
 
