@@ -47,6 +47,12 @@ public final class ShadingState implements Iterable<LightSample> {
     private LightSample lightSample;
     private PhotonStore map;
 
+    private static float minBias = 0.001f;
+
+    public static void init(Options options) {
+        minBias = options.getFloat("bias", 0.001f);
+    }
+
     static ShadingState createPhotonState(Ray r, IntersectionState istate, int i, PhotonStore map, LightServer server) {
         ShadingState s = new ShadingState(null, istate, r, i, 4);
         s.server = server;
@@ -134,7 +140,7 @@ public final class ShadingState implements Iterable<LightSample> {
         qmcD0I = QMC.halton(this.d, this.i);
         qmcD1I = QMC.halton(this.d + 1, this.i);
         result = null;
-        bias = 0.001f;
+        bias = minBias;
     }
 
     final void setRay(Ray r) {
