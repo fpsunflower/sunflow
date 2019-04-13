@@ -17,8 +17,9 @@ public class NormalMapModifier implements Modifier {
 
     public boolean update(ParameterList pl, SunflowAPI api) {
         String filename = pl.getString("texture", null);
-        if (filename != null)
+        if (filename != null) {
             normalMap = TextureCache.getTexture(api.resolveTextureFilename(filename), true);
+        }
         return normalMap != null;
     }
 
