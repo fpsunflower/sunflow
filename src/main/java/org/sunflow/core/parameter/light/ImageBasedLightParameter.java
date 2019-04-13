@@ -18,6 +18,10 @@ public class ImageBasedLightParameter extends LightParameter {
     Vector3 up;
     boolean fixed;
 
+    public ImageBasedLightParameter() {
+        generateUniqueName("ibl");
+    }
+
     @Override
     public void setup(SunflowAPIInterface api) {
         api.parameter(PARAM_TEXTURE, texture);

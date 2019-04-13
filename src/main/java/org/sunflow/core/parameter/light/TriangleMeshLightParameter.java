@@ -13,6 +13,10 @@ public class TriangleMeshLightParameter extends LightParameter {
     float[] points;
     int[] triangles;
 
+    public TriangleMeshLightParameter() {
+        generateUniqueName("meshlight");
+    }
+
     @Override
     public void setup(SunflowAPIInterface api) {
         api.parameter(PARAM_RADIANCE, null, radiance.getRGB());

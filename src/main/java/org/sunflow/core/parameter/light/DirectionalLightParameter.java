@@ -16,6 +16,7 @@ public class DirectionalLightParameter extends LightParameter {
 
     public DirectionalLightParameter() {
         light = new DirectionalSpotlight();
+        generateUniqueName("directional");
     }
 
     @Override

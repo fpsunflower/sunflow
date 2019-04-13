@@ -22,6 +22,10 @@ public class SunSkyLightParameter extends LightParameter {
 
     Color groundColor = null;
 
+    public SunSkyLightParameter() {
+        generateUniqueName("sunsky");
+    }
+
     @Override
     public void setup(SunflowAPIInterface api) {
         api.parameter(PARAM_UP, up);

@@ -15,6 +15,7 @@ public abstract class LightParameter implements Parameter {
     public static final String TYPE_SUNSKY = "sunsky";
     public static final String TYPE_TRIANGLE_MESH = "triangle_mesh";
 
+    private static int count = 0;
     protected String name;
 
     public String getName() {
@@ -24,4 +25,10 @@ public abstract class LightParameter implements Parameter {
     public void setName(String name) {
         this.name = name;
     }
+
+    protected void generateUniqueName(String prefix) {
+        name = prefix + count;
+        count++;
+    }
+
 }

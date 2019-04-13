@@ -13,6 +13,7 @@ public class PointLightParameter extends LightParameter {
 
     public PointLightParameter() {
         light = new PointLight();
+        generateUniqueName("pointlight");
     }
 
     @Override
