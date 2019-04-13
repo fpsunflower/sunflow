@@ -7,17 +7,17 @@ public class ShinyShaderParameter extends ShaderParameter {
 
     String texture = "";
     Color diffuse;
-    float shiny;
+    float shininess;
 
     public ShinyShaderParameter(String name) {
         super(name);
         diffuse = Color.GRAY;
-        shiny = 0.5f;
+        shininess = 0.5f;
     }
 
     @Override
     public void setup(SunflowAPIInterface api) {
-        api.parameter("shiny", shiny);
+        api.parameter("shiny", shininess);
 
         if (texture.isEmpty()) {
             api.parameter("diffuse", null, diffuse.getRGB());
@@ -44,11 +44,15 @@ public class ShinyShaderParameter extends ShaderParameter {
         this.diffuse = diffuse;
     }
 
-    public float getShiny() {
-        return shiny;
+    public float getShininess() {
+        return shininess;
     }
 
-    public void setShiny(float shiny) {
-        this.shiny = shiny;
+    /**
+     * Refl parameter
+     * @param shininess
+     */
+    public void setShininess(float shininess) {
+        this.shininess = shininess;
     }
 }

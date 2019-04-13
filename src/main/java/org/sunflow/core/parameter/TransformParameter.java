@@ -8,7 +8,7 @@ public class TransformParameter implements Parameter {
     public static final String INTERPOLATION_NONE = "none";
 
     float[] times;
-    Matrix4[] transforms;
+    Matrix4[] transforms = new Matrix4[]{Matrix4.IDENTITY};
 
     String interpolation = INTERPOLATION_NONE;
 
@@ -42,4 +42,39 @@ public class TransformParameter implements Parameter {
         this.transforms = transforms;
     }
 
+    public TransformParameter rotateX(float angle) {
+        Matrix4 t = Matrix4.rotateX((float) Math.toRadians(angle));
+        transforms[0] = t.multiply(transforms[0]);
+        return this;
+    }
+
+    public TransformParameter rotateY(float angle) {
+        Matrix4 t = Matrix4.rotateY((float) Math.toRadians(angle));
+        transforms[0] = t.multiply(transforms[0]);
+        return this;
+    }
+
+    public TransformParameter rotateZ(float angle) {
+        Matrix4 t = Matrix4.rotateZ((float) Math.toRadians(angle));
+        transforms[0] = t.multiply(transforms[0]);
+        return this;
+    }
+
+    public TransformParameter scale(float scale) {
+        Matrix4 t = Matrix4.scale(scale);
+        transforms[0] = t.multiply(transforms[0]);
+        return this;
+    }
+
+    public TransformParameter scale(float x, float y, float z) {
+        Matrix4 t = Matrix4.scale(x, y, z);
+        transforms[0] = t.multiply(transforms[0]);
+        return this;
+    }
+
+    public TransformParameter translate(float x, float y, float z) {
+        Matrix4 t = Matrix4.translation(x, y, z);
+        transforms[0] = t.multiply(transforms[0]);
+        return this;
+    }
 }

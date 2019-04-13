@@ -3,6 +3,9 @@ package org.sunflow.core.parameter.camera;
 import org.sunflow.SunflowAPI;
 import org.sunflow.SunflowAPIInterface;
 import org.sunflow.core.parameter.Parameter;
+import org.sunflow.math.Matrix4;
+import org.sunflow.math.Point3;
+import org.sunflow.math.Vector3;
 
 public class CameraParameter implements Parameter {
 
@@ -53,5 +56,9 @@ public class CameraParameter implements Parameter {
     public void setup(SunflowAPIInterface api) {
         api.parameter(PARAM_CAMERA, name);
         api.options(SunflowAPI.DEFAULT_OPTIONS);
+    }
+
+    public void setupTransform(SunflowAPI api, Point3 eye, Point3 target, Vector3 up) {
+        api.parameter("transform", Matrix4.lookAt(eye, target, up));
     }
 }

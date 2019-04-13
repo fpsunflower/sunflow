@@ -1,9 +1,6 @@
 package examples;
 
-import org.sunflow.PluginRegistry;
 import org.sunflow.SunflowAPI;
-import org.sunflow.core.ImageSampler;
-import org.sunflow.core.Options;
 import org.sunflow.core.parameter.ImageParameter;
 import org.sunflow.core.parameter.InstanceParameter;
 import org.sunflow.core.parameter.PhotonParameter;
@@ -12,7 +9,6 @@ import org.sunflow.core.parameter.camera.PinholeCameraParameter;
 import org.sunflow.core.parameter.geometry.SphereParameter;
 import org.sunflow.core.parameter.gi.InstantGIParameter;
 import org.sunflow.core.parameter.light.CornellBoxLightParameter;
-import org.sunflow.core.parameter.shader.DiffuseShaderParameter;
 import org.sunflow.core.parameter.shader.GlassShaderParameter;
 import org.sunflow.core.parameter.shader.MirrorShaderParameter;
 import org.sunflow.image.Color;
@@ -57,11 +53,11 @@ public class CornellBoxJensenScene {
         PinholeCameraParameter camera = new PinholeCameraParameter();
 
         camera.setName("camera");
-        Point3 eye = new Point3(0,-205,50);
-        Point3 target = new Point3(0,0,50);
-        Vector3 up = new Vector3(0,0,1);
-        // TODO Move logic to camera
-        api.parameter("transform", Matrix4.lookAt(eye, target, up));
+        Point3 eye = new Point3(0, -205, 50);
+        Point3 target = new Point3(0, 0, 50);
+        Vector3 up = new Vector3(0, 0, 1);
+
+        camera.setupTransform(api, eye,target,up);
 
         camera.setFov(45f);
         camera.setAspect(1.333333f);
@@ -69,43 +65,39 @@ public class CornellBoxJensenScene {
 
         // Materials
         MirrorShaderParameter mirror = new MirrorShaderParameter("Mirror");
-        mirror.setReflection(new Color(0.7f,0.7f,0.7f));
+        mirror.setReflection(new Color(0.7f, 0.7f, 0.7f));
         mirror.setup(api);
 
         GlassShaderParameter glass = new GlassShaderParameter("Glass");
         glass.setEta(1.6f);
-        glass.setAbsorptionColor(new Color(1,1,1));
+        glass.setAbsorptionColor(new Color(1, 1, 1));
         glass.setup(api);
 
         // Lights
         CornellBoxLightParameter lightParameter = new CornellBoxLightParameter();
         lightParameter.setName("cornell-box-light");
-        lightParameter.setMin(new Point3(-60,-60,0));
-        lightParameter.setMax(new Point3(60,60,100));
-        lightParameter.setLeft(new Color(0.8f,0.25f,0.25f));
-        lightParameter.setRight(new Color(0.25f,0.25f,0.8f));
-        lightParameter.setTop(new Color(0.7f,0.7f,0.7f));
-        lightParameter.setBottom(new Color(0.7f,0.7f,0.7f));
-        lightParameter.setBack(new Color(0.7f,0.7f,0.7f));
-        lightParameter.setRadiance(new Color(15,15,15));
+        lightParameter.setMin(new Point3(-60, -60, 0));
+        lightParameter.setMax(new Point3(60, 60, 100));
+        lightParameter.setLeft(new Color(0.8f, 0.25f, 0.25f));
+        lightParameter.setRight(new Color(0.25f, 0.25f, 0.8f));
+        lightParameter.setTop(new Color(0.7f, 0.7f, 0.7f));
+        lightParameter.setBottom(new Color(0.7f, 0.7f, 0.7f));
+        lightParameter.setBack(new Color(0.7f, 0.7f, 0.7f));
+        lightParameter.setRadiance(new Color(15, 15, 15));
         lightParameter.setSamples(32);
         lightParameter.setup(api);
 
-        InstanceParameter mirrorSphereInstance = new InstanceParameter();
-        mirrorSphereInstance.setShaders(new String[]{"Mirror"});
         SphereParameter mirrorSphere = new SphereParameter();
         mirrorSphere.setName("mirror-sphere");
-        mirrorSphere.setCenter(new Point3(-30,30,20));
-        mirrorSphere.setInstanceParameter(mirrorSphereInstance);
+        mirrorSphere.setCenter(new Point3(-30, 30, 20));
+        mirrorSphere.setInstanceParameter(new InstanceParameter().shaders("Mirror"));
         mirrorSphere.setRadius(20);
         mirrorSphere.setup(api);
 
-        InstanceParameter glassSphereInstance = new InstanceParameter();
-        glassSphereInstance.setShaders(new String[]{"Glass"});
         SphereParameter glassSphere = new SphereParameter();
         glassSphere.setName("glass-sphere");
-        glassSphere.setCenter(new Point3(28,2,20));
-        glassSphere.setInstanceParameter(glassSphereInstance);
+        glassSphere.setCenter(new Point3(28, 2, 20));
+        glassSphere.setInstanceParameter(new InstanceParameter().shaders("Glass"));
         glassSphere.setRadius(20);
         glassSphere.setup(api);
 
