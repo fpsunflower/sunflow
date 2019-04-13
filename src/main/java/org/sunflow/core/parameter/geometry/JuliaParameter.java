@@ -10,6 +10,13 @@ public class JuliaParameter extends GeometryParameter {
     int iterations = 1;
     float epsilon;
 
+    public JuliaParameter() {
+    }
+
+    public JuliaParameter(String name) {
+        this.name = name;
+    }
+
     @Override
     public void setup(SunflowAPIInterface api) {
         super.setup(api);
@@ -72,5 +79,12 @@ public class JuliaParameter extends GeometryParameter {
 
     public void setEpsilon(float epsilon) {
         this.epsilon = epsilon;
+    }
+
+    public void setQuaternion(float cx, float cy, float cz, float cw) {
+        this.cx = cx;
+        this.cy = cy;
+        this.cz = cz;
+        this.cw = cw;
     }
 }

@@ -20,6 +20,10 @@ public class CornellBoxLightParameter extends LightParameter {
     Color left, right, top, bottom, back;
     Color radiance;
 
+    public CornellBoxLightParameter() {
+        generateUniqueName("cornellbox");
+    }
+
     @Override
     public void setup(SunflowAPIInterface api) {
         api.parameter(PARAM_MIN_CORNER, min);

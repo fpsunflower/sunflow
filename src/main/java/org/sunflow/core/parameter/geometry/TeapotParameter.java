@@ -20,7 +20,10 @@ public class TeapotParameter extends GeometryParameter {
         super.setup(api);
         api.parameter("subdivs", subdivs);
         api.parameter("smooth", smooth);
-        api.geometry(name, TYPE_TEAPOT);
+
+        if (instanceParameter == null || instanceParameter.geometry() == null) {
+            api.geometry(name, TYPE_TEAPOT);
+        }
 
         setupInstance(api);
     }

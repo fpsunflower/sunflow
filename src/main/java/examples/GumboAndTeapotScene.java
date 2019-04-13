@@ -18,7 +18,12 @@ public class GumboAndTeapotScene {
     public static void main(String[] args) {
         SunflowAPI api = new SunflowAPI();
         api.reset();
+        buildScene(api);
 
+        finalRender(api);
+    }
+
+    public static void buildScene(SunflowAPI api){
         ImageParameter image = new ImageParameter();
         image.setResolutionX(800);
         image.setResolutionY(450);
@@ -97,6 +102,7 @@ public class GumboAndTeapotScene {
         gumbo1.scale(0.1f);
         gumbo1.rotateY(25);
         gumbo1.translate(1.5f, 0, -1.5f);
+        gumbo1.setSmooth(false);
         gumbo1.setup(api);
 
         GumboParameter gumbo2 = new GumboParameter();
@@ -186,8 +192,6 @@ public class GumboAndTeapotScene {
         teapot4.setSubdivs(7);
         teapot4.setSmooth(false);
         teapot4.setup(api);
-
-        finalRender(api);
     }
 
     private static void previewRender(SunflowAPI api) {

@@ -6,6 +6,14 @@ public class NormalMapModifierParameter extends ModifierParameter {
 
     String texture = "";
 
+    public NormalMapModifierParameter() {
+
+    }
+
+    public NormalMapModifierParameter(String name) {
+        this.name = name;
+    }
+
     @Override
     public void setup(SunflowAPIInterface api) {
         api.parameter("texture", texture);

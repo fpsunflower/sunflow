@@ -7,6 +7,14 @@ public class BumpMapModifierParameter extends ModifierParameter {
     float scale;
     String texture = "";
 
+    public BumpMapModifierParameter() {
+
+    }
+
+    public BumpMapModifierParameter(String name) {
+        this.name = name;
+    }
+
     @Override
     public void setup(SunflowAPIInterface api) {
         api.parameter("texture", texture);

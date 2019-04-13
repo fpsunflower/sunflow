@@ -23,8 +23,9 @@ public class InstanceParameter implements Parameter {
         if (modifiers != null) {
             api.parameter("modifiers", modifiers);
         }
-
-        api.instance(name, geometry);
+        if (geometry != null) {
+            api.instance(name, geometry);
+        }
     }
 
     public String name() {

@@ -62,6 +62,22 @@ public class ObjectParameter implements Parameter {
         }
     }
 
+    public void geometry(String geometry) {
+        if (instanceParameter == null) {
+            instanceParameter = new InstanceParameter();
+        }
+
+        instanceParameter.geometry(geometry);
+    }
+
+    public void geometry(ObjectParameter objectParameter) {
+        if (instanceParameter == null) {
+            instanceParameter = new InstanceParameter();
+        }
+
+        instanceParameter.geometry(objectParameter.name);
+    }
+
     public void shaders(String... shaders) {
         if (instanceParameter == null) {
             instanceParameter = new InstanceParameter();
@@ -81,7 +97,6 @@ public class ObjectParameter implements Parameter {
         }
 
         instanceParameter.shaders(names);
-
     }
 
     public void modifiers(String... modifiers) {

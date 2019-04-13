@@ -13,6 +13,7 @@ public class SphereLightParameter extends LightParameter {
 
     public SphereLightParameter() {
         light = new SphereLight();
+        generateUniqueName("spherelight");
     }
 
     @Override
