@@ -2,7 +2,7 @@ package org.sunflow.core.parameter.geometry;
 
 import org.sunflow.SunflowAPIInterface;
 
-public class GumboParameter extends ObjectParameter {
+public class GumboParameter extends GeometryParameter {
 
     int subdivs;
     boolean smooth;
@@ -19,6 +19,7 @@ public class GumboParameter extends ObjectParameter {
         api.parameter("subdivs", subdivs);
         api.parameter("smooth", smooth);
         api.geometry(name, TYPE_GUMBO);
+        setupInstance(api);
     }
 
     public int getSubdivs() {

@@ -2,7 +2,7 @@ package org.sunflow.core.parameter.geometry;
 
 import org.sunflow.SunflowAPIInterface;
 
-public class FileMeshParameter extends ObjectParameter {
+public class FileMeshParameter extends GeometryParameter {
 
     String filename;
     boolean smoothNormals = false;
@@ -13,6 +13,7 @@ public class FileMeshParameter extends ObjectParameter {
         api.parameter("filename", filename);
         api.parameter("smooth_normals", smoothNormals);
         api.geometry(name, TYPE_FILE_MESH);
+        setupInstance(api);
     }
 
     public String getFilename() {

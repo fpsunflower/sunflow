@@ -4,7 +4,7 @@ import org.sunflow.SunflowAPIInterface;
 import org.sunflow.math.Matrix4;
 import org.sunflow.math.Point3;
 
-public class SphereParameter extends ObjectParameter {
+public class SphereParameter extends GeometryParameter {
 
     Point3 center;
     float radius;
@@ -15,15 +15,7 @@ public class SphereParameter extends ObjectParameter {
         api.geometry(name, TYPE_SPHERE);
         api.parameter("transform", Matrix4.translation(center.x, center.y, center.z).multiply(Matrix4.scale(radius)));
 
-        if (instanceParameter != null) {
-            if (instanceParameter.getShaders() != null) {
-                api.parameter("shaders", instanceParameter.getShaders());
-            }
-            if (instanceParameter.getModifiers() != null) {
-                api.parameter("modifiers", instanceParameter.getModifiers());
-            }
-        }
-        api.instance(name + ".instance", name);
+        setupInstance(api);
     }
 
     public Point3 getCenter() {

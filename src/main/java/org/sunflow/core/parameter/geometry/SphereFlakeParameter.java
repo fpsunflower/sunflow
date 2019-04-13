@@ -3,7 +3,7 @@ package org.sunflow.core.parameter.geometry;
 import org.sunflow.SunflowAPIInterface;
 import org.sunflow.math.Vector3;
 
-public class SphereFlakeParameter extends ObjectParameter {
+public class SphereFlakeParameter extends GeometryParameter {
 
     int level = 2;
     float radius = 1;
@@ -14,6 +14,11 @@ public class SphereFlakeParameter extends ObjectParameter {
         level = 2;
         radius = 1;
         axis = new Vector3(0, 0, 1);
+    }
+
+    public SphereFlakeParameter(String name) {
+        this();
+        this.name = name;
     }
 
     @Override
@@ -31,6 +36,8 @@ public class SphereFlakeParameter extends ObjectParameter {
         }
 
         api.geometry(name, TYPE_SPHEREFLAKE);
+
+        setupInstance(api);
     }
 
     public int getLevel() {

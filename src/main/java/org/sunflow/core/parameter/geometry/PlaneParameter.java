@@ -4,7 +4,7 @@ import org.sunflow.SunflowAPIInterface;
 import org.sunflow.math.Point3;
 import org.sunflow.math.Vector3;
 
-public class PlaneParameter extends ObjectParameter {
+public class PlaneParameter extends GeometryParameter {
 
     Point3 center;
     Point3 point1;
@@ -22,6 +22,8 @@ public class PlaneParameter extends ObjectParameter {
             api.parameter("point2", point2);
         }
         api.geometry(name, TYPE_PLANE);
+
+        setupInstance(api);
     }
 
     public Point3 getCenter() {

@@ -2,7 +2,7 @@ package org.sunflow.core.parameter.geometry;
 
 import org.sunflow.SunflowAPIInterface;
 
-public class JuliaParameter extends ObjectParameter {
+public class JuliaParameter extends GeometryParameter {
 
     // Quaternion
     float cx, cy, cz, cw;
@@ -22,6 +22,8 @@ public class JuliaParameter extends ObjectParameter {
         api.parameter("epsilon", epsilon);
 
         api.geometry(name, TYPE_JULIA);
+
+        setupInstance(api);
     }
 
     public float getCx() {
