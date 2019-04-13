@@ -2,7 +2,7 @@ package org.sunflow.core.parameter.geometry;
 
 import org.sunflow.SunflowAPIInterface;
 
-public class HairParameter extends ObjectParameter {
+public class HairParameter extends GeometryParameter {
 
     int segments;
     float width;
@@ -15,6 +15,7 @@ public class HairParameter extends ObjectParameter {
         api.parameter("widths", width);
         api.parameter("points", "point", "vertex", points);
         api.geometry(name, TYPE_HAIR);
+        setupInstance(api);
     }
 
     public int getSegments() {

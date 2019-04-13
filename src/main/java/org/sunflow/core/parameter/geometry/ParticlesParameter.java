@@ -2,7 +2,7 @@ package org.sunflow.core.parameter.geometry;
 
 import org.sunflow.SunflowAPIInterface;
 
-public class ParticlesParameter extends ObjectParameter {
+public class ParticlesParameter extends GeometryParameter {
 
     int num;
     float radius;
@@ -15,6 +15,8 @@ public class ParticlesParameter extends ObjectParameter {
         api.parameter("num", num);
         api.parameter("radius", radius);
         api.geometry(name, TYPE_PARTICLES);
+
+        setupInstance(api);
     }
 
     public int getNum() {

@@ -2,7 +2,7 @@ package org.sunflow.core.parameter.geometry;
 
 import org.sunflow.SunflowAPIInterface;
 
-public class TeapotParameter extends ObjectParameter {
+public class TeapotParameter extends GeometryParameter {
 
     int subdivs = 1;
     boolean smooth = false;
@@ -13,6 +13,8 @@ public class TeapotParameter extends ObjectParameter {
         api.parameter("subdivs", subdivs);
         api.parameter("smooth", smooth);
         api.geometry(name, TYPE_TEAPOT);
+
+        setupInstance(api);
     }
 
     public int getSubdivs() {

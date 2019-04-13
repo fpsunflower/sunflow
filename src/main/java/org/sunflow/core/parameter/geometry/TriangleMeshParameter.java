@@ -2,7 +2,7 @@ package org.sunflow.core.parameter.geometry;
 
 import org.sunflow.SunflowAPIInterface;
 
-public class TriangleMeshParameter extends ObjectParameter {
+public class TriangleMeshParameter extends GeometryParameter {
 
     float[] points;
     float[] normals;
@@ -12,14 +12,21 @@ public class TriangleMeshParameter extends ObjectParameter {
     @Override
     public void setup(SunflowAPIInterface api) {
         super.setup(api);
+        if (name == null || name.isEmpty()) {
+            throw new RuntimeException("Name cannot be null");
+        }
         // create geometry
         api.parameter("triangles", triangles);
         api.parameter("points", "point", "vertex", points);
         if (normals != null) {
             api.parameter("normals", "vector", "vertex", normals);
         }
-        api.parameter("uvs", "texcoord", "vertex", uvs);
+        if (uvs != null) {
+            api.parameter("uvs", "texcoord", "vertex", uvs);
+        }
         api.geometry(name, "triangle_mesh");
+
+        setupInstance(api);
     }
 
     public float[] getPoints() {

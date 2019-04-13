@@ -2,7 +2,7 @@ package org.sunflow.core.parameter.geometry;
 
 import org.sunflow.SunflowAPIInterface;
 
-public class GenericMeshParameter extends ObjectParameter {
+public class GenericMeshParameter extends GeometryParameter {
 
     float[] points;
     int[] triangles;
@@ -37,6 +37,8 @@ public class GenericMeshParameter extends ObjectParameter {
         }
 
         api.geometry(name, TYPE_TRIANGLE_MESH);
+
+        setupInstance(api);
     }
 
     public float[] getPoints() {

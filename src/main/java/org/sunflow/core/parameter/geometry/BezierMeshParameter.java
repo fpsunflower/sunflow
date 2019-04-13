@@ -2,7 +2,7 @@ package org.sunflow.core.parameter.geometry;
 
 import org.sunflow.SunflowAPIInterface;
 
-public class BezierMeshParameter extends ObjectParameter {
+public class BezierMeshParameter extends GeometryParameter {
 
     int nu, nv;
     boolean uwrap = false, vwrap = false;
@@ -22,6 +22,8 @@ public class BezierMeshParameter extends ObjectParameter {
         api.parameter("subdivs", subdivs);
         api.parameter("smooth", smooth);
         api.geometry(name, TYPE_BEZIER_MESH);
+
+        setupInstance(api);
     }
 
     public int getNu() {

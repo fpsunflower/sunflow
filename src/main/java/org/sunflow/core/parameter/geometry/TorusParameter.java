@@ -2,7 +2,7 @@ package org.sunflow.core.parameter.geometry;
 
 import org.sunflow.SunflowAPIInterface;
 
-public class TorusParameter extends ObjectParameter {
+public class TorusParameter extends GeometryParameter {
 
     float radiusInner;
     float radiusOuter;
@@ -13,6 +13,8 @@ public class TorusParameter extends ObjectParameter {
         api.parameter("radiusInner", radiusInner);
         api.parameter("radiusOuter", radiusOuter);
         api.geometry(name, TYPE_TORUS);
+
+        setupInstance(api);
     }
 
     public float getRadiusInner() {

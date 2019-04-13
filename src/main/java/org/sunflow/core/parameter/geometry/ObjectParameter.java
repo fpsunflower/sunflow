@@ -23,7 +23,7 @@ public class ObjectParameter implements Parameter {
 
     public static final String PARAM_ACCEL = "accel";
 
-    protected String name;
+    protected String name = "none";
     protected String accel = "";
 
     protected InstanceParameter instanceParameter;
