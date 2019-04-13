@@ -641,7 +641,7 @@ public class SCNewParser implements SceneParser {
                 shaderParameter.setDiffuse(parseColor());
             }
             p.checkNextToken("refl");
-            shaderParameter.setShiny(p.getNextFloat());
+            shaderParameter.setShininess(p.getNextFloat());
             shaderParameter.setup(api);
         } else if (p.peekNextToken("ward")) {
             WardShaderParameter shaderParameter = new WardShaderParameter(name);
@@ -790,7 +790,7 @@ public class SCNewParser implements SceneParser {
                 p.checkNextToken("shader");
                 shaders = new String[]{p.getNextToken()};
             }
-            instanceParameter.setShaders(shaders);
+            instanceParameter.shaders(shaders);
 
             if (p.peekNextToken("modifiers")) {
                 int n = p.getNextInt();
@@ -800,11 +800,11 @@ public class SCNewParser implements SceneParser {
             } else if (p.peekNextToken("modifier")) {
                 modifiers = new String[]{p.getNextToken()};
             }
-            instanceParameter.setModifiers(modifiers);
+            instanceParameter.modifiers(modifiers);
 
             // Can be null
             TransformParameter transform = checkParseTransform();
-            instanceParameter.setTransform(transform);
+            instanceParameter.transform(transform);
         }
         if (p.peekNextToken("accel")) {
             accel = p.getNextToken();
@@ -893,14 +893,15 @@ public class SCNewParser implements SceneParser {
             geometry.setup(api);
         } else if (type.equals("sphere")) {
             UI.printInfo(Module.API, "Reading sphere ...");
-            instanceParameter.setName(name + ".instance");
-            instanceParameter.setGeometry(name);
+            instanceParameter
+                    .name(name + ".instance")
+                    .geometry(name);
 
             SphereParameter geometry = new SphereParameter();
             geometry.setName(name);
             geometry.setInstanceParameter(instanceParameter);
 
-            if (instanceParameter.getTransform() == null && !noInstance) {
+            if (instanceParameter.transform() == null && !noInstance) {
                 // legacy method of specifying transformation for spheres
                 p.checkNextToken("c");
                 float x = p.getNextFloat();
@@ -1159,8 +1160,9 @@ public class SCNewParser implements SceneParser {
             noInstance = true;
         }
         if (!noInstance) {
-            instanceParameter.setName(name + ".instance");
-            instanceParameter.setGeometry(name);
+            instanceParameter
+                    .name(name + ".instance")
+                    .geometry(name);
             instanceParameter.setup(api);
 
             // create instance
@@ -1187,13 +1189,13 @@ public class SCNewParser implements SceneParser {
         InstanceParameter parameter = new InstanceParameter();
         p.checkNextToken("{");
         p.checkNextToken("name");
-        parameter.setName(p.getNextToken());
-        UI.printInfo(Module.API, "Reading instance: %s ...", parameter.getName());
+        parameter.name(p.getNextToken());
+        UI.printInfo(Module.API, "Reading instance: %s ...", parameter.name());
         p.checkNextToken("geometry");
-        parameter.setGeometry(p.getNextToken());
+        parameter.geometry(p.getNextToken());
 
         TransformParameter transformParameter = parseTransform();
-        parameter.setTransform(transformParameter);
+        parameter.transform(transformParameter);
 
         String[] shaders;
         if (p.peekNextToken("shaders")) {
@@ -1206,7 +1208,7 @@ public class SCNewParser implements SceneParser {
             p.checkNextToken("shader");
             shaders = new String[]{p.getNextToken()};
         }
-        parameter.setShaders(shaders);
+        parameter.shaders(shaders);
 
         String[] modifiers = null;
         if (p.peekNextToken("modifiers")) {
@@ -1218,7 +1220,7 @@ public class SCNewParser implements SceneParser {
         } else if (p.peekNextToken("modifier")) {
             modifiers = new String[]{p.getNextToken()};
         }
-        parameter.setModifiers(modifiers);
+        parameter.modifiers(modifiers);
         parameter.setup(api);
 
         p.checkNextToken("}");

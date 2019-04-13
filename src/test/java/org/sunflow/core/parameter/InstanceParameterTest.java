@@ -22,8 +22,7 @@ public class InstanceParameterTest {
     @Test
     public void testSetupAPI() {
         // Set values
-        parameter.setName("uniqueName");
-
+        parameter.name("uniqueName");
         parameter.setup(api);
 
         verify(api, times(1)).instance(anyString(), anyString());

@@ -7,6 +7,14 @@ public class TeapotParameter extends GeometryParameter {
     int subdivs = 1;
     boolean smooth = false;
 
+    public TeapotParameter() {
+
+    }
+
+    public TeapotParameter(String name) {
+        this.name = name;
+    }
+
     @Override
     public void setup(SunflowAPIInterface api) {
         super.setup(api);

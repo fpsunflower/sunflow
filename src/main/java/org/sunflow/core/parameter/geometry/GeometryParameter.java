@@ -6,9 +6,10 @@ public abstract class GeometryParameter extends ObjectParameter {
 
     public void setupInstance(SunflowAPIInterface api) {
         if (instanceParameter != null) {
-            instanceParameter.setName(name + ".instance");
-            instanceParameter.setGeometry(name);
-            instanceParameter.setup(api);
+            instanceParameter
+                    .name(name + ".instance")
+                    .geometry(name)
+                    .setup(api);
         }
     }
 

@@ -4,13 +4,13 @@ import org.sunflow.SunflowAPIInterface;
 
 public class InstanceParameter implements Parameter {
 
-    String name;
-    String geometry;
+    private String name;
+    private String geometry;
 
-    String[] shaders = null;
-    String[] modifiers = null;
+    private String[] shaders = null;
+    private String[] modifiers = null;
 
-    TransformParameter transform = null;
+    private TransformParameter transform = null;
 
     @Override
     public void setup(SunflowAPIInterface api) {
@@ -27,43 +27,48 @@ public class InstanceParameter implements Parameter {
         api.instance(name, geometry);
     }
 
-    public String getName() {
+    public String name() {
         return name;
     }
 
-    public void setName(String name) {
+    public InstanceParameter name(String name) {
         this.name = name;
+        return this;
     }
 
-    public String getGeometry() {
+    public String geometry() {
         return geometry;
     }
 
-    public void setGeometry(String geometry) {
+    public InstanceParameter geometry(String geometry) {
         this.geometry = geometry;
+        return this;
     }
 
-    public String[] getShaders() {
+    public String[] shaders() {
         return shaders;
     }
 
-    public void setShaders(String[] shaders) {
+    public InstanceParameter shaders(String... shaders) {
         this.shaders = shaders;
+        return this;
     }
 
-    public String[] getModifiers() {
+    public String[] modifiers() {
         return modifiers;
     }
 
-    public void setModifiers(String[] modifiers) {
+    public InstanceParameter modifiers(String... modifiers) {
         this.modifiers = modifiers;
+        return this;
     }
 
-    public TransformParameter getTransform() {
+    public TransformParameter transform() {
         return transform;
     }
 
-    public void setTransform(TransformParameter transform) {
+    public InstanceParameter transform(TransformParameter transform) {
         this.transform = transform;
+        return this;
     }
 }
