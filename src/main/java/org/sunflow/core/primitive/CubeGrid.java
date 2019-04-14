@@ -285,4 +285,8 @@ public abstract class CubeGrid implements PrimitiveList {
             return bounds;
         return o2w.transform(bounds);
     }
+    
+    public PrimitiveList getBakingPrimitives() {
+        return null;
+    }
 }
