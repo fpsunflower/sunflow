@@ -1,4 +1,4 @@
-Sunflow Global Illumination Rendering System 
+# Sunflow Global Illumination Rendering System 
 v0.07.5
 
 Contact: Christopher Kulla
@@ -9,12 +9,10 @@ Contact: Christopher Kulla
 
 Sunflow is a rendering system for photo-realistic image synthesis. It is written in Java and built around a flexible ray tracing core and an extensible object-oriented design.
 
-Please consult the LICENSE file for license information.
+Please consult the [LICENSE file](https://github.com/Harium/sunflow/blob/master/LICENSE) for license information.
 
-----------------------------------------------------------------
-
-Quickstart:
-
+<details>
+  <summary>Quickstart</summary>
 The fastest way to get started rendering images if you are not familiar with Java development is to get the binary release from the website. You will also need the latest Java SE JDK (to get the server VM) from http://java.sun.com/.
 
 Launch sunflow from the command prompt like this:
@@ -31,12 +29,18 @@ You can find some simple demo scenes on the website's data distribution. A simpl
 
 DISCLAIMER:
 Keep in mind that this is still an early version. At the moment you will need to dig around the scene files in order to get the most out of the software. If you have any questions, feel free to e-mail me at the adress at the top.
+</details>
 
-----------------------------------------------------------------
-
-Build instructions:
-
+<details>
+  <summary>Build instructions</summary>
 Download the latest JDK (6.0 at the time of this writing) if you don't have it already. Please note that the source code makes use of some new features like generics. Keep this in mind if you are trying to compile/run the code under a different JVM.
+
+Using mvn, type:
+```bash
+mvn clean package
+```
+
+Or, using javac
 
 Create a main directory to hold the code (for example, "sunflow") and unzip the contents of the source package into it, preserving sub-directories. Create the "classes" subdirectory if your unzip program did not. You may now compile the software from the main directory by running:
 
@@ -48,15 +52,18 @@ once the compiling is complete, run the code with:
 
 The tips above apply here as well (-Xmx and -server command line options).
 
-----------------------------------------------------------------
+</details>
 
-Scene file format:
+
+## Scene file format
 
 The SunflowGUI program accepts input in the .sc file format. As this is only a temporary file format, the best documentation for it is SCParser.java. You may also get a feel for what is supported by examining the example scene files provided in the data distribution.
 
-----------------------------------------------------------------
+More information can be found at the [manual](https://github.com/Harium/sunflow/blob/master/Sunflow-Manual.pdf).
 
-Rendering options:
+----------------------------------------------------------------
+<details>
+  <summary>Rendering options</summary>
 
 Here is a quick explanation of the basic rendering options.
 
@@ -117,21 +124,43 @@ Caustics are produced by light shining through refractive objects or being bounc
 
 Once you have a number of photons to emit, you must pick a way to store them. Only a kd engine is currently available for caustics. You can then set a value for the number of photons to gather at each shading point (start with ~50 to ~100) as well as a maximum search radius. These settings are highly scene dependent so experiment with them until you get satisfactory results.
 
-----------------------------------------------------------------
+</details>
 
-Third party libraries:
+## Third party libraries
 
 Sunflow makes use of the following libraries, distributed according to the following terms:
 
+<details>
+  <summary>Janino License</summary>
 Janino - An embedded Java[TM] compiler
 
-Copyright (c) 2006, Arno Unkrig
+Copyright (c) 2001-2016, Arno Unkrig
+Copyright (c) 2015-2016  TIBCO Software Inc.
 All rights reserved.
 
-Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions
+are met:
 
-   1. Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
-   2. Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution.
-   3. The name of the author may not be used to endorse or promote products derived from this software without specific prior written permission.
+   1. Redistributions of source code must retain the above copyright
+      notice, this list of conditions and the following disclaimer.
+   2. Redistributions in binary form must reproduce the above
+      copyright notice, this list of conditions and the following
+      disclaimer in the documentation and/or other materials
+      provided with the distribution.
+   3. Neither the name of JANINO nor the names of its contributors
+      may be used to endorse or promote products derived from this
+      software without specific prior written permission.
 
-THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDERS OR CONTRIBUTORS BE
+LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER
+IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
+OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN
+IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+</details>
