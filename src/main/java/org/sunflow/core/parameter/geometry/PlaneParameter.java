@@ -11,6 +11,14 @@ public class PlaneParameter extends GeometryParameter {
     Point3 point2;
     Vector3 normal;
 
+    public PlaneParameter() {
+
+    }
+
+    public PlaneParameter(String name) {
+        super(name);
+    }
+
     @Override
     public void setup(SunflowAPIInterface api) {
         super.setup(api);

@@ -6,17 +6,17 @@ import org.sunflow.core.parameter.InstanceParameter;
 import org.sunflow.core.parameter.PhotonParameter;
 import org.sunflow.core.parameter.TraceDepthsParameter;
 import org.sunflow.core.parameter.camera.PinholeCameraParameter;
+import org.sunflow.core.parameter.geometry.BoxParameter;
 import org.sunflow.core.parameter.geometry.SphereParameter;
 import org.sunflow.core.parameter.gi.InstantGIParameter;
 import org.sunflow.core.parameter.light.CornellBoxLightParameter;
 import org.sunflow.core.parameter.shader.GlassShaderParameter;
 import org.sunflow.core.parameter.shader.MirrorShaderParameter;
 import org.sunflow.image.Color;
-import org.sunflow.math.Matrix4;
 import org.sunflow.math.Point3;
 import org.sunflow.math.Vector3;
 
-public class CornellBoxJensenScene {
+public class CornellBoxJensenWithBoxesScene {
 
     public static void main(String[] args) {
         SunflowAPI api = new SunflowAPI();
@@ -87,19 +87,19 @@ public class CornellBoxJensenScene {
         lightParameter.setSamples(32);
         lightParameter.setup(api);
 
-        SphereParameter mirrorSphere = new SphereParameter();
-        mirrorSphere.setName("mirror-sphere");
-        mirrorSphere.setCenter(new Point3(-30, 30, 20));
-        mirrorSphere.setInstanceParameter(new InstanceParameter().shaders("Mirror"));
-        mirrorSphere.setRadius(20);
-        mirrorSphere.setup(api);
+        BoxParameter mirrorBox = new BoxParameter();
+        mirrorBox.setName("mirror-box");
+        mirrorBox.setMin(new Point3(-50, 10, 0));
+        mirrorBox.setMax(new Point3(-10, 50, 40));
+        mirrorBox.shaders(mirror);
+        mirrorBox.setup(api);
 
-        SphereParameter glassSphere = new SphereParameter();
-        glassSphere.setName("glass-sphere");
-        glassSphere.setCenter(new Point3(28, 2, 20));
-        glassSphere.setInstanceParameter(new InstanceParameter().shaders("Glass"));
-        glassSphere.setRadius(20);
-        glassSphere.setup(api);
+        BoxParameter glassBox = new BoxParameter();
+        glassBox.setName("glass-box");
+        glassBox.setMin(new Point3(8, -22, 0));
+        glassBox.setMax(new Point3(48, 22, 40));
+        glassBox.shaders(glass);
+        glassBox.setup(api);
 
         finalRender(api);
     }
