@@ -1,5 +1,6 @@
 v0.07.5
 * Added procedural scenes
+* Added box type
 v0.07.4
 * Updated janino version to 2.7.8
 * Allow changing shading cache parameters for a quality/speed trade-off
