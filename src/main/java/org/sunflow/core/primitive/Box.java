@@ -7,10 +7,7 @@ import org.sunflow.core.PrimitiveList;
 import org.sunflow.core.Ray;
 import org.sunflow.core.ShadingState;
 import org.sunflow.core.ParameterList.FloatParameter;
-import org.sunflow.math.BoundingBox;
-import org.sunflow.math.Matrix4;
-import org.sunflow.math.OrthoNormalBasis;
-import org.sunflow.math.Vector3;
+import org.sunflow.math.*;
 
 public class Box implements PrimitiveList {
     private float minX, minY, minZ;
@@ -22,19 +19,16 @@ public class Box implements PrimitiveList {
     }
 
     public boolean update(ParameterList pl, SunflowAPI api) {
-        FloatParameter pts = pl.getPointArray("points");
-        if (pts != null) {
-            BoundingBox bounds = new BoundingBox();
-            for (int i = 0; i < pts.data.length; i += 3)
-                bounds.include(pts.data[i], pts.data[i + 1], pts.data[i + 2]);
-            // cube extents
-            minX = bounds.getMinimum().x;
-            minY = bounds.getMinimum().y;
-            minZ = bounds.getMinimum().z;
-            maxX = bounds.getMaximum().x;
-            maxY = bounds.getMaximum().y;
-            maxZ = bounds.getMaximum().z;
-        }
+        Point3 min = pl.getPoint("min", null);
+        Point3 max = pl.getPoint("max", null);
+
+        minX = min.x;
+        minY = min.y;
+        minZ = min.z;
+        maxX = max.x;
+        maxY = max.y;
+        maxZ = max.z;
+
         return true;
     }
 

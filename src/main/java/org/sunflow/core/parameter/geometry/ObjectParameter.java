@@ -11,6 +11,7 @@ public class ObjectParameter implements Parameter {
 
     public static final String TYPE_BANCHOFF = "banchoff";
     public static final String TYPE_BEZIER_MESH = "bezier_mesh";
+    public static final String TYPE_BOX = "box";
     public static final String TYPE_CYLINDER = "cylinder";
     public static final String TYPE_GUMBO = "gumbo";
     public static final String TYPE_HAIR = "hair";

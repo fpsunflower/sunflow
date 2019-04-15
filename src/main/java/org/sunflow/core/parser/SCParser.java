@@ -908,6 +908,20 @@ public class SCParser implements SceneParser {
             } else {
                 geometry.setup(api);
             }
+        } else if (type.equals("box")) {
+            UI.printInfo(Module.API, "Reading box ...");
+            BoxParameter geometry = new BoxParameter();
+            geometry.setInstanceParameter(instanceParameter);
+            geometry.setName(name);
+
+            if (p.peekNextToken("min")) {
+                geometry.setMin(parsePoint());
+            }
+            if (p.peekNextToken("max")) {
+                geometry.setMax(parsePoint());
+            }
+
+            geometry.setup(api);
         } else if (type.equals("cylinder")) {
             UI.printInfo(Module.API, "Reading cylinder ...");
 
