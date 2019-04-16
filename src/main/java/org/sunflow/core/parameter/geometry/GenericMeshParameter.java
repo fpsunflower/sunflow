@@ -20,16 +20,20 @@ public class GenericMeshParameter extends GeometryParameter {
         api.parameter("points", "point", "vertex", points);
         api.parameter("triangles", triangles);
 
-        if (!faceVaryingNormals) {
-            api.parameter("normals", "vector", "vertex", normals);
-        } else {
-            api.parameter("normals", "vector", "facevarying", normals);
+        if (normals != null) {
+            if (!faceVaryingNormals) {
+                api.parameter("normals", "vector", "vertex", normals);
+            } else {
+                api.parameter("normals", "vector", "facevarying", normals);
+            }
         }
 
-        if (!faceVaryingTextures) {
-            api.parameter("uvs", "texcoord", "vertex", uvs);
-        } else {
-            api.parameter("uvs", "texcoord", "facevarying", uvs);
+        if (uvs != null) {
+            if (!faceVaryingTextures) {
+                api.parameter("uvs", "texcoord", "vertex", uvs);
+            } else {
+                api.parameter("uvs", "texcoord", "facevarying", uvs);
+            }
         }
 
         if (faceShaders != null) {
