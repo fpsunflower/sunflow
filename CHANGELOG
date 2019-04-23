@@ -1,3 +1,12 @@
+v0.07.5
+* Added procedural scenes
+* Added box type
+v0.07.4
+* Updated janino version to 2.7.8
+* Allow changing shading cache parameters for a quality/speed trade-off
+* Fixed missing TriangleMeshLight shader in PluginRegistry
+* Fixed self-intersection bias
+* Fixed infinite loop in bih caused by small triangle
 v0.07.3
 * Fixed bump mapping to correctly treat black as the lowest point in the map
 * Added command line override for samples paramter (affect bucket and multipas samplers)
